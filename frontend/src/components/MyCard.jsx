@@ -51,6 +51,28 @@ const MyCard = () => {
         showNotification('Dijital kartvizitiniz hazır!', 'success');
     };
 
+    const handleShare = async () => {
+        if (!personalCard) return;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${personalCard.firstName} ${personalCard.lastName} - Dijital Kartvizit`,
+                    text: `${personalCard.company} bünyesinde ${personalCard.title} olarak görev yapan ${personalCard.firstName} ${personalCard.lastName} kişisinin dijital kartviziti.`,
+                    url: shareUrl
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    showNotification('Paylaşım sırasında bir hata oluştu.', 'error');
+                }
+            }
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(shareUrl);
+            showNotification('Paylaşım linki kopyalandı!', 'success');
+        }
+    };
+
     const shareUrl = personalCard ? `${window.location.origin}/contact-profile/${personalCard.id}` : '';
 
     if (loading) return <div style={{ color: 'white', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
@@ -307,7 +329,7 @@ const MyCard = () => {
                                     <FaDownload /> vCard İndir
                                 </button>
                                 <button
-                                    onClick={() => showNotification('Paylaşım linki kopyalandı!', 'success')}
+                                    onClick={handleShare}
                                     style={{
                                         padding: '14px 20px',
                                         background: 'rgba(102, 126, 234, 0.2)',

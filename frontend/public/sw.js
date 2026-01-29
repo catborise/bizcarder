@@ -1,47 +1,66 @@
-const CACHE_NAME = 'bizcard-crm-v1';
+const CACHE_NAME = 'bizcard-crm-v2'; // Bumped version
+const STATIC_CACHE = 'bizcard-static-v1';
+const DATA_CACHE = 'bizcard-data-v1';
+
 const urlsToCache = [
     '/',
     '/index.html',
     '/manifest.json',
-    '/favicon.ico'
+    '/favicon.ico',
+    '/logo192.png',
+    '/logo512.png'
 ];
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        caches.open(CACHE_NAME)
+        caches.open(STATIC_CACHE)
             .then(cache => {
-                console.log('Opened cache');
-                // Use individual add calls to be more resilient
-                return Promise.allSettled(
-                    urlsToCache.map(url => cache.add(url).catch(err => console.warn(`Failed to cache ${url}:`, err)))
-                );
+                return cache.addAll(urlsToCache);
             })
-    );
-});
-
-self.addEventListener('fetch', event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                if (response) {
-                    return response;
-                }
-                return fetch(event.request);
-            })
+            .then(() => self.skipWaiting())
     );
 });
 
 self.addEventListener('activate', event => {
-    const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    if (cacheWhitelist.indexOf(cacheName) === -1) {
+                    if (![STATIC_CACHE, DATA_CACHE].includes(cacheName)) {
                         return caches.delete(cacheName);
                     }
                 })
             );
+        }).then(() => self.clients.claim())
+    );
+});
+
+self.addEventListener('fetch', event => {
+    // Skip non-GET requests and API calls for now (will handle via background sync/IndexedDB)
+    if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+        return;
+    }
+
+    event.respondWith(
+        caches.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+                // Return cached response but refresh in background (Stale-While-Revalidate)
+                fetch(event.request).then(networkResponse => {
+                    if (networkResponse.ok) {
+                        caches.open(STATIC_CACHE).then(cache => cache.put(event.request, networkResponse));
+                    }
+                }).catch(() => { }); // Ignore network errors during background refresh
+                return cachedResponse;
+            }
+
+            return fetch(event.request).then(networkResponse => {
+                if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+                    return networkResponse;
+                }
+                const responseToCache = networkResponse.clone();
+                caches.open(STATIC_CACHE).then(cache => cache.put(event.request, responseToCache));
+                return networkResponse;
+            });
         })
     );
 });

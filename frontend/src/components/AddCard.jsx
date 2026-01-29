@@ -4,6 +4,7 @@ import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../utils/perspectiveHelper';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
+import { queueForSync } from '../utils/offlineStore';
 
 // Helper: Canvas kullanarak resmi kırpma
 function canvasPreview(image, canvas, crop) {
@@ -291,6 +292,21 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
 
         try {
+            if (!navigator.onLine) {
+                // Handle Offline Submission
+                const offlineData = {
+                    ...formData,
+                    frontBlob,
+                    backBlob,
+                    logoBlob,
+                    isPersonal
+                };
+                await queueForSync('CREATE_CARD', offlineData);
+                showNotification('İnternet yok: Kart senkronizasyon için sıraya alındı.', 'info');
+                if (onCardAdded) onCardAdded();
+                return;
+            }
+
             if (activeCard) {
                 // GÜNCELLEME (PUT)
                 await api.put(`/api/cards/${activeCard.id}`, data, {
@@ -484,6 +500,48 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    {/* Native Contact Picker Integration */}
+                    {('contacts' in navigator && 'ContactsManager' in window) && (
+                        <button
+                            type="button"
+                            onClick={async () => {
+                                try {
+                                    const props = ['name', 'email', 'tel'];
+                                    const opts = { multiple: false };
+                                    const contacts = await navigator.contacts.select(props, opts);
+                                    if (contacts.length > 0) {
+                                        const contact = contacts[0];
+                                        const names = contact.name[0]?.split(' ') || [];
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            firstName: names.slice(0, -1).join(' ') || contact.name[0] || '',
+                                            lastName: names[names.length - 1] || '',
+                                            email: contact.email[0] || '',
+                                            phone: contact.tel[0] || ''
+                                        }));
+                                        showNotification('Rehberden bilgiler aktarıldı.', 'success');
+                                    }
+                                } catch (err) {
+                                    console.error('Contact Picker Error:', err);
+                                }
+                            }}
+                            style={{
+                                padding: '10px',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                border: '1px solid rgba(59, 130, 246, 0.3)',
+                                borderRadius: '12px',
+                                color: '#60a5fa',
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px'
+                            }}
+                        >
+                            Rehberden İçe Aktar (Hızlı Doldur)
+                        </button>
+                    )}
 
                     {/* Temel Bilgiler */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>

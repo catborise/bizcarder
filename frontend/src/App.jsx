@@ -12,6 +12,7 @@ import Login from './components/Login';
 import UserMenu from './components/UserMenu';
 import api from './api/axios';
 import { downloadFile } from './utils/downloadHelper';
+import { saveCardsToOffline, getOfflineCards, getPendingSync, clearSyncItem } from './utils/offlineStore';
 
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
@@ -21,7 +22,7 @@ import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
 import MyCard from './components/MyCard';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload } from 'react-icons/fa';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes } from 'react-icons/fa';
 
 // Sayfa Yer Tutucuları
 // Dashboard artık import ediliyor
@@ -44,6 +45,7 @@ const Contacts = () => {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isCachedData, setIsCachedData] = useState(false);
 
     const fetchCards = async () => {
         setLoading(true);
@@ -52,12 +54,22 @@ const Contacts = () => {
             const res = await api.get('/api/cards');
             if (Array.isArray(res.data)) {
                 setCards(res.data);
+                setIsCachedData(false);
+                await saveCardsToOffline(res.data);
             } else {
                 setCards([]);
                 setError('API beklenen formatta veri dönmedi.');
             }
         } catch (err) {
-            setError('Veriler yüklenirken bir hata oluştu: ' + (err.response?.data?.error || err.message));
+            // Try to get from offline store if network fails
+            const cachedCards = await getOfflineCards();
+            if (cachedCards.length > 0) {
+                setCards(cachedCards);
+                setIsCachedData(true);
+                showNotification('Çevrimdışı mod: Kayıtlı veriler gösteriliyor.', 'info');
+            } else {
+                setError('Veriler yüklenirken bir hata oluştu ve yerel kayıt bulunamadı.');
+            }
         } finally {
             setLoading(false);
         }
@@ -725,12 +737,158 @@ const Contacts = () => {
 // AppContent bileşeni - useAuth hook'unu kullanmak için AuthProvider içinde olması gerek
 const AppContent = () => {
     const { isAuthenticated, user: currentUser } = useAuth();
+    const { showNotification } = useNotification();
+    const [isOnline, setIsOnline] = useState(navigator.onLine);
+    const [deferredPrompt, setDeferredPrompt] = useState(null);
+    const [showInstallBanner, setShowInstallBanner] = useState(false);
+
+    const syncQueuedCards = async () => {
+        const pending = await getPendingSync();
+        if (pending.length === 0) return;
+
+        showNotification(`${pending.length} bekleyen kayıt senkronize ediliyor...`, 'info');
+
+        for (const item of pending) {
+            if (item.type === 'CREATE_CARD') {
+                const { data } = item;
+                const formDataToSync = new FormData();
+
+                // Reconstruction of FormData
+                Object.keys(data).forEach(key => {
+                    if (!['frontBlob', 'backBlob', 'logoBlob'].includes(key)) {
+                        formDataToSync.append(key, data[key]);
+                    }
+                });
+
+                if (data.frontBlob) formDataToSync.append('frontImage', data.frontBlob, 'front.jpg');
+                if (data.backBlob) formDataToSync.append('backImage', data.backBlob, 'back.jpg');
+                if (data.logoBlob) formDataToSync.append('logoImage', data.logoBlob, 'logo.jpg');
+
+                try {
+                    await api.post('/api/cards', formDataToSync, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    await clearSyncItem(item.id);
+                } catch (err) {
+                    console.error('Sync Error for item', item.id, err);
+                }
+            }
+        }
+        showNotification('Senkronizasyon tamamlandı.', 'success');
+        // fetchCards(); // Removed because fetchCards is not in scope here
+    };
+
+    useEffect(() => {
+        const handleOnline = () => {
+            setIsOnline(true);
+            syncQueuedCards();
+        };
+        const handleOffline = () => setIsOnline(false);
+        const handleBeforeInstallPrompt = (e) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setShowInstallBanner(true);
+        };
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        // Initial check if we are online and have pending items
+        if (navigator.onLine) {
+            syncQueuedCards();
+        }
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+    }, []);
+
+    const handleInstallClick = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setDeferredPrompt(null);
+            setShowInstallBanner(false);
+        }
+    };
 
     return (
         <div style={{
             minHeight: '100vh',
-            width: '100%'
+            width: '100%',
+            paddingTop: !isOnline || showInstallBanner ? '50px' : '0'
         }}>
+            {/* Offline Banner */}
+            {!isOnline && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    background: '#ef4444',
+                    color: 'white',
+                    padding: '10px',
+                    textAlign: 'center',
+                    zIndex: 2000,
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px'
+                }}>
+                    <FaPlane /> Çevrimdışı Mod - Bazı özellikler kısıtlanmış olabilir.
+                </div>
+            )}
+
+            {/* PWA Install Banner */}
+            {showInstallBanner && isOnline && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'rgba(59, 130, 246, 0.95)',
+                    backdropFilter: 'blur(10px)',
+                    color: 'white',
+                    padding: '12px 20px',
+                    zIndex: 1999,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <FaWifi /> <span>Uygulamayı ana ekrana ekleyerek daha hızlı erişebilirsiniz.</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                            onClick={handleInstallClick}
+                            style={{
+                                background: 'white',
+                                color: '#3b82f6',
+                                border: 'none',
+                                padding: '6px 16px',
+                                borderRadius: '8px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Yükle
+                        </button>
+                        <button
+                            onClick={() => setShowInstallBanner(false)}
+                            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}
+                        >
+                            <FaTimes />
+                        </button>
+                    </div>
+                </div>
+            )}
             {/* Premium Glassmorphism Navbar */}
             <nav style={{
                 position: 'sticky',
