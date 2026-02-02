@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import AddCard from './components/AddCard';
 import InteractionLog from './components/InteractionLog';
@@ -26,7 +26,6 @@ import MyCard from './components/MyCard';
 import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes } from 'react-icons/fa';
 
 // Sayfa Yer Tutucuları
-// Dashboard artık import ediliyor
 const Contacts = () => {
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
@@ -272,7 +271,7 @@ const Contacts = () => {
                         onClick={openNewCardModal}
                         style={{
                             background: 'rgba(255, 255, 255, 0.15)',
-                            backdropFilter: 'blur(10px',
+                            backdropFilter: 'blur(10px)',
                             color: 'white',
                             border: '1px solid rgba(255, 255, 255, 0.3)',
                             padding: '12px 24px',
@@ -468,7 +467,6 @@ const Contacts = () => {
 
                                 {/* Aksiyon Butonları */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '140px' }}>
-
                                     <button
                                         onClick={() => toggleNotes(card.id)}
                                         style={{
@@ -776,7 +774,6 @@ const AppContent = () => {
             }
         }
         showNotification('Senkronizasyon tamamlandı.', 'success');
-        // fetchCards(); // Removed because fetchCards is not in scope here
     };
 
     useEffect(() => {
