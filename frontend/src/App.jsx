@@ -18,6 +18,7 @@ import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
 import TrashBin from './components/TrashBin';
 import HistoryTimeline from './components/HistoryTimeline';
+import ImportCards from './components/ImportCards';
 import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
@@ -1078,6 +1079,14 @@ const AppContent = () => {
                         element={
                             <ProtectedRoute>
                                 <MyCard />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/import"
+                        element={
+                            <ProtectedRoute>
+                                <ImportCards />
                             </ProtectedRoute>
                         }
                     />

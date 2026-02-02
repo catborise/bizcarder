@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
@@ -19,6 +19,9 @@ const Login = () => {
 
     const { loginLocal, registerLocal } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || '/contacts';
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -47,7 +50,7 @@ const Login = () => {
             }
 
             if (result.success) {
-                navigate('/contacts');
+                navigate(from, { replace: true });
             } else {
                 setError(result.error || 'İşlem başarısız.');
             }

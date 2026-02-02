@@ -5,6 +5,7 @@ const path = require('path');
 const { BusinessCard, User, BusinessCardHistory } = require('../models');
 const { logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
+const importController = require('../controllers/importController');
 
 // Multer Ayarları (Dosya Yükleme)
 const storage = multer.diskStorage({
@@ -610,5 +611,9 @@ router.delete('/trash/empty', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// Bulk Import Rotaları
+router.get('/import/template', importController.downloadTemplate);
+router.post('/import/bulk', upload.single('file'), importController.importCards);
 
 module.exports = router;

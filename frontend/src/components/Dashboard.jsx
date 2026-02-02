@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaIdCard, FaHistory, FaBuilding, FaUsers, FaGlobe, FaLifeRing } from 'react-icons/fa';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaIdCard, FaHistory, FaBuilding, FaUsers, FaGlobe, FaLifeRing, FaFileImport } from 'react-icons/fa';
 import api from '../api/axios';
 
 const Dashboard = () => {
     const [stats, setStats] = useState({ totalCards: 0 });
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -315,7 +316,43 @@ const Dashboard = () => {
                         </span>
                     </div>
                 </a>
+
+                {/* Toplu İçe Aktarma Tile */}
+                <div
+                    style={tileStyle}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    onClick={() => navigate('/import')}
+                >
+                    <div style={{
+                        display: 'inline-flex',
+                        padding: '12px',
+                        background: 'rgba(59, 130, 246, 0.3)',
+                        borderRadius: '12px',
+                        width: 'fit-content'
+                    }}>
+                        <FaFileImport size={36} />
+                    </div>
+                    <div>
+                        <span style={{
+                            fontSize: '1.5rem',
+                            display: 'block',
+                            fontWeight: '600',
+                            marginBottom: '5px'
+                        }}>
+                            Toplu İçe Aktar
+                        </span>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }}>
+                            CSV/XLSX ile toplu veri
+                        </span>
+                    </div>
+                </div>
             </div>
+
+            {/* Modal removed as it's now a standalone page */}
         </div>
     );
 };
