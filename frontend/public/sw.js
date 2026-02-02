@@ -36,8 +36,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-    // Skip non-GET requests and API calls for now (will handle via background sync/IndexedDB)
-    if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+    // Skip non-GET requests, non-http/https schemes, and API calls
+    if (
+        event.request.method !== 'GET' ||
+        !event.request.url.startsWith('http') ||
+        event.request.url.includes('/api/')
+    ) {
         return;
     }
 
