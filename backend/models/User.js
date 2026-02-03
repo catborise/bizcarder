@@ -46,6 +46,18 @@ const User = sequelize.define('User', {
             min: 1,
             max: 365
         }
+    },
+    aiOcrEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    aiOcrProvider: {
+        type: DataTypes.ENUM('openai', 'gemini', 'anthropic'),
+        defaultValue: 'openai'
+    },
+    aiOcrApiKey: {
+        type: DataTypes.TEXT,
+        allowNull: true
     }
 }, {
     hooks: {

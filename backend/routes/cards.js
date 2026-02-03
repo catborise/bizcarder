@@ -6,6 +6,7 @@ const { BusinessCard, User, BusinessCardHistory } = require('../models');
 const { logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
+const ocrController = require('../controllers/ocrController');
 
 // Multer Ayarları (Dosya Yükleme)
 const storage = multer.diskStorage({
@@ -19,6 +20,9 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+
+// AI OCR Analiz Endpoint
+router.post('/analyze-ai', upload.single('image'), ocrController.analyzeWithAI);
 
 // Tüm Kartları Getir (Yetkiye Göre Filtrele)
 router.get('/stats', async (req, res) => {

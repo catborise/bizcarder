@@ -131,6 +131,8 @@ router.post('/logout', (req, res) => {
     });
 });
 
+const { encrypt, decrypt } = require('../utils/encryption');
+
 // Kullanıcı Bilgisi (Frontend'in oturum kontrolü için)
 router.get('/me', (req, res) => {
     if (req.isAuthenticated()) {
@@ -142,11 +144,57 @@ router.get('/me', (req, res) => {
                 email: req.user.email,
                 displayName: req.user.displayName,
                 role: req.user.role,
-                shibbolethId: req.user.shibbolethId
+                shibbolethId: req.user.shibbolethId,
+                aiOcrEnabled: req.user.aiOcrEnabled,
+                aiOcrProvider: req.user.aiOcrProvider,
+                hasAiApiKey: !!req.user.aiOcrApiKey
             }
         });
     } else {
         res.status(401).json({ isAuthenticated: false });
+    }
+});
+
+// Kullanıcı Bilgilerini Güncelle (AI Ayarları Dahil)
+router.put('/profile', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Oturum açmanız gerekiyor.' });
+    }
+
+    try {
+        const { displayName, aiOcrEnabled, aiOcrProvider, aiOcrApiKey } = req.body;
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+        }
+
+        const updateData = {};
+        if (displayName !== undefined) updateData.displayName = displayName;
+        if (aiOcrEnabled !== undefined) updateData.aiOcrEnabled = aiOcrEnabled;
+        if (aiOcrProvider !== undefined) updateData.aiOcrProvider = aiOcrProvider;
+
+        // API Key geldiyse şifrele ve kaydet (boş geldiyse silme, sadece değişim varsa)
+        if (aiOcrApiKey && aiOcrApiKey.trim() !== '') {
+            updateData.aiOcrApiKey = encrypt(aiOcrApiKey);
+        }
+
+        await user.update(updateData);
+
+        res.json({
+            success: true,
+            message: 'Profil güncellendi.',
+            user: {
+                id: user.id,
+                displayName: user.displayName,
+                aiOcrEnabled: user.aiOcrEnabled,
+                aiOcrProvider: user.aiOcrProvider,
+                hasAiApiKey: !!user.aiOcrApiKey
+            }
+        });
+    } catch (error) {
+        console.error('Profile update error:', error);
+        res.status(500).json({ error: 'Profil güncellenirken bir hata oluştu.' });
     }
 });
 

@@ -5,6 +5,7 @@ import { warpPerspective } from '../utils/perspectiveHelper';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { queueForSync } from '../utils/offlineStore';
+import { useAuth } from '../context/AuthContext';
 
 // Helper: Canvas kullanarak resmi kırpma
 function canvasPreview(image, canvas, crop) {
@@ -42,6 +43,7 @@ function canvasPreview(image, canvas, crop) {
 
 const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const { showNotification } = useNotification();
+    const { user } = useAuth();
     // Seçilen Ham Dosyalar
     const [src, setSrc] = useState(null); // Şu an kırpılmakta olan resim kaynağı
     const [activeSide, setActiveSide] = useState(null); // 'front' veya 'back'
@@ -178,6 +180,21 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const performOCR = async (fileBlob) => {
         setOcrLoading(true);
         try {
+            // Eğer AI OCR aktifse backend'e gönder
+            if (user?.aiOcrEnabled) {
+                const formDataAi = new FormData();
+                formDataAi.append('image', fileBlob, 'card.jpg');
+
+                const response = await api.post('/api/cards/analyze-ai', formDataAi, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+
+                setOcrResults(response.data);
+                setShowOcrConfirm(true);
+                showNotification('AI ile tarama tamamlandı.', 'success');
+                return;
+            }
+
             const blobUrl = URL.createObjectURL(fileBlob);
             const result = await Tesseract.recognize(blobUrl, 'tur');
             const text = result.data.text;
