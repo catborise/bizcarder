@@ -116,13 +116,59 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
     // ... (OCR ve Resim Yükleme kodları aynı kalabilir, sadece input onChange eklenmeli)
     // Dosya Seçimi Başlat
-    const onSelectFile = (e, side) => {
-        if (e.target.files && e.target.files.length > 0) {
+    const [aiDetectedPoints, setAiDetectedPoints] = useState(null);
+    const [isDetecting, setIsDetecting] = useState(false);
+    const [preFetchedAiData, setPreFetchedAiData] = useState(null);
+
+    const detectAiBoundary = async (file) => {
+        if (!user?.aiOcrEnabled) return;
+
+        setIsDetecting(true);
+        try {
+            const formDataAi = new FormData();
+            formDataAi.append('image', file, 'card.jpg');
+
+            const response = await api.post('/api/cards/analyze-ai', formDataAi, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (response.data && response.data.corners) {
+                const c = response.data.corners;
+                // Convert {topLeft: {x,y}, ...} to array [tl, tr, br, bl] for PerspectiveCropper
+                const pointsArray = [
+                    c.topLeft,
+                    c.topRight,
+                    c.bottomRight,
+                    c.bottomLeft
+                ];
+                setAiDetectedPoints(pointsArray);
+                // Sakla ki sonra tekrar AI çağırmayalım
+                setPreFetchedAiData(response.data);
+                showNotification('AI kart sınırlarını tespit etti.', 'success');
+            }
+        } catch (err) {
+            console.error('AI Detection Error:', err);
+            const errorMsg = err.response?.data?.error || 'AI servisi şu an kullanılamıyor.';
+            showNotification(`${errorMsg} Kart sınırlarını lütfen manuel belirleyin.`, 'warning');
+            // Hata olsa bile kullanıcı manuel devam edebilir
+        } finally {
+            setIsDetecting(false);
+        }
+    };
+
+    const onSelectFile = async (e, side) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setSrc(url);
             setActiveSide(side);
-            const reader = new FileReader();
-            reader.addEventListener('load', () => setSrc(reader.result.toString() || ''));
-            reader.readAsDataURL(e.target.files[0]);
-            e.target.value = null;
+            setAiDetectedPoints(null);
+            setPreFetchedAiData(null);
+
+            if (user?.aiOcrEnabled) {
+                await detectAiBoundary(file);
+            }
+            e.target.value = null; // Clear the input so the same file can be selected again
         }
     };
 
@@ -180,19 +226,37 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const performOCR = async (fileBlob) => {
         setOcrLoading(true);
         try {
-            // Eğer AI OCR aktifse backend'e gönder
+            // Eğer AI OCR aktifse
             if (user?.aiOcrEnabled) {
-                const formDataAi = new FormData();
-                formDataAi.append('image', fileBlob, 'card.jpg');
+                try {
+                    // Eğer veriler önceden başarıyla çekildiyse onları kullan
+                    if (preFetchedAiData) {
+                        setOcrResults(preFetchedAiData);
+                        setShowOcrConfirm(true);
+                        showNotification('AI tarama sonuçları kullanıldı.', 'success');
+                        setOcrLoading(false);
+                        return;
+                    }
 
-                const response = await api.post('/api/cards/analyze-ai', formDataAi, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
-                });
+                    // Yoksa backend'e tekrar gönder (fallback)
+                    const formDataAi = new FormData();
+                    formDataAi.append('image', fileBlob, 'card.jpg');
 
-                setOcrResults(response.data);
-                setShowOcrConfirm(true);
-                showNotification('AI ile tarama tamamlandı.', 'success');
-                return;
+                    const response = await api.post('/api/cards/analyze-ai', formDataAi, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+
+                    setOcrResults(response.data);
+                    setShowOcrConfirm(true);
+                    showNotification('AI ile tarama tamamlandı.', 'success');
+                    setOcrLoading(false);
+                    return;
+                } catch (aiErr) {
+                    console.error('AI OCR Hatası, Tesseract\'a dönülüyor:', aiErr);
+                    const msg = aiErr.response?.data?.error || 'AI servisi yanıt vermedi.';
+                    showNotification(`${msg} Yerel OCR (Tesseract) ile devam ediliyor...`, 'warning');
+                    // Başarısız olursa alt satıra (Tesseract) devam et
+                }
             }
 
             const blobUrl = URL.createObjectURL(fileBlob);
@@ -282,6 +346,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
         } catch (err) {
             console.error('OCR Hatası:', err);
+            const errorMsg = err.response?.data?.error || 'OCR işlemi sırasında bir hata oluştu.';
+            showNotification(errorMsg, 'error');
         } finally {
             setOcrLoading(false);
         }
@@ -369,14 +435,37 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     padding: '20px',
                     borderRadius: '16px',
-                    textAlign: 'center'
+                    textAlign: 'center',
+                    position: 'relative'
                 }}>
                     <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>Perspektif Düzeltme ({activeSide === 'front' ? 'Ön Yüz' : 'Arka Yüz'})</h4>
                     <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen kartvizitin 4 köşesini işaretleyin.</p>
 
+                    {isDetecting && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '60px',
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0,0,0,0.5)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 100,
+                            borderRadius: '16px'
+                        }}>
+                            <div className="spinner" style={{ marginBottom: '10px' }}></div>
+                            <p style={{ color: 'white', fontWeight: 'bold' }}>AI Kart Sınırlarını Tespit Ediyor...</p>
+                        </div>
+                    )}
+
                     <PerspectiveCropper
+                        key={src}
                         src={src}
                         onCropComplete={handleCropComplete}
+                        initialPoints={aiDetectedPoints}
                     />
                 </div>
             )}

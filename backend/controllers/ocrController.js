@@ -2,8 +2,9 @@ const axios = require('axios');
 const fs = require('fs');
 const { decrypt } = require('../utils/encryption');
 
-const PROMPT = `Aşağıdaki kartvizit görüntüsünden bilgileri ayıkla ve SADECE JSON formatında döndür. 
-JSON şu alanları içermelidir:
+const PROMPT = `Aşağıdaki kartvizit görüntüsünden bilgileri ayıkla ve ayıklanan bilgileri + kartın 4 köşesinin (köşe koordinatları) koordinatlarını SADECE JSON formatında döndür.
+
+JSON formatı şu şekilde olmalıdır:
 {
   "firstName": "Ad",
   "lastName": "Soyad",
@@ -15,9 +16,20 @@ JSON şu alanları içermelidir:
   "city": "Şehir",
   "country": "Ülke",
   "website": "Web Sitesi",
-  "ocrText": "Kartın üzerindeki tüm ham metin"
+  "ocrText": "Tüm metin",
+  "corners": {
+    "topLeft": {"x": 0-100, "y": 0-100},
+    "topRight": {"x": 0-100, "y": 0-100},
+    "bottomRight": {"x": 0-100, "y": 0-100},
+    "bottomLeft": {"x": 0-100, "y": 0-100}
+  }
 }
-Eğer bir bilgi bulunamazsa boş string bırak. Not: Ad ve Soyad haricindeki alanlar opsiyoneldir. Dil Türkçe'dir.`;
+
+NOTLAR:
+1. "corners" alanında, kartın gerçek köşelerini (kırpılacak alan) resmin genişlik ve yüksekliğine oranla %0-100 arasında tahmin et.
+2. Eğer bilgi bulunamazsa boş string bırak. 
+3. Dil Türkçe'dir.
+4. Yanıt SADECE geçerli bir JSON objesi olmalıdır.`;
 
 const analyzeWithAI = async (req, res) => {
     try {
@@ -50,8 +62,25 @@ const analyzeWithAI = async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        console.error('AI OCR Error:', error.response?.data || error.message);
-        res.status(500).json({ error: 'AI analizi sırasında bir hata oluştu: ' + (error.response?.data?.error?.message || error.message) });
+        console.error('AI OCR Error Details:', error.response?.data || error.message);
+
+        let errorMessage = 'AI analizi sırasında bir hata oluştu.';
+        const apiError = error.response?.data?.error;
+
+        if (error.response?.status === 429 || (apiError && (apiError.code === 'insufficient_quota' || apiError.type === 'insufficient_quota'))) {
+            errorMessage = 'AI Sağlayıcı Kotası Dolu: Lütfen API kredilerinizi kontrol edin veya farklı bir sağlayıcı deneyin.';
+        } else if (error.response?.status === 401 || error.response?.status === 403) {
+            errorMessage = 'API Anahtarı Geçersiz: Lütfen ayarlar sayfasından API anahtarınızı kontrol edin.';
+        } else if (apiError?.message) {
+            errorMessage = `AI Sağlayıcı Hatası: ${apiError.message}`;
+        } else {
+            errorMessage = `Sistem Hatası: ${error.message}`;
+        }
+
+        res.status(error.response?.status || 500).json({
+            error: errorMessage,
+            providerError: apiError || error.message
+        });
     } finally {
         // Geçici dosyayı sil (isteğe bağlı, multer diskStorage kullanıyorsa)
         if (req.file && req.file.path) {

@@ -7,7 +7,7 @@ const requireAuth = (req, res, next) => {
     }
 
     // API istekleri için 401 döndür
-    if (req.path.startsWith('/api/')) {
+    if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/auth/')) {
         return res.status(401).json({
             error: 'Unauthorized',
             message: 'Bu işlem için oturum açmanız gerekiyor.'

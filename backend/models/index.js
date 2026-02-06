@@ -5,6 +5,7 @@ const Interaction = require('./Interaction');
 const AuditLog = require('./AuditLog');
 const BusinessCardHistory = require('./BusinessCardHistory');
 const SystemSetting = require('./SystemSetting');
+const DashboardTile = require('./DashboardTile');
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -32,6 +33,22 @@ const syncDatabase = async (retries = 5, interval = 5000) => {
                 console.log('Varsayılan admin kullanıcısı oluşturuldu (admin/admin).');
             }
 
+            // Varsayılan Dashboard Tile'larını oluştur
+            const tileCount = await DashboardTile.count();
+            if (tileCount === 0) {
+                const defaultTiles = [
+                    { title: 'Kartvizitler', subtitle: 'Kişi listesini yönet', url: '/contacts', icon: 'FaIdCard', backgroundColor: 'rgba(96, 60, 186, 0.3)', order: 1, isInternal: true },
+                    { title: 'İşlem Kayıtları', subtitle: 'Sistem loglarını incele', url: '/logs', icon: 'FaHistory', backgroundColor: 'rgba(218, 83, 44, 0.3)', order: 2, isInternal: true },
+                    { title: 'İK Portalı', subtitle: 'İzin ve bordro işlemleri', url: '#', icon: 'FaBuilding', backgroundColor: 'rgba(0, 163, 0, 0.3)', order: 3, isInternal: false },
+                    { title: 'Personel Listesi', subtitle: 'Dahili rehber', url: '#', icon: 'FaUsers', backgroundColor: 'rgba(43, 87, 151, 0.3)', order: 4, isInternal: false },
+                    { title: 'Intranet', subtitle: 'Kurumsal duyurular', url: '#', icon: 'FaGlobe', backgroundColor: 'rgba(227, 162, 26, 0.3)', order: 5, isInternal: false },
+                    { title: 'IT Destek', subtitle: 'Talep oluştur', url: '#', icon: 'FaLifeRing', backgroundColor: 'rgba(159, 0, 167, 0.3)', order: 6, isInternal: false },
+                    { title: 'Toplu İçe Aktar', subtitle: 'CSV/XLSX ile toplu veri', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 7, isInternal: true }
+                ];
+                await DashboardTile.bulkCreate(defaultTiles);
+                console.log('Varsayılan dashboard tile\'ları oluşturuldu.');
+            }
+
             return; // Başarılı olursa fonksiyondan çık
         } catch (error) {
             console.error(`Veritabanı senkronizasyon hatası (Deneme ${i + 1}/${retries}):`, error.message);
@@ -55,6 +72,7 @@ module.exports = {
     Interaction,
     AuditLog,
     BusinessCardHistory,
-    SystemSetting
+    SystemSetting,
+    DashboardTile
 };
 

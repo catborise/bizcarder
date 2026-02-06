@@ -21,12 +21,10 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// AI OCR Analiz Endpoint
-router.post('/analyze-ai', upload.single('image'), ocrController.analyzeWithAI);
-
-// Tüm Kartları Getir (Yetkiye Göre Filtrele)
+// İstatistikleri Getir (Dashboard için)
 router.get('/stats', async (req, res) => {
     try {
+        console.log('[DEBUG] Stats endpoint hit');
         const count = await BusinessCard.count();
         res.json({ totalCards: count });
     } catch (error) {
@@ -34,6 +32,9 @@ router.get('/stats', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+// AI OCR Analiz Endpoint
+router.post('/analyze-ai', upload.single('image'), ocrController.analyzeWithAI);
 
 // Kullanıcının Kendi Kartını Getir
 router.get('/personal', async (req, res) => {

@@ -48,12 +48,26 @@ app.use('/uploads', express.static('uploads'));
 // Rotalar
 app.use('/auth', authRoutes);
 
+// Public Dashboard Stats
+app.get('/api/cards/stats', async (req, res) => {
+    try {
+        const { BusinessCard } = require('./models');
+        const count = await BusinessCard.count({ where: { deletedAt: null } });
+        res.json({ totalCards: count });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Public Dashboard Tiles
+app.use('/api/db-tiles', require('./routes/dashboardTiles'));
+
 // Korumalı rotalar - Oturum açmış kullanıcılar gereklidir
 app.use('/api/cards', requireAuth, require('./routes/cards'));
 app.use('/api/interactions', requireAuth, require('./routes/interactions'));
-app.use('/api/logs', requireAuth, require('./routes/logs')); // Admin kontrolü route içinde yapılabilir
-app.use('/api/users', requireAuth, requireAdmin, require('./routes/users')); // Sadece Admin
-app.use('/api/settings', requireAuth, requireAdmin, require('./routes/settings')); // Sadece Admin
+app.use('/api/logs', requireAuth, require('./routes/logs'));
+app.use('/api/users', requireAuth, requireAdmin, require('./routes/users'));
+app.use('/api/settings', requireAuth, requireAdmin, require('./routes/settings'));
 
 app.get('/', (req, res) => {
     res.json({ message: 'CRM Backend API Çalışıyor!' });

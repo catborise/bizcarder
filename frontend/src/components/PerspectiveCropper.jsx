@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { detectCard } from '../utils/rectDetector';
 
-const PerspectiveCropper = ({ src, onCropComplete }) => {
+const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
     const containerRef = useRef(null);
     const imgRef = useRef(null);
     const magnifierCanvasRef = useRef(null);
@@ -45,6 +45,15 @@ const PerspectiveCropper = ({ src, onCropComplete }) => {
 
             setImgSize({ width, height });
 
+            // AI tarafından belirlenmiş noktalar varsa onları kullan
+            if (initialPoints && Array.isArray(initialPoints) && initialPoints.length === 4) {
+                setPoints(initialPoints.map(p => ({
+                    x: p.x * (width / 100), // AI 0-100 arası verir
+                    y: p.y * (height / 100)
+                })));
+                return;
+            }
+
             try {
                 const detectedNaturalPoints = detectCard(imgRef.current);
 
@@ -58,10 +67,17 @@ const PerspectiveCropper = ({ src, onCropComplete }) => {
 
                 setPoints(displayPoints);
             } catch (err) {
-                // Silently fallback to default dots on error
+                // Varsayılan noktalar
+                const padding = 50;
+                setPoints([
+                    { x: padding, y: padding },
+                    { x: width - padding, y: padding },
+                    { x: width - padding, y: height - padding },
+                    { x: padding, y: height - padding }
+                ]);
             }
         }, 100);
-    }, []);
+    }, [initialPoints]);
 
     useEffect(() => {
         if (imgRef.current && imgRef.current.complete) {

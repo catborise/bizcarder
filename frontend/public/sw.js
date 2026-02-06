@@ -57,6 +57,11 @@ self.addEventListener('fetch', event => {
                 return cachedResponse;
             }
 
+            // Exclude Vite dev server HMR and dynamic modules from secondary cache
+            if (event.request.url.includes('?t=') || event.request.url.includes('?v=')) {
+                return fetch(event.request);
+            }
+
             return fetch(event.request).then(networkResponse => {
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                     return networkResponse;
@@ -64,6 +69,10 @@ self.addEventListener('fetch', event => {
                 const responseToCache = networkResponse.clone();
                 caches.open(STATIC_CACHE).then(cache => cache.put(event.request, responseToCache));
                 return networkResponse;
+            }).catch(error => {
+                // Return default response or just let it fail naturally without "Uncaught" error
+                console.warn('[SW] Fetch failed for:', event.request.url, error.message);
+                throw error; // Re-throw so the browser handles it (e.g. shows offline page)
             });
         })
     );
