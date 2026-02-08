@@ -52,6 +52,31 @@ router.get('/personal', async (req, res) => {
     }
 });
 
+// Mükerrer Kayıt Kontrolü
+router.get('/check-duplicate', async (req, res) => {
+    try {
+        const { firstName, lastName } = req.query;
+        if (!firstName || !lastName) {
+            return res.json(null);
+        }
+
+        const { Op } = require('sequelize');
+        const existingCard = await BusinessCard.findOne({
+            where: {
+                firstName: { [Op.iLike]: firstName.trim() },
+                lastName: { [Op.iLike]: lastName.trim() },
+                deletedAt: null
+            },
+            include: [{ model: User, as: 'owner', attributes: ['displayName'] }]
+        });
+
+        res.json(existingCard);
+    } catch (error) {
+        console.error('Duplicate check error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Helper: Sorgu Oluşturucu
 const buildCardsQuery = (req) => {
     const { Op } = require('sequelize');

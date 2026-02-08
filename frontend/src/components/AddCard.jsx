@@ -84,6 +84,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [ocrResults, setOcrResults] = useState(null); // Geçici OCR sonuçları
     const [showOcrConfirm, setShowOcrConfirm] = useState(false); // Onay ekranı kontrolü
 
+    const [duplicateCard, setDuplicateCard] = useState(null);
+    const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
+    const [ignoreDuplicate, setIgnoreDuplicate] = useState(false);
+
     // Düzenleme Modu: Verileri Yükle
     useEffect(() => {
         if (activeCard) {
@@ -353,12 +357,29 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e, forceAdd = false) => {
+        if (e) e.preventDefault();
 
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
             showNotification('Lütfen Ad ve Soyad alanlarını doldurunuz.', 'error');
             return;
+        }
+
+        // Mükerrer Kontrolü (Sadece yeni kart eklerken ve henüz zorlanmadıysa)
+        if (!activeCard && !forceAdd && !ignoreDuplicate) {
+            try {
+                const dupCheck = await api.get(`/api/cards/check-duplicate`, {
+                    params: { firstName: formData.firstName, lastName: formData.lastName }
+                });
+
+                if (dupCheck.data) {
+                    setDuplicateCard(dupCheck.data);
+                    setShowDuplicateAlert(true);
+                    return;
+                }
+            } catch (err) {
+                console.error('Duplicate check failed:', err);
+            }
         }
 
         const data = new FormData();
@@ -913,6 +934,125 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             onClick={() => setShowLogoCrop(false)}
                             style={{ marginTop: '15px', padding: '10px 20px', background: 'transparent', color: 'white', border: '1px solid #444', borderRadius: '12px', cursor: 'pointer' }}
                         >Vazgeç</button>
+                    </div>
+                </div>
+            )}
+            {/* Mükerrer Kayıt Uyarısı */}
+            {showDuplicateAlert && duplicateCard && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.85)',
+                    backdropFilter: 'blur(15px)',
+                    zIndex: 4000,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                }}>
+                    <div style={{
+                        background: 'rgba(30, 30, 35, 0.95)',
+                        border: '1px solid rgba(255, 193, 7, 0.3)',
+                        borderRadius: '24px',
+                        width: '100%',
+                        maxWidth: '500px',
+                        padding: '30px',
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+                        textAlign: 'center'
+                    }}>
+                        <div style={{
+                            width: '70px',
+                            height: '70px',
+                            background: 'rgba(255, 193, 7, 0.15)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 20px',
+                            fontSize: '2rem'
+                        }}>
+                            ⚠️
+                        </div>
+                        <h3 style={{ color: '#ffc107', margin: '0 0 10px 0', fontSize: '1.5rem' }}>Benzer Kayıt Tespit Edildi!</h3>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '25px' }}>
+                            <b>{duplicateCard.firstName} {duplicateCard.lastName}</b> adına zaten bir kayıt mevcut.
+                        </p>
+
+                        <div style={{
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '16px',
+                            padding: '20px',
+                            marginBottom: '30px',
+                            textAlign: 'left',
+                            border: '1px solid rgba(255,255,255,0.1)'
+                        }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '0.9rem' }}>
+                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Şirket:</span>
+                                <span>{duplicateCard.company || '-'}</span>
+                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>E-Posta:</span>
+                                <span>{duplicateCard.email || '-'}</span>
+                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Ekleyen:</span>
+                                <span style={{ color: '#4ade80' }}>@{duplicateCard.owner?.displayName || 'Sistem'}</span>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <button
+                                onClick={() => {
+                                    // Mevcut kartı düzenleme moduna al
+                                    if (onCardAdded) onCardAdded(duplicateCard);
+                                    setShowDuplicateAlert(false);
+                                    showNotification('Düzenleme moduna geçildi.', 'info');
+                                }}
+                                style={{
+                                    padding: '14px',
+                                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: '700',
+                                    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
+                                }}
+                            >
+                                Mevcut Kaydı Güncelle
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setShowDuplicateAlert(false);
+                                    handleSubmit(null, true); // Zorla ekle
+                                }}
+                                style={{
+                                    padding: '12px',
+                                    background: 'rgba(255,255,255,0.08)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255,255,255,0.1)',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                Yine de Yeni Oluştur
+                            </button>
+                            <button
+                                onClick={() => setShowDuplicateAlert(false)}
+                                style={{
+                                    background: 'transparent',
+                                    color: 'rgba(255,255,255,0.5)',
+                                    border: 'none',
+                                    padding: '5px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.85rem',
+                                    marginTop: '5px',
+                                    textDecoration: 'underline'
+                                }}
+                            >
+                                İptal Et
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
