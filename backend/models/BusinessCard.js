@@ -75,6 +75,10 @@ const BusinessCard = sequelize.define('BusinessCard', {
         type: DataTypes.ENUM('public', 'private'),
         defaultValue: 'private'
     },
+    reminderDate: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     deletedAt: {
         type: DataTypes.DATE,
         allowNull: true,

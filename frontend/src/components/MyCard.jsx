@@ -3,14 +3,16 @@ import { QRCodeSVG } from 'qrcode.react';
 import api from '../api/axios';
 import { downloadFile } from '../utils/downloadHelper';
 import { useNotification } from '../context/NotificationContext';
-import { FaDownload, FaShareAlt, FaEdit, FaIdCard, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaCircle } from 'react-icons/fa';
+import { FaDownload, FaShareAlt, FaEdit, FaIdCard, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaCircle, FaSearchPlus } from 'react-icons/fa';
 import AddCard from './AddCard';
 import Modal from './Modal';
+import QRCodeOverlay from './QRCodeOverlay';
 
 const MyCard = () => {
     const [personalCard, setPersonalCard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
     const { showNotification } = useNotification();
 
     const fetchPersonalCard = async () => {
@@ -368,9 +370,25 @@ const MyCard = () => {
                                 display: 'inline-block',
                                 marginBottom: '25px',
                                 boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
-                                border: '8px solid white'
-                            }}>
+                                border: '8px solid white',
+                                position: 'relative',
+                                cursor: 'pointer'
+                            }}
+                                onClick={() => setIsQrModalOpen(true)}
+                            >
                                 <QRCodeSVG value={shareUrl} size={180} />
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '10px',
+                                    right: '10px',
+                                    background: 'rgba(0,0,0,0.5)',
+                                    color: 'white',
+                                    padding: '4px',
+                                    borderRadius: '4px',
+                                    fontSize: '0.8rem'
+                                }}>
+                                    <FaSearchPlus />
+                                </div>
                             </div>
                             <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem', lineHeight: '1.5', padding: '0 10px' }}>
                                 Diğer kullanıcılar bu QR kodu taratarak dijital kartvizit bilgilerinize anında ulaşabilir.
@@ -445,6 +463,14 @@ const MyCard = () => {
                     isPersonal={true}
                 />
             </Modal>
+
+            {isQrModalOpen && (
+                <QRCodeOverlay
+                    url={shareUrl}
+                    onClose={() => setIsQrModalOpen(false)}
+                    title={`${personalCard?.firstName} ${personalCard?.lastName}`}
+                />
+            )}
         </div>
     );
 };

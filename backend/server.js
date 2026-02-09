@@ -66,6 +66,7 @@ app.use('/api/db-tiles', require('./routes/dashboardTiles'));
 app.use('/api/cards', requireAuth, require('./routes/cards'));
 app.use('/api/interactions', requireAuth, require('./routes/interactions'));
 app.use('/api/logs', requireAuth, require('./routes/logs'));
+app.use('/api/tags', requireAuth, require('./routes/tags'));
 app.use('/api/users', requireAuth, requireAdmin, require('./routes/users'));
 app.use('/api/settings', requireAuth, requireAdmin, require('./routes/settings'));
 

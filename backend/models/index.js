@@ -6,6 +6,13 @@ const AuditLog = require('./AuditLog');
 const BusinessCardHistory = require('./BusinessCardHistory');
 const SystemSetting = require('./SystemSetting');
 const DashboardTile = require('./DashboardTile');
+const Tag = require('./Tag');
+const BusinessCardTag = require('./BusinessCardTag');
+
+// İlişkiler (Relationships)
+BusinessCard.belongsToMany(Tag, { through: BusinessCardTag, foreignKey: 'cardId', as: 'tags' });
+Tag.belongsToMany(BusinessCard, { through: BusinessCardTag, foreignKey: 'tagId', as: 'cards' });
+Tag.belongsTo(User, { as: 'owner', foreignKey: 'ownerId' });
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -49,6 +56,20 @@ const syncDatabase = async (retries = 5, interval = 5000) => {
                 console.log('Varsayılan dashboard tile\'ları oluşturuldu.');
             }
 
+            // Varsayılan Etiketleri oluştur
+            const tagCount = await Tag.count();
+            if (tagCount === 0) {
+                const defaultTags = [
+                    { name: 'Müşteri', color: '#4ade80' },
+                    { name: 'Tedarikçi', color: '#3b82f6' },
+                    { name: 'Potansiyel', color: '#fbbf24' },
+                    { name: 'Sıcak Satış', color: '#f87171' },
+                    { name: 'Fuar/Etkinlik', color: '#a78bfa' }
+                ];
+                await Tag.bulkCreate(defaultTags);
+                console.log('Varsayılan etiketler oluşturuldu.');
+            }
+
             return; // Başarılı olursa fonksiyondan çık
         } catch (error) {
             console.error(`Veritabanı senkronizasyon hatası (Deneme ${i + 1}/${retries}):`, error.message);
@@ -73,6 +94,8 @@ module.exports = {
     AuditLog,
     BusinessCardHistory,
     SystemSetting,
-    DashboardTile
+    DashboardTile,
+    Tag,
+    BusinessCardTag
 };
 

@@ -1,8 +1,9 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { BusinessCard, User, BusinessCardHistory } = require('../models');
+const { BusinessCard, User, BusinessCardHistory, Tag } = require('../models');
 const { logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
@@ -84,6 +85,11 @@ const buildCardsQuery = (req) => {
         deletedAt: null
     };
 
+    // Filtreleme: Sadece Hatırlırıcalar
+    if (req.query.remindersOnly === 'true') {
+        whereClause.reminderDate = { [Op.ne]: null };
+    }
+
     if (req.user && req.user.role !== 'admin') {
         whereClause[Op.or] = [
             { ownerId: req.user.id },
@@ -114,7 +120,10 @@ router.get('/', async (req, res) => {
         const whereClause = buildCardsQuery(req);
         const cards = await BusinessCard.findAll({
             where: whereClause,
-            include: [{ model: User, as: 'owner', attributes: ['displayName', 'email'] }],
+            include: [
+                { model: User, as: 'owner', attributes: ['displayName', 'email'] },
+                { model: Tag, as: 'tags', through: { attributes: [] } }
+            ],
             order: [['createdAt', 'DESC']]
         });
         res.json(cards);
@@ -231,11 +240,7 @@ router.get('/export/pdf', async (req, res) => {
         });
 
         // Başlık
-        doc.font('Roboto-Bold').fontSize(18).text('Kartvizit Listesi (Özizleme)', { align: 'center' });
-        doc.moveDown();
-
-        // Debug Text for Font Verification
-        doc.font('Roboto-Regular').fontSize(12).text('Test Karakterleri: ÇçĞğIıİiÖöŞşÜü', { align: 'center' });
+        doc.font('Roboto-Bold').fontSize(18).text('Kartvizit Listesi', { align: 'center' });
         doc.moveDown();
 
         // Tablo Verisi
@@ -277,7 +282,7 @@ const uploadFields = upload.fields([
 
 router.post('/', uploadFields, async (req, res) => {
     try {
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility } = req.body;
+        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
 
         const frontImageUrl = req.files['frontImage'] ? `/uploads/${req.files['frontImage'][0].filename}` : null;
         const backImageUrl = req.files['backImage'] ? `/uploads/${req.files['backImage'][0].filename}` : null;
@@ -318,10 +323,17 @@ router.post('/', uploadFields, async (req, res) => {
             notes,
             visibility,
             isPersonal: req.body.isPersonal === 'true',
+            reminderDate: reminderDate || null,
             ownerId: req.user.id // Kart sahibini kaydet
         };
 
         const newCard = await BusinessCard.create(cleanData);
+
+        // Etiket Eşleştirme
+        if (tags) {
+            const tagIds = Array.isArray(tags) ? tags : JSON.parse(tags);
+            await newCard.setTags(tagIds);
+        }
 
         // LOG: Başarılı Ekleme
         await logAction({
@@ -358,7 +370,7 @@ router.put('/:id', uploadFields, async (req, res) => {
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
         }
 
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility } = req.body;
+        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
 
         // Resim güncelleme varsa
         const frontImageUrl = req.files['frontImage'] ? `/uploads/${req.files['frontImage'][0].filename}` : card.frontImageUrl;
@@ -390,8 +402,15 @@ router.put('/:id', uploadFields, async (req, res) => {
             ocrText: ocrText || card.ocrText,
             notes: notes || card.notes,
             visibility: visibility || card.visibility,
+            reminderDate: reminderDate !== undefined ? (reminderDate || null) : card.reminderDate,
             isPersonal: req.body.isPersonal !== undefined ? (req.body.isPersonal === 'true') : card.isPersonal
         });
+
+        // Etiket Güncelleme
+        if (tags) {
+            const tagIds = Array.isArray(tags) ? tags : JSON.parse(tags);
+            await card.setTags(tagIds);
+        }
 
         // LOG: Güncelleme
         await logAction({

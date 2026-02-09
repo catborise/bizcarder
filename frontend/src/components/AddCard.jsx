@@ -78,8 +78,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         website: '',
         ocrText: '',
         notes: '',
-        visibility: 'private'
+        visibility: 'private',
+        reminderDate: '',
+        tags: []
     });
+
+    const [availableTags, setAvailableTags] = useState([]);
+    const [currentStep, setCurrentStep] = useState(1); // Wizard step: 1 or 2
 
     const [ocrResults, setOcrResults] = useState(null); // Geçici OCR sonuçları
     const [showOcrConfirm, setShowOcrConfirm] = useState(false); // Onay ekranı kontrolü
@@ -104,19 +109,65 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 website: activeCard.website || '',
                 ocrText: activeCard.ocrText || '',
                 notes: activeCard.notes || '',
-                visibility: activeCard.visibility || 'private'
+                visibility: activeCard.visibility || 'private',
+                reminderDate: activeCard.reminderDate ? new Date(activeCard.reminderDate).toISOString().split('T')[0] : '',
+                tags: activeCard.tags ? activeCard.tags.map(t => t.id) : []
             });
             // Var olan resimleri göster
             if (activeCard.frontImageUrl) setFrontPreview(`http://localhost:5000${activeCard.frontImageUrl}`);
             if (activeCard.backImageUrl) setBackPreview(`http://localhost:5000${activeCard.backImageUrl}`);
             if (activeCard.logoUrl) setLogoPreview(`http://localhost:5000${activeCard.logoUrl}`);
         }
+
+        fetchTags();
     }, [activeCard]);
+
+    const fetchTags = async () => {
+        try {
+            const res = await api.get('/api/tags');
+            setAvailableTags(res.data);
+        } catch (err) {
+            console.error('Error fetching tags:', err);
+        }
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
+
+    // Wizard Step Navigation
+    const validateStep1 = () => {
+        if (!formData.firstName.trim() || !formData.lastName.trim()) {
+            showNotification('Ad ve Soyad alanları zorunludur.', 'error');
+            return false;
+        }
+        if (!formData.email.trim() && !formData.phone.trim()) {
+            showNotification('E-posta veya Telefon alanlarından en az biri doldurulmalıdır.', 'error');
+            return false;
+        }
+        return true;
+    };
+
+    const handleNextStep = (e) => {
+        if (e) e.preventDefault();
+        if (validateStep1()) {
+            setCurrentStep(2);
+        }
+    };
+
+    const handlePrevStep = (e) => {
+        if (e) e.preventDefault();
+        setCurrentStep(1);
+    };
+
+    const handleQuickSave = async (e) => {
+        if (e) e.preventDefault();
+        if (validateStep1()) {
+            await handleSubmit(e, false, true); // forceAdd=false, isQuickSave=true
+        }
+    };
+
 
     // ... (OCR ve Resim Yükleme kodları aynı kalabilir, sadece input onChange eklenmeli)
     // Dosya Seçimi Başlat
@@ -357,8 +408,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
     };
 
-    const handleSubmit = async (e, forceAdd = false) => {
+    const handleSubmit = async (e, forceAdd = false, isQuickSave = false) => {
         if (e) e.preventDefault();
+
+        // Eğer Step 1'deysek ve Quick Save değilse, sadece Next Step'e yönlendir
+        if (currentStep === 1 && !isQuickSave) {
+            handleNextStep(e);
+            return;
+        }
 
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
             showNotification('Lütfen Ad ve Soyad alanlarını doldurunuz.', 'error');
@@ -383,7 +440,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
 
         const data = new FormData();
-        Object.keys(formData).forEach(key => data.append(key, formData[key]));
+        Object.keys(formData).forEach(key => {
+            if (key === 'tags') {
+                data.append(key, JSON.stringify(formData[key]));
+            } else {
+                data.append(key, formData[key]);
+            }
+        });
 
         if (frontBlob) data.append('frontImage', frontBlob, 'front.jpg');
         if (backBlob) data.append('backImage', backBlob, 'back.jpg');
@@ -403,7 +466,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     frontBlob,
                     backBlob,
                     logoBlob,
-                    isPersonal
+                    isPersonal,
+                    tags: formData.tags,
+                    reminderDate: formData.reminderDate
                 };
                 await queueForSync('CREATE_CARD', offlineData);
                 showNotification('İnternet yok: Kart senkronizasyon için sıraya alındı.', 'info');
@@ -626,111 +691,330 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
                 <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                    {/* Native Contact Picker Integration */}
-                    {('contacts' in navigator && 'ContactsManager' in window) && (
-                        <button
-                            type="button"
-                            onClick={async () => {
-                                try {
-                                    const props = ['name', 'email', 'tel'];
-                                    const opts = { multiple: false };
-                                    const contacts = await navigator.contacts.select(props, opts);
-                                    if (contacts.length > 0) {
-                                        const contact = contacts[0];
-                                        const names = contact.name[0]?.split(' ') || [];
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            firstName: names.slice(0, -1).join(' ') || contact.name[0] || '',
-                                            lastName: names[names.length - 1] || '',
-                                            email: contact.email[0] || '',
-                                            phone: contact.tel[0] || ''
-                                        }));
-                                        showNotification('Rehberden bilgiler aktarıldı.', 'success');
-                                    }
-                                } catch (err) {
-                                    console.error('Contact Picker Error:', err);
-                                }
-                            }}
-                            style={{
-                                padding: '10px',
-                                background: 'rgba(59, 130, 246, 0.1)',
-                                border: '1px solid rgba(59, 130, 246, 0.3)',
-                                borderRadius: '12px',
-                                color: '#60a5fa',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px'
-                            }}
-                        >
-                            Rehberden İçe Aktar (Hızlı Doldur)
-                        </button>
-                    )}
-
-                    {/* Temel Bilgiler */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
-                        <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
+                {/* Progress Indicator */}
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                    padding: '20px 0',
+                    marginBottom: '10px'
+                }}>
+                    {/* Step 1 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: currentStep >= 1 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.1)',
+                            border: currentStep >= 1 ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            1
+                        </div>
+                        <span style={{
+                            color: currentStep >= 1 ? 'white' : 'rgba(255,255,255,0.5)',
+                            fontWeight: currentStep === 1 ? '600' : '400',
+                            fontSize: '14px',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            Temel Bilgiler
+                        </span>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                        <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                        <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                    {/* Connector Line */}
+                    <div style={{
+                        width: '60px',
+                        height: '2px',
+                        background: currentStep >= 2 ? 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.2)',
+                        transition: 'all 0.3s ease'
+                    }}></div>
+
+                    {/* Step 2 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            background: currentStep >= 2 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.1)',
+                            border: currentStep >= 2 ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: currentStep >= 2 ? 'white' : 'rgba(255,255,255,0.4)',
+                            fontWeight: '700',
+                            fontSize: '14px',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            2
+                        </div>
+                        <span style={{
+                            color: currentStep >= 2 ? 'white' : 'rgba(255,255,255,0.5)',
+                            fontWeight: currentStep === 2 ? '600' : '400',
+                            fontSize: '14px',
+                            transition: 'all 0.3s ease'
+                        }}>
+                            Detaylı Bilgiler
+                        </span>
                     </div>
-
-                    {/* İletişim Bilgileri Grubu */}
-                    <fieldset style={{ border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', padding: '15px', margin: 0, background: 'rgba(255, 255, 255, 0.03)' }}>
-                        <legend style={{ padding: '0 8px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95em', fontWeight: '500' }}>İletişim Bilgileri</legend>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                            <input type="email" name="email" placeholder="E-Posta" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                            <input type="text" name="phone" placeholder="Telefon" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                            <input type="text" name="website" placeholder="Web Sitesi" value={formData.website} onChange={handleInputChange} style={{ ...inputStyle, gridColumn: 'span 2' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                        </div>
-                    </fieldset>
-
-                    {/* Adres Bilgileri Grubu */}
-                    <fieldset style={{ border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', padding: '15px', margin: 0, background: 'rgba(255, 255, 255, 0.03)' }}>
-                        <legend style={{ padding: '0 8px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                                <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <textarea name="notes" rows="3" placeholder="Notlar..." value={formData.notes} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
-
-                    <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
-                        <option value="private" style={{ background: '#2a2a2a', color: 'white' }}>Sadece Ben (Private)</option>
-                        <option value="public" style={{ background: '#2a2a2a', color: 'white' }}>Herkes (Public)</option>
-                    </select>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={ocrLoading}
-                    style={{
-                        padding: '14px 24px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.3)',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        cursor: 'pointer',
-                        fontWeight: '600',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
-                    }}
-                    onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
-                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)'; }}
-                >
-                    {activeCard ? 'Güncelle' : 'Kaydet'}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                    {/* Step 1: Basic Information */}
+                    {currentStep === 1 && (
+                        <>
+                            {/* Native Contact Picker Integration */}
+                            {('contacts' in navigator && 'ContactsManager' in window) && (
+                                <button
+                                    type="button"
+                                    onClick={async () => {
+                                        try {
+                                            const props = ['name', 'email', 'tel'];
+                                            const opts = { multiple: false };
+                                            const contacts = await navigator.contacts.select(props, opts);
+                                            if (contacts.length > 0) {
+                                                const contact = contacts[0];
+                                                const names = contact.name[0]?.split(' ') || [];
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    firstName: names.slice(0, -1).join(' ') || contact.name[0] || '',
+                                                    lastName: names[names.length - 1] || '',
+                                                    email: contact.email[0] || '',
+                                                    phone: contact.tel[0] || ''
+                                                }));
+                                                showNotification('Rehberden bilgiler aktarıldı.', 'success');
+                                            }
+                                        } catch (err) {
+                                            console.error('Contact Picker Error:', err);
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '10px',
+                                        background: 'rgba(59, 130, 246, 0.1)',
+                                        border: '1px solid rgba(59, 130, 246, 0.3)',
+                                        borderRadius: '12px',
+                                        color: '#60a5fa',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    Rehberden İçe Aktar (Hızlı Doldur)
+                                </button>
+                            )}
+
+                            {/* Temel Bilgiler */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
+                                <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                            </div>
+
+                            {/* İletişim Bilgileri */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <input type="email" name="email" placeholder="E-Posta *" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                <input type="text" name="phone" placeholder="Telefon *" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                            </div>
+                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: '-10px 0 0 0', fontStyle: 'italic' }}>
+                                * E-posta veya Telefon alanlarından en az biri doldurulmalıdır
+                            </p>
+                        </>
+                    )}
+
+                    {/* Step 2: Detailed Information */}
+                    {currentStep === 2 && (
+                        <>
+                            {/* Web Sitesi */}
+                            <input type="text" name="website" placeholder="Web Sitesi" value={formData.website} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+
+                            {/* Adres Bilgileri Grubu */}
+                            <fieldset style={{ border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', padding: '15px', margin: 0, background: 'rgba(255, 255, 255, 0.03)' }}>
+                                <legend style={{ padding: '0 8px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                        <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                        <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                    </div>
+                                </div>
+                            </fieldset>
+
+                            {/* CRM Extras: Tags & Reminders */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>Etiketler</label>
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        padding: '10px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '12px',
+                                        border: '1px solid rgba(255,255,255,0.1)'
+                                    }}>
+                                        {availableTags && availableTags.length > 0 ? availableTags.map(tag => (
+                                            <button
+                                                key={tag.id}
+                                                type="button"
+                                                onClick={() => {
+                                                    const newTags = formData.tags.includes(tag.id)
+                                                        ? formData.tags.filter(id => id !== tag.id)
+                                                        : [...formData.tags, tag.id];
+                                                    setFormData(prev => ({ ...prev, tags: newTags }));
+                                                }}
+                                                style={{
+                                                    padding: '4px 12px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '12px',
+                                                    fontWeight: '600',
+                                                    cursor: 'pointer',
+                                                    border: '1px solid',
+                                                    borderColor: formData.tags.includes(tag.id) ? tag.color : 'rgba(255,255,255,0.1)',
+                                                    background: formData.tags.includes(tag.id) ? tag.color : 'transparent',
+                                                    color: formData.tags.includes(tag.id) ? 'white' : 'rgba(255,255,255,0.6)',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {tag.name}
+                                            </button>
+                                        )) : <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Etiket yükleniyor...</span>}
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>Takip Hatırlatıcısı</label>
+                                    <input
+                                        type="date"
+                                        name="reminderDate"
+                                        value={formData.reminderDate}
+                                        onChange={handleInputChange}
+                                        style={inputStyle}
+                                    />
+                                </div>
+                            </div>
+
+                            <textarea name="notes" rows="3" placeholder="Notlar..." value={formData.notes} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
+
+                            <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
+                                <option value="private" style={{ background: '#2a2a2a', color: 'white' }}>Sadece Ben (Private)</option>
+                                <option value="public" style={{ background: '#2a2a2a', color: 'white' }}>Herkes (Public)</option>
+                            </select>
+                        </>
+                    )}
+                </div>
+
+
+                {/* Wizard Navigation Buttons */}
+                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                    {currentStep === 1 ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={handleQuickSave}
+                                disabled={ocrLoading}
+                                style={{
+                                    padding: '14px 24px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+                                }}
+                                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
+                                onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)'; }}
+                            >
+                                Kaydet
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleNextStep}
+                                disabled={ocrLoading}
+                                style={{
+                                    padding: '14px 24px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
+                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
+                            >
+                                İleri: Detaylar →
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={handlePrevStep}
+                                style={{
+                                    padding: '14px 24px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
+                                onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)'; }}
+                            >
+                                ← Geri
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={ocrLoading}
+                                style={{
+                                    padding: '14px 24px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
+                                }}
+                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
+                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
+                            >
+                                {activeCard ? 'Güncelle' : 'Kaydet'}
+                            </button>
+                        </>
+                    )}
+                </div>
             </form>
 
             {/* OCR Onay Modalı / Overlay */}
@@ -1022,8 +1306,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </button>
                             <button
                                 onClick={() => {
+                                    setIgnoreDuplicate(true);
                                     setShowDuplicateAlert(false);
-                                    handleSubmit(null, true); // Zorla ekle
+                                    // If on Step 1, proceed to Step 2
+                                    if (currentStep === 1) {
+                                        setCurrentStep(2);
+                                    }
+                                    // If on Step 2 or during Quick Save, the form will submit normally
                                 }}
                                 style={{
                                     padding: '12px',

@@ -23,7 +23,7 @@ import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
 import MyCard from './components/MyCard';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes } from 'react-icons/fa';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes, FaCalendarCheck } from 'react-icons/fa';
 
 // Sayfa Yer Tutucuları
 const Contacts = () => {
@@ -436,7 +436,42 @@ const Contacts = () => {
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
+                                    {/* Tags Display */}
+                                    {card.tags && card.tags.length > 0 && (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '15px' }}>
+                                            {card.tags.map(tag => (
+                                                <span key={tag.id} style={{
+                                                    padding: '2px 10px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600',
+                                                    background: tag.color || '#3b82f6',
+                                                    color: 'white',
+                                                    border: '1px solid rgba(255,255,255,0.1)'
+                                                }}>
+                                                    {tag.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', fontSize: '0.9em' }}>
+                                        {card.reminderDate && (
+                                            <div style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                padding: '6px 10px',
+                                                background: 'rgba(251, 191, 36, 0.1)',
+                                                borderRadius: '8px',
+                                                border: '1px solid rgba(251, 191, 36, 0.2)',
+                                                marginBottom: '5px'
+                                            }}>
+                                                <FaCalendarCheck color="#fbbf24" />
+                                                <strong style={{ color: '#fbbf24' }}>Hatırlatıcı:</strong>
+                                                <span style={{ color: '#fbbf24' }}>{new Date(card.reminderDate).toLocaleDateString('tr-TR')}</span>
+                                            </div>
+                                        )}
                                         {card.email && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <FaEnvelope color="#ffc107" /> <strong style={{ color: '#bbb' }}>E-Posta:</strong> <span style={{ color: '#ddd' }}>{card.email}</span>
@@ -762,6 +797,10 @@ const AppContent = () => {
                 if (data.frontBlob) formDataToSync.append('frontImage', data.frontBlob, 'front.jpg');
                 if (data.backBlob) formDataToSync.append('backImage', data.backBlob, 'back.jpg');
                 if (data.logoBlob) formDataToSync.append('logoImage', data.logoBlob, 'logo.jpg');
+
+                // Additional CRM Fields
+                if (data.tags) formDataToSync.append('tags', JSON.stringify(data.tags));
+                if (data.reminderDate) formDataToSync.append('reminderDate', data.reminderDate);
 
                 try {
                     await api.post('/api/cards', formDataToSync, {
