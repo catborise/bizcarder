@@ -44,6 +44,7 @@ function canvasPreview(image, canvas, crop) {
 const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
+
     // Seçilen Ham Dosyalar
     const [src, setSrc] = useState(null); // Şu an kırpılmakta olan resim kaynağı
     const [activeSide, setActiveSide] = useState(null); // 'front' veya 'back'
