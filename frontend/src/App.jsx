@@ -23,13 +23,15 @@ import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
 import MyCard from './components/MyCard';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes, FaCalendarCheck } from 'react-icons/fa';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes, FaCalendarCheck, FaEdit, FaSave, FaCopy } from 'react-icons/fa';
 
 // Sayfa Yer Tutucuları
 const Contacts = () => {
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
     const [expandedNotesId, setExpandedNotesId] = useState(null);
+    const [editingNoteId, setEditingNoteId] = useState(null); // Şebeke içi not düzenleme
+    const [editingNoteText, setEditingNoteText] = useState('');
 
     // Arama ve Sıralama State'leri
     const [searchTerm, setSearchTerm] = useState('');
@@ -137,6 +139,17 @@ const Contacts = () => {
         fetchCards();
         setIsModalOpen(false);
         setEditingCard(null);
+    };
+
+    const handleQuickNoteUpdate = async (cardId) => {
+        try {
+            await api.put(`/api/cards/${cardId}`, { notes: editingNoteText });
+            showNotification('Not güncellendi.', 'success');
+            setEditingNoteId(null);
+            fetchCards(); // Listeyi yenile
+        } catch (error) {
+            showNotification('Not güncellenemedi: ' + (error.response?.data?.error || error.message), 'error');
+        }
     };
 
     if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: '#aaa', fontSize: '18px' }}>Yükleniyor...</div>;
@@ -682,11 +695,137 @@ const Contacts = () => {
                                 </div>
                             </div>
 
-                            {/* Notlar Dropdown */}
+                            {/* Notlar Dropdown - Premium Glassmorphism */}
                             {expandedNotesId === card.id && (
-                                <div style={{ marginTop: '15px', padding: '15px', backgroundColor: '#2a2a2a', borderRadius: '5px', borderLeft: '4px solid #ffc107' }}>
-                                    <strong style={{ display: 'block', marginBottom: '5px', color: '#ffc107' }}>Kart Notları:</strong>
-                                    <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: '#ddd' }}>{card.notes || 'Not eklenmemiş.'}</p>
+                                <div style={{
+                                    marginTop: '20px',
+                                    padding: '20px',
+                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    backdropFilter: 'blur(15px)',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                    position: 'relative',
+                                    overflow: 'hidden'
+                                }}>
+                                    {/* Glassmorphic Background Accent */}
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        left: 0,
+                                        width: '4px',
+                                        height: '100%',
+                                        background: 'linear-gradient(to bottom, #ffc107, #ff6b6b)',
+                                        boxShadow: '0 0 10px rgba(255, 193, 7, 0.5)'
+                                    }}></div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <FaStickyNote color="#ffc107" size={18} />
+                                            <strong style={{ color: 'white', fontSize: '1.1rem', letterSpacing: '0.03em' }}>Kart Notları</strong>
+                                        </div>
+
+                                        <div style={{ display: 'flex', gap: '10px' }}>
+                                            {!editingNoteId ? (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(card.notes || '');
+                                                            showNotification('Not panoya kopyalandı.', 'success');
+                                                        }}
+                                                        style={{
+                                                            background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                                                        }}
+                                                        title="Kopyala"
+                                                    >
+                                                        <FaCopy /> Kopyala
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingNoteId(card.id);
+                                                            setEditingNoteText(card.notes || '');
+                                                        }}
+                                                        style={{
+                                                            background: 'rgba(255, 193, 7, 0.1)',
+                                                            color: '#ffc107',
+                                                            border: '1px solid rgba(255, 193, 7, 0.3)',
+                                                            padding: '5px 12px',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '5px',
+                                                            fontSize: '0.85rem'
+                                                        }}
+                                                    >
+                                                        <FaEdit /> Düzenle
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <div style={{ display: 'flex', gap: '5px' }}>
+                                                    <button
+                                                        onClick={() => setEditingNoteId(null)}
+                                                        style={{
+                                                            background: 'rgba(255, 255, 255, 0.1)', color: 'white', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        İptal
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleQuickNoteUpdate(card.id)}
+                                                        style={{
+                                                            background: '#28a745', color: 'white', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                                                        }}
+                                                    >
+                                                        <FaSave /> Kaydet
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {editingNoteId === card.id ? (
+                                        <textarea
+                                            value={editingNoteText}
+                                            onChange={(e) => setEditingNoteText(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                minHeight: '120px',
+                                                background: 'rgba(0,0,0,0.3)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                borderRadius: '8px',
+                                                color: 'white',
+                                                padding: '12px',
+                                                fontSize: '0.95rem',
+                                                fontFamily: 'inherit',
+                                                resize: 'vertical',
+                                                outline: 'none'
+                                            }}
+                                            autoFocus
+                                        />
+                                    ) : (
+                                        <p style={{
+                                            margin: 0,
+                                            whiteSpace: 'pre-wrap',
+                                            color: 'rgba(255, 255, 255, 0.85)',
+                                            fontSize: '1rem',
+                                            lineHeight: '1.6',
+                                            padding: '5px'
+                                        }}>
+                                            {card.notes || <span style={{ color: '#666', fontStyle: 'italic' }}>Not eklenmemiş. "Düzenle" diyerek hemen ekleyebilirsiniz.</span>}
+                                        </p>
+                                    )}
+
+                                    {/* Background Watermark Icon */}
+                                    <FaStickyNote style={{
+                                        position: 'absolute',
+                                        right: '-10px',
+                                        bottom: '-10px',
+                                        fontSize: '80px',
+                                        color: 'rgba(255, 255, 255, 0.03)',
+                                        transform: 'rotate(-15deg)',
+                                        pointerEvents: 'none'
+                                    }} />
                                 </div>
                             )}
 

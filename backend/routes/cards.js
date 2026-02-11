@@ -34,6 +34,47 @@ router.get('/stats', async (req, res) => {
     }
 });
 
+// Tarihi Gelmiş Hatırlatıcıları Getir
+router.get('/due-reminders', async (req, res) => {
+    try {
+        const { Op } = require('sequelize');
+        const now = new Date();
+        // Günün sonuna ayarla (Günün herhangi bir saatindeki hatırlatıcıları yakalamak için)
+        const endOfDay = new Date(now);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const whereClause = {
+            deletedAt: null,
+            reminderDate: {
+                [Op.between]: [new Date(0), endOfDay]
+            }
+        };
+
+        // Yetki kontrolü
+        if (req.user && req.user.role !== 'admin') {
+            whereClause[Op.or] = [
+                { ownerId: req.user.id },
+                { visibility: 'public' }
+            ];
+        }
+
+
+        const cards = await BusinessCard.findAll({
+            where: whereClause,
+            include: [
+                { model: User, as: 'owner', attributes: ['displayName'] }
+            ],
+            order: [['reminderDate', 'ASC']]
+        });
+
+        console.log(`[DEBUG] Found ${cards.length} reminders.`);
+        res.json(cards);
+    } catch (error) {
+        console.error("[ERROR] due-reminders error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // AI OCR Analiz Endpoint
 router.post('/analyze-ai', upload.single('image'), ocrController.analyzeWithAI);
 
@@ -372,10 +413,10 @@ router.put('/:id', uploadFields, async (req, res) => {
 
         const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
 
-        // Resim güncelleme varsa
-        const frontImageUrl = req.files['frontImage'] ? `/uploads/${req.files['frontImage'][0].filename}` : card.frontImageUrl;
-        const backImageUrl = req.files['backImage'] ? `/uploads/${req.files['backImage'][0].filename}` : card.backImageUrl;
-        const logoUrl = req.files['logoImage'] ? `/uploads/${req.files['logoImage'][0].filename}` : card.logoUrl;
+        // Resim güncelleme varsa (req.files undefined olabilir - JSON request durumunda)
+        const frontImageUrl = (req.files && req.files['frontImage']) ? `/uploads/${req.files['frontImage'][0].filename}` : card.frontImageUrl;
+        const backImageUrl = (req.files && req.files['backImage']) ? `/uploads/${req.files['backImage'][0].filename}` : card.backImageUrl;
+        const logoUrl = (req.files && req.files['logoImage']) ? `/uploads/${req.files['logoImage'][0].filename}` : card.logoUrl;
 
         // Veri Temizleme ve Güncelleme
         const toTitleCase = (str) => {
@@ -400,7 +441,7 @@ router.put('/:id', uploadFields, async (req, res) => {
             backImageUrl,
             logoUrl,
             ocrText: ocrText || card.ocrText,
-            notes: notes || card.notes,
+            notes: notes !== undefined ? notes : card.notes,
             visibility: visibility || card.visibility,
             reminderDate: reminderDate !== undefined ? (reminderDate || null) : card.reminderDate,
             isPersonal: req.body.isPersonal !== undefined ? (req.body.isPersonal === 'true') : card.isPersonal

@@ -4,6 +4,7 @@ import * as Icons from 'react-icons/fa';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
+import ReminderModal from './ReminderModal';
 
 const hexToRgba = (hex, alpha = 0.3) => {
     let r = 0, g = 0, b = 0;
@@ -60,6 +61,8 @@ const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentTile, setCurrentTile] = useState(null);
+    const [dueReminders, setDueReminders] = useState([]);
+    const [showReminderModal, setShowReminderModal] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         subtitle: '',
@@ -71,18 +74,30 @@ const Dashboard = () => {
     });
 
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const isAdmin = user?.role === 'admin';
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [statsRes, tilesRes] = await Promise.all([
-                api.get('/api/cards/stats'),
-                api.get('/api/db-tiles')
-            ]);
-            setStats(statsRes.data);
-            setTiles(tilesRes.data);
+            const urls = ['/api/cards/stats', '/api/db-tiles'];
+            if (isAuthenticated) {
+                urls.push('/api/cards/due-reminders');
+            }
+
+            const responses = await Promise.all(urls.map(url => api.get(url)));
+
+            setStats(responses[0].data);
+            setTiles(responses[1].data);
+
+            if (isAuthenticated && responses[2]) {
+                setDueReminders(responses[2].data);
+                if (responses[2].data.length > 0) {
+                    setShowReminderModal(true);
+                }
+            } else {
+                setDueReminders([]);
+            }
         } catch (error) {
             console.error("Data fetching error:", error);
         } finally {
@@ -92,7 +107,7 @@ const Dashboard = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [isAuthenticated]);
 
     const handleSaveTile = async (e) => {
         e.preventDefault();
@@ -588,6 +603,15 @@ const Dashboard = () => {
                         </div>
                     </form>
                 </Modal>
+            )}
+
+            {/* Reminder Modal */}
+            {showReminderModal && (
+                <ReminderModal
+                    reminders={dueReminders}
+                    onClose={() => setShowReminderModal(false)}
+                    onRefresh={fetchData}
+                />
             )}
 
             {/* Modal removed as it's now a standalone page */}
