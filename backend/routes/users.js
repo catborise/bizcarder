@@ -52,4 +52,42 @@ router.put('/:id/role', async (req, res) => {
     }
 });
 
+// Admin Tarafından Kullanıcı Şifresi Sıfırlama
+router.put('/:id/password', async (req, res) => {
+    try {
+        // Sadece admin yapabilir (Middleware olmadığı için manuel kontrol - normalde middleware kullanılmalı)
+        if (!req.isAuthenticated() || req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+        }
+
+        const { id } = req.params;
+        const { newPassword } = req.body;
+
+        if (!newPassword) {
+            return res.status(400).json({ error: 'Yeni şifre gereklidir.' });
+        }
+
+        const user = await User.findByPk(id);
+        if (!user) {
+            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+        }
+
+        // Şifreyi güncelle (Model hook'u hashleyecek)
+        user.password = newPassword;
+        await user.save();
+
+        // LOG: Şifre sıfırlama
+        await logAction({
+            action: 'ADMIN_PASSWORD_RESET',
+            details: `Admin ${req.user.username}, ${user.username} kullanıcısının şifresini sıfırladı.`,
+            req
+        });
+
+        res.json({ message: 'Kullanıcı şifresi başarıyla güncellendi.' });
+    } catch (error) {
+        console.error('Admin password reset error:', error);
+        res.status(500).json({ error: 'Şifre sıfırlanırken hata oluştu.' });
+    }
+});
+
 module.exports = router;

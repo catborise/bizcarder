@@ -131,6 +131,42 @@ router.post('/logout', (req, res) => {
     });
 });
 
+// Şifre Değiştirme (Kullanıcı Kendi Şifresini Değiştirir)
+router.put('/change-password', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Oturum açmanız gerekiyor.' });
+    }
+
+    try {
+        const { currentPassword, newPassword } = req.body;
+        const user = await User.findByPk(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+        }
+
+        // Mevcut şifreyi doğrula
+        // Not: Shibboleth kullanıcılarının şifresi olmayabilir, onlara bu işlemi yaptırmamalıyız.
+        if (!user.password) {
+            return res.status(400).json({ error: 'Harici kimlik doğrulama kullanan hesaplar şifre değiştiremez.' });
+        }
+
+        const isValid = await user.validatePassword(currentPassword);
+        if (!isValid) {
+            return res.status(400).json({ error: 'Mevcut şifre hatalı.' });
+        }
+
+        // Yeni şifreyi kaydet (Model hook'u hashleyecek)
+        user.password = newPassword;
+        await user.save();
+
+        res.json({ success: true, message: 'Şifreniz başarıyla değiştirildi.' });
+    } catch (error) {
+        console.error('Password change error:', error);
+        res.status(500).json({ error: 'Şifre değiştirilirken hata oluştu.' });
+    }
+});
+
 const { encrypt, decrypt } = require('../utils/encryption');
 
 // Kullanıcı Bilgisi (Frontend'in oturum kontrolü için)

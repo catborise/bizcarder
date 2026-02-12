@@ -139,62 +139,61 @@ const UserMenu = () => {
 
                             {/* Admin Linkleri */}
                             {user.role === 'admin' && (
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            setShowDropdown(false);
-                                            navigate('/users');
-                                        }}
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px 12px',
-                                            backgroundColor: 'transparent',
-                                            color: '#eee',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontSize: '14px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                            transition: 'all 0.2s ease',
-                                            borderRadius: '8px',
-                                            textAlign: 'left'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                    >
-                                        <FaUsers size={16} color="#aaa" />
-                                        <span>Kullanıcı Yönetimi</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            setShowDropdown(false);
-                                            navigate('/settings');
-                                        }}
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px 12px',
-                                            backgroundColor: 'transparent',
-                                            color: '#eee',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontSize: '14px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                            transition: 'all 0.2s ease',
-                                            borderRadius: '8px',
-                                            textAlign: 'left'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                    >
-                                        <FaCog size={16} color="#aaa" />
-                                        <span>Ayarlar</span>
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => {
+                                        setShowDropdown(false);
+                                        navigate('/users');
+                                    }}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px 12px',
+                                        backgroundColor: 'transparent',
+                                        color: '#eee',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        transition: 'all 0.2s ease',
+                                        borderRadius: '8px',
+                                        textAlign: 'left'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                >
+                                    <FaUsers size={16} color="#aaa" />
+                                    <span>Kullanıcı Yönetimi</span>
+                                </button>
                             )}
+
+                            {/* Ayarlar (Herkes görebilir) */}
+                            <button
+                                onClick={() => {
+                                    setShowDropdown(false);
+                                    navigate('/settings');
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    backgroundColor: 'transparent',
+                                    color: '#eee',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    transition: 'all 0.2s ease',
+                                    borderRadius: '8px',
+                                    textAlign: 'left'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                                <FaCog size={16} color="#aaa" />
+                                <span>Ayarlar</span>
+                            </button>
 
                             <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }}></div>
 

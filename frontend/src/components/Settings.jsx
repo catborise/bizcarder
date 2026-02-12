@@ -3,6 +3,99 @@ import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 
+const PasswordChangeForm = ({ showNotification }) => {
+    const [formData, setFormData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (formData.newPassword !== formData.confirmPassword) {
+            showNotification('Yeni şifreler uyuşmuyor.', 'error');
+            return;
+        }
+        if (formData.newPassword.length < 6) {
+            showNotification('Yeni şifre en az 6 karakter olmalıdır.', 'error');
+            return;
+        }
+
+        try {
+            const res = await api.put('/auth/change-password', {
+                currentPassword: formData.currentPassword,
+                newPassword: formData.newPassword
+            });
+            if (res.data.success) {
+                showNotification(res.data.message, 'success');
+                setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            }
+        } catch (error) {
+            showNotification(error.response?.data?.error || 'Şifre değiştirilemedi.', 'error');
+        }
+    };
+
+    const inputStyle = {
+        width: '100%',
+        padding: '12px',
+        background: 'rgba(0, 0, 0, 0.2)',
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        borderRadius: '8px',
+        color: 'white',
+        fontSize: '1rem',
+        marginTop: '8px'
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <div style={{ marginBottom: '20px' }}>
+                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Mevcut Şifre</label>
+                <input
+                    type="password"
+                    name="currentPassword"
+                    value={formData.currentPassword}
+                    onChange={handleChange}
+                    style={inputStyle}
+                    required
+                />
+            </div>
+            <div style={{ marginBottom: '20px' }}>
+                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Yeni Şifre</label>
+                <input
+                    type="password"
+                    name="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleChange}
+                    style={inputStyle}
+                    required
+                />
+            </div>
+            <div style={{ marginBottom: '30px' }}>
+                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Yeni Şifre (Tekrar)</label>
+                <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    style={inputStyle}
+                    required
+                />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button type="submit" style={{
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)', padding: '10px 25px', borderRadius: '10px',
+                    fontWeight: '600', cursor: 'pointer'
+                }}>Şifreyi Güncelle</button>
+            </div>
+        </form>
+    );
+};
+
 const Settings = () => {
     const { user, checkAuth } = useAuth();
     const { showNotification } = useNotification();
@@ -168,6 +261,20 @@ const Settings = () => {
                 <span style={{ fontSize: '2rem' }}>⚙️</span> Ayarlar
             </h2>
 
+            {/* HESAP AYARLARI (Şifre Değiştirme) */}
+            <div style={cardStyle}>
+                <h3 style={sectionTitleStyle}>
+                    <span style={{ fontSize: '1.5rem' }}>🔐</span> Hesap Ayarları
+                </h3>
+                {user?.shibbolethId ? (
+                    <div style={{ padding: '15px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)', color: '#93c5fd' }}>
+                        <p style={{ margin: 0 }}>Kurumsal (SSO) hesap ile giriş yaptığınız için şifrenizi organizasyonunuzun portalından değiştirmelisiniz.</p>
+                    </div>
+                ) : (
+                    <PasswordChangeForm showNotification={showNotification} />
+                )}
+            </div>
+
             {/* KIŞISEL AI AYARLARI */}
             <div style={cardStyle}>
                 <h3 style={sectionTitleStyle}>
@@ -236,6 +343,7 @@ const Settings = () => {
                     }}>AI Ayarlarını Kaydet</button>
                 </div>
             </div>
+
 
             {/* SISTEM AYARLARI (Admin) */}
             {user?.role === 'admin' && (

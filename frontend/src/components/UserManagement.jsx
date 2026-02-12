@@ -33,6 +33,19 @@ const UserManagement = () => {
         }
     };
 
+    const handlePasswordReset = async (userId, username) => {
+        const newPassword = window.prompt(`${username} kullanıcısı için yeni şifreyi girin:`);
+        if (!newPassword) return;
+
+        try {
+            await api.put(`/api/users/${userId}/password`, { newPassword });
+            alert('Şifre başarıyla güncellendi.');
+        } catch (err) {
+            console.error('Password reset failed:', err);
+            alert('Şifre sıfırlanırken hata oluştu: ' + (err.response?.data?.error || err.message));
+        }
+    };
+
     if (loading) return <div style={{ color: 'white', padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>;
 
     return (
@@ -93,29 +106,55 @@ const UserManagement = () => {
                         {/* Sağ: Aksiyonlar */}
                         <div>
                             {u.id !== currentUser.id && ( // Kendisinin yetkisini alamasın
-                                <button
-                                    onClick={() => handleRoleChange(u.id, u.role === 'admin' ? 'user' : 'admin')}
-                                    style={{
-                                        background: u.role === 'admin' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(40, 167, 69, 0.2)',
-                                        color: u.role === 'admin' ? '#ff6b6b' : '#2ecc71',
-                                        border: `1px solid ${u.role === 'admin' ? 'rgba(220, 53, 69, 0.4)' : 'rgba(40, 167, 69, 0.4)'}`,
-                                        padding: '8px 16px',
-                                        borderRadius: '6px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1.05)';
-                                        e.currentTarget.style.background = u.role === 'admin' ? 'rgba(220, 53, 69, 0.3)' : 'rgba(40, 167, 69, 0.3)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'scale(1)';
-                                        e.currentTarget.style.background = u.role === 'admin' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(40, 167, 69, 0.2)';
-                                    }}
-                                >
-                                    {u.role === 'admin' ? 'Admin Yetkisini Al' : 'Admin Yap'}
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => handleRoleChange(u.id, u.role === 'admin' ? 'user' : 'admin')}
+                                        style={{
+                                            background: u.role === 'admin' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(40, 167, 69, 0.2)',
+                                            color: u.role === 'admin' ? '#ff6b6b' : '#2ecc71',
+                                            border: `1px solid ${u.role === 'admin' ? 'rgba(220, 53, 69, 0.4)' : 'rgba(40, 167, 69, 0.4)'}`,
+                                            padding: '8px 16px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                            e.currentTarget.style.background = u.role === 'admin' ? 'rgba(220, 53, 69, 0.3)' : 'rgba(40, 167, 69, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                            e.currentTarget.style.background = u.role === 'admin' ? 'rgba(220, 53, 69, 0.2)' : 'rgba(40, 167, 69, 0.2)';
+                                        }}
+                                    >
+                                        {u.role === 'admin' ? 'Admin Yetkisini Al' : 'Admin Yap'}
+                                    </button>
+                                    <button
+                                        onClick={() => handlePasswordReset(u.id, u.username)}
+                                        style={{
+                                            marginLeft: '10px',
+                                            background: 'rgba(59, 130, 246, 0.2)',
+                                            color: '#60a5fa',
+                                            border: '1px solid rgba(59, 130, 246, 0.4)',
+                                            padding: '8px 16px',
+                                            borderRadius: '6px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.3)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
+                                        }}
+                                    >
+                                        🔑 Şifre Sıfırla
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
