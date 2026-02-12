@@ -11,13 +11,29 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
+// CORS Configuration
+const allowedOrigins = [
+    'http://localhost',
+    'http://127.0.0.1'
+];
+
+if (process.env.ALLOWED_ORIGINS) {
+    const origins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+    allowedOrigins.push(...origins);
+}
+
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
 
-        // Allow localhost on any port
-        if (origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
+        // Check if origin is whitelisted or starts with a whitelisted pattern
+        const isAllowed = allowedOrigins.some(allowed =>
+            origin === allowed ||
+            (allowed.startsWith('http') && origin.startsWith(allowed))
+        );
+
+        if (isAllowed) {
             return callback(null, true);
         }
 
