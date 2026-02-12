@@ -118,10 +118,29 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             if (activeCard.frontImageUrl) setFrontPreview(`http://localhost:5000${activeCard.frontImageUrl}`);
             if (activeCard.backImageUrl) setBackPreview(`http://localhost:5000${activeCard.backImageUrl}`);
             if (activeCard.logoUrl) setLogoPreview(`http://localhost:5000${activeCard.logoUrl}`);
+        } else {
+            // Yeni kart ekleme modundaysak taslağı yükle
+            const savedDraft = localStorage.getItem('bizcard_draft');
+            if (savedDraft) {
+                try {
+                    const draftData = JSON.parse(savedDraft);
+                    setFormData(prev => ({ ...prev, ...draftData }));
+                } catch (e) {
+                    console.error('Taslak yüklenirken hata:', e);
+                }
+            }
         }
 
         fetchTags();
     }, [activeCard]);
+
+    // Taslağı Kaydet
+    useEffect(() => {
+        // Sadece yeni kart eklerken kaydet (düzenleme modunda taslağı bozmayalım)
+        if (!activeCard) {
+            localStorage.setItem('bizcard_draft', JSON.stringify(formData));
+        }
+    }, [formData, activeCard]);
 
     const fetchTags = async () => {
         try {
@@ -490,6 +509,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 });
                 showNotification('Kartvizit başarıyla eklendi!', 'success');
             }
+
+            // Başarılı işlem sonrası taslağı temizle
+            localStorage.removeItem('bizcard_draft');
 
             if (onCardAdded) onCardAdded();
 
