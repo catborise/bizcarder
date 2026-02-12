@@ -10,7 +10,7 @@ import NotificationBanner from './components/NotificationBanner';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import UserMenu from './components/UserMenu';
-import api from './api/axios';
+import api, { API_URL } from './api/axios';
 import { downloadFile } from './utils/downloadHelper';
 import { saveCardsToOffline, getOfflineCards, getPendingSync, clearSyncItem } from './utils/offlineStore';
 
@@ -371,7 +371,7 @@ const Contacts = () => {
                                         title="Büyütmek için tıklayın"
                                     >
                                         <img
-                                            src={`http://localhost:5000${card.frontImageUrl}`}
+                                            src={`${API_URL}${card.frontImageUrl}`}
                                             alt={card.firstName}
                                             style={{
                                                 maxWidth: '100%',
@@ -441,7 +441,7 @@ const Contacts = () => {
                                     }}>
                                         {card.logoUrl && (
                                             <img
-                                                src={`http://localhost:5000${card.logoUrl}`}
+                                                src={`${API_URL}${card.logoUrl}`}
                                                 alt="Logo"
                                                 style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'white', padding: '2px' }}
                                             />
@@ -863,7 +863,7 @@ const Contacts = () => {
                             <h4 style={{ color: '#ffc107', textAlign: 'center', marginBottom: '10px' }}>Ön Yüz</h4>
                             {selectedImageCard.frontImageUrl ? (
                                 <img
-                                    src={`http://localhost:5000${selectedImageCard.frontImageUrl}`}
+                                    src={`${API_URL}${selectedImageCard.frontImageUrl}`}
                                     alt="Ön Yüz"
                                     style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid #444' }}
                                 />
@@ -876,7 +876,7 @@ const Contacts = () => {
                             <div>
                                 <h4 style={{ color: '#ffc107', textAlign: 'center', marginBottom: '10px' }}>Arka Yüz</h4>
                                 <img
-                                    src={`http://localhost:5000${selectedImageCard.backImageUrl}`}
+                                    src={`${API_URL}${selectedImageCard.backImageUrl}`}
                                     alt="Arka Yüz"
                                     style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid #444' }}
                                 />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_URL } from '../api/axios';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
 const Login = () => {
@@ -26,7 +27,7 @@ const Login = () => {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const res = await fetch('http://localhost:5000/auth/config');
+                const res = await fetch(`${API_URL}/auth/config`);
                 const data = await res.json();
                 setAllowRegistration(data.allowPublicRegistration);
             } catch (err) {
@@ -63,7 +64,7 @@ const Login = () => {
 
     const handleShibbolethLogin = () => {
         // Shibboleth SAML akışını başlat
-        window.location.href = 'http://localhost:5000/auth/login';
+        window.location.href = `${API_URL}/auth/login`;
     };
 
     return (

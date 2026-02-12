@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import api from '../api/axios';
+import api, { API_URL } from '../api/axios';
 import { downloadFile } from '../utils/downloadHelper';
 import { useNotification } from '../context/NotificationContext';
 import { FaDownload, FaShareAlt, FaEdit, FaIdCard, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaCircle, FaSearchPlus } from 'react-icons/fa';
@@ -233,7 +233,7 @@ const MyCard = () => {
                                     boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
                                 }}>
                                     <img
-                                        src={`http://localhost:5000${personalCard.logoUrl}`}
+                                        src={`${API_URL}${personalCard.logoUrl}`}
                                         alt="Şirket Logosu"
                                         style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                                     />
@@ -257,7 +257,7 @@ const MyCard = () => {
                                 boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
                             }}>
                                 {personalCard.frontImageUrl ? (
-                                    <img src={`http://localhost:5000${personalCard.frontImageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={`${API_URL}${personalCard.frontImageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     personalCard.firstName[0] + personalCard.lastName[0]
                                 )}

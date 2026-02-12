@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Tesseract from 'tesseract.js';
 import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../utils/perspectiveHelper';
-import api from '../api/axios';
+import api, { API_URL } from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { queueForSync } from '../utils/offlineStore';
 import { useAuth } from '../context/AuthContext';
@@ -115,9 +115,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 tags: activeCard.tags ? activeCard.tags.map(t => t.id) : []
             });
             // Var olan resimleri göster
-            if (activeCard.frontImageUrl) setFrontPreview(`http://localhost:5000${activeCard.frontImageUrl}`);
-            if (activeCard.backImageUrl) setBackPreview(`http://localhost:5000${activeCard.backImageUrl}`);
-            if (activeCard.logoUrl) setLogoPreview(`http://localhost:5000${activeCard.logoUrl}`);
+            if (activeCard.frontImageUrl) setFrontPreview(`${API_URL}${activeCard.frontImageUrl}`);
+            if (activeCard.backImageUrl) setBackPreview(`${API_URL}${activeCard.backImageUrl}`);
+            if (activeCard.logoUrl) setLogoPreview(`${API_URL}${activeCard.logoUrl}`);
         } else {
             // Yeni kart ekleme modundaysak taslağı yükle
             const savedDraft = localStorage.getItem('bizcard_draft');
