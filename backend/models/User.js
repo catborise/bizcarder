@@ -58,6 +58,11 @@ const User = sequelize.define('User', {
     aiOcrApiKey: {
         type: DataTypes.TEXT,
         allowNull: true
+    },
+    isApproved: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
     }
 }, {
     hooks: {

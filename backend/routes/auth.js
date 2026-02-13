@@ -34,6 +34,16 @@ router.post('/login/callback',
 router.post('/local/login',
     passport.authenticate('local', { failureMessage: true }),
     (req, res) => {
+        // Onay durumunu kontrol et
+        if (req.user.isApproved === false) {
+            req.logout((err) => {
+                if (err) console.error('Logout error:', err);
+            });
+            return res.status(403).json({
+                error: 'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen onay bekleyin.'
+            });
+        }
+
         // Başarılı giriş
         res.json({
             success: true,
@@ -87,31 +97,21 @@ router.post('/local/register', async (req, res) => {
             });
         }
 
-        // Yeni kullanıcı oluştur
+        // Yeni kullanıcı oluştur (isApproved varsayılan olarak false)
         const user = await User.create({
             username,
             email,
             password,
             displayName: displayName || username,
-            role: 'user'
+            role: 'user',
+            isApproved: false
         });
 
-        // Otomatik giriş yap
-        req.login(user, (err) => {
-            if (err) {
-                return res.status(500).json({ error: 'Kayıt başarılı ancak giriş yapılamadı.' });
-            }
-            res.status(201).json({
-                success: true,
-                message: 'Kayıt başarılı',
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    displayName: user.displayName,
-                    role: user.role
-                }
-            });
+        // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
+        res.status(201).json({
+            success: true,
+            message: 'Kayıt başarılı. Hesabınız yönetici onayı bekliyor.',
+            pendingApproval: true
         });
     } catch (error) {
         console.error('Kayıt hatası:', error);
@@ -183,7 +183,8 @@ router.get('/me', (req, res) => {
                 shibbolethId: req.user.shibbolethId,
                 aiOcrEnabled: req.user.aiOcrEnabled,
                 aiOcrProvider: req.user.aiOcrProvider,
-                hasAiApiKey: !!req.user.aiOcrApiKey
+                hasAiApiKey: !!req.user.aiOcrApiKey,
+                isApproved: req.user.isApproved
             }
         });
     } else {

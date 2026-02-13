@@ -46,6 +46,13 @@ const Login = () => {
             let result;
             if (isRegisterMode) {
                 result = await registerLocal(username, email, password, displayName);
+
+                if (result.success && result.pendingApproval) {
+                    setError('Kayıt başarılı. Hesabınız yönetici onayı bekliyor.');
+                    setIsRegisterMode(false); // Giriş moduna dön
+                    setLoading(false);
+                    return;
+                }
             } else {
                 result = await loginLocal(username, password);
             }
@@ -176,10 +183,10 @@ const Login = () => {
                         <div style={{
                             padding: '12px 16px',
                             marginBottom: '24px',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.2)',
+                            backgroundColor: error.includes('başarılı') ? 'rgba(34, 197, 94, 0.1)' : (error.includes('bekliyor') ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
+                            border: `1px solid ${error.includes('başarılı') ? 'rgba(34, 197, 94, 0.2)' : (error.includes('bekliyor') ? 'rgba(234, 179, 8, 0.2)' : 'rgba(239, 68, 68, 0.2)')}`,
                             borderRadius: '12px',
-                            color: '#fca5a5',
+                            color: error.includes('başarılı') ? '#4ade80' : (error.includes('bekliyor') ? '#facc15' : '#fca5a5'),
                             fontSize: '0.875rem',
                             display: 'flex',
                             alignItems: 'center',

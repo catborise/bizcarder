@@ -64,8 +64,20 @@ export const AuthProvider = ({ children }) => {
             });
 
             if (response.data.success) {
-                setUser(response.data.user);
-                setIsAuthenticated(true);
+                // Eğer onay bekleniyorsa, kullanıcı girişi yapma
+                if (response.data.pendingApproval) {
+                    return {
+                        success: true,
+                        pendingApproval: true,
+                        message: response.data.message
+                    };
+                }
+
+                // Normal akış (otomatik giriş varsa)
+                if (response.data.user) {
+                    setUser(response.data.user);
+                    setIsAuthenticated(true);
+                }
                 return { success: true };
             }
         } catch (error) {
