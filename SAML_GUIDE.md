@@ -50,9 +50,9 @@ services:
     image: postgres:15-alpine
     restart: always
     environment:
-      POSTGRES_USER: crm_user
-      POSTGRES_PASSWORD: crm_password # .env içinden override edilebilir
-      POSTGRES_DB: crm_db
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -63,9 +63,11 @@ services:
       - .env
     environment:
       - DB_HOST=db
-      - DB_USER=crm_user
-      - DB_NAME=crm_db
-      - PORT=5000
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ALLOWED_ORIGINS=https://alanadiniz.com # Sizin üretim alan adınız
     depends_on:
       - db
     volumes:
@@ -82,10 +84,25 @@ services:
       - NODE_OPTIONS=--max-old-space-size=4096
     depends_on:
       - backend
+  caddy:
+    image: caddy:latest
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
 
 volumes:
   pgdata:
   crm_uploads:
+  caddy_data:
+  caddy_config:
 ```
 
 ### Başlatma Komutu
