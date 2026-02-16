@@ -51,7 +51,11 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'crm-bizcard-app-session-key-fallback', // Prod ortamında env'den alınmalı
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false } // HTTPS olmadığı için false (Prod'da true olmalı)
+    cookie: {
+        secure: process.env.SESSION_SECURE === 'true', // HTTPS varsa true olmalı
+        httpOnly: true,
+        maxAge: 24 * 60 * 60 * 1000 // 24 saat
+    }
 }));
 
 // Passport Başlatma

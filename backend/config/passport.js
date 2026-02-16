@@ -23,30 +23,62 @@ passport.deserializeUser(async (id, done) => {
 // Geliştirme ortamında mock (sahte) bir IdP kullanılabilir veya çevre değişkenleri ile ayarlanabilir.
 passport.use(new SamlStrategy(
     {
-        path: '/auth/login/callback', // IdP'nin başarılı girişten sonra döneceği URL (ACS URL)
-        entryPoint: process.env.SAML_ENTRY_POINT || 'https://idp.example.com/idp/profile/SAML2/Redirect/SSO', // IdP Giriş URL'si
-        issuer: 'crm-app', // Bu uygulamanın IdP'deki adı
-        cert: process.env.SAML_CERT || 'cert-string-here' // IdP'nin sertifikası
+        // Temel Yapılandırma
+        entryPoint: process.env.SAML_ENTRY_POINT || 'https://idp.example.com/idp/profile/SAML2/Redirect/SSO',
+        issuer: process.env.SAML_ISSUER || 'crm-bizcard-app',
+        callbackUrl: process.env.SAML_CALLBACK_URL || 'http://localhost:5000/auth/login/callback',
+        cert: process.env.SAML_CERT || null, // IdP Sertifikası (.pem formatında, tırnaksız)
+
+        // Gelişmiş Ayarlar
+        identifierFormat: null, // Genellikle IdP tarafından belirlenir
+        decryptionPvk: process.env.SAML_PRIVATE_KEY || null, // Opsiyonel: Şifreli assertion kullanılıyorsa
+        signatureAlgorithm: 'sha256',
+        digestAlgorithm: 'sha256',
+
+        // Timeout ve Saat Farkı (Opsiyonel)
+        acceptedClockSkewMs: 10000
     },
     async (profile, done) => {
         try {
-            // IdP'den dönen profile göre kullanıcıyı bul veya oluştur
-            // 'profile.nameID' veya 'profile.uid' IdP konfigürasyonuna göre değişir.
-            const shibbolethId = profile.nameID || profile.uid || 'unknown';
-            const email = profile.email || `${shibbolethId}@example.com`;
-            const displayName = profile.displayName || profile.cn || 'Kullanıcı';
+            // Shibboleth/SAML IdP'lerden gelen yaygın öznitelik isimleri (Attribute Mapping)
+            // IdP konfigürasyonuna göre uid, eduPersonPrincipalName veya mail kullanılabilir.
+            const shibbolethId = profile.nameID ||
+                profile.uid ||
+                profile['urn:oid:0.9.2342.19200300.100.1.1'] ||
+                profile.eduPersonPrincipalName;
 
+            const email = profile.email ||
+                profile.mail ||
+                profile['urn:oid:0.9.2342.19200300.100.1.3'];
+
+            const displayName = profile.displayName ||
+                profile.cn ||
+                profile['urn:oid:2.5.4.3'] ||
+                'SSO Kullanıcısı';
+
+            if (!shibbolethId) {
+                return done(new Error('SAML profilinde benzersiz kimlik (ID) bulunamadı.'));
+            }
+
+            // Kullanıcıyı bul veya oluştur
             let [user, created] = await User.findOrCreate({
                 where: { shibbolethId: shibbolethId },
                 defaults: {
-                    email: email,
+                    email: email || `${shibbolethId}@sso.local`,
                     displayName: displayName,
-                    role: 'user' // Varsayılan rol
+                    role: 'user',
+                    isApproved: true // SSO ile gelen kullanıcılar genelde otomatik onaylanır, tercih edilebilir
                 }
             });
 
+            // Eğer e-posta veya isim IdP tarafında güncellendiyse güncelle (Opsiyonel)
+            if (!created && (user.email !== email || user.displayName !== displayName)) {
+                await user.update({ email: email || user.email, displayName: displayName || user.displayName });
+            }
+
             return done(null, user);
         } catch (err) {
+            console.error('SAML Auth Error:', err);
             return done(err);
         }
     }

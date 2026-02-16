@@ -23,8 +23,8 @@ router.post('/login/callback',
     }),
     (req, res) => {
         // Başarılı giriş
-        // Frontend'e yönlendir veya token dön (Session kullanıyorsak yönlendirme yeterli)
-        res.redirect('http://localhost:5173/');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        res.redirect(`${frontendUrl}/`);
     }
 );
 
