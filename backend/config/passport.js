@@ -21,14 +21,21 @@ passport.deserializeUser(async (id, done) => {
 // SAML Stratejisi
 // NOT: Bu konfigürasyon Identity Provider (IdP) bilgilerinize göre doldurulmalıdır.
 // Geliştirme ortamında mock (sahte) bir IdP kullanılabilir veya çevre değişkenleri ile ayarlanabilir.
-if (process.env.SAML_ENTRY_POINT && process.env.SAML_CERT) {
+const samlEntryPoint = process.env.SAML_ENTRY_POINT;
+const samlCert = process.env.SAML_CERT;
+
+if (samlEntryPoint && samlCert) {
+    console.log('SAML Yapılandırması Tespit Edildi:');
+    console.log('- Entry Point:', samlEntryPoint);
+    console.log('- Cert (İlk 10 kar.):', samlCert.substring(0, 10) + '...');
+
     passport.use(new SamlStrategy(
         {
             // Temel Yapılandırma
-            entryPoint: process.env.SAML_ENTRY_POINT,
+            entryPoint: samlEntryPoint,
             issuer: process.env.SAML_ISSUER || 'crm-bizcard-app',
             callbackUrl: process.env.SAML_CALLBACK_URL || 'http://localhost:5000/auth/login/callback',
-            cert: process.env.SAML_CERT, // IdP Sertifikası (.pem formatında, tırnaksız)
+            cert: samlCert, // IdP Sertifikası (.pem formatında, tırnaksız)
 
             // Gelişmiş Ayarlar
             identifierFormat: null, // Genellikle IdP tarafından belirlenir
@@ -86,7 +93,11 @@ if (process.env.SAML_ENTRY_POINT && process.env.SAML_CERT) {
     ));
     console.log('SAML (Shibboleth) stratejisi başarıyla yapılandırıldı.');
 } else {
-    console.warn('SAML_ENTRY_POINT veya SAML_CERT eksik. SAML (Shibboleth) giriş yöntemi devre dışı bırakıldı.');
+    console.warn('SAML Yapılandırması Eksik: SAML_ENTRY_POINT veya SAML_CERT bulunamadı.');
+    console.log('Mevcut Değerler:', {
+        SAML_ENTRY_POINT: samlEntryPoint ? 'Tanımlı' : 'Eksik',
+        SAML_CERT: samlCert ? 'Tanımlı' : 'Eksik'
+    });
 }
 
 // Local Stratejisi (Kullanıcı Adı ve Şifre)
