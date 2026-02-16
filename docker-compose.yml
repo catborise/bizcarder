@@ -4,29 +4,45 @@ services:
   db:
     image: postgres:15-alpine
     container_name: crm_db
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: crm_user
-      POSTGRES_PASSWORD: crm_password
-      POSTGRES_DB: crm_db
+      - POSTGRES_USER=${POSTGRES_USER:-crm_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-crm_password}
+      - POSTGRES_DB=${POSTGRES_DB:-crm_db}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crm_user} -d ${POSTGRES_DB:-crm_db}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
     container_name: crm_backend
     ports:
       - "5000:5000"
+    env_file:
+      - .env
     environment:
-      - DB_HOST=db
-      - DB_USER=crm_user
-      - DB_PASSWORD=crm_password
-      - DB_NAME=crm_db
-      - PORT=5000
-      - SESSION_SECRET=super-secret-key-crm-2024
+      - DB_HOST=${DB_HOST:-db}
+      - DB_USER=${POSTGRES_USER:-crm_user}
+      - DB_PASSWORD=${POSTGRES_PASSWORD:-crm_password}
+      - DB_NAME=${POSTGRES_DB:-crm_db}
+      - PORT=${PORT:-5000}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - SESSION_SECURE=${SESSION_SECURE:-false}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - SAML_ENTRY_POINT=${SAML_ENTRY_POINT}
+      - SAML_ISSUER=${SAML_ISSUER}
+      - SAML_CALLBACK_URL=${SAML_CALLBACK_URL}
+      - SAML_CERT=${SAML_CERT}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
       - ./backend:/app
       - /app/node_modules
@@ -37,8 +53,10 @@ services:
     container_name: crm_frontend
     ports:
       - "5173:5173"
+    env_file:
+      - .env
     environment:
-      - VITE_API_URL=http://localhost:5000
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
       - NODE_OPTIONS=--max-old-space-size=4096
     depends_on:
       - backend
