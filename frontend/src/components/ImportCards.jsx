@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
-import { FaFileUpload, FaDownload, FaExclamationTriangle, FaCheckCircle, FaSpinner, FaArrowLeft } from 'react-icons/fa';
+import { FaFileUpload, FaDownload, FaExclamationTriangle, FaCheckCircle, FaSpinner, FaArrowLeft, FaAddressCard } from 'react-icons/fa';
 
 const ImportCards = () => {
     const [file, setFile] = useState(null);
@@ -99,6 +99,20 @@ const ImportCards = () => {
                         <button onClick={() => handleDownloadTemplate('csv')} style={btnSecondary}>
                             <FaDownload /> CSV Şablonu
                         </button>
+                        <div style={{
+                            marginLeft: 'auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            color: '#fbbf24',
+                            fontSize: '0.9rem',
+                            background: 'rgba(251, 191, 36, 0.1)',
+                            padding: '8px 12px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(251, 191, 36, 0.2)'
+                        }}>
+                            <FaAddressCard /> vCard (.vcf) Doğrudan Desteklenir
+                        </div>
                     </div>
                 </div>
 
@@ -107,7 +121,7 @@ const ImportCards = () => {
                     <h4 style={{ margin: '0 0 10px 0', color: '#60a5fa', fontSize: '1.2rem' }}>2. Dosyayı Yükleyin</h4>
                     <input
                         type="file"
-                        accept=".xlsx,.csv"
+                        accept=".xlsx,.csv,.vcf"
                         onChange={handleFileChange}
                         style={{ display: 'none' }}
                         id="bulk-file-input"
@@ -132,7 +146,7 @@ const ImportCards = () => {
                                 {file ? file.name : 'Dosyayı Sürükleyin veya Seçin'}
                             </div>
                             <div style={{ fontSize: '0.9rem', opacity: 0.6, marginTop: '5px' }}>
-                                Desteklenen formatlar: .xlsx, .csv
+                                Desteklenen formatlar: .xlsx, .csv, .vcf
                             </div>
                         </div>
                     </label>

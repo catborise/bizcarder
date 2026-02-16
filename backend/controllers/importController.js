@@ -1,5 +1,6 @@
 const ExcelJS = require('exceljs');
 const { BusinessCard } = require('../models');
+const vCard = require('vcf');
 const { logAction } = require('../utils/logger');
 const fs = require('fs');
 const path = require('path');
@@ -138,6 +139,60 @@ exports.importCards = async (req, res) => {
                     errors.push(validation.error);
                 }
             }
+        } else if (extension === '.vcf') {
+            const content = fs.readFileSync(filePath, 'utf8');
+            const vCards = vCard.parse(content);
+
+            vCards.forEach((card, index) => {
+                const n = card.get('n');
+                const fn = card.get('fn');
+
+                let firstName = '';
+                let lastName = '';
+
+                if (n) {
+                    const nValue = n.valueOf().split(';');
+                    lastName = nValue[0] || '';
+                    firstName = nValue[1] || '';
+                } else if (fn) {
+                    const fnValue = fn.valueOf().split(' ');
+                    firstName = fnValue[0] || '';
+                    lastName = fnValue.slice(1).join(' ') || '';
+                }
+
+                const cardData = {
+                    firstName: firstName.trim(),
+                    lastName: lastName.trim(),
+                    company: card.get('org') ? card.get('org').valueOf().toString() : '',
+                    title: card.get('title') ? card.get('title').valueOf().toString() : '',
+                    email: card.get('email') ? (Array.isArray(card.get('email')) ? card.get('email')[0].valueOf().toString() : card.get('email').valueOf().toString()) : '',
+                    phone: card.get('tel') ? (Array.isArray(card.get('tel')) ? card.get('tel')[0].valueOf().toString() : card.get('tel').valueOf().toString()) : '',
+                    address: '',
+                    city: '',
+                    country: '',
+                    website: card.get('url') ? card.get('url').valueOf().toString() : '',
+                    notes: card.get('note') ? card.get('note').valueOf().toString().replace(/\\n/g, '\n') : '',
+                    ownerId: req.user.id,
+                    visibility: 'private'
+                };
+
+                // Extract address, city and country from ADR
+                if (card.get('adr')) {
+                    const adr = card.get('adr');
+                    const adrValue = (Array.isArray(adr) ? adr[0] : adr).valueOf().split(';');
+                    // ADR format: po-box;extended-address;street;locality;region;postal-code;country
+                    cardData.address = adrValue[2] || '';
+                    cardData.city = adrValue[3] || '';
+                    cardData.country = adrValue[6] || '';
+                }
+
+                const validation = validateCard(cardData, index + 1);
+                if (validation.isValid) {
+                    cardsToCreate.push(formatCard(cardData));
+                } else {
+                    errors.push(validation.error);
+                }
+            });
         }
 
         // Clean up temp file
