@@ -38,4 +38,60 @@ Uygulama, gelen SAML paketinde şu öznitelikleri (OID veya isim bazlı) otomati
 3. "Shibboleth ile Giriş Yap" butonuna basın.
 4. IdP sayfasına yönlendirileceksiniz. Giriş yaptıktan sonra sistem sizi uygulamaya geri döndürecektir.
 
+## 5. Üretim Dağıtımı (Production Deployment)
+
+Üretim ortamında (HTTPS ve SAML aktif) uygulamayı çalıştırmak için aşağıdaki `docker-compose.prod.yml` şablonunu kullanabilirsiniz. Bu dosyayı sunucunuzda manuel olarak oluşturun:
+
+```yaml
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: crm_password # .env içinden override edilebilir
+      POSTGRES_DB: crm_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+      - DB_USER=crm_user
+      - DB_NAME=crm_db
+      - PORT=5000
+    depends_on:
+      - db
+    volumes:
+      - crm_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - VITE_API_URL=https://kartvizit.ulakbim.gov.tr # Sizin üretim alan adınız
+      - NODE_OPTIONS=--max-old-space-size=4096
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+  crm_uploads:
+```
+
+### Başlatma Komutu
+Dosyayı oluşturduktan sonra şu komutla başlatın:
+```bash
+docker-compose -f docker-compose.prod.yml up --build -d
+```
+
 > **Not:** SSO ile gelen kullanıcılar `isApproved: true` olarak oluşturulur, yani yönetici onayına gerek kalmadan sistemi kullanmaya başlayabilirler.
