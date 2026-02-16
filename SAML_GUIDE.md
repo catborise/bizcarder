@@ -78,7 +78,7 @@ services:
     env_file:
       - .env
     environment:
-      - VITE_API_URL=https://kartvizit.ulakbim.gov.tr # Sizin üretim alan adınız
+      - VITE_API_URL=https://alanadiniz.com # Sizin üretim alan adınız
       - NODE_OPTIONS=--max-old-space-size=4096
     depends_on:
       - backend
