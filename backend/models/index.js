@@ -35,9 +35,13 @@ const syncDatabase = async (retries = 5, interval = 5000) => {
                     password: 'admin',
                     email: 'admin@example.com',
                     displayName: 'Sistem Yöneticisi',
-                    role: 'admin'
+                    role: 'admin',
+                    isApproved: true
                 });
-                console.log('Varsayılan admin kullanıcısı oluşturuldu (admin/admin).');
+                console.log('Varsayılan admin kullanıcısı oluşturuldu (admin/admin) ve onaylandı.');
+            } else if (adminUser.isApproved === false) {
+                await adminUser.update({ isApproved: true });
+                console.log('Mevcut admin kullanıcısı bulundu ve otomatik olarak onaylandı.');
             }
 
             // Varsayılan Dashboard Tile'larını oluştur
