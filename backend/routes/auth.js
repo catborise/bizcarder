@@ -184,7 +184,8 @@ router.get('/me', (req, res) => {
                 aiOcrEnabled: req.user.aiOcrEnabled,
                 aiOcrProvider: req.user.aiOcrProvider,
                 hasAiApiKey: !!req.user.aiOcrApiKey,
-                isApproved: req.user.isApproved
+                isApproved: req.user.isApproved,
+                trashRetentionDays: req.user.trashRetentionDays
             }
         });
     } else {
@@ -199,7 +200,7 @@ router.put('/profile', async (req, res) => {
     }
 
     try {
-        const { displayName, aiOcrEnabled, aiOcrProvider, aiOcrApiKey } = req.body;
+        const { displayName, email, trashRetentionDays, aiOcrEnabled, aiOcrProvider, aiOcrApiKey } = req.body;
         const user = await User.findByPk(req.user.id);
 
         if (!user) {
@@ -208,6 +209,30 @@ router.put('/profile', async (req, res) => {
 
         const updateData = {};
         if (displayName !== undefined) updateData.displayName = displayName;
+
+        // E-posta güncelleme ve benzersizlik kontrolü
+        if (email !== undefined && email !== user.email) {
+            // Basit e-posta doğrulama
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({ error: 'Geçersiz e-posta adresi.' });
+            }
+
+            const existingUser = await User.findOne({ where: { email } });
+            if (existingUser) {
+                return res.status(400).json({ error: 'Bu e-posta adresi zaten kullanımda.' });
+            }
+            updateData.email = email;
+        }
+
+        if (trashRetentionDays !== undefined) {
+            const days = parseInt(trashRetentionDays);
+            if (isNaN(days) || days < 1 || days > 365) {
+                return res.status(400).json({ error: 'Çöp kutusu saklama süresi 1-365 gün arasında olmalıdır.' });
+            }
+            updateData.trashRetentionDays = days;
+        }
+
         if (aiOcrEnabled !== undefined) updateData.aiOcrEnabled = aiOcrEnabled;
         if (aiOcrProvider !== undefined) updateData.aiOcrProvider = aiOcrProvider;
 
@@ -223,7 +248,10 @@ router.put('/profile', async (req, res) => {
             message: 'Profil güncellendi.',
             user: {
                 id: user.id,
+                username: user.username,
+                email: user.email,
                 displayName: user.displayName,
+                trashRetentionDays: user.trashRetentionDays,
                 aiOcrEnabled: user.aiOcrEnabled,
                 aiOcrProvider: user.aiOcrProvider,
                 hasAiApiKey: !!user.aiOcrApiKey
