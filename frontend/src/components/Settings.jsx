@@ -112,6 +112,11 @@ const Settings = () => {
     });
     const [tags, setTags] = useState([]);
     const [tagForm, setTagForm] = useState({ name: '', color: '#3b82f6' });
+    const [profileData, setProfileData] = useState({
+        displayName: '',
+        email: '',
+        trashRetentionDays: 30
+    });
     const [editingTag, setEditingTag] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -146,6 +151,11 @@ const Settings = () => {
         };
 
         if (user) {
+            setProfileData({
+                displayName: user.displayName || '',
+                email: user.email || '',
+                trashRetentionDays: user.trashRetentionDays || 30
+            });
             setAiSettings({
                 aiOcrEnabled: user.aiOcrEnabled || false,
                 aiOcrProvider: user.aiOcrProvider || 'openai',
@@ -162,6 +172,19 @@ const Settings = () => {
             setTags(res.data);
         } catch (error) {
             console.error('Tags fetch error:', error);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        try {
+            const res = await api.put('/auth/profile', profileData);
+            if (res.data.success) {
+                showNotification('Profil bilgileri başarıyla güncellendi.', 'success');
+                await checkAuth();
+            }
+        } catch (error) {
+            console.error('Profile save error:', error);
+            showNotification('Profil güncellenemedi: ' + (error.response?.data?.error || error.message), 'error');
         }
     };
 
@@ -260,6 +283,62 @@ const Settings = () => {
             }}>
                 <span style={{ fontSize: '2rem' }}>⚙️</span> Ayarlar
             </h2>
+
+            {/* PROFIL BILGILERI */}
+            <div style={cardStyle}>
+                <h3 style={sectionTitleStyle}>
+                    <span style={{ fontSize: '1.5rem' }}>👤</span> Profil Bilgileri
+                </h3>
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Kullanıcı Adı</label>
+                    <input
+                        type="text"
+                        value={user?.username || ''}
+                        style={{ ...inputStyle, background: 'rgba(255,255,255,0.05)', cursor: 'not-allowed', color: '#888' }}
+                        disabled
+                    />
+                    <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>Kullanıcı adı değiştirilemez.</small>
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Ad Soyad / Görünen İsim</label>
+                    <input
+                        type="text"
+                        value={profileData.displayName}
+                        onChange={(e) => setProfileData({ ...profileData, displayName: e.target.value })}
+                        style={inputStyle}
+                        placeholder="İsim giriniz..."
+                    />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>E-Posta Adresi</label>
+                    <input
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                        style={inputStyle}
+                        placeholder="example@mail.com"
+                    />
+                </div>
+                <div style={{ marginBottom: '30px' }}>
+                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Kişisel Çöp Kutusu Saklama Süresi (Gün)</label>
+                    <input
+                        type="number"
+                        min="1"
+                        max="365"
+                        value={profileData.trashRetentionDays}
+                        onChange={(e) => setProfileData({ ...profileData, trashRetentionDays: parseInt(e.target.value) || 1 })}
+                        style={inputStyle}
+                    />
+                    <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Sizin tarafınızdan silinen kartların ne kadar süre çöp kutusunda tutulacağını belirler.</small>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                    <button onClick={handleSaveProfile} style={{
+                        background: 'rgba(59, 130, 246, 0.2)',
+                        color: 'white', border: '1px solid rgba(59, 130, 246, 0.4)', padding: '10px 25px', borderRadius: '10px',
+                        fontWeight: '600', cursor: 'pointer'
+                    }}>Profili Güncelle</button>
+                </div>
+            </div>
 
             {/* HESAP AYARLARI (Şifre Değiştirme) */}
             <div style={cardStyle}>
