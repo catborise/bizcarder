@@ -72,25 +72,6 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// SAML Metadata Endpoint (IdP yetkilendirmesi için gereklidir)
-app.get('/saml/metadata.xml', (req, res) => {
-    if (!passport.samlStrategy) {
-        return res.status(404).send('SAML (Shibboleth) konfigüre edilmemiş.');
-    }
-    try {
-        // SP (Service Provider) metadata XML belgesini üret
-        const metadata = passport.samlStrategy.generateServiceProviderMetadata(
-            process.env.SAML_DECRYPTION_CERT || null,
-            process.env.SAML_SIGNING_CERT || null
-        );
-        res.type('application/xml');
-        res.status(200).send(metadata);
-    } catch (err) {
-        console.error('Metadata üretme hatası:', err);
-        res.status(500).send('Metadata üretilemedi.');
-    }
-});
-
 // Statik Dosyalar (Yüklenen Resimler)
 app.use('/uploads', express.static('uploads'));
 

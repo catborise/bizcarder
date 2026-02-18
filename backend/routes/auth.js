@@ -28,6 +28,28 @@ router.post('/login/callback',
     }
 );
 
+// SAML Metadata Endpoint (IdP yetkilendirmesi için)
+// Bu rota reverse proxy (Caddy/Nginx) tarafından /auth/* kapsamında olduğu için otomatik yönlendirilir.
+router.get('/metadata.xml', (req, res) => {
+    try {
+        const strategy = passport._strategy('saml');
+        if (!strategy) {
+            return res.status(404).send('SAML stratejisi aktif değil.');
+        }
+
+        const metadata = strategy.generateServiceProviderMetadata(
+            process.env.SAML_DECRYPTION_CERT || null,
+            process.env.SAML_SIGNING_CERT || null
+        );
+
+        res.type('application/xml');
+        res.status(200).send(metadata);
+    } catch (err) {
+        console.error('SAML Metadata Error:', err);
+        res.status(500).send('Metadata oluşturulamadı.');
+    }
+});
+
 // ============== LOCAL AUTHENTICATION ==============
 
 // Yerel Kullanıcı Girişi
