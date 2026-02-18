@@ -11,6 +11,15 @@ const { startAutoCleanup } = require('./utils/trashCleanup');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Reverse Proxy (Caddy, Nginx vs) arkasında çalışırken session/cookie güvenliği için
+app.set('trust proxy', 1);
+
+// Debug Middleware: Gelen isteklerin yetki durumunu logla
+app.use((req, res, next) => {
+    // console.log(`[DEBUG] ${req.method} ${req.path} - Authenticated: ${req.isAuthenticated()} - SessionID: ${req.sessionID}`);
+    next();
+});
+
 // Middleware
 // CORS Configuration
 const allowedOrigins = [
