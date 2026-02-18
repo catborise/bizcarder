@@ -29,7 +29,7 @@ if (samlEntryPoint && samlCert) {
     console.log('- Entry Point:', samlEntryPoint);
     console.log('- Cert (İlk 10 kar.):', samlCert.substring(0, 10) + '...');
 
-    passport.use(new SamlStrategy(
+    const samlStrategy = new SamlStrategy(
         {
             // Temel Yapılandırma
             entryPoint: samlEntryPoint,
@@ -90,7 +90,10 @@ if (samlEntryPoint && samlCert) {
                 return done(err);
             }
         }
-    ));
+    );
+
+    passport.use(samlStrategy);
+    passport.samlStrategy = samlStrategy; // Metadata üretimi için strategy nesnesini sakla
     console.log('SAML (Shibboleth) stratejisi başarıyla yapılandırıldı.');
 } else {
     console.warn('SAML Yapılandırması Eksik: SAML_ENTRY_POINT veya SAML_CERT bulunamadı.');
