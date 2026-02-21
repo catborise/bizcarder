@@ -101,6 +101,23 @@ if (samlEntryPoint && samlCert) {
                     displayName = 'SSO Kullanıcısı';
                 }
 
+                // 4. Organizasyon Filtreleme (Filtrasyon Mantığı)
+                const orgUnitDN = getAttr('eduPersonPrimaryOrgUnitDN') || getAttr('urn:oid:1.3.6.1.4.1.5923.1.1.1.8');
+                const allowedOrgUnits = process.env.SAML_ALLOWED_ORG_UNITS;
+
+                if (allowedOrgUnits) {
+                    const allowedList = allowedOrgUnits.split(',').map(item => item.trim());
+                    const isAllowed = allowedList.some(item => {
+                        // Tam eşleşme veya DN içinde geçme kontrolü
+                        return orgUnitDN && (orgUnitDN === item || orgUnitDN.includes(item));
+                    });
+
+                    if (!isAllowed) {
+                        console.warn(`[SAML ACCESS DENIED] User ${shibbolethId} rejected. OrgUnit: ${orgUnitDN || 'Eksik'}`);
+                        return done(null, false, { message: 'Bu uygulamaya giriş yetkiniz bulunmamaktadır (Organizasyon kısıtlaması).' });
+                    }
+                }
+
                 if (!shibbolethId) {
                     console.error('SAML ID bulunamadı. Profil:', profile);
                     return done(new Error('SAML profilinde benzersiz kimlik (ID) bulunamadı.'));
