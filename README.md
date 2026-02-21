@@ -9,9 +9,19 @@ Bizcarder is a modern CRM application designed for managing business cards. It f
 -   **Dashboard**: Overview of business card statistics and recent activities.
 -   **Premium UI**: Sleek, glassmorphism-inspired design with Material UI and custom CSS.
 -   **Export Capabilities**: Export your business cards to XLSX or PDF formats.
+-   **SAML / Shibboleth Support**: Integrated enterprise Single Sign-On (SSO) support for institutional authentication.
 -   **Interactions**: Log meetings and interactions related to each business card.
 -   **Admin Panel**: Manage users and system settings (log retention, trash cleanup).
 -   **Mobile Friendly**: Responsive design for use on various devices.
+-   **Production Ready**: Optimized Docker configurations and environment-based setup.
+
+## 🔑 Authentication
+
+The system supports two methods of authentication:
+1. **Local Authentication**: Standard username and password login.
+2. **SAML 2.0 (Shibboleth)**: Enterprise SSO integration.
+
+For details on how to configure SAML for your organization, please refer to the [SAML / Shibboleth Configuration Guide](SAML_GUIDE.md).
 
 ## 🛠️ Technology Stack
 

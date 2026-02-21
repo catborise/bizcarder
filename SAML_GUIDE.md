@@ -1,47 +1,73 @@
-# SAML / Shibboleth Yapılandırma Kılavuzu
+# Üretim Ortamı ve SAML Yapılandırma Kılavuzu
 
-Bu uygulama SAML 2.0 (Shibboleth) protokolünü desteklemektedir. Aktifleştirmek için aşağıdaki adımları takip edin.
+Bu belge, uygulamanın üretim ortamında (Production) docker-compose ile nasıl kurulacağını ve SAML 2.0 (Shibboleth) entegrasyonunun detaylarını içerir.
 
-## 1. Environment Değişkenleri
+## 1. Merkezi Yapılandırma (.env Dosyası)
 
-Backend servisiniz için aşağıdaki ortam değişkenlerini (`.env` veya `docker-compose.yml`) ayarlamanız gerekmektedir:
+Uygulama tüm ayarlarını proje kök dizininde bulunan `.env` dosyasından okur. Üretim ortamında bu dosyayı güvenli bir şekilde oluşturmanız gerekmektedir.
 
-| Değişken | Açıklama | Örnek Değer |
-| :--- | :--- | :--- |
-| `SAML_ENTRY_POINT` | IdP'nin Single Sign-On (SSO) URL'si | `https://idp.kurum.edu.tr/idp/profile/SAML2/Redirect/SSO` |
-| `SAML_ISSUER` | Uygulamanızın IdP tarafındaki benzersiz adı (Entity ID) | `bizcarder-app` |
-| `SAML_CALLBACK_URL` | IdP'nin başarılı girişten sonra döneceği tam URL (ACS) | `https://crm.kurum.edu.tr/auth/login/callback` |
-| `SAML_CERT` | IdP'nin sağladığı kamu sertifikası (Public Key) | `MIID.... (Sertifika içeriği)` |
-| `FRONTEND_URL` | Kullanıcı giriş yaptıktan sonra yönlendirilecek ana sayfa | `https://crm.kurum.edu.tr` |
-| `SESSION_SECURE` | Eğer HTTPS kullanıyorsanız mutlaka `true` yapın | `true` |
+### Örnek .env İçeriği
+```bash
+# --- DATABASE ---
+POSTGRES_USER=crm_user
+POSTGRES_PASSWORD=guclu_bir_sifre
+POSTGRES_DB=crm_db
+DB_HOST=db
 
-## 2. IdP (Identity Provider) Yapılandırması
+# --- BACKEND ---
+PORT=5000
+SESSION_SECRET=rastgele_uzun_bir_dizi
+SESSION_SECURE=true
+FRONTEND_URL=https://kartvizit.ulakbim.gov.tr
 
-Kurumsal IdP yöneticinize aşağıdaki bilgileri iletmeniz gerekebilir:
+# --- CORS ---
+# Frontend URL ve SAML IdP otomatik eklenir, ek adresler için virgülle ayırın
+ALLOWED_ORIGINS=https://kartvizit.ulakbim.gov.tr
+
+# --- SAML (SHIBBOLETH) ---
+SAML_ENTRY_POINT=https://kimlik.kurum.gov.tr/idp/profile/SAML2/Redirect/SSO
+SAML_ISSUER=https://kartvizit.ulakbim.gov.tr
+SAML_CALLBACK_URL=https://kartvizit.ulakbim.gov.tr/auth/login/callback
+SAML_CERT="MIID....CERT_ICERIGI...."
+
+# --- FILTRELEME (OPSIYONEL) ---
+# Sadece belirli organizasyon birimlerine izin vermek için (Virgül ile ayırın)
+# eduPersonPrimaryOrgUnitDN (urn:oid:1.3.6.1.4.1.5923.1.1.1.8) kullanılır
+SAML_ALLOWED_ORG_UNITS="ou=birim1,dc=kurum,dc=gov,dc=tr, ou=birim2"
+
+# --- FRONTEND ---
+VITE_API_URL=https://kartvizit.ulakbim.gov.tr
+```
+
+---
+
+## 2. SAML Metadata Erişimi
+
+Uygulamanın Service Provider (SP) metadata dosyasına şu adresten erişilebilir:
+**`https://kartvizit.ulakbim.gov.tr/auth/metadata.xml`**
+
+IdP yöneticiniz bu dosyayı kullanarak uygulamayı sisteme tanımlayabilir. Eğer dosyaya tarayıcıdan erişemiyorsanız, Ters Vekil Sunucu (Caddy/Nginx) yapılandırmanızın `/auth/*` isteklerini backend servisine yönlendirdiğinden emin olun.
+
+---
+
+## 3. IdP (Identity Provider) Yapılandırması
+
+Kurumsal IdP yöneticinize aşağıdaki bilgileri iletmeniz gerekmektedir:
 
 - **Entity ID (Issuer):** `SAML_ISSUER` değişkeninde belirlediğiniz değer.
-- **Assertion Consumer Service (ACS) URL:** `SAML_CALLBACK_URL` değişkeninde belirlediğiniz değer (Backend rotası).
-- **Identifier Format:** `urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified` (veya IdP varsayılanı).
+- **Assertion Consumer Service (ACS) URL:** `SAML_CALLBACK_URL` değeri.
+- **Desteklenen Öznitelikler (Attributes):**
+    - **Kimlik (ID):** `uid`, `eduPersonPrincipalName` veya `nameID`
+    - **E-Posta:** `mail` veya `email`
+    - **Görünen İsim:** `displayName` (OID: `2.16.840.1.113730.3.1.241` dahil) veya `cn`
 
-## 3. Öznitelik Eşleştirme (Attribute Mapping)
+---
 
-Uygulama, gelen SAML paketinde şu öznitelikleri (OID veya isim bazlı) otomatik olarak tanır:
+## 4. Üretim Dağıtımı (docker-compose.yml)
 
-- **Kullanıcı ID (Zorunlu):** `uid`, `eduPersonPrincipalName` veya `nameID`
-- **E-Posta:** `mail` veya `email`
-- **Görünen İsim:** `cn`, `displayName`
+Üretim ortamında stabilite ve performans için **dosya bağlama (host volume mount)** kullanılmaması önerilir. Bu, "EIO: i/o error" gibi senkronizasyon hatalarını önler.
 
-## 4. Test Etme
-
-1. Ayarları yaptıktan sonra backend'i yeniden başlatın.
-2. Giriş sayfasında "Shibboleth" sekmesine geçin.
-3. "Shibboleth ile Giriş Yap" butonuna basın.
-4. IdP sayfasına yönlendirileceksiniz. Giriş yaptıktan sonra sistem sizi uygulamaya geri döndürecektir.
-
-## 5. Üretim Dağıtımı (Production Deployment)
-
-Üretim ortamında (HTTPS ve SAML aktif) uygulamayı çalıştırmak için aşağıdaki `docker-compose.prod.yml` şablonunu kullanabilirsiniz. Bu dosyayı sunucunuzda manuel olarak oluşturun:
-
+### docker-compose.prod.yml (Önerilen)
 ```yaml
 version: '3.8'
 
@@ -49,41 +75,34 @@ services:
   db:
     image: postgres:15-alpine
     restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+    env_file: .env
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build: ./backend
     restart: always
-    env_file:
-      - .env
+    env_file: .env
     environment:
       - DB_HOST=db
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-      - SESSION_SECRET=${SESSION_SECRET}
-      - ALLOWED_ORIGINS=https://alanadiniz.com # Sizin üretim alan adınız
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     volumes:
-      - crm_uploads:/app/uploads
+      - crm_uploads:/app/uploads # Sadece yüklenen dosyalar için volume kullanılır
 
   frontend:
-    build:
-      context: ./frontend
+    build: ./frontend
     restart: always
-    env_file:
-      - .env
-    environment:
-      - VITE_API_URL=https://alanadiniz.com # Sizin üretim alan adınız
-      - NODE_OPTIONS=--max-old-space-size=4096
+    env_file: .env
     depends_on:
       - backend
+
   caddy:
     image: caddy:latest
     restart: always
@@ -94,9 +113,6 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - frontend
-      - backend
 
 volumes:
   pgdata:
@@ -105,10 +121,24 @@ volumes:
   caddy_config:
 ```
 
-### Başlatma Komutu
-Dosyayı oluşturduktan sonra şu komutla başlatın:
+### Kurulum Komutları
 ```bash
+# 1. Kodu sunucuya çekin
+git pull origin main
+
+# 2. .env dosyasını düzenleyin
+nano .env
+
+# 3. Uygulamayı ayağa kaldırın
 docker-compose -f docker-compose.prod.yml up --build -d
 ```
 
-> **Not:** SSO ile gelen kullanıcılar `isApproved: true` olarak oluşturulur, yani yönetici onayına gerek kalmadan sistemi kullanmaya başlayabilirler.
+---
+
+## 5. Önemli Notlar ve İpuçları
+
+1.  **Güvenli Oturumlar**: Üretim ortamında `SESSION_SECURE=true` olmalıdır. Bu ayar, çerezlerin sadece HTTPS üzerinden gönderilmesini sağlar. Uygulama otomatik olarak `trust proxy` ayarını kullandığı için Caddy/Nginx arkasında sorunsuz çalışır.
+2.  **Kullanıcı Onayı**: SSO/SAML ile ilk kez giriş yapan kullanıcılar sistemde otomatik olarak oluşturulur ve `isApproved: true` (Onaylı) olarak işaretlenir.
+3.  **Hata Ayıklama**: SAML ile ilgili bir sorun yaşarsanız, backend konteyner loglarını inceleyebilirsiniz:
+    `docker logs -f crm_backend`
+4.  **Backend Erişimi**: Backend API'niz ve metadata dosyanız proxy üzerinde `/auth` ve `/api` prefiksleri ile dış dünyaya açık olmalıdır.
