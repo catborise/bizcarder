@@ -27,6 +27,21 @@ const allowedOrigins = [
     'http://127.0.0.1'
 ];
 
+// FRONTEND_URL ekle
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+// SAML IdP domainini ekle (CORS hatasını önlemek için)
+if (process.env.SAML_ENTRY_POINT) {
+    try {
+        const samlUrl = new URL(process.env.SAML_ENTRY_POINT);
+        allowedOrigins.push(`${samlUrl.protocol}//${samlUrl.host}`);
+    } catch (e) {
+        // Geçersiz URL ise pas geç
+    }
+}
+
 if (process.env.ALLOWED_ORIGINS) {
     const origins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
     allowedOrigins.push(...origins);
@@ -47,7 +62,8 @@ app.use(cors({
             return callback(null, true);
         }
 
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        console.warn(`[CORS REJECTED] Origin: ${origin} is not in allowedOrigins:`, allowedOrigins);
+        const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
         return callback(new Error(msg), false);
     },
     credentials: true, // Cookie transferine izin ver
