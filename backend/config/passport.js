@@ -87,6 +87,7 @@ if (samlEntryPoint && samlCert) {
                 let displayName = getAttr('displayName') ||
                     getAttr('cn') ||
                     getAttr('commonName') ||
+                    getAttr('urn:oid:2.16.840.1.113730.3.1.241') || // Kullanıcının IdP'sinden gelen özel OID
                     getAttr('urn:oid:2.5.4.3');
 
                 const firstName = getAttr('givenName') || getAttr('first_name') || getAttr('ad') || getAttr('urn:oid:2.5.4.42');
