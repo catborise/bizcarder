@@ -108,6 +108,58 @@ app.get('/api/cards/stats', async (req, res) => {
 // Public Dashboard Tiles
 app.use('/api/db-tiles', require('./routes/dashboardTiles'));
 
+// Public Card View (Dijital Kartvizit Paylaşımı için)
+app.get('/api/cards/public/:id', async (req, res) => {
+    try {
+        const { BusinessCard, Tag, User } = require('./models');
+        const card = await BusinessCard.findOne({
+            where: {
+                id: req.params.id,
+                deletedAt: null,
+                visibility: 'public'
+            },
+            include: [
+                { model: Tag, as: 'tags', through: { attributes: [] } },
+                { model: User, as: 'owner', attributes: ['displayName'] }
+            ]
+        });
+
+        if (!card) {
+            return res.status(404).json({ error: 'Kartvizit bulunamadı veya paylaşım gizli.' });
+        }
+
+        res.json(card);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// vCard (Public Download)
+app.get('/api/cards/public/:id/vcf', async (req, res) => {
+    try {
+        const { BusinessCard } = require('./models');
+        const { generateVCard } = require('./utils/vcard');
+        const card = await BusinessCard.findOne({
+            where: {
+                id: req.params.id,
+                deletedAt: null,
+                visibility: 'public'
+            }
+        });
+
+        if (!card) return res.status(404).json({ error: 'vCard bulunamadı.' });
+
+        const vCardContent = generateVCard(card);
+        const fileName = `${card.firstName}_${card.lastName}.vcf`.replace(/\s+/g, '_');
+
+        res.setHeader('Content-Type', 'text/vcard');
+        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
+        res.send(vCardContent);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Korumalı rotalar - Oturum açmış kullanıcılar gereklidir
 app.use('/api/cards', requireAuth, require('./routes/cards'));
 app.use('/api/interactions', requireAuth, require('./routes/interactions'));

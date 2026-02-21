@@ -7,6 +7,7 @@ import { FaDownload, FaShareAlt, FaEdit, FaIdCard, FaEnvelope, FaPhone, FaGlobe,
 import AddCard from './AddCard';
 import Modal from './Modal';
 import QRCodeOverlay from './QRCodeOverlay';
+import { generateVCardString } from '../utils/vcardHelper';
 
 const MyCard = () => {
     const [personalCard, setPersonalCard] = useState(null);
@@ -466,9 +467,11 @@ const MyCard = () => {
 
             {isQrModalOpen && (
                 <QRCodeOverlay
-                    url={shareUrl}
-                    onClose={() => setIsQrModalOpen(false)}
                     title={`${personalCard?.firstName} ${personalCard?.lastName}`}
+                    url={shareUrl}
+                    vCardData={generateVCardString(personalCard)}
+                    onClose={() => setIsQrModalOpen(false)}
+                    onDownloadVCard={handleDownloadVCard}
                 />
             )}
         </div>

@@ -13,6 +13,7 @@ import UserMenu from './components/UserMenu';
 import api, { API_URL } from './api/axios';
 import { downloadFile } from './utils/downloadHelper';
 import { saveCardsToOffline, getOfflineCards, getPendingSync, clearSyncItem } from './utils/offlineStore';
+import { generateVCardString } from './utils/vcardHelper';
 
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
@@ -23,7 +24,9 @@ import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
 import MyCard from './components/MyCard';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes, FaCalendarCheck, FaEdit, FaSave, FaCopy } from 'react-icons/fa';
+import ContactProfile from './components/ContactProfile';
+import QRCodeOverlay from './components/QRCodeOverlay';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaSignInAlt, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaWifi, FaPlane, FaTimes, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode } from 'react-icons/fa';
 
 // Sayfa Yer Tutucuları
 const Contacts = () => {
@@ -42,6 +45,7 @@ const Contacts = () => {
     const [editingCard, setEditingCard] = useState(null); // Düzenlenen kart
     const [historyCard, setHistoryCard] = useState(null); // Geçmiş görüntülenen kart
     const [selectedImageCard, setSelectedImageCard] = useState(null); // Resim görüntüleme
+    const [qrModalCard, setQrModalCard] = useState(null); // QR Kod görüntüleme
     const [deleteConfirmCard, setDeleteConfirmCard] = useState(null); // Silme onayı için
     const { showNotification } = useNotification();
 
@@ -139,6 +143,19 @@ const Contacts = () => {
         fetchCards();
         setIsModalOpen(false);
         setEditingCard(null);
+    };
+
+    const handleDownloadVCard = async (card) => {
+        try {
+            showNotification('vCard dosyası hazırlanıyor...', 'info');
+            const response = await api.get(`/api/cards/${card.id}/vcf`, {
+                responseType: 'blob'
+            });
+            downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
+            showNotification('vCard indirildi.', 'success');
+        } catch (error) {
+            showNotification('İndirme başarısız.', 'error');
+        }
     };
 
     const handleQuickNoteUpdate = async (cardId) => {
@@ -513,153 +530,201 @@ const Contacts = () => {
                                     </div>
                                 </div>
 
-                                {/* Aksiyon Butonları */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '140px' }}>
-                                    <button
-                                        onClick={() => toggleNotes(card.id)}
-                                        style={{
-                                            padding: '8px 12px',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                            backdropFilter: 'blur(10px)',
-                                            color: 'white',
-                                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.2s ease',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <span><FaStickyNote style={{ marginRight: '5px' }} /> Notlar</span>
-                                        {expandedNotesId === card.id ? <FaChevronUp /> : <FaChevronDown />}
-                                    </button>
+                                {/* Aksiyon Butonları - Action Center */}
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '12px',
+                                    minWidth: '160px',
+                                    padding: '10px',
+                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    borderRadius: '12px',
+                                    border: '1px solid rgba(255, 255, 255, 0.05)'
+                                }}>
+                                    {/* Grup 1: İletişim & Notlar (Primary) */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <button
+                                            onClick={() => toggleNotes(card.id)}
+                                            style={{
+                                                padding: '10px 14px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: '#ffc107',
+                                                border: '1px solid rgba(255, 193, 7, 0.2)',
+                                                borderRadius: '10px',
+                                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 193, 7, 0.2)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <FaStickyNote /> Notlar
+                                            </span>
+                                            {expandedNotesId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                                        </button>
 
-                                    <button
-                                        onClick={() => toggleDetails(card.id)}
-                                        style={{
-                                            padding: '8px 12px',
-                                            cursor: 'pointer',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                            backdropFilter: 'blur(10px)',
-                                            color: 'white',
-                                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.2s ease',
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        {expandedCardId === card.id ? 'Görüşmeleri Gizle' : 'Görüşmeler'}
-                                    </button>
+                                        <button
+                                            onClick={() => toggleDetails(card.id)}
+                                            style={{
+                                                padding: '10px 14px',
+                                                cursor: 'pointer',
+                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: '#60a5fa',
+                                                border: '1px solid rgba(59, 130, 246, 0.2)',
+                                                borderRadius: '10px',
+                                                transition: 'all 0.3s ease',
+                                                fontWeight: '600',
+                                                fontSize: '0.9rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.2)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.boxShadow = 'none';
+                                            }}
+                                        >
+                                            <FaClock /> {expandedCardId === card.id ? 'Görüşmeler' : 'Görüşmeler'}
+                                        </button>
+                                    </div>
 
-                                    <button
-                                        onClick={() => setHistoryCard(card)}
-                                        style={{
-                                            padding: '8px 12px',
-                                            cursor: 'pointer',
-                                            backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                            backdropFilter: 'blur(10px)',
-                                            color: 'rgba(255, 255, 255, 0.9)',
-                                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.2s ease',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                            e.currentTarget.style.color = '#17a2b8';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.color = 'rgba(255, 255, 255, 0.9)';
-                                        }}
-                                    >
-                                        <FaClock /> Geçmiş
-                                    </button>
+                                    {/* Ayırıcı Çizgi */}
+                                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }}></div>
 
-                                    <button
-                                        onClick={async () => {
-                                            try {
-                                                showNotification('vCard dosyası hazırlanıyor...', 'info');
-                                                const response = await api.get(`/api/cards/${card.id}/vcf`, {
-                                                    responseType: 'blob'
-                                                });
-                                                downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
-                                                showNotification('vCard indirildi.', 'success');
-                                            } catch (error) {
-                                                showNotification('İndirme başarısız.', 'error');
-                                            }
-                                        }}
-                                        style={{
-                                            padding: '8px 12px',
-                                            cursor: 'pointer',
-                                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                                            backdropFilter: 'blur(10px)',
-                                            color: '#28a745',
-                                            border: '1px solid rgba(40, 167, 69, 0.3)',
-                                            borderRadius: '8px',
-                                            transition: 'all 0.2s ease',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '8px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(40, 167, 69, 0.2)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = 'rgba(40, 167, 69, 0.1)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <FaDownload /> vCard İndir
-                                    </button>
+                                    {/* Grup 2: Paylaşım & İndirme */}
+                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                        <button
+                                            onClick={() => setQrModalCard(card)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px',
+                                                cursor: 'pointer',
+                                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: '#a78bfa',
+                                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                                borderRadius: '10px',
+                                                transition: 'all 0.3s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                            title="QR / vCard"
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.2)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <FaQrcode size={18} />
+                                        </button>
 
-                                    <div style={{ display: 'flex', gap: '5px' }}>
+                                        <button
+                                            onClick={() => handleDownloadVCard(card)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px',
+                                                cursor: 'pointer',
+                                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: '#34d399',
+                                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                borderRadius: '10px',
+                                                transition: 'all 0.3s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                            title="vCard İndir"
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <FaDownload size={18} />
+                                        </button>
+
+                                        <button
+                                            onClick={() => setHistoryCard(card)}
+                                            style={{
+                                                flex: 1,
+                                                padding: '10px',
+                                                cursor: 'pointer',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                backdropFilter: 'blur(10px)',
+                                                color: 'white',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                borderRadius: '10px',
+                                                transition: 'all 0.3s ease',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center'
+                                            }}
+                                            title="Geçmiş"
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <FaClock size={16} />
+                                        </button>
+                                    </div>
+
+                                    {/* Grup 3: Düzenleme & Silme */}
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                                         <button
                                             onClick={() => handleEdit(card)}
                                             style={{
                                                 flex: 1,
                                                 padding: '8px',
-                                                backgroundColor: 'rgba(255, 193, 7, 0.2)',
-                                                backdropFilter: 'blur(10px)',
-                                                color: '#ffc107',
-                                                border: '1px solid rgba(255, 193, 7, 0.4)',
+                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                color: 'rgba(255, 255, 255, 0.7)',
+                                                border: '1px solid rgba(255, 255, 255, 0.1)',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
+                                                fontSize: '0.8rem',
                                                 fontWeight: '600',
                                                 transition: 'all 0.2s ease',
                                             }}
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.3)';
-                                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(255, 193, 7, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                                                e.currentTarget.style.color = 'white';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
-                                                e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = 'none';
+                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
                                             }}
                                         >
                                             Düzenle
@@ -667,32 +732,35 @@ const Contacts = () => {
                                         <button
                                             onClick={() => handleDeleteClick(card)}
                                             style={{
-                                                flex: 1,
                                                 padding: '8px',
-                                                backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                                                backdropFilter: 'blur(10px)',
-                                                color: '#ff6b6b',
-                                                border: '1px solid rgba(220, 53, 69, 0.4)',
+                                                width: '40px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                                color: '#f87171',
+                                                border: '1px solid rgba(239, 68, 68, 0.2)',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
-                                                fontWeight: '600',
                                                 transition: 'all 0.2s ease',
                                             }}
+                                            title="Sil"
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(220, 53, 69, 0.3)';
-                                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                                                e.currentTarget.style.color = 'white';
+                                                e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(220, 53, 69, 0.2)';
-                                                e.currentTarget.style.transform = 'translateY(0)';
+                                                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                                                e.currentTarget.style.color = '#f87171';
                                                 e.currentTarget.style.boxShadow = 'none';
                                             }}
                                         >
-                                            Sil
+                                            <FaTrash size={14} />
                                         </button>
                                     </div>
                                 </div>
+
                             </div>
 
                             {/* Notlar Dropdown - Premium Glassmorphism */}
@@ -850,6 +918,17 @@ const Contacts = () => {
             >
                 <AddCard onCardAdded={handleCardAddedOrUpdated} activeCard={editingCard} />
             </Modal>
+
+            {/* QR Modal */}
+            {qrModalCard && (
+                <QRCodeOverlay
+                    title={`${qrModalCard.firstName} ${qrModalCard.lastName}`}
+                    url={`${window.location.origin}/contact-profile/${qrModalCard.id}`}
+                    vCardData={generateVCardString(qrModalCard)}
+                    onClose={() => setQrModalCard(null)}
+                    onDownloadVCard={() => handleDownloadVCard(qrModalCard)}
+                />
+            )}
 
             {/* Kart Resim Görüntüleme Modalı */}
             <Modal
@@ -1265,6 +1344,8 @@ const AppContent = () => {
                             </ProtectedRoute>
                         }
                     />
+                    {/* Public Route for Business Card Sharing */}
+                    <Route path="/contact-profile/:id" element={<ContactProfile />} />
                 </Routes>
             </main>
             <NotificationBanner />
