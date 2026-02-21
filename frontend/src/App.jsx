@@ -39,6 +39,12 @@ const Contacts = () => {
     // Arama ve Sıralama State'leri
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('newest');
+    const [advancedFilters, setAdvancedFilters] = useState({
+        tagId: '',
+        city: '',
+        hasReminder: false
+    });
+
 
     // Modal ve Düzenleme State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -119,15 +125,30 @@ const Contacts = () => {
         setIsModalOpen(true);
     };
 
+    // Etiketleri ve Şehirleri Dinamik Olarak Çıkar
+    const allTags = Array.from(new Set(cards.flatMap(c => c.tags || []).map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
+    const allCities = Array.from(new Set(cards.map(c => c.city).filter(Boolean).map(c => c.trim().toUpperCase()))).sort();
+
     // Filtreleme ve Sıralama Mantığı
     const filteredCards = cards.filter(card => {
         const searchLower = searchTerm.toLowerCase();
-        return (
+
+        // Genel Arama
+        const matchesSearch = searchTerm === '' || (
             (card.firstName && card.firstName.toLowerCase().includes(searchLower)) ||
             (card.lastName && card.lastName.toLowerCase().includes(searchLower)) ||
             (card.company && card.company.toLowerCase().includes(searchLower)) ||
+            (card.email && card.email.toLowerCase().includes(searchLower)) ||
+            (card.title && card.title.toLowerCase().includes(searchLower)) ||
             (card.city && card.city.toLowerCase().includes(searchLower))
         );
+
+        // Gelişmiş Filtreler
+        const matchesTag = advancedFilters.tagId === '' || (card.tags && card.tags.some(t => String(t.id) === String(advancedFilters.tagId)));
+        const matchesCity = advancedFilters.city === '' || (card.city && card.city.trim().toUpperCase() === advancedFilters.city);
+        const matchesReminder = !advancedFilters.hasReminder || (card.reminderDate !== null);
+
+        return matchesSearch && matchesTag && matchesCity && matchesReminder;
     }).sort((a, b) => {
         switch (sortOption) {
             case 'newest': return new Date(b.createdAt) - new Date(a.createdAt);
@@ -138,6 +159,7 @@ const Contacts = () => {
             default: return 0;
         }
     });
+
 
     const handleCardAddedOrUpdated = () => {
         fetchCards();
@@ -337,7 +359,12 @@ const Contacts = () => {
                 onSearchChange={setSearchTerm}
                 sortOption={sortOption}
                 onSortChange={setSortOption}
+                advancedFilters={advancedFilters}
+                onAdvancedFilterChange={setAdvancedFilters}
+                allTags={allTags}
+                allCities={allCities}
             />
+
 
             {/* Kart Listesi */}
             <div style={{ marginTop: '30px', display: 'grid', gap: '20px' }}>
