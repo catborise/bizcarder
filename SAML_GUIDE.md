@@ -18,25 +18,25 @@ DB_HOST=db
 PORT=5000
 SESSION_SECRET=rastgele_uzun_bir_dizi
 SESSION_SECURE=true
-FRONTEND_URL=https://kartvizit.ulakbim.gov.tr
+FRONTEND_URL=https://crm.example.com
 
 # --- CORS ---
 # Frontend URL ve SAML IdP otomatik eklenir, ek adresler için virgülle ayırın
-ALLOWED_ORIGINS=https://kartvizit.ulakbim.gov.tr
+ALLOWED_ORIGINS=https://crm.example.com
 
 # --- SAML (SHIBBOLETH) ---
-SAML_ENTRY_POINT=https://kimlik.kurum.gov.tr/idp/profile/SAML2/Redirect/SSO
-SAML_ISSUER=https://kartvizit.ulakbim.gov.tr
-SAML_CALLBACK_URL=https://kartvizit.ulakbim.gov.tr/auth/login/callback
+SAML_ENTRY_POINT=https://sso.example.com/idp/profile/SAML2/Redirect/SSO
+SAML_ISSUER=https://crm.example.com
+SAML_CALLBACK_URL=https://crm.example.com/auth/login/callback
 SAML_CERT="MIID....CERT_ICERIGI...."
 
 # --- FILTRELEME (OPSIYONEL) ---
 # Sadece belirli organizasyon birimlerine izin vermek için (Virgül ile ayırın)
 # eduPersonPrimaryOrgUnitDN (urn:oid:1.3.6.1.4.1.5923.1.1.1.8) kullanılır
-SAML_ALLOWED_ORG_UNITS="ou=birim1,dc=kurum,dc=gov,dc=tr, ou=birim2"
+SAML_ALLOWED_ORG_UNITS="ou=unit1,dc=example,dc=com, ou=unit2"
 
 # --- FRONTEND ---
-VITE_API_URL=https://kartvizit.ulakbim.gov.tr
+VITE_API_URL=https://crm.example.com
 ```
 
 ---
@@ -44,7 +44,7 @@ VITE_API_URL=https://kartvizit.ulakbim.gov.tr
 ## 2. SAML Metadata Erişimi
 
 Uygulamanın Service Provider (SP) metadata dosyasına şu adresten erişilebilir:
-**`https://kartvizit.ulakbim.gov.tr/auth/metadata.xml`**
+**`https://crm.example.com/auth/metadata.xml`**
 
 IdP yöneticiniz bu dosyayı kullanarak uygulamayı sisteme tanımlayabilir. Eğer dosyaya tarayıcıdan erişemiyorsanız, Ters Vekil Sunucu (Caddy/Nginx) yapılandırmanızın `/auth/*` isteklerini backend servisine yönlendirdiğinden emin olun.
 
