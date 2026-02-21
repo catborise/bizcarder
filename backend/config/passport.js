@@ -48,29 +48,34 @@ if (samlEntryPoint && samlCert) {
         },
         async (profile, done) => {
             try {
-                // DEBUG: Gelen profil bilgilerini incele (Loglarda görünecek)
-                console.log('--- SAML Profil Verisi ---');
+                // DEBUG: Gelen profil bilgilerini incele
+                console.log('--- SAML Profil Verisi Girişi ---');
                 console.log(JSON.stringify(profile, null, 2));
                 console.log('--------------------------');
 
-                // Shibboleth/SAML IdP'lerden gelen yaygın öznitelik isimleri (Attribute Mapping)
+                // Öznitelikleri hem kökte hem de .attributes altında ara
+                const attr = profile.attributes || {};
+                const getAttr = (key) => profile[key] || attr[key] || null;
+
+                // 1. Benzersiz ID Yakalama (Shibboleth/SAML IdP'lerden gelen yaygın öznitelik isimleri)
                 const shibbolethId = profile.nameID ||
-                    profile.uid ||
-                    profile.eduPersonPrincipalName ||
-                    profile['urn:oid:0.9.2342.19200300.100.1.1'] ||
-                    profile['urn:oid:1.3.6.1.4.1.5923.1.1.1.6'];
+                    getAttr('uid') ||
+                    getAttr('eduPersonPrincipalName') ||
+                    getAttr('urn:oid:0.9.2342.19200300.100.1.1') ||
+                    getAttr('urn:oid:1.3.6.1.4.1.5923.1.1.1.6');
 
-                const email = profile.email ||
-                    profile.mail ||
-                    profile['urn:oid:0.9.2342.19200300.100.1.3'];
+                // 2. E-Posta Yakalama
+                const email = getAttr('mail') ||
+                    getAttr('email') ||
+                    getAttr('urn:oid:0.9.2342.19200300.100.1.3');
 
-                // İsim soyisim birleştirme veya tekil alan
-                const firstName = profile.givenName || profile['urn:oid:2.5.4.42'];
-                const lastName = profile.sn || profile['urn:oid:2.5.4.4'];
+                // 3. İsim Soyisim Yakalama
+                let displayName = getAttr('displayName') ||
+                    getAttr('cn') ||
+                    getAttr('urn:oid:2.5.4.3');
 
-                let displayName = profile.displayName ||
-                    profile.cn ||
-                    profile['urn:oid:2.5.4.3'];
+                const firstName = getAttr('givenName') || getAttr('urn:oid:2.5.4.42');
+                const lastName = getAttr('sn') || getAttr('urn:oid:2.5.4.4');
 
                 if (!displayName && firstName && lastName) {
                     displayName = `${firstName} ${lastName}`;
@@ -83,8 +88,14 @@ if (samlEntryPoint && samlCert) {
                     return done(new Error('SAML profilinde benzersiz kimlik (ID) bulunamadı.'));
                 }
 
-                // Username olarak shibbolethId'nin @ işaretinden önceki kısmını veya tamamını kullan
-                const cleanUsername = shibbolethId.includes('@') ? shibbolethId.split('@')[0] : shibbolethId;
+                // 4. Kullanıcı Adı Belirleme
+                // Eğer shibbolethId bir hash (uzun karmaşık dizi) ise ve elimizde email varsa, kullanıcı adını email'den türet
+                let cleanUsername = shibbolethId.includes('@') ? shibbolethId.split('@')[0] : shibbolethId;
+                const isHashId = shibbolethId.length > 20 && !shibbolethId.includes('@');
+
+                if (isHashId && email) {
+                    cleanUsername = email.split('@')[0];
+                }
 
                 // Kullanıcıyı bul veya oluştur
                 let [user, created] = await User.findOrCreate({
@@ -100,9 +111,19 @@ if (samlEntryPoint && samlCert) {
 
                 // Mevcut kullanıcıda eksik veya değişmiş bilgileri güncelle
                 const updates = {};
-                if (!user.username && cleanUsername) updates.username = cleanUsername;
-                if (user.displayName === 'SSO Kullanıcısı' && displayName !== 'SSO Kullanıcısı') updates.displayName = displayName;
-                if (!user.email && email) updates.email = email;
+                // Eğer username bir hash ise veya değiştiyse güncelle
+                const currentUsernameIsHash = user.username && user.username.length > 20 && !user.username.includes('@');
+                if ((!user.username || currentUsernameIsHash) && cleanUsername && cleanUsername !== user.username) {
+                    updates.username = cleanUsername;
+                }
+
+                if ((user.displayName === 'SSO Kullanıcısı' || !user.displayName) && displayName !== 'SSO Kullanıcısı') {
+                    updates.displayName = displayName;
+                }
+
+                if (!user.email && email) {
+                    updates.email = email;
+                }
 
                 if (Object.keys(updates).length > 0) {
                     await user.update(updates);
