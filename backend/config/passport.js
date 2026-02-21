@@ -53,11 +53,25 @@ if (samlEntryPoint && samlCert) {
                 console.log(JSON.stringify(profile, null, 2));
                 console.log('--------------------------');
 
-                // Öznitelikleri hem kökte hem de .attributes altında ara
+                // Öznitelikleri hem kökte hem de .attributes altında ara (Büyük/Küçük harf duyarsız)
                 const attr = profile.attributes || {};
-                const getAttr = (key) => profile[key] || attr[key] || null;
+                const getAttr = (key) => {
+                    const lowKey = key.toLowerCase();
+                    // Doğrudan eşleşme kontrolü
+                    if (profile[key]) return profile[key];
+                    if (attr[key]) return attr[key];
 
-                // 1. Benzersiz ID Yakalama (Shibboleth/SAML IdP'lerden gelen yaygın öznitelik isimleri)
+                    // Küçük harf ile arama
+                    for (let k in profile) {
+                        if (k.toLowerCase() === lowKey) return profile[k];
+                    }
+                    for (let k in attr) {
+                        if (k.toLowerCase() === lowKey) return attr[k];
+                    }
+                    return null;
+                };
+
+                // 1. Benzersiz ID Yakalama
                 const shibbolethId = profile.nameID ||
                     getAttr('uid') ||
                     getAttr('eduPersonPrincipalName') ||
@@ -72,13 +86,16 @@ if (samlEntryPoint && samlCert) {
                 // 3. İsim Soyisim Yakalama
                 let displayName = getAttr('displayName') ||
                     getAttr('cn') ||
+                    getAttr('commonName') ||
                     getAttr('urn:oid:2.5.4.3');
 
-                const firstName = getAttr('givenName') || getAttr('urn:oid:2.5.4.42');
-                const lastName = getAttr('sn') || getAttr('urn:oid:2.5.4.4');
+                const firstName = getAttr('givenName') || getAttr('first_name') || getAttr('ad') || getAttr('urn:oid:2.5.4.42');
+                const lastName = getAttr('sn') || getAttr('surname') || getAttr('last_name') || getAttr('soyad') || getAttr('urn:oid:2.5.4.4');
 
                 if (!displayName && firstName && lastName) {
                     displayName = `${firstName} ${lastName}`;
+                } else if (!displayName && firstName) {
+                    displayName = firstName;
                 } else if (!displayName) {
                     displayName = 'SSO Kullanıcısı';
                 }
@@ -89,9 +106,8 @@ if (samlEntryPoint && samlCert) {
                 }
 
                 // 4. Kullanıcı Adı Belirleme
-                // Eğer shibbolethId bir hash (uzun karmaşık dizi) ise ve elimizde email varsa, kullanıcı adını email'den türet
                 let cleanUsername = shibbolethId.includes('@') ? shibbolethId.split('@')[0] : shibbolethId;
-                const isHashId = shibbolethId.length > 20 && !shibbolethId.includes('@');
+                const isHashId = shibbolethId.length > 20 && !shibbolethId.includes('@') && !shibbolethId.includes('.');
 
                 if (isHashId && email) {
                     cleanUsername = email.split('@')[0];
@@ -111,13 +127,15 @@ if (samlEntryPoint && samlCert) {
 
                 // Mevcut kullanıcıda eksik veya değişmiş bilgileri güncelle
                 const updates = {};
-                // Eğer username bir hash ise veya değiştiyse güncelle
+
+                // Username güncelleme (hash ise veya boşsa)
                 const currentUsernameIsHash = user.username && user.username.length > 20 && !user.username.includes('@');
                 if ((!user.username || currentUsernameIsHash) && cleanUsername && cleanUsername !== user.username) {
                     updates.username = cleanUsername;
                 }
 
-                if ((user.displayName === 'SSO Kullanıcısı' || !user.displayName) && displayName !== 'SSO Kullanıcısı') {
+                // İsim güncelleme (Eğer yeni bulunan isim 'SSO Kullanıcısı' değilse ve eskisinden farklıysa)
+                if (displayName && displayName !== 'SSO Kullanıcısı' && displayName !== user.displayName) {
                     updates.displayName = displayName;
                 }
 
@@ -126,6 +144,7 @@ if (samlEntryPoint && samlCert) {
                 }
 
                 if (Object.keys(updates).length > 0) {
+                    console.log(`[SAML UPDATE] User ${user.shibbolethId} updating fields:`, Object.keys(updates));
                     await user.update(updates);
                 }
 
