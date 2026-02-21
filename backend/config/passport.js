@@ -48,40 +48,64 @@ if (samlEntryPoint && samlCert) {
         },
         async (profile, done) => {
             try {
+                // DEBUG: Gelen profil bilgilerini incele (Loglarda görünecek)
+                console.log('--- SAML Profil Verisi ---');
+                console.log(JSON.stringify(profile, null, 2));
+                console.log('--------------------------');
+
                 // Shibboleth/SAML IdP'lerden gelen yaygın öznitelik isimleri (Attribute Mapping)
-                // IdP konfigürasyonuna göre uid, eduPersonPrincipalName veya mail kullanılabilir.
                 const shibbolethId = profile.nameID ||
                     profile.uid ||
+                    profile.eduPersonPrincipalName ||
                     profile['urn:oid:0.9.2342.19200300.100.1.1'] ||
-                    profile.eduPersonPrincipalName;
+                    profile['urn:oid:1.3.6.1.4.1.5923.1.1.1.6'];
 
                 const email = profile.email ||
                     profile.mail ||
                     profile['urn:oid:0.9.2342.19200300.100.1.3'];
 
-                const displayName = profile.displayName ||
+                // İsim soyisim birleştirme veya tekil alan
+                const firstName = profile.givenName || profile['urn:oid:2.5.4.42'];
+                const lastName = profile.sn || profile['urn:oid:2.5.4.4'];
+
+                let displayName = profile.displayName ||
                     profile.cn ||
-                    profile['urn:oid:2.5.4.3'] ||
-                    'SSO Kullanıcısı';
+                    profile['urn:oid:2.5.4.3'];
+
+                if (!displayName && firstName && lastName) {
+                    displayName = `${firstName} ${lastName}`;
+                } else if (!displayName) {
+                    displayName = 'SSO Kullanıcısı';
+                }
 
                 if (!shibbolethId) {
+                    console.error('SAML ID bulunamadı. Profil:', profile);
                     return done(new Error('SAML profilinde benzersiz kimlik (ID) bulunamadı.'));
                 }
+
+                // Username olarak shibbolethId'nin @ işaretinden önceki kısmını veya tamamını kullan
+                const cleanUsername = shibbolethId.includes('@') ? shibbolethId.split('@')[0] : shibbolethId;
 
                 // Kullanıcıyı bul veya oluştur
                 let [user, created] = await User.findOrCreate({
                     where: { shibbolethId: shibbolethId },
                     defaults: {
-                        email: email || `${shibbolethId}@sso.local`,
+                        username: cleanUsername,
+                        email: email || `${cleanUsername}@sso.local`,
                         displayName: displayName,
                         role: 'user',
-                        isApproved: true // SSO ile gelen kullanıcılar genelde otomatik onaylanır, tercih edilebilir
+                        isApproved: true
                     }
                 });
 
-                // Eğer e-posta veya isim IdP tarafında güncellendiyse güncelle (Opsiyonel)
-                if (!created && (user.email !== email || user.displayName !== displayName)) {
-                    await user.update({ email: email || user.email, displayName: displayName || user.displayName });
+                // Mevcut kullanıcıda eksik veya değişmiş bilgileri güncelle
+                const updates = {};
+                if (!user.username && cleanUsername) updates.username = cleanUsername;
+                if (user.displayName === 'SSO Kullanıcısı' && displayName !== 'SSO Kullanıcısı') updates.displayName = displayName;
+                if (!user.email && email) updates.email = email;
+
+                if (Object.keys(updates).length > 0) {
+                    await user.update(updates);
                 }
 
                 return done(null, user);
