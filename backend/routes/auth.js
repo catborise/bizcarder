@@ -56,6 +56,16 @@ router.get('/metadata.xml', (req, res) => {
 router.post('/local/login',
     passport.authenticate('local', { failureMessage: true }),
     (req, res) => {
+        // Sadece adminler yerel giriş yapabilir
+        if (req.user.role !== 'admin') {
+            req.logout((err) => {
+                if (err) console.error('Logout error:', err);
+            });
+            return res.status(403).json({
+                error: 'Yerel giriş yetkiniz bulunmuyor. Lütfen kurumsal giriş (SSO) kullanın.'
+            });
+        }
+
         // Onay durumunu kontrol et
         if (req.user.isApproved === false) {
             req.logout((err) => {

@@ -5,7 +5,7 @@ import { API_URL } from '../api/axios';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
 const Login = () => {
-    const [activeTab, setActiveTab] = useState('local'); // 'local' or 'shibboleth'
+    const [showLocalForm, setShowLocalForm] = useState(false);
     const [isRegisterMode, setIsRegisterMode] = useState(false);
 
     // Form states
@@ -49,7 +49,7 @@ const Login = () => {
 
                 if (result.success && result.pendingApproval) {
                     setError('Kayıt başarılı. Hesabınız yönetici onayı bekliyor.');
-                    setIsRegisterMode(false); // Giriş moduna dön
+                    setIsRegisterMode(false);
                     setLoading(false);
                     return;
                 }
@@ -70,7 +70,6 @@ const Login = () => {
     };
 
     const handleShibbolethLogin = () => {
-        // Shibboleth SAML akışını başlat
         window.location.href = `${API_URL}/auth/login`;
     };
 
@@ -126,60 +125,16 @@ const Login = () => {
                         fontWeight: '700',
                         letterSpacing: '-0.025em'
                     }}>
-                        CRM Giriş
+                        {showLocalForm ? 'Yönetici Girişi' : 'CRM Giriş'}
                     </h1>
                     <p style={{
                         margin: '10px 0 0',
                         color: 'var(--text-secondary)',
                         fontSize: '0.925rem'
                     }}>
-                        Devam etmek için oturum açın
+                        {showLocalForm ? 'Yerel hesap ile oturum açın' : 'Devam etmek için kurumsal hesabınızı kullanın'}
                     </p>
                 </div>
-
-
-                {/* Tab Navigation */}
-                <div style={{
-                    display: 'flex',
-                    padding: '10px 40px 0',
-                    gap: '20px'
-                }}>
-                    <button
-                        onClick={() => { setActiveTab('local'); setError(''); }}
-                        style={{
-                            flex: 1,
-                            padding: '12px 0',
-                            backgroundColor: 'transparent',
-                            color: activeTab === 'local' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                            border: 'none',
-                            borderBottom: activeTab === 'local' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease',
-                        }}
-                    >
-                        Yerel Giriş
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('shibboleth'); setError(''); }}
-                        style={{
-                            flex: 1,
-                            padding: '12px 0',
-                            backgroundColor: 'transparent',
-                            color: activeTab === 'shibboleth' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                            border: 'none',
-                            borderBottom: activeTab === 'shibboleth' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease',
-                        }}
-                    >
-                        Shibboleth
-                    </button>
-                </div>
-
 
                 {/* Main Content Area */}
                 <div style={{ padding: '40px' }}>
@@ -201,7 +156,7 @@ const Login = () => {
                     )}
 
 
-                    {activeTab === 'local' ? (
+                    {showLocalForm ? (
                         <form onSubmit={handleLocalSubmit}>
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
@@ -231,7 +186,6 @@ const Login = () => {
                                         placeholder={isRegisterMode ? "kullaniciadi" : "kullaniciadi veya email"}
                                     />
                                 </div>
-
                             </div>
 
                             {isRegisterMode && (
@@ -261,7 +215,6 @@ const Login = () => {
                                                 placeholder="ornek@email.com"
                                             />
                                         </div>
-
                                     </div>
 
                                     <div style={{ marginBottom: '20px' }}>
@@ -288,7 +241,6 @@ const Login = () => {
                                                 placeholder="Adınız Soyadınız"
                                             />
                                         </div>
-
                                     </div>
                                 </>
                             )}
@@ -318,7 +270,6 @@ const Login = () => {
                                         placeholder="••••••••"
                                     />
                                 </div>
-
                             </div>
 
                             <button
@@ -354,17 +305,13 @@ const Login = () => {
                                 {loading ? 'İşleniyor...' : (isRegisterMode ? 'Hesap Oluştur' : 'Giriş Yap')}
                             </button>
 
-                            {allowRegistration && (
-                                <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                            <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                {allowRegistration && (
                                     <button
                                         type="button"
                                         onClick={() => {
                                             setIsRegisterMode(!isRegisterMode);
                                             setError('');
-                                            setUsername('');
-                                            setEmail('');
-                                            setPassword('');
-                                            setDisplayName('');
                                         }}
                                         style={{
                                             background: 'none',
@@ -374,49 +321,92 @@ const Login = () => {
                                             cursor: 'pointer',
                                             transition: 'color 0.2s'
                                         }}
-                                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
-                                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
                                     >
-                                        {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Hesabınız yok mu? Yeni kayıt oluşturun'}
+                                        {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Yeni yönetici hesabı oluştur'}
                                     </button>
-
-                                </div>
-                            )}
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowLocalForm(false);
+                                        setError('');
+                                    }}
+                                    style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: 'var(--accent-primary)',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        marginTop: '10px'
+                                    }}
+                                >
+                                    ← Kurumsal Girişe Dön
+                                </button>
+                            </div>
                         </form>
                     ) : (
                         <div style={{ textAlign: 'center' }}>
-                            <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '0.925rem', lineHeight: '1.6' }}>
-                                Kurumsal kimlik bilgilerinizle güvenli geçiş yapmak için Shibboleth servisini kullanın.
-                            </p>
-                            <button
-                                onClick={handleShibbolethLogin}
-                                style={{
-                                    width: '100%',
-                                    padding: '14px',
-                                    background: 'var(--glass-bg)',
-                                    color: 'var(--text-primary)',
-                                    border: '1px solid var(--glass-border)',
-                                    borderRadius: '12px',
-                                    fontSize: '1rem',
-                                    fontWeight: '600',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.2s ease',
-                                }}
-                                onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'var(--glass-bg-hover)';
-                                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                                }}
-                                onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'var(--glass-bg)';
-                                    e.currentTarget.style.borderColor = 'var(--glass-border)';
-                                }}
-                            >
-                                Shibboleth ile Giriş Yap
-                            </button>
+                            <div style={{
+                                padding: '30px',
+                                background: 'rgba(var(--accent-primary-rgb), 0.05)',
+                                borderRadius: '20px',
+                                border: '1px dashed var(--glass-border)',
+                                marginBottom: '30px'
+                            }}>
+                                <p style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1rem', fontWeight: '500' }}>
+                                    Güvenli Kurumsal Giriş
+                                </p>
+                                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '0.875rem', lineHeight: '1.6' }}>
+                                    Şirket e-posta ve şifrenizle oturum açmak için aşağıdaki butona tıklayın.
+                                </p>
+                                <button
+                                    onClick={handleShibbolethLogin}
+                                    style={{
+                                        width: '100%',
+                                        padding: '16px',
+                                        background: 'var(--accent-primary)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontSize: '1rem',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '10px',
+                                        boxShadow: '0 4px 12px rgba(var(--accent-primary-rgb), 0.3)'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(var(--accent-primary-rgb), 0.4)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(var(--accent-primary-rgb), 0.3)';
+                                    }}
+                                >
+                                    Kurumsal Giriş (SAML/SSO)
+                                </button>
+                            </div>
 
-                            <p style={{ color: 'var(--text-tertiary)', marginTop: '20px', fontSize: '0.75rem' }}>
-                                Kurumsal kimlik sağlayıcısına yönlendirileceksiniz.
-                            </p>
+                            <button
+                                onClick={() => setShowLocalForm(true)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: 'var(--text-tertiary)',
+                                    fontSize: '0.875rem',
+                                    cursor: 'pointer',
+                                    textDecoration: 'underline'
+                                }}
+                                onMouseEnter={(e) => e.target.style.color = 'var(--text-secondary)'}
+                                onMouseLeave={(e) => e.target.style.color = 'var(--text-tertiary)'}
+                            >
+                                Yönetici misiniz? Yerel hesapla giriş yapın
+                            </button>
                         </div>
                     )}
                 </div>
