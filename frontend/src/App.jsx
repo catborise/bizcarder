@@ -14,12 +14,16 @@ import api, { API_URL } from './api/axios';
 import { downloadFile } from './utils/downloadHelper';
 import { saveCardsToOffline, getOfflineCards, getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { generateVCardString } from './utils/vcardHelper';
+import { ThemeProvider } from './context/ThemeContext';
+import ThemeToggle from './components/ThemeToggle';
+
 
 import Dashboard from './components/Dashboard';
 import Settings from './components/Settings';
 import TrashBin from './components/TrashBin';
 import HistoryTimeline from './components/HistoryTimeline';
 import ImportCards from './components/ImportCards';
+import About from './components/About';
 import Modal from './components/Modal';
 import ConfirmModal from './components/ConfirmModal';
 import SearchBar from './components/SearchBar';
@@ -191,16 +195,17 @@ const Contacts = () => {
         }
     };
 
-    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: '#aaa', fontSize: '18px' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)', fontSize: '18px' }}>Yükleniyor...</div>;
     if (error) return (
-        <div style={{ textAlign: 'center', padding: '50px', color: '#ff6b6b' }}>
+        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--accent-error)' }}>
             <h3>Bir Hata Oluştu</h3>
             <p>{error}</p>
-            <button onClick={fetchCards} style={{ padding: '8px 16px', backgroundColor: '#333', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
+            <button onClick={fetchCards} style={{ padding: '8px 16px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
                 Tekrar Dene
             </button>
         </div>
     );
+
 
     return (
         <div className="fade-in">
@@ -210,10 +215,11 @@ const Contacts = () => {
                     margin: 0,
                     fontSize: '2.5rem',
                     fontWeight: '700',
-                    color: 'white',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    color: 'var(--text-primary)',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     letterSpacing: '-0.02em'
                 }}>Kartvizitler</h2>
+
 
                 <div style={{ display: 'flex', gap: '10px' }}>
                     {/* Export Buttons */}
@@ -243,10 +249,10 @@ const Contacts = () => {
                             }}
                             title="Excel Olarak İndir"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.1)',
+                                background: 'var(--glass-bg)',
                                 backdropFilter: 'blur(10px)',
-                                color: '#28a745',
-                                border: '1px solid rgba(40, 167, 69, 0.3)',
+                                color: 'var(--accent-success)',
+                                border: '1px solid var(--glass-border)',
                                 padding: '12px',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
@@ -257,16 +263,17 @@ const Contacts = () => {
                                 justifyContent: 'center'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(40, 167, 69, 0.2)';
+                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                e.currentTarget.style.background = 'var(--glass-bg)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
                             <FaFileExcel size={20} />
                         </button>
+
 
                         <button
                             onClick={async () => {
@@ -293,10 +300,10 @@ const Contacts = () => {
                             }}
                             title="PDF Olarak İndir"
                             style={{
-                                background: 'rgba(255, 255, 255, 0.1)',
+                                background: 'var(--glass-bg)',
                                 backdropFilter: 'blur(10px)',
-                                color: '#dc3545',
-                                border: '1px solid rgba(220, 53, 69, 0.3)',
+                                color: 'var(--accent-error)',
+                                border: '1px solid var(--glass-border)',
                                 padding: '12px',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
@@ -307,25 +314,26 @@ const Contacts = () => {
                                 justifyContent: 'center'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(220, 53, 69, 0.2)';
+                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                e.currentTarget.style.background = 'var(--glass-bg)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
                             <FaFilePdf size={20} />
                         </button>
+
                     </div>
 
                     <button
                         onClick={openNewCardModal}
                         style={{
-                            background: 'rgba(255, 255, 255, 0.15)',
+                            background: 'var(--accent-primary)',
                             backdropFilter: 'blur(10px)',
                             color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            border: '1px solid var(--glass-border)',
                             padding: '12px 24px',
                             borderRadius: '12px',
                             cursor: 'pointer',
@@ -334,22 +342,23 @@ const Contacts = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
-                            e.target.style.transform = 'translateY(-2px)';
-                            e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                            e.currentTarget.style.transform = 'translateY(-2px)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
+                            e.currentTarget.style.opacity = '0.9';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-                            e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)';
+                            e.currentTarget.style.transform = 'translateY(0)';
+                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+                            e.currentTarget.style.opacity = '1';
                         }}
                     >
                         <span style={{ fontSize: '20px', fontWeight: 'bold' }}>+</span> Yeni Kart Ekle
                     </button>
+
                 </div>
             </div>
 
@@ -371,23 +380,24 @@ const Contacts = () => {
                 {filteredCards.length > 0 ? (
                     filteredCards.map(card => (
                         <div key={card.id} style={{
-                            background: 'rgba(255, 255, 255, 0.1)',
+                            background: 'var(--bg-card)',
                             backdropFilter: 'blur(10px)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            border: '1px solid var(--glass-border)',
                             padding: '20px',
                             borderRadius: '16px',
-                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+                            boxShadow: 'var(--glass-shadow)',
                             transition: 'all 0.3s ease',
                             position: 'relative'
                         }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                                e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.3)';
+                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                                e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                                e.currentTarget.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.2)';
+                                e.currentTarget.style.background = 'var(--bg-card)';
+                                e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
                             }}>
+
 
 
                             {/* Kart İçerik Container (Flex) - Adjacent JSX Hatasını Önlemek İçin Tek Parent */}
@@ -402,7 +412,8 @@ const Contacts = () => {
                                             backgroundColor: '#000',
                                             borderRadius: '8px',
                                             overflow: 'hidden',
-                                            border: '1px solid #444',
+                                            border: '1px solid var(--glass-border)',
+
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
@@ -428,16 +439,18 @@ const Contacts = () => {
                                             position: 'absolute',
                                             bottom: '8px',
                                             left: '8px',
-                                            color: 'rgba(255, 255, 255, 0.6)',
+                                            color: 'var(--text-tertiary)',
                                             fontSize: '11px',
                                             fontWeight: 'bold',
-                                            textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+                                            textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                                             pointerEvents: 'none',
                                             zIndex: 2,
-                                            letterSpacing: '0.5px'
+                                            letterSpacing: '0.5px',
+                                            opacity: 0.8
                                         }}>
                                             v{card.version || 1}
                                         </div>
+
                                     </div>
                                 ) : (
                                     <div style={{
@@ -446,10 +459,11 @@ const Contacts = () => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        backgroundColor: '#2a2a2a',
-                                        color: '#444',
+                                        backgroundColor: 'var(--bg-input)',
+                                        color: 'var(--text-tertiary)',
                                         borderRadius: '8px',
-                                        border: '1px solid #333',
+                                        border: '1px solid var(--glass-border)',
+
                                         position: 'relative'
                                     }}>
                                         <FaIdCard size={64} />
@@ -457,13 +471,15 @@ const Contacts = () => {
                                             position: 'absolute',
                                             bottom: '8px',
                                             left: '8px',
-                                            color: 'rgba(255, 255, 255, 0.3)',
+                                            color: 'var(--text-tertiary)',
                                             fontSize: '11px',
                                             fontWeight: 'bold',
-                                            pointerEvents: 'none'
+                                            pointerEvents: 'none',
+                                            opacity: 0.5
                                         }}>
                                             v{card.version || 1}
                                         </div>
+
                                     </div>
                                 )}
 
@@ -471,26 +487,28 @@ const Contacts = () => {
                                     <h3 style={{
                                         margin: '0 0 8px 0',
                                         fontSize: '1.4em',
-                                        color: 'white',
+                                        color: 'var(--text-primary)',
                                         fontWeight: '600'
                                     }}>{card.firstName} {card.lastName}</h3>
                                     <p style={{
                                         margin: '0 0 15px 0',
-                                        color: 'rgba(255, 255, 255, 0.7)',
+                                        color: 'var(--text-secondary)',
                                         fontStyle: 'italic',
                                         fontSize: '1.05em',
                                         display: 'flex',
                                         alignItems: 'center',
                                         gap: '10px'
                                     }}>
+
                                         {card.logoUrl && (
                                             <img
                                                 src={`${API_URL}${card.logoUrl}`}
                                                 alt="Logo"
-                                                style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'white', padding: '2px' }}
+                                                style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'white', padding: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                                             />
                                         )}
                                         {card.company} {card.title && `- ${card.title}`}
+
                                     </p>
 
                                     {/* Tags Display */}
@@ -519,41 +537,43 @@ const Contacts = () => {
                                                 alignItems: 'center',
                                                 gap: '8px',
                                                 padding: '6px 10px',
-                                                background: 'rgba(251, 191, 36, 0.1)',
+                                                background: 'var(--glass-bg)',
                                                 borderRadius: '8px',
-                                                border: '1px solid rgba(251, 191, 36, 0.2)',
+                                                border: '1px solid var(--accent-warning)',
                                                 marginBottom: '5px'
                                             }}>
-                                                <FaCalendarCheck color="#fbbf24" />
-                                                <strong style={{ color: '#fbbf24' }}>Hatırlatıcı:</strong>
-                                                <span style={{ color: '#fbbf24' }}>{new Date(card.reminderDate).toLocaleDateString('tr-TR')}</span>
+                                                <FaCalendarCheck color="var(--accent-warning)" />
+                                                <strong style={{ color: 'var(--text-primary)' }}>Hatırlatıcı:</strong>
+                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.reminderDate).toLocaleDateString('tr-TR')}</span>
                                             </div>
+
                                         )}
                                         {card.email && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FaEnvelope color="#ffc107" /> <strong style={{ color: '#bbb' }}>E-Posta:</strong> <span style={{ color: '#ddd' }}>{card.email}</span>
+                                                <FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>E-Posta:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span>
                                             </div>
                                         )}
                                         {card.phone && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FaPhone color="#28a745" /> <strong style={{ color: '#bbb' }}>Telefon:</strong> <span style={{ color: '#ddd' }}>{card.phone}</span>
+                                                <FaPhone color="var(--accent-success)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Telefon:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.phone}</span>
                                             </div>
                                         )}
                                         {card.website && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FaGlobe color="#17a2b8" /> <strong style={{ color: '#bbb' }}>Web:</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: '#646cff' }}>{card.website}</a>
+                                                <FaGlobe color="var(--accent-primary)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Web:</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)' }}>{card.website}</a>
                                             </div>
                                         )}
                                         {(card.city || card.country) && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FaCity color="#e83e8c" /> <strong style={{ color: '#bbb' }}>Konum:</strong> <span style={{ color: '#ddd' }}>{card.city}{card.city && card.country && ', '}{card.country}</span>
+                                                <FaCity color="var(--accent-error)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Konum:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.city}{card.city && card.country && ', '}{card.country}</span>
                                             </div>
                                         )}
                                         {card.address && (
                                             <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                                                <FaMapMarkerAlt color="#dc3545" style={{ marginTop: '3px' }} /> <strong style={{ color: '#bbb' }}>Adres:</strong> <span style={{ color: '#ddd' }}>{card.address}</span>
+                                                <FaMapMarkerAlt color="var(--accent-error)" style={{ marginTop: '3px' }} /> <strong style={{ color: 'var(--text-tertiary)' }}>Adres:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.address}</span>
                                             </div>
                                         )}
+
                                     </div>
                                 </div>
 
@@ -564,9 +584,9 @@ const Contacts = () => {
                                     gap: '12px',
                                     minWidth: '160px',
                                     padding: '10px',
-                                    background: 'rgba(255, 255, 255, 0.03)',
+                                    background: 'var(--glass-bg)',
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(255, 255, 255, 0.05)'
+                                    border: '1px solid var(--glass-border)'
                                 }}>
                                     {/* Grup 1: İletişim & Notlar (Primary) */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -578,25 +598,25 @@ const Contacts = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'space-between',
-                                                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                                                backgroundColor: 'var(--glass-bg)',
                                                 backdropFilter: 'blur(10px)',
-                                                color: '#ffc107',
-                                                border: '1px solid rgba(255, 193, 7, 0.2)',
+                                                color: 'var(--accent-warning)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '10px',
                                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                                 fontWeight: '600',
                                                 fontSize: '0.9rem'
                                             }}
+
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                                                 e.currentTarget.style.transform = 'translateY(-2px)';
-                                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 193, 7, 0.2)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                                                 e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = 'none';
                                             }}
+
                                         >
                                             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <FaStickyNote /> Notlar
@@ -609,10 +629,10 @@ const Contacts = () => {
                                             style={{
                                                 padding: '10px 14px',
                                                 cursor: 'pointer',
-                                                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                                                backgroundColor: 'var(--glass-bg)',
                                                 backdropFilter: 'blur(10px)',
-                                                color: '#60a5fa',
-                                                border: '1px solid rgba(59, 130, 246, 0.2)',
+                                                color: 'var(--accent-primary)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '10px',
                                                 transition: 'all 0.3s ease',
                                                 fontWeight: '600',
@@ -621,23 +641,24 @@ const Contacts = () => {
                                                 alignItems: 'center',
                                                 gap: '8px'
                                             }}
+
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                                                 e.currentTarget.style.transform = 'translateY(-2px)';
-                                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.2)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                                                 e.currentTarget.style.transform = 'translateY(0)';
-                                                e.currentTarget.style.boxShadow = 'none';
                                             }}
                                         >
                                             <FaClock /> {expandedCardId === card.id ? 'Görüşmeler' : 'Görüşmeler'}
                                         </button>
+
                                     </div>
 
                                     {/* Ayırıcı Çizgi */}
-                                    <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '4px 0' }}></div>
+                                    <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
+
 
                                     {/* Grup 2: Paylaşım & İndirme */}
                                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -647,25 +668,27 @@ const Contacts = () => {
                                                 flex: 1,
                                                 padding: '10px',
                                                 cursor: 'pointer',
-                                                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                                                backgroundColor: 'var(--glass-bg)',
                                                 backdropFilter: 'blur(10px)',
-                                                color: '#a78bfa',
-                                                border: '1px solid rgba(139, 92, 246, 0.2)',
+                                                color: 'var(--accent-secondary)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '10px',
                                                 transition: 'all 0.3s ease',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}
+
                                             title="QR / vCard"
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.1)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                                                 e.currentTarget.style.transform = 'translateY(0)';
                                             }}
+
                                         >
                                             <FaQrcode size={18} />
                                         </button>
@@ -676,25 +699,27 @@ const Contacts = () => {
                                                 flex: 1,
                                                 padding: '10px',
                                                 cursor: 'pointer',
-                                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                                backgroundColor: 'var(--glass-bg)',
                                                 backdropFilter: 'blur(10px)',
-                                                color: '#34d399',
-                                                border: '1px solid rgba(16, 185, 129, 0.2)',
+                                                color: 'var(--accent-success)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '10px',
                                                 transition: 'all 0.3s ease',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}
+
                                             title="vCard İndir"
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                                                 e.currentTarget.style.transform = 'translateY(0)';
                                             }}
+
                                         >
                                             <FaDownload size={18} />
                                         </button>
@@ -705,25 +730,27 @@ const Contacts = () => {
                                                 flex: 1,
                                                 padding: '10px',
                                                 cursor: 'pointer',
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                                                backgroundColor: 'var(--glass-bg)',
                                                 backdropFilter: 'blur(10px)',
-                                                color: 'white',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                color: 'var(--text-primary)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '10px',
                                                 transition: 'all 0.3s ease',
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center'
                                             }}
+
                                             title="Geçmiş"
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                                                 e.currentTarget.style.transform = 'translateY(-2px)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                                                 e.currentTarget.style.transform = 'translateY(0)';
                                             }}
+
                                         >
                                             <FaClock size={16} />
                                         </button>
@@ -736,26 +763,28 @@ const Contacts = () => {
                                             style={{
                                                 flex: 1,
                                                 padding: '8px',
-                                                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                                                color: 'rgba(255, 255, 255, 0.7)',
-                                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                                backgroundColor: 'var(--glass-bg)',
+                                                color: 'var(--text-secondary)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
                                                 fontSize: '0.8rem',
                                                 fontWeight: '600',
                                                 transition: 'all 0.2s ease',
                                             }}
+
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                                                e.currentTarget.style.color = 'white';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
+                                                e.currentTarget.style.color = 'var(--text-primary)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
-                                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
+                                                e.currentTarget.style.color = 'var(--text-secondary)';
                                             }}
                                         >
                                             Düzenle
                                         </button>
+
                                         <button
                                             onClick={() => handleDeleteClick(card)}
                                             style={{
@@ -764,25 +793,24 @@ const Contacts = () => {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                                                color: '#f87171',
-                                                border: '1px solid rgba(239, 68, 68, 0.2)',
+                                                backgroundColor: 'var(--glass-bg)',
+                                                color: 'var(--accent-error)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '8px',
                                                 cursor: 'pointer',
                                                 transition: 'all 0.2s ease',
                                             }}
                                             title="Sil"
                                             onMouseEnter={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                                                e.currentTarget.style.backgroundColor = 'var(--accent-error)';
                                                 e.currentTarget.style.color = 'white';
-                                                e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
                                             }}
                                             onMouseLeave={(e) => {
-                                                e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-                                                e.currentTarget.style.color = '#f87171';
-                                                e.currentTarget.style.boxShadow = 'none';
+                                                e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
+                                                e.currentTarget.style.color = 'var(--accent-error)';
                                             }}
                                         >
+
                                             <FaTrash size={14} />
                                         </button>
                                     </div>
@@ -1176,10 +1204,10 @@ const AppContent = () => {
                 position: 'sticky',
                 top: 0,
                 zIndex: 100,
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                borderBottom: '1px solid var(--glass-border)',
+                boxShadow: 'var(--glass-shadow)',
                 padding: '1rem 2rem',
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -1191,8 +1219,8 @@ const AppContent = () => {
                         style={{
                             fontSize: '1.5rem',
                             fontWeight: '700',
-                            color: 'white',
-                            textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                            color: 'var(--text-primary)',
+                            textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             letterSpacing: '-0.02em'
                         }}
                     >
@@ -1202,14 +1230,15 @@ const AppContent = () => {
                         <Link
                             to="/"
                             style={{
-                                color: 'rgba(255, 255, 255, 0.9)',
+                                color: 'var(--text-primary)',
                                 padding: '0.5rem 1rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500'
+                                fontWeight: '500',
+                                opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                                e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.background = 'transparent';
@@ -1220,14 +1249,15 @@ const AppContent = () => {
                         <Link
                             to="/contacts"
                             style={{
-                                color: 'rgba(255, 255, 255, 0.9)',
+                                color: 'var(--text-primary)',
                                 padding: '0.5rem 1rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500'
+                                fontWeight: '500',
+                                opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                                e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.background = 'transparent';
@@ -1238,14 +1268,15 @@ const AppContent = () => {
                         <Link
                             to="/my-card"
                             style={{
-                                color: 'rgba(255, 255, 255, 0.9)',
+                                color: 'var(--text-primary)',
                                 padding: '0.5rem 1rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500'
+                                fontWeight: '500',
+                                opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'rgba(255, 255, 255, 0.15)';
+                                e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
                                 e.target.style.background = 'transparent';
@@ -1253,13 +1284,33 @@ const AppContent = () => {
                         >
                             Kartım
                         </Link>
+                        <Link
+                            to="/about"
+                            style={{
+                                color: 'var(--text-primary)',
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                transition: 'all 0.2s ease',
+                                fontWeight: '500',
+                                opacity: 0.9
+                            }}
+                            onMouseEnter={(e) => {
+                                e.target.style.background = 'var(--glass-bg-hover)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.target.style.background = 'transparent';
+                            }}
+                        >
+                            Hakkında
+                        </Link>
                     </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <ThemeToggle />
                     <Link
                         to="/trash"
                         style={{
-                            color: 'rgba(255, 255, 255, 0.7)',
+                            color: 'var(--text-secondary)',
                             padding: '0.5rem',
                             borderRadius: '8px',
                             transition: 'all 0.2s ease',
@@ -1268,12 +1319,12 @@ const AppContent = () => {
                             alignItems: 'center'
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.15)';
-                            e.target.style.color = 'rgba(255, 255, 255, 0.9)';
+                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                            e.currentTarget.style.color = 'var(--text-primary)';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'transparent';
-                            e.target.style.color = 'rgba(255, 255, 255, 0.7)';
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = 'var(--text-secondary)';
                         }}
                         title="Çöp Kutusu"
                     >
@@ -1287,17 +1338,15 @@ const AppContent = () => {
                                 alignItems: 'center',
                                 gap: '8px',
                                 padding: '8px 16px',
-                                backgroundColor: '#2a2a2a',
-                                color: 'white',
-                                border: '1px solid #444',
+                                backgroundColor: 'var(--bg-card)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
                                 transition: 'all 0.2s ease',
                                 textDecoration: 'none'
                             }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#333'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#2a2a2a'}
                         >
                             <FaSignInAlt size={16} />
                             <span>Oturum Aç</span>
@@ -1312,6 +1361,7 @@ const AppContent = () => {
                 maxWidth: '1400px',
                 margin: '0 auto'
             }}>
+
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/login" element={<Login />} />
@@ -1371,25 +1421,29 @@ const AppContent = () => {
                             </ProtectedRoute>
                         }
                     />
+                    <Route path="/about" element={<About />} />
                     {/* Public Route for Business Card Sharing */}
                     <Route path="/contact-profile/:id" element={<ContactProfile />} />
                 </Routes>
-            </main>
+            </main >
             <NotificationBanner />
-        </div>
+        </div >
     );
 };
 
 function App() {
     return (
-        <AuthProvider>
-            <NotificationProvider>
-                <Router>
-                    <AppContent />
-                </Router>
-            </NotificationProvider>
-        </AuthProvider>
+        <ThemeProvider>
+            <AuthProvider>
+                <NotificationProvider>
+                    <Router>
+                        <AppContent />
+                    </Router>
+                </NotificationProvider>
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
+
 
 export default App;

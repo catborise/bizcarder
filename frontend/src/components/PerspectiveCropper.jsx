@@ -111,8 +111,9 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         );
 
         // Draw crosshair
-        ctx.strokeStyle = '#00ff00';
+        ctx.strokeStyle = '#4ade80';
         ctx.lineWidth = 1;
+
         ctx.beginPath();
         ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
         ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
@@ -312,13 +313,14 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                     >
                         <polygon
                             points={points.map(p => `${p.x},${p.y}`).join(' ')}
-                            fill="rgba(74, 222, 128, 0.25)"
-                            stroke="#4ade80"
+                            fill="rgba(74, 222, 128, 0.2)"
+                            stroke="var(--accent-success)"
                             strokeWidth="3"
                             strokeDasharray="5,5"
                             strokeLinejoin="round"
                             style={{ pointerEvents: 'auto', cursor: 'move' }}
                         />
+
                     </svg>
                 )}
 
@@ -331,15 +333,16 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         width: 120,
                         height: 120,
                         borderRadius: '60px',
-                        border: '3px solid #4ade80',
+                        border: '3px solid var(--accent-success)',
                         overflow: 'hidden',
                         zIndex: 100,
                         pointerEvents: 'none',
                         boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                        background: '#1a1a1a'
+                        background: 'var(--bg-card)'
                     }}>
                         <canvas ref={magnifierCanvasRef} width={120} height={120} />
                     </div>
+
                 )}
 
                 {/* Handles */}
@@ -357,9 +360,10 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                             top: p.y - 12,
                             width: 24,
                             height: 24,
-                            background: draggingIdx === idx ? '#4ade80' : 'rgba(255, 255, 255, 0.9)',
-                            border: '3px solid #4ade80',
+                            background: draggingIdx === idx ? 'var(--accent-success)' : 'var(--text-primary)',
+                            border: '3px solid var(--accent-success)',
                             borderRadius: '50%',
+
                             cursor: 'grab',
                             zIndex: 10,
                             boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
@@ -368,7 +372,8 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                             justifyContent: 'center'
                         }}
                     >
-                        <div style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%' }} />
+                        <div style={{ width: 6, height: 6, background: 'var(--accent-success)', borderRadius: '50%' }} />
+
                     </div>
                 ))}
             </div>
@@ -378,28 +383,30 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                background: 'rgba(255,255,255,0.05)',
+                background: 'var(--glass-bg)',
                 padding: '10px 15px',
                 borderRadius: '12px',
-                border: '1px solid rgba(255,255,255,0.1)'
+                border: '1px solid var(--glass-border)'
             }}>
-                <div style={{ fontSize: '14px', color: '#aaa' }}>
-                    Oran: <span style={{ color: '#4ade80', fontWeight: 'bold' }}>{aspect}</span>
+                <div style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
+                    Oran: <span style={{ color: 'var(--accent-success)', fontWeight: 'bold' }}>{aspect}</span>
                 </div>
+
                 <button
                     type="button"
                     onClick={handleConfirm}
                     style={{
                         padding: '10px 24px',
-                        background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                        background: 'var(--accent-success)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '10px',
                         cursor: 'pointer',
                         fontWeight: 'bold',
-                        boxShadow: '0 4px 12px rgba(34, 197, 94, 0.2)'
+                        boxShadow: 'var(--glass-shadow-hover)'
                     }}
                 >
+
                     Alan Seçildi
                 </button>
             </div>

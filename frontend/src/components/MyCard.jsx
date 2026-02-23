@@ -78,18 +78,20 @@ const MyCard = () => {
 
     const shareUrl = personalCard ? `${window.location.origin}/contact-profile/${personalCard.id}` : '';
 
-    if (loading) return <div style={{ color: 'white', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
+
 
     return (
         <div className="fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 style={{
-                    color: 'white',
+                    color: 'var(--text-primary)',
                     margin: 0,
                     fontSize: '2.5rem',
                     fontWeight: '700',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
                 }}>Dijital Kartvizitim</h2>
+
 
                 {personalCard && (
                     <button
@@ -99,97 +101,98 @@ const MyCard = () => {
                             alignItems: 'center',
                             gap: '8px',
                             padding: '10px 20px',
-                            background: 'rgba(255, 255, 255, 0.1)',
+                            background: 'var(--glass-bg)',
                             backdropFilter: 'blur(10px)',
-                            color: 'white',
-                            border: '1px solid rgba(255, 255, 255, 0.3)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--glass-border)',
                             borderRadius: '12px',
                             cursor: 'pointer',
                             fontWeight: '600',
                             transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                        onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
+                        onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
+                        onMouseLeave={(e) => e.target.style.background = 'var(--glass-bg)'}
                     >
                         <FaEdit /> Bilgileri Düzenle
                     </button>
+
                 )}
             </div>
 
             {!personalCard ? (
                 <div style={{
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: 'var(--glass-bg)',
                     backdropFilter: 'blur(20px)',
                     padding: '60px 40px',
                     borderRadius: '24px',
                     textAlign: 'center',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.3)'
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: 'var(--glass-shadow)'
                 }}>
                     <div style={{
                         width: '120px',
                         height: '120px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        background: 'var(--accent-primary)',
                         borderRadius: '50%',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         margin: '0 auto 30px',
-                        boxShadow: '0 10px 30px rgba(118, 75, 162, 0.4)'
+                        boxShadow: 'var(--glass-shadow-hover)'
                     }}>
                         <FaIdCard size={60} color="white" />
                     </div>
-                    <h3 style={{ color: 'white', fontSize: '1.8rem', marginBottom: '15px' }}>Kendi Kartvizitini Oluştur</h3>
-                    <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '35px', maxWidth: '500px', margin: '0 auto 35px', lineHeight: '1.6' }}>
+                    <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', marginBottom: '15px' }}>Kendi Kartvizitini Oluştur</h3>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '35px', maxWidth: '500px', margin: '0 auto 35px', lineHeight: '1.6' }}>
                         Dijital dünyada profesyonel varlığınızı yansıtın. Bilgilerinizi girin, profilinizi oluşturun ve QR kodunuzla saniyeler içinde paylaşın.
                     </p>
                     <button
                         onClick={() => setIsEditModalOpen(true)}
                         style={{
                             padding: '16px 40px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'var(--accent-primary)',
                             color: 'white',
                             border: 'none',
                             borderRadius: '14px',
                             cursor: 'pointer',
                             fontWeight: '700',
                             fontSize: '1.1rem',
-                            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                            boxShadow: 'var(--glass-shadow-hover)',
                             transition: 'all 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
                             e.target.style.transform = 'translateY(-5px)';
-                            e.target.style.boxShadow = '0 12px 30px rgba(102, 126, 234, 0.4)';
                         }}
                         onMouseLeave={(e) => {
                             e.target.style.transform = 'translateY(0)';
-                            e.target.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.3)';
                         }}
                     >
                         Başla ve Oluştur
                     </button>
                 </div>
+
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
 
                     {/* Premium Profile Card */}
                     <div style={{
-                        background: 'rgba(255, 255, 255, 0.08)',
+                        background: 'var(--bg-card)',
                         backdropFilter: 'blur(30px)',
                         borderRadius: '24px',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        border: '1px solid var(--glass-border)',
                         overflow: 'hidden',
-                        boxShadow: '0 25px 50px rgba(0,0,0,0.4)',
+                        boxShadow: 'var(--glass-shadow)',
                         display: 'flex',
                         flexDirection: 'column'
                     }}>
                         {/* Card Header with Background Decoration */}
                         <div style={{
                             height: '120px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            background: 'var(--accent-primary)',
                             position: 'relative',
                             overflow: 'hidden'
                         }}>
+
                             {/* Abstract decorative circles */}
                             <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
                             <div style={{ position: 'absolute', bottom: '-30px', left: '10%', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)' }} />
@@ -223,15 +226,15 @@ const MyCard = () => {
                                     right: '30px',
                                     width: '80px',
                                     height: '80px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    background: 'var(--bg-input)',
                                     backdropFilter: 'blur(10px)',
                                     borderRadius: '16px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid var(--glass-border)',
                                     padding: '10px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+                                    boxShadow: 'var(--glass-shadow)'
                                 }}>
                                     <img
                                         src={`${API_URL}${personalCard.logoUrl}`}
@@ -241,22 +244,24 @@ const MyCard = () => {
                                 </div>
                             )}
 
+
                             <div style={{
                                 width: '120px',
                                 height: '120px',
-                                background: '#1a1a1a',
+                                background: 'var(--bg-main)',
                                 borderRadius: '22px',
-                                border: '4px solid rgba(255,255,255,0.1)',
+                                border: '4px solid var(--glass-border)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 fontSize: '3rem',
                                 fontWeight: 'bold',
-                                color: 'white',
+                                color: 'var(--text-primary)',
                                 marginBottom: '20px',
                                 overflow: 'hidden',
-                                boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                                boxShadow: 'var(--glass-shadow)'
                             }}>
+
                                 {personalCard.frontImageUrl ? (
                                     <img src={`${API_URL}${personalCard.frontImageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
@@ -264,48 +269,52 @@ const MyCard = () => {
                                 )}
                             </div>
 
-                            <h3 style={{ color: 'white', fontSize: '2.2rem', margin: '0 0 5px 0', fontWeight: '800' }}>
+                            <h3 style={{ color: 'var(--text-primary)', fontSize: '2.2rem', margin: '0 0 5px 0', fontWeight: '800' }}>
                                 {personalCard.firstName} {personalCard.lastName}
                             </h3>
-                            <p style={{ color: '#a78bfa', fontSize: '1.2rem', margin: '0 0 25px 0', fontWeight: '500' }}>
+                            <p style={{ color: 'var(--accent-primary)', fontSize: '1.2rem', margin: '0 0 25px 0', fontWeight: '500' }}>
                                 {personalCard.title} {personalCard.company && `@ ${personalCard.company}`}
                             </p>
 
-                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', marginBottom: '25px' }}></div>
+                            <div style={{ height: '1px', background: 'var(--glass-border)', marginBottom: '25px' }}></div>
 
                             <div style={{ display: 'grid', gap: '20px' }}>
                                 {personalCard.email && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FaEnvelope color="#667eea" />
+                                        <div style={{ width: '40px', height: '40px', background: 'var(--bg-input)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <FaEnvelope color="var(--accent-primary)" />
                                         </div>
-                                        <div style={{ color: 'rgba(255,255,255,0.8)' }}>{personalCard.email}</div>
+                                        <div style={{ color: 'var(--text-primary)' }}>{personalCard.email}</div>
                                     </div>
                                 )}
+
                                 {personalCard.phone && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FaPhone color="#764ba2" />
+                                        <div style={{ width: '40px', height: '40px', background: 'var(--bg-input)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <FaPhone color="var(--accent-primary)" />
                                         </div>
-                                        <div style={{ color: 'rgba(255,255,255,0.8)' }}>{personalCard.phone}</div>
+                                        <div style={{ color: 'var(--text-primary)' }}>{personalCard.phone}</div>
                                     </div>
                                 )}
+
                                 {personalCard.website && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FaGlobe color="#4ade80" />
+                                        <div style={{ width: '40px', height: '40px', background: 'var(--bg-input)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <FaGlobe color="var(--accent-success)" />
                                         </div>
-                                        <div style={{ color: '#667eea', fontWeight: '500' }}>{personalCard.website}</div>
+                                        <div style={{ color: 'var(--accent-primary)', fontWeight: '500' }}>{personalCard.website}</div>
                                     </div>
                                 )}
+
                                 {personalCard.city && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                        <div style={{ width: '40px', height: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <FaMapMarkerAlt color="#f472b6" />
+                                        <div style={{ width: '40px', height: '40px', background: 'var(--bg-input)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <FaMapMarkerAlt color="var(--accent-error)" />
                                         </div>
-                                        <div style={{ color: 'rgba(255,255,255,0.8)' }}>{personalCard.city}, {personalCard.country}</div>
+                                        <div style={{ color: 'var(--text-primary)' }}>{personalCard.city}, {personalCard.country}</div>
                                     </div>
                                 )}
+
                             </div>
 
                             <div style={{ marginTop: '40px', display: 'flex', gap: '15px' }}>
@@ -314,9 +323,9 @@ const MyCard = () => {
                                     style={{
                                         flex: 1,
                                         padding: '14px',
-                                        background: 'rgba(255,255,255,0.1)',
-                                        color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        background: 'var(--glass-bg)',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--glass-border)',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
@@ -326,28 +335,30 @@ const MyCard = () => {
                                         gap: '10px',
                                         transition: 'all 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.15)'}
-                                    onMouseLeave={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+                                    onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
+                                    onMouseLeave={(e) => e.target.style.background = 'var(--glass-bg)'}
                                 >
                                     <FaDownload /> vCard İndir
                                 </button>
+
                                 <button
                                     onClick={handleShare}
                                     style={{
                                         padding: '14px 20px',
-                                        background: 'rgba(102, 126, 234, 0.2)',
-                                        color: '#a5b4fc',
-                                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                                        background: 'var(--accent-primary)',
+                                        color: 'white',
+                                        border: '1px solid var(--glass-border)',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
                                         fontWeight: '600',
                                         transition: 'all 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.background = 'rgba(102, 126, 234, 0.3)'}
-                                    onMouseLeave={(e) => e.target.style.background = 'rgba(102, 126, 234, 0.2)'}
+                                    onMouseEnter={(e) => e.target.style.opacity = '0.9'}
+                                    onMouseLeave={(e) => e.target.style.opacity = '1'}
                                 >
                                     <FaShareAlt />
                                 </button>
+
                             </div>
                         </div>
                     </div>
@@ -355,15 +366,16 @@ const MyCard = () => {
                     {/* Sharing Sidebar */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                         <div style={{
-                            background: 'rgba(255, 255, 255, 0.05)',
+                            background: 'var(--glass-bg)',
                             backdropFilter: 'blur(20px)',
                             padding: '35px',
                             borderRadius: '24px',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            border: '1px solid var(--glass-border)',
                             textAlign: 'center',
-                            boxShadow: '0 15px 35px rgba(0,0,0,0.2)'
+                            boxShadow: 'var(--glass-shadow)'
                         }}>
-                            <h4 style={{ color: 'white', fontSize: '1.4rem', marginBottom: '25px', fontWeight: '700' }}>QR Kod ile Paylaş</h4>
+                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '25px', fontWeight: '700' }}>QR Kod ile Paylaş</h4>
+
                             <div style={{
                                 background: 'white',
                                 padding: '20px',
@@ -378,36 +390,25 @@ const MyCard = () => {
                                 onClick={() => setIsQrModalOpen(true)}
                             >
                                 <QRCodeSVG value={shareUrl} size={180} />
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '10px',
-                                    right: '10px',
-                                    background: 'rgba(0,0,0,0.5)',
-                                    color: 'white',
-                                    padding: '4px',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem'
-                                }}>
-                                    <FaSearchPlus />
-                                </div>
                             </div>
-                            <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem', lineHeight: '1.5', padding: '0 10px' }}>
+                            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', lineHeight: '1.5', padding: '0 10px' }}>
                                 Diğer kullanıcılar bu QR kodu taratarak dijital kartvizit bilgilerinize anında ulaşabilir.
                             </p>
+
 
                             <div style={{
                                 marginTop: '25px',
                                 padding: '12px 15px',
-                                background: 'rgba(0,0,0,0.3)',
+                                background: 'var(--bg-input)',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255,255,255,0.05)',
+                                border: '1px solid var(--glass-border)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '10px'
                             }}>
                                 <div style={{
                                     flex: 1,
-                                    color: 'rgba(255,255,255,0.4)',
+                                    color: 'var(--text-tertiary)',
                                     fontSize: '0.8rem',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
@@ -416,6 +417,7 @@ const MyCard = () => {
                                 }}>
                                     {shareUrl}
                                 </div>
+
                                 <button
                                     onClick={() => {
                                         navigator.clipboard.writeText(shareUrl);
@@ -424,11 +426,12 @@ const MyCard = () => {
                                     style={{
                                         background: 'transparent',
                                         border: 'none',
-                                        color: '#667eea',
+                                        color: 'var(--accent-primary)',
                                         cursor: 'pointer',
                                         fontSize: '0.8rem',
                                         fontWeight: '600'
                                     }}
+
                                 >
                                     KOPYALA
                                 </button>
@@ -437,17 +440,18 @@ const MyCard = () => {
 
                         {/* Integration Tips Card */}
                         <div style={{
-                            background: 'rgba(102, 126, 234, 0.1)',
+                            background: 'var(--glass-bg)',
                             padding: '25px',
                             borderRadius: '24px',
-                            border: '1px solid rgba(102, 126, 234, 0.2)',
-                            color: 'white'
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-primary)'
                         }}>
                             <h5 style={{ margin: '0 0 10px 0', fontSize: '1.1rem' }}>💡 İpucu</h5>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', lineHeight: '1.4' }}>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-tertiary)', lineHeight: '1.4' }}>
                                 Dijital kartvizit profilinizi e-posta imzanıza ekleyerek profesyonel ağınızı büyütebilirsiniz.
                             </p>
                         </div>
+
                     </div>
 
                 </div>

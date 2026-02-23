@@ -1,54 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Modern Corporate Palette (Slate/Navy) */
-  --bg-dark: #020617;
-  /* Slate 950 */
-  --bg-card: #0f172a;
-  /* Slate 900 */
-
-  --gradient-primary: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-
-  /* Refined Glassmorphism Tokens */
-  --glass-bg: rgba(30, 41, 59, 0.4);
-  /* Slate 800 with transparency */
-  --glass-bg-hover: rgba(30, 41, 59, 0.6);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4), 0 2px 12px -1px rgba(0, 0, 0, 0.2);
-  --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.5);
-
-  /* Professional Text Colors */
-  --text-primary: #f8fafc;
-  /* Slate 50 */
-  --text-secondary: #94a3b8;
-  /* Slate 400 */
-  --text-tertiary: #64748b;
-  /* Slate 500 */
-
-  /* Accent Colors - SaaS Standard */
-  --accent-primary: #3b82f6;
-  /* Blue 500 */
-  --accent-secondary: #6366f1;
-  /* Indigo 500 */
-  --accent-success: #10b981;
-  /* Emerald 500 */
-  --accent-warning: #f59e0b;
-  /* Amber 500 */
-  --accent-error: #ef4444;
-  /* Red 500 */
-
-  /* Structure */
+  /* Common Structure */
   --border-radius-sm: 6px;
   --border-radius-md: 10px;
   --border-radius-lg: 16px;
 
   /* Typography */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme='dark'] {
+  --bg-dark: #020617;
+  --bg-card: #0f172a;
+  --bg-input: rgba(15, 23, 42, 0.6);
+
+  --glass-bg: rgba(30, 41, 59, 0.4);
+  --glass-bg-hover: rgba(30, 41, 59, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4), 0 2px 12px -1px rgba(0, 0, 0, 0.2);
+  --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.5);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+
+  --accent-primary: #3b82f6;
+  --accent-primary-rgb: 59, 130, 246;
+  --accent-secondary: #6366f1;
+  --accent-secondary-rgb: 99, 102, 241;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-error: #ef4444;
+
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  --bg-dark: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-input: rgba(255, 255, 255, 0.8);
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05), 0 2px 12px -1px rgba(0, 0, 0, 0.02);
+  --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.1);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #94a3b8;
+
+  --accent-primary: #2563eb;
+  --accent-primary-rgb: 37, 99, 235;
+  --accent-secondary: #4f46e5;
+  --accent-secondary-rgb: 79, 70, 229;
+  --accent-success: #059669;
+  --accent-warning: #d97706;
+  --accent-error: #dc2626;
+
+  color-scheme: light;
+}
+
+:root {
+  font-family: var(--font-family);
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
   color: var(--text-primary);
   background-color: var(--bg-dark);
 
@@ -74,6 +92,7 @@ body {
     radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
   background-attachment: fixed;
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 #root {
@@ -155,7 +174,7 @@ textarea,
 select {
   font-family: inherit;
   color: var(--text-primary);
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-input);
   border: 1px solid var(--glass-border);
   border-radius: var(--border-radius-sm);
   padding: 0.5rem 0.75rem;
@@ -230,9 +249,23 @@ textarea:focus {
   }
 }
 
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
 .fade-in {
   animation: fadeIn 0.3s ease;
 }
+
 
 /* Spinner Animation */
 .spinner {
@@ -249,6 +282,7 @@ textarea:focus {
     transform: rotate(360deg);
   }
 }
+
 /* Switch Toggle Styling */
 .switch {
   position: relative;
@@ -271,10 +305,10 @@ textarea:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--glass-bg);
   transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--glass-border);
 }
 
 .slider:before {
@@ -284,23 +318,23 @@ textarea:focus {
   width: 18px;
   left: 2px;
   bottom: 2px;
-  background-color: #cbd5e1;
+  background-color: var(--text-secondary);
   transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--accent-success);
   border-color: var(--accent-success);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   background-color: white;
   transform: translateX(20px);
 }
 
 /* Variant for Admin Role */
-input:checked + .slider.role-switch {
+input:checked+.slider.role-switch {
   background-color: var(--accent-warning);
   border-color: var(--accent-warning);
 }

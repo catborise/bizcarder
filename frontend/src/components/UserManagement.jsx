@@ -160,12 +160,13 @@ const UserManagement = () => {
                     <FaUsers size={32} color="var(--accent-primary)" /> Kullanıcı Yönetimi
                 </h2>
 
+
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <div style={{
-                        background: 'rgba(59, 130, 246, 0.1)',
+                        background: 'var(--accent-primary-transparent)',
                         padding: '8px 16px',
                         borderRadius: '8px',
-                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        border: '1px solid var(--accent-primary)',
                         color: 'var(--accent-primary)',
                         display: 'flex',
                         alignItems: 'center',
@@ -175,13 +176,14 @@ const UserManagement = () => {
                         <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Kullanıcı Listeleniyor</span>
                     </div>
                 </div>
+
             </div>
 
             {/* Filter Bar */}
             <div className="glass-container" style={{ padding: '1.25rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 <div style={{ flex: 1, minWidth: '300px' }}>
                     <div style={{ position: 'relative' }}>
-                        <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '1rem' }} />
+                        <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '1rem', color: 'var(--text-primary)' }} />
                         <input
                             type="text"
                             placeholder="İsim, e-posta veya kullanıcı adı ara..."
@@ -190,28 +192,34 @@ const UserManagement = () => {
                             style={{
                                 width: '100%',
                                 paddingLeft: '40px',
-                                background: 'rgba(15, 23, 42, 0.6)',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
                                 height: '42px',
-                                fontSize: '0.95rem'
+                                fontSize: '0.95rem',
+                                color: 'var(--text-primary)',
+                                borderRadius: '8px'
                             }}
                         />
                     </div>
                 </div>
 
+
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <div style={{ position: 'relative' }}>
-                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1 }} />
+                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1, color: 'var(--text-primary)' }} />
                         <select
                             value={roleFilter}
                             onChange={(e) => setRoleFilter(e.target.value)}
                             style={{
-                                background: 'rgba(15, 23, 42, 0.6)',
+                                background: 'var(--bg-input)',
+                                color: 'var(--text-primary)',
                                 minWidth: '160px',
                                 height: '42px',
                                 paddingLeft: '35px',
                                 cursor: 'pointer',
-                                appearance: 'none'
+                                appearance: 'none',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '8px'
                             }}
                         >
                             <option value="all">Rol: Tümü</option>
@@ -220,18 +228,22 @@ const UserManagement = () => {
                         </select>
                     </div>
 
+
                     <div style={{ position: 'relative' }}>
-                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1 }} />
+                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1, color: 'var(--text-primary)' }} />
                         <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             style={{
-                                background: 'rgba(15, 23, 42, 0.6)',
+                                background: 'var(--bg-input)',
+                                color: 'var(--text-primary)',
                                 minWidth: '160px',
                                 height: '42px',
                                 paddingLeft: '35px',
                                 cursor: 'pointer',
-                                appearance: 'none'
+                                appearance: 'none',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '8px'
                             }}
                         >
                             <option value="all">Durum: Tümü</option>
@@ -239,6 +251,7 @@ const UserManagement = () => {
                             <option value="pending">Beklemede</option>
                         </select>
                     </div>
+
                 </div>
             </div>
 
@@ -300,10 +313,11 @@ const UserManagement = () => {
                                         {u.id === currentUser.id && <span style={{
                                             fontSize: '0.7rem',
                                             marginLeft: '8px',
-                                            background: 'rgba(255,255,255,0.1)',
+                                            background: 'var(--glass-bg)',
                                             padding: '2px 6px',
                                             borderRadius: '4px',
-                                            color: 'var(--text-tertiary)'
+                                            color: 'var(--text-tertiary)',
+                                            border: '1px solid var(--glass-border)'
                                         }}>SİZ</span>}
                                     </div>
                                     <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -374,9 +388,9 @@ const UserManagement = () => {
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'scale(1.05)';
-                                            e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
-                                            e.currentTarget.style.color = '#60a5fa';
-                                            e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+                                            e.currentTarget.style.background = 'var(--accent-primary-transparent)';
+                                            e.currentTarget.style.color = 'var(--accent-primary)';
+                                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'scale(1)';
@@ -407,9 +421,9 @@ const UserManagement = () => {
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.transform = 'scale(1.05)';
-                                            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-                                            e.currentTarget.style.color = '#f87171';
-                                            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                                            e.currentTarget.style.background = 'var(--accent-error-transparent)';
+                                            e.currentTarget.style.color = 'var(--accent-error)';
+                                            e.currentTarget.style.borderColor = 'var(--accent-error)';
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'scale(1)';
@@ -457,9 +471,9 @@ const UserManagement = () => {
 
                     <div style={{
                         padding: '15px',
-                        background: 'rgba(59, 130, 246, 0.1)',
-                        border: '1px solid rgba(59, 130, 246, 0.2)',
-                        borderRadius: '8px',
+                        background: 'var(--accent-primary-transparent)',
+                        border: '1px solid var(--accent-primary)',
+                        borderRadius: '12px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '12px'
@@ -478,10 +492,11 @@ const UserManagement = () => {
                             {selectedUser?.displayName?.substring(0, 1).toUpperCase() || selectedUser?.username?.substring(0, 1).toUpperCase()}
                         </div>
                         <div>
-                            <div style={{ fontWeight: 'bold', color: 'white' }}>{selectedUser?.displayName}</div>
+                            <div style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{selectedUser?.displayName}</div>
                             <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>@{selectedUser?.username}</div>
                         </div>
                     </div>
+
 
                     <div>
                         <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Yeni Şifre</label>
@@ -495,12 +510,15 @@ const UserManagement = () => {
                                 style={{
                                     width: '100%',
                                     paddingLeft: '36px',
-                                    background: 'rgba(15, 23, 42, 0.6)',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    height: '45px'
+                                    background: 'var(--bg-input)',
+                                    border: '1px solid var(--glass-border)',
+                                    height: '45px',
+                                    color: 'var(--text-primary)',
+                                    borderRadius: '8px'
                                 }}
                                 autoFocus
                             />
+
                         </div>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '5px' }}>
                             En az 6 karakter uzunluğunda olmalıdır.
@@ -575,9 +593,9 @@ const UserManagement = () => {
                 <div style={{ padding: '10px', minWidth: '350px' }}>
                     <div style={{
                         padding: '15px',
-                        background: 'rgba(239, 68, 68, 0.1)',
-                        border: '1px solid rgba(239, 68, 68, 0.2)',
-                        borderRadius: '8px',
+                        background: 'var(--accent-error-transparent)',
+                        border: '1px solid var(--accent-error)',
+                        borderRadius: '12px',
                         marginBottom: '20px',
                         display: 'flex',
                         alignItems: 'flex-start',
@@ -596,12 +614,13 @@ const UserManagement = () => {
                             <FaTrash color="white" size={18} />
                         </div>
                         <div>
-                            <h4 style={{ margin: '0 0 5px 0', color: 'white' }}>Bu kullanıcıyı silmek istediğinize emin misiniz?</h4>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)' }}>
+                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>Bu kullanıcıyı silmek istediğinize emin misiniz?</h4>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                                 <strong>{userToDelete?.displayName}</strong> (@{userToDelete?.username}) kullanıcısı kalıcı olarak silinecektir.
                             </p>
                         </div>
                     </div>
+
 
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '15px' }}>
@@ -614,10 +633,10 @@ const UserManagement = () => {
                                 disabled={deleteLoading}
                                 style={{
                                     padding: '12px',
-                                    background: 'rgba(59, 130, 246, 0.1)',
-                                    border: '1px solid rgba(59, 130, 246, 0.2)',
-                                    borderRadius: '8px',
-                                    color: 'white',
+                                    background: 'var(--accent-primary-transparent)',
+                                    border: '1px solid var(--accent-primary)',
+                                    borderRadius: '12px',
+                                    color: 'var(--text-primary)',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -626,9 +645,16 @@ const UserManagement = () => {
                                     transition: 'all 0.2s',
                                     opacity: deleteLoading ? 0.7 : 1
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)'}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--accent-primary)';
+                                    e.currentTarget.style.color = 'white';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'var(--accent-primary-transparent)';
+                                    e.currentTarget.style.color = 'var(--text-primary)';
+                                }}
                             >
+
                                 <div style={{
                                     background: 'rgba(59, 130, 246, 0.2)',
                                     padding: '8px',
@@ -648,10 +674,10 @@ const UserManagement = () => {
                                 disabled={deleteLoading}
                                 style={{
                                     padding: '12px',
-                                    background: 'rgba(239, 68, 68, 0.1)',
-                                    border: '1px solid rgba(239, 68, 68, 0.2)',
-                                    borderRadius: '8px',
-                                    color: 'white',
+                                    background: 'var(--accent-error-transparent)',
+                                    border: '1px solid var(--accent-error)',
+                                    borderRadius: '12px',
+                                    color: 'var(--text-primary)',
                                     cursor: 'pointer',
                                     display: 'flex',
                                     alignItems: 'center',
@@ -660,9 +686,16 @@ const UserManagement = () => {
                                     transition: 'all 0.2s',
                                     opacity: deleteLoading ? 0.7 : 1
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--accent-error)';
+                                    e.currentTarget.style.color = 'white';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'var(--accent-error-transparent)';
+                                    e.currentTarget.style.color = 'var(--text-primary)';
+                                }}
                             >
+
                                 <div style={{
                                     background: 'rgba(239, 68, 68, 0.2)',
                                     padding: '8px',

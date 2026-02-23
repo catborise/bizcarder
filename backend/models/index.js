@@ -54,10 +54,26 @@ const syncDatabase = async (retries = 5, interval = 5000) => {
                     { title: 'Personel Listesi', subtitle: 'Dahili rehber', url: '#', icon: 'FaUsers', backgroundColor: 'rgba(43, 87, 151, 0.3)', order: 4, isInternal: false },
                     { title: 'Intranet', subtitle: 'Kurumsal duyurular', url: '#', icon: 'FaGlobe', backgroundColor: 'rgba(227, 162, 26, 0.3)', order: 5, isInternal: false },
                     { title: 'IT Destek', subtitle: 'Talep oluştur', url: '#', icon: 'FaLifeRing', backgroundColor: 'rgba(159, 0, 167, 0.3)', order: 6, isInternal: false },
-                    { title: 'Toplu İçe Aktar', subtitle: 'CSV/XLSX ile toplu veri', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 7, isInternal: true }
+                    { title: 'Toplu İçe Aktar', subtitle: 'CSV/XLSX ile toplu veri', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 7, isInternal: true },
+                    { title: 'Hakkında', subtitle: 'Sistem yetenekleri ve iletişim', url: '/about', icon: 'FaInfoCircle', backgroundColor: 'rgba(32, 201, 151, 0.3)', order: 8, isInternal: true }
                 ];
                 await DashboardTile.bulkCreate(defaultTiles);
                 console.log('Varsayılan dashboard tile\'ları oluşturuldu.');
+            } else {
+                // Hakkında tile'ı eksikse ekle
+                const aboutTile = await DashboardTile.findOne({ where: { url: '/about' } });
+                if (!aboutTile) {
+                    await DashboardTile.create({
+                        title: 'Hakkında',
+                        subtitle: 'Sistem yetenekleri ve iletişim',
+                        url: '/about',
+                        icon: 'FaInfoCircle',
+                        backgroundColor: 'rgba(32, 201, 151, 0.3)',
+                        order: 8,
+                        isInternal: true
+                    });
+                    console.log('Hakkında dashboard tile\'ı eklendi.');
+                }
             }
 
             // Varsayılan Etiketleri oluştur

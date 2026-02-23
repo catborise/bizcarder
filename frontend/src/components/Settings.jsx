@@ -42,18 +42,20 @@ const PasswordChangeForm = ({ showNotification }) => {
     const inputStyle = {
         width: '100%',
         padding: '12px',
-        background: 'rgba(0, 0, 0, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+        background: 'var(--bg-input)',
+        border: '1px solid var(--glass-border)',
         borderRadius: '8px',
-        color: 'white',
+        color: 'var(--text-primary)',
         fontSize: '1rem',
         marginTop: '8px'
     };
 
+
     return (
         <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Mevcut Şifre</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Mevcut Şifre</label>
+
                 <input
                     type="password"
                     name="currentPassword"
@@ -64,7 +66,8 @@ const PasswordChangeForm = ({ showNotification }) => {
                 />
             </div>
             <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Yeni Şifre</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Yeni Şifre</label>
+
                 <input
                     type="password"
                     name="newPassword"
@@ -75,7 +78,8 @@ const PasswordChangeForm = ({ showNotification }) => {
                 />
             </div>
             <div style={{ marginBottom: '30px' }}>
-                <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Yeni Şifre (Tekrar)</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Yeni Şifre (Tekrar)</label>
+
                 <input
                     type="password"
                     name="confirmPassword"
@@ -87,11 +91,16 @@ const PasswordChangeForm = ({ showNotification }) => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="submit" style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)', padding: '10px 25px', borderRadius: '10px',
-                    fontWeight: '600', cursor: 'pointer'
+                    background: 'var(--glass-bg)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
+                    padding: '10px 25px',
+                    borderRadius: '10px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
                 }}>Şifreyi Güncelle</button>
             </div>
+
         </form>
     );
 };
@@ -111,12 +120,14 @@ const Settings = () => {
         aiOcrApiKey: ''
     });
     const [tags, setTags] = useState([]);
-    const [tagForm, setTagForm] = useState({ name: '', color: '#3b82f6' });
+    const [tagForm, setTagForm] = useState({ name: '', color: 'var(--accent-primary)' });
+
     const [profileData, setProfileData] = useState({
         displayName: '',
         email: '',
         trashRetentionDays: 30
     });
+
     const [editingTag, setEditingTag] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -221,7 +232,8 @@ const Settings = () => {
                 await api.post('/api/tags', tagForm);
                 showNotification('Yeni etiket eklendi.', 'success');
             }
-            setTagForm({ name: '', color: '#3b82f6' });
+            setTagForm({ name: '', color: 'var(--accent-primary)' });
+
             setEditingTag(null);
             refreshTags();
         } catch (error) {
@@ -240,49 +252,54 @@ const Settings = () => {
         }
     };
 
-    if (loading && user?.role === 'admin') return <div style={{ color: 'white', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
+    if (loading && user?.role === 'admin') return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
+
 
     const cardStyle = {
-        background: 'rgba(255, 255, 255, 0.05)',
+        background: 'var(--bg-card)',
         backdropFilter: 'blur(10px)',
         borderRadius: '16px',
         padding: '30px',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
+        border: '1px solid var(--glass-border)',
+        boxShadow: 'var(--glass-shadow)',
         maxWidth: '700px',
         marginBottom: '30px'
     };
 
+
     const inputStyle = {
         width: '100%',
         padding: '12px',
-        background: 'rgba(0, 0, 0, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+        background: 'var(--bg-input)',
+        border: '1px solid var(--glass-border)',
         borderRadius: '8px',
-        color: 'white',
+        color: 'var(--text-primary)',
         fontSize: '1rem',
         marginTop: '8px'
     };
+
 
     const sectionTitleStyle = {
         marginBottom: '20px',
         fontWeight: '700',
         fontSize: '1.8rem',
-        color: 'white',
+        color: 'var(--text-primary)',
         display: 'flex',
         alignItems: 'center',
         gap: '12px'
     };
 
+
     return (
         <div className="fade-in" style={{ paddingBottom: '50px' }}>
             <h2 style={{
                 marginBottom: '40px', fontWeight: '700', fontSize: '2.5rem',
-                color: 'white', textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                color: 'var(--text-primary)', textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '15px'
             }}>
                 <span style={{ fontSize: '2rem' }}>⚙️</span> Ayarlar
             </h2>
+
 
             {/* PROFIL BILGILERI */}
             <div style={cardStyle}>
@@ -290,17 +307,18 @@ const Settings = () => {
                     <span style={{ fontSize: '1.5rem' }}>👤</span> Profil Bilgileri
                 </h3>
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Kullanıcı Adı</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Kullanıcı Adı</label>
                     <input
                         type="text"
                         value={user?.username || ''}
-                        style={{ ...inputStyle, background: 'rgba(255,255,255,0.05)', cursor: 'not-allowed', color: '#888' }}
+                        style={{ ...inputStyle, background: 'var(--bg-input)', opacity: 0.6, cursor: 'not-allowed', color: 'var(--text-tertiary)' }}
                         disabled
                     />
-                    <small style={{ color: '#666', marginTop: '4px', display: 'block' }}>Kullanıcı adı değiştirilemez.</small>
+                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>Kullanıcı adı değiştirilemez.</small>
                 </div>
+
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Ad Soyad / Görünen İsim</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Ad Soyad / Görünen İsim</label>
                     <input
                         type="text"
                         value={profileData.displayName}
@@ -310,7 +328,7 @@ const Settings = () => {
                     />
                 </div>
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>E-Posta Adresi</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>E-Posta Adresi</label>
                     <input
                         type="email"
                         value={profileData.email}
@@ -319,8 +337,9 @@ const Settings = () => {
                         placeholder="example@mail.com"
                     />
                 </div>
+
                 <div style={{ marginBottom: '30px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.9rem' }}>Kişisel Çöp Kutusu Saklama Süresi (Gün)</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Kişisel Çöp Kutusu Saklama Süresi (Gün)</label>
                     <input
                         type="number"
                         min="1"
@@ -329,15 +348,21 @@ const Settings = () => {
                         onChange={(e) => setProfileData({ ...profileData, trashRetentionDays: parseInt(e.target.value) || 1 })}
                         style={inputStyle}
                     />
-                    <small style={{ color: '#888', marginTop: '4px', display: 'block' }}>Sizin tarafınızdan silinen kartların ne kadar süre çöp kutusunda tutulacağını belirler.</small>
+                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>Sizin tarafınızdan silinen kartların ne kadar süre çöp kutusunda tutulacağını belirler.</small>
                 </div>
+
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={handleSaveProfile} style={{
-                        background: 'rgba(59, 130, 246, 0.2)',
-                        color: 'white', border: '1px solid rgba(59, 130, 246, 0.4)', padding: '10px 25px', borderRadius: '10px',
-                        fontWeight: '600', cursor: 'pointer'
+                        background: 'var(--accent-primary)',
+                        color: 'white',
+                        border: '1px solid var(--glass-border)',
+                        padding: '10px 25px',
+                        borderRadius: '10px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
                     }}>Profili Güncelle</button>
                 </div>
+
             </div>
 
             {/* HESAP AYARLARI (Şifre Değiştirme) */}
@@ -346,10 +371,11 @@ const Settings = () => {
                     <span style={{ fontSize: '1.5rem' }}>🔐</span> Hesap Ayarları
                 </h3>
                 {user?.shibbolethId ? (
-                    <div style={{ padding: '15px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)', color: '#93c5fd' }}>
+                    <div style={{ padding: '15px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)' }}>
                         <p style={{ margin: 0 }}>Kurumsal (SSO) hesap ile giriş yaptığınız için şifrenizi organizasyonunuzun portalından değiştirmelisiniz.</p>
                     </div>
                 ) : (
+
                     <PasswordChangeForm showNotification={showNotification} />
                 )}
             </div>
@@ -359,12 +385,13 @@ const Settings = () => {
                 <h3 style={sectionTitleStyle}>
                     <span style={{ fontSize: '1.5rem' }}>🤖</span> Kişisel AI Ayarları
                 </h3>
-                <div style={{ marginBottom: '25px', padding: '15px', background: 'rgba(99, 102, 241, 0.1)', borderRadius: '12px', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                <div style={{ marginBottom: '25px', padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--accent-primary)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <label style={{ display: 'block', color: '#818cf8', marginBottom: '5px', fontWeight: '600' }}>AI Destekli OCR</label>
-                            <p style={{ color: '#aaa', fontSize: '0.85rem', margin: 0 }}>Kartvizit tarama işleminde AI modellerini kullanın.</p>
+                            <label style={{ display: 'block', color: 'var(--accent-primary)', marginBottom: '5px', fontWeight: '600' }}>AI Destekli OCR</label>
+                            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', margin: 0 }}>Kartvizit tarama işleminde AI modellerini kullanın.</p>
                         </div>
+
                         <div style={{ position: 'relative', width: '50px', height: '26px' }}>
                             <input
                                 type="checkbox"
@@ -375,9 +402,10 @@ const Settings = () => {
                             />
                             <label htmlFor="ai-toggle" style={{
                                 position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                                backgroundColor: aiSettings.aiOcrEnabled ? '#6366f1' : '#444',
+                                backgroundColor: aiSettings.aiOcrEnabled ? 'var(--accent-primary)' : 'var(--bg-input)',
                                 transition: '0.4s', borderRadius: '34px',
                             }}>
+
                                 <span style={{
                                     position: 'absolute', height: '20px', width: '20px', left: '3px', bottom: '3px',
                                     backgroundColor: 'white', transition: '0.4s', borderRadius: '50%',
@@ -391,7 +419,8 @@ const Settings = () => {
                 {aiSettings.aiOcrEnabled && (
                     <div className="fade-in">
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ color: '#aaa', fontSize: '0.9rem' }}>AI Sağlayıcı</label>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>AI Sağlayıcı</label>
+
                             <select
                                 value={aiSettings.aiOcrProvider}
                                 onChange={(e) => setAiSettings({ ...aiSettings, aiOcrProvider: e.target.value })}
@@ -403,7 +432,7 @@ const Settings = () => {
                             </select>
                         </div>
                         <div style={{ marginBottom: '30px' }}>
-                            <label style={{ color: '#aaa', fontSize: '0.9rem' }}>API Anahtarı</label>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>API Anahtarı</label>
                             <input
                                 type="password"
                                 placeholder={user?.hasAiApiKey ? "••••••••••••••••" : "API Anahtarınızı girin..."}
@@ -416,7 +445,7 @@ const Settings = () => {
                 )}
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={handleSaveAI} style={{
-                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                        background: 'var(--accent-primary)',
                         color: 'white', border: 'none', padding: '10px 25px', borderRadius: '10px',
                         fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer'
                     }}>AI Ayarlarını Kaydet</button>
@@ -424,39 +453,49 @@ const Settings = () => {
             </div>
 
 
+
             {/* SISTEM AYARLARI (Admin) */}
-            {user?.role === 'admin' && (
-                <div style={cardStyle}>
-                    <h3 style={sectionTitleStyle}>
-                        <span style={{ fontSize: '1.5rem' }}>🏢</span> Sistem Ayarları
-                    </h3>
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', color: '#ffc107', marginBottom: '5px', fontWeight: '600' }}>📜 Log Limiti</label>
-                        <input
-                            type="number"
-                            value={systemSettings.logRetentionLimit}
-                            onChange={(e) => setSystemSettings({ ...systemSettings, logRetentionLimit: parseInt(e.target.value) || 0 })}
-                            style={inputStyle}
-                        />
+            {
+                user?.role === 'admin' && (
+                    <div style={cardStyle}>
+                        <h3 style={sectionTitleStyle}>
+                            <span style={{ fontSize: '1.5rem' }}>🏢</span> Sistem Ayarları
+                        </h3>
+                        <div style={{ marginBottom: '25px' }}>
+                            <label style={{ display: 'block', color: 'var(--accent-warning)', marginBottom: '5px', fontWeight: '600' }}>📜 Log Limiti</label>
+
+                            <input
+                                type="number"
+                                value={systemSettings.logRetentionLimit}
+                                onChange={(e) => setSystemSettings({ ...systemSettings, logRetentionLimit: parseInt(e.target.value) || 0 })}
+                                style={inputStyle}
+                            />
+                        </div>
+                        <div style={{ marginBottom: '30px' }}>
+                            <label style={{ display: 'block', color: 'var(--accent-error)', marginBottom: '5px', fontWeight: '600' }}>🗑️ Çöp Kutusu (Gün)</label>
+
+                            <input
+                                type="number"
+                                value={systemSettings.trashRetentionDays}
+                                onChange={(e) => setSystemSettings({ ...systemSettings, trashRetentionDays: parseInt(e.target.value) || 0 })}
+                                style={inputStyle}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <button onClick={handleSaveSystem} style={{
+                                background: 'var(--glass-bg)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
+                                padding: '10px 25px',
+                                borderRadius: '10px',
+                                fontWeight: '600',
+                                cursor: 'pointer'
+                            }}>Sistem Ayarlarını Kaydet</button>
+                        </div>
+
                     </div>
-                    <div style={{ marginBottom: '30px' }}>
-                        <label style={{ display: 'block', color: '#dc3545', marginBottom: '5px', fontWeight: '600' }}>🗑️ Çöp Kutusu (Gün)</label>
-                        <input
-                            type="number"
-                            value={systemSettings.trashRetentionDays}
-                            onChange={(e) => setSystemSettings({ ...systemSettings, trashRetentionDays: parseInt(e.target.value) || 0 })}
-                            style={inputStyle}
-                        />
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <button onClick={handleSaveSystem} style={{
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            color: 'white', border: '1px solid rgba(255, 255, 255, 0.2)', padding: '10px 25px', borderRadius: '10px',
-                            fontWeight: '600', cursor: 'pointer'
-                        }}>Sistem Ayarlarını Kaydet</button>
-                    </div>
-                </div>
-            )}
+                )
+            }
 
             {/* ETIKET YÖNETIMI */}
             <div style={cardStyle}>
@@ -465,7 +504,8 @@ const Settings = () => {
                 </h3>
                 <form onSubmit={handleTagSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '25px', alignItems: 'flex-end' }}>
                     <div style={{ flex: 1 }}>
-                        <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Etiket Adı</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Etiket Adı</label>
+
                         <input
                             type="text"
                             value={tagForm.name}
@@ -475,7 +515,8 @@ const Settings = () => {
                         />
                     </div>
                     <div>
-                        <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Renk</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Renk</label>
+
                         <input
                             type="color"
                             value={tagForm.color}
@@ -484,18 +525,20 @@ const Settings = () => {
                         />
                     </div>
                     <button type="submit" style={{
-                        background: editingTag ? '#f59e0b' : '#3b82f6',
+                        background: editingTag ? 'var(--accent-warning)' : 'var(--accent-primary)',
                         color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600'
                     }}>{editingTag ? 'Güncelle' : 'Ekle'}</button>
+
                 </form>
 
                 <div style={{ display: 'grid', gap: '10px' }}>
                     {tags.map(tag => (
                         <div key={tag.id} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '12px 15px', background: 'rgba(255,255,255,0.03)', borderRadius: '10px',
-                            border: '1px solid rgba(255,255,255,0.05)'
+                            padding: '12px 15px', background: 'var(--bg-input)', borderRadius: '10px',
+                            border: '1px solid var(--glass-border)'
                         }}>
+
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: tag.color }}></div>
                                 <span>{tag.name}</span>
@@ -508,7 +551,7 @@ const Settings = () => {
                     ))}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

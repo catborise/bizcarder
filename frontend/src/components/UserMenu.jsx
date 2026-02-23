@@ -24,22 +24,22 @@ const UserMenu = () => {
                     alignItems: 'center',
                     gap: '8px',
                     padding: '8px 16px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    backgroundColor: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
-                    color: 'white',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--glass-border)',
                     borderRadius: '8px',
                     cursor: 'pointer',
                     fontSize: '14px',
                     transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    boxShadow: 'var(--glass-shadow)'
                 }}
                 onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)';
                     e.currentTarget.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                    e.currentTarget.style.backgroundColor = 'var(--glass-bg)';
                     e.currentTarget.style.transform = 'translateY(0)';
                 }}
             >
@@ -70,24 +70,25 @@ const UserMenu = () => {
                         top: '100%',
                         right: 0,
                         marginTop: '10px',
-                        backgroundColor: '#1f1f1f',
-                        border: '1px solid #444',
+                        backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--glass-border)',
                         borderRadius: '12px',
                         minWidth: '220px',
-                        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                        boxShadow: 'var(--glass-shadow)',
                         zIndex: 999,
                         overflow: 'hidden',
                         animation: 'fadeIn 0.2s ease'
                     }}>
                         <div style={{
                             padding: '16px',
-                            borderBottom: '1px solid #333',
-                            background: 'rgba(255,255,255,0.03)'
+                            borderBottom: '1px solid var(--glass-border)',
+                            background: 'var(--glass-bg)'
                         }}>
-                            <div style={{ fontSize: '15px', color: '#fff', fontWeight: 'bold', marginBottom: '4px' }}>
+
+                            <div style={{ fontSize: '15px', color: 'var(--text-primary)', fontWeight: 'bold', marginBottom: '4px' }}>
                                 {user.displayName || user.username}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#888' }}>
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
                                 {user.email}
                             </div>
                             {user.role && (
@@ -96,20 +97,20 @@ const UserMenu = () => {
                                     display: 'inline-block',
                                     padding: '2px 6px',
                                     borderRadius: '4px',
-                                    background: user.role === 'admin' ? 'rgba(100, 108, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                                    color: user.role === 'admin' ? '#8888ff' : '#aaa',
+                                    background: user.role === 'admin' ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)',
+                                    color: user.role === 'admin' ? 'var(--accent-primary)' : 'var(--text-secondary)',
                                     marginTop: '8px',
                                     fontWeight: 'bold',
                                     textTransform: 'uppercase',
-                                    border: `1px solid ${user.role === 'admin' ? 'rgba(100, 108, 255, 0.3)' : 'rgba(255, 255, 255, 0.1)'}`
+                                    border: `1px solid ${user.role === 'admin' ? 'var(--accent-primary)' : 'var(--glass-border)'}`
                                 }}>
                                     {user.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
                                 </div>
                             )}
+
                         </div>
 
                         <div style={{ padding: '8px' }}>
-                            {/* İşlem Kayıtları (Herkes görebilir) */}
                             <button
                                 onClick={() => {
                                     setShowDropdown(false);
@@ -119,7 +120,7 @@ const UserMenu = () => {
                                     width: '100%',
                                     padding: '10px 12px',
                                     backgroundColor: 'transparent',
-                                    color: '#eee',
+                                    color: 'var(--text-primary)',
                                     border: 'none',
                                     cursor: 'pointer',
                                     fontSize: '14px',
@@ -130,14 +131,13 @@ const UserMenu = () => {
                                     borderRadius: '8px',
                                     textAlign: 'left'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                                <FaClipboardList size={16} color="#aaa" />
+                                <FaClipboardList size={16} />
                                 <span>İşlem Kayıtları</span>
                             </button>
 
-                            {/* Admin Linkleri */}
                             {user.role === 'admin' && (
                                 <button
                                     onClick={() => {
@@ -148,7 +148,7 @@ const UserMenu = () => {
                                         width: '100%',
                                         padding: '10px 12px',
                                         backgroundColor: 'transparent',
-                                        color: '#eee',
+                                        color: 'var(--text-primary)',
                                         border: 'none',
                                         cursor: 'pointer',
                                         fontSize: '14px',
@@ -159,15 +159,14 @@ const UserMenu = () => {
                                         borderRadius: '8px',
                                         textAlign: 'left'
                                     }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
-                                    <FaUsers size={16} color="#aaa" />
+                                    <FaUsers size={16} />
                                     <span>Kullanıcı Yönetimi</span>
                                 </button>
                             )}
 
-                            {/* Ayarlar (Herkes görebilir) */}
                             <button
                                 onClick={() => {
                                     setShowDropdown(false);
@@ -177,7 +176,7 @@ const UserMenu = () => {
                                     width: '100%',
                                     padding: '10px 12px',
                                     backgroundColor: 'transparent',
-                                    color: '#eee',
+                                    color: 'var(--text-primary)',
                                     border: 'none',
                                     cursor: 'pointer',
                                     fontSize: '14px',
@@ -188,14 +187,14 @@ const UserMenu = () => {
                                     borderRadius: '8px',
                                     textAlign: 'left'
                                 }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                                <FaCog size={16} color="#aaa" />
+                                <FaCog size={16} />
                                 <span>Ayarlar</span>
                             </button>
 
-                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '8px 0' }}></div>
+                            <div style={{ height: '1px', background: 'var(--glass-border)', margin: '8px 0' }}></div>
 
                             <button
                                 onClick={handleLogout}
@@ -203,7 +202,7 @@ const UserMenu = () => {
                                     width: '100%',
                                     padding: '10px 12px',
                                     backgroundColor: 'transparent',
-                                    color: '#ff6b6b',
+                                    color: 'var(--accent-error)',
                                     border: 'none',
                                     cursor: 'pointer',
                                     fontSize: '14px',
@@ -215,7 +214,7 @@ const UserMenu = () => {
                                     textAlign: 'left'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = 'rgba(220, 53, 69, 0.1)';
+                                    e.currentTarget.style.backgroundColor = 'var(--accent-error-transparent)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.backgroundColor = 'transparent';
@@ -224,10 +223,12 @@ const UserMenu = () => {
                                 <FaSignOutAlt size={16} />
                                 <span>Oturumu Kapat</span>
                             </button>
+
                         </div>
                     </div>
                 </>
             )}
+
         </div>
     );
 };

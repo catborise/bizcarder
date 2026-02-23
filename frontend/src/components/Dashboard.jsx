@@ -21,14 +21,15 @@ const hexToRgba = (hex, alpha = 0.3) => {
 };
 
 const rgbaToHex = (rgba) => {
-    if (!rgba || !rgba.startsWith('rgba')) return '#603cba';
+    if (!rgba || !rgba.startsWith('rgba')) return 'var(--accent-primary)';
     const parts = rgba.match(/(\d+)/g);
-    if (!parts || parts.length < 3) return '#603cba';
+    if (!parts || parts.length < 3) return 'var(--accent-primary)';
     const r = parseInt(parts[0]).toString(16).padStart(2, '0');
     const g = parseInt(parts[1]).toString(16).padStart(2, '0');
     const b = parseInt(parts[2]).toString(16).padStart(2, '0');
     return `#${r}${g}${b}`;
 };
+
 
 const DynamicIcon = ({ name, size = 36 }) => {
     const IconComponent = Icons[name] || Icons.FaLink;
@@ -40,18 +41,18 @@ const tileStyle = {
     flexDirection: 'column',
     justifyContent: 'space-between',
     padding: '25px',
-    color: 'white',
+    color: 'var(--text-primary)',
     textDecoration: 'none',
     height: '160px',
     position: 'relative',
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     overflow: 'hidden',
-    background: 'rgba(255, 255, 255, 0.1)',
+    background: 'var(--glass-bg)',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '16px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+    boxShadow: 'var(--glass-shadow)'
 };
 
 const Dashboard = () => {
@@ -164,16 +165,17 @@ const Dashboard = () => {
 
     const handleMouseEnter = (e) => {
         e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,0,0,0.3)';
-        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
+        e.currentTarget.style.background = 'var(--glass-bg-hover)';
+        e.currentTarget.style.borderColor = 'var(--accent-primary)';
     };
+
 
     const handleMouseLeave = (e) => {
         e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.2)';
-        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
+        e.currentTarget.style.background = 'var(--glass-bg)';
+        e.currentTarget.style.borderColor = 'var(--glass-border)';
     };
 
     return (
@@ -183,8 +185,8 @@ const Dashboard = () => {
                     margin: 0,
                     fontWeight: '700',
                     fontSize: '2.5rem',
-                    color: 'white',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    color: 'var(--text-primary)',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     letterSpacing: '-0.02em'
                 }}>
                     Dashboard
@@ -196,10 +198,10 @@ const Dashboard = () => {
                             style={{
                                 padding: '10px 20px',
                                 background: editMode
-                                    ? 'linear-gradient(135deg, #603cba 0%, #3b82f6 100%)'
-                                    : 'rgba(255, 255, 255, 0.1)',
+                                    ? 'var(--accent-primary)'
+                                    : 'var(--glass-bg)',
                                 color: 'white',
-                                border: editMode ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
+                                border: editMode ? 'none' : '1px solid var(--glass-border)',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -209,8 +211,8 @@ const Dashboard = () => {
                                 transition: 'all 0.3s ease',
                                 backdropFilter: 'blur(10px)',
                                 boxShadow: editMode
-                                    ? '0 4px 15px rgba(96, 60, 186, 0.4)'
-                                    : '0 4px 12px rgba(0,0,0,0.1)'
+                                    ? '0 4px 15px rgba(0, 0, 0, 0.2)'
+                                    : 'var(--glass-shadow)'
                             }}
                             title={editMode ? 'Düzenlemeyi Kapat' : 'Düzenleme Modu'}
                         >
@@ -220,7 +222,7 @@ const Dashboard = () => {
                             onClick={() => openModal()}
                             style={{
                                 padding: '10px 20px',
-                                background: 'linear-gradient(135deg, #603cba 0%, #3b82f6 100%)',
+                                background: 'var(--accent-primary)',
                                 color: 'white',
                                 border: 'none',
                                 borderRadius: '12px',
@@ -229,7 +231,7 @@ const Dashboard = () => {
                                 alignItems: 'center',
                                 gap: '8px',
                                 fontWeight: '600',
-                                boxShadow: '0 4px 15px rgba(96, 60, 186, 0.3)',
+                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
                                 transition: 'all 0.3s ease'
                             }}
                         >
@@ -238,35 +240,37 @@ const Dashboard = () => {
                         </button>
                     </div>
                 )}
+
             </div>
 
             {/* İstatistikler (Glass Container) */}
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '20px',
                 padding: '30px',
                 marginBottom: '40px',
-                color: 'white',
+                color: 'var(--text-primary)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+                boxShadow: 'var(--glass-shadow)'
             }}>
                 <div>
                     <h3 style={{
                         margin: 0,
                         fontSize: '1.3rem',
                         fontWeight: '600',
-                        marginBottom: '5px'
+                        marginBottom: '5px',
+                        color: 'var(--text-primary)'
                     }}>
                         Kayıtlı Kartvizitler
                     </h3>
                     <p style={{
                         margin: 0,
                         fontSize: '0.95rem',
-                        color: 'rgba(255, 255, 255, 0.7)'
+                        color: 'var(--text-secondary)'
                     }}>
                         Kayıtlı kartvizit sayısı
                     </p>
@@ -274,11 +278,12 @@ const Dashboard = () => {
                 <div style={{
                     fontSize: '4rem',
                     fontWeight: '700',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                    textShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }}>
                     {loading ? '...' : stats.totalCards}
                 </div>
             </div>
+
 
             {/* Core Application Tiles - Always at top, under stats */}
             <div style={{
@@ -300,7 +305,7 @@ const Dashboard = () => {
                                 <div style={{
                                     display: 'inline-flex',
                                     padding: '12px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    background: 'var(--glass-bg)',
                                     borderRadius: '12px',
                                     width: 'fit-content'
                                 }}>
@@ -317,7 +322,7 @@ const Dashboard = () => {
                                     </span>
                                     <span style={{
                                         fontSize: '0.9rem',
-                                        color: 'rgba(255, 255, 255, 0.7)'
+                                        color: 'var(--text-secondary)'
                                     }}>
                                         {tile.subtitle}
                                     </span>
@@ -353,7 +358,7 @@ const Dashboard = () => {
                                     <div style={{
                                         display: 'inline-flex',
                                         padding: '12px',
-                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        background: 'var(--glass-bg)',
                                         borderRadius: '12px',
                                         width: 'fit-content'
                                     }}>
@@ -370,7 +375,7 @@ const Dashboard = () => {
                                         </span>
                                         <span style={{
                                             fontSize: '0.9rem',
-                                            color: 'rgba(255, 255, 255, 0.7)'
+                                            color: 'var(--text-secondary)'
                                         }}>
                                             {tile.subtitle}
                                         </span>
@@ -388,10 +393,10 @@ const Dashboard = () => {
                                         <button
                                             onClick={() => openModal(tile)}
                                             style={{
-                                                background: 'rgba(255, 255, 255, 0.2)',
+                                                background: 'var(--glass-bg)',
                                                 border: 'none',
                                                 borderRadius: '6px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 padding: '6px',
                                                 display: 'flex',
                                                 alignItems: 'center',
@@ -407,7 +412,8 @@ const Dashboard = () => {
                                         <button
                                             onClick={() => handleDeleteTile(tile.id)}
                                             style={{
-                                                background: 'rgba(239, 68, 68, 0.4)',
+                                                background: 'var(--accent-error)',
+                                                opacity: 0.8,
                                                 border: 'none',
                                                 borderRadius: '6px',
                                                 color: 'white',
@@ -437,7 +443,7 @@ const Dashboard = () => {
                     onClose={() => setShowModal(false)}
                     title={currentTile ? "Kutucuk Düzenle" : "Yeni Kutucuk Ekle"}
                 >
-                    <form onSubmit={handleSaveTile} style={{ color: 'white' }}>
+                    <form onSubmit={handleSaveTile} style={{ color: 'var(--text-primary)' }}>
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ display: 'block', marginBottom: '5px' }}>Başlık</label>
                             <input
@@ -445,10 +451,10 @@ const Dashboard = () => {
                                 style={{
                                     width: '100%',
                                     padding: '10px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'var(--bg-input)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '8px',
-                                    color: 'white'
+                                    color: 'var(--text-primary)'
                                 }}
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -462,10 +468,10 @@ const Dashboard = () => {
                                 style={{
                                     width: '100%',
                                     padding: '10px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'var(--bg-input)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '8px',
-                                    color: 'white'
+                                    color: 'var(--text-primary)'
                                 }}
                                 value={formData.subtitle}
                                 onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
@@ -478,10 +484,10 @@ const Dashboard = () => {
                                 style={{
                                     width: '100%',
                                     padding: '10px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    background: 'var(--bg-input)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '8px',
-                                    color: 'white'
+                                    color: 'var(--text-primary)'
                                 }}
                                 value={formData.url}
                                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -497,10 +503,10 @@ const Dashboard = () => {
                                     style={{
                                         width: '100%',
                                         padding: '10px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        background: 'var(--bg-input)',
+                                        border: '1px solid var(--glass-border)',
                                         borderRadius: '8px',
-                                        color: 'white'
+                                        color: 'var(--text-primary)'
                                     }}
                                     value={formData.icon}
                                     onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
@@ -531,10 +537,10 @@ const Dashboard = () => {
                                         style={{
                                             flex: 1,
                                             padding: '10px',
-                                            background: 'rgba(255,255,255,0.05)',
-                                            border: '1px solid rgba(255,255,255,0.2)',
+                                            background: 'var(--bg-input)',
+                                            border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             fontSize: '0.85rem'
                                         }}
                                         value={formData.backgroundColor}
@@ -551,10 +557,10 @@ const Dashboard = () => {
                                     style={{
                                         width: '100%',
                                         padding: '10px',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        border: '1px solid rgba(255,255,255,0.2)',
+                                        background: 'var(--bg-input)',
+                                        border: '1px solid var(--glass-border)',
                                         borderRadius: '8px',
-                                        color: 'white'
+                                        color: 'var(--text-primary)'
                                     }}
                                     value={formData.order}
                                     onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
@@ -578,8 +584,8 @@ const Dashboard = () => {
                                 style={{
                                     padding: '10px 20px',
                                     background: 'transparent',
-                                    color: 'white',
-                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '8px',
                                     cursor: 'pointer'
                                 }}
@@ -590,7 +596,7 @@ const Dashboard = () => {
                                 type="submit"
                                 style={{
                                     padding: '10px 20px',
-                                    background: 'rgba(59, 130, 246, 0.5)',
+                                    background: 'var(--accent-primary)',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '8px',
@@ -604,6 +610,7 @@ const Dashboard = () => {
                     </form>
                 </Modal>
             )}
+
 
             {/* Reminder Modal */}
             {showReminderModal && (

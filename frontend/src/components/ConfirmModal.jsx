@@ -13,27 +13,29 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                    backdropFilter: 'blur(4px)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                    backdropFilter: 'blur(8px)',
                     zIndex: 1000,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    animation: 'fadeIn 0.2s ease'
                 }}
+                onClick={onClose}
             >
                 {/* Modal */}
                 <div
                     onClick={(e) => e.stopPropagation()}
                     style={{
-                        background: 'rgba(30, 30, 30, 0.95)',
+                        background: 'var(--bg-card)',
                         backdropFilter: 'blur(20px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        borderRadius: '16px',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '20px',
                         padding: '30px',
                         maxWidth: '450px',
                         width: '90%',
-                        boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-                        animation: 'modalFadeIn 0.2s ease-out'
+                        boxShadow: 'var(--glass-shadow)',
+                        animation: 'fadeIn 0.3s ease'
                     }}
                 >
                     {/* Icon */}
@@ -46,13 +48,13 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                             width: '60px',
                             height: '60px',
                             borderRadius: '50%',
-                            background: 'rgba(255, 107, 107, 0.2)',
-                            border: '2px solid rgba(255, 107, 107, 0.4)',
+                            background: 'var(--accent-error-transparent)',
+                            border: '2px solid var(--accent-error)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
                         }}>
-                            <FaExclamationTriangle size={28} color="#ff6b6b" />
+                            <FaExclamationTriangle size={28} color="var(--accent-error)" />
                         </div>
                     </div>
 
@@ -60,9 +62,10 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                     <h3 style={{
                         margin: '0 0 15px 0',
                         fontSize: '1.5rem',
-                        fontWeight: '600',
-                        color: 'white',
-                        textAlign: 'center'
+                        fontWeight: '700',
+                        color: 'var(--text-primary)',
+                        textAlign: 'center',
+                        letterSpacing: '-0.02em'
                     }}>
                         {title || 'Emin misiniz?'}
                     </h3>
@@ -71,7 +74,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                     <p style={{
                         margin: '0 0 30px 0',
                         fontSize: '1rem',
-                        color: 'rgba(255, 255, 255, 0.7)',
+                        color: 'var(--text-secondary)',
                         textAlign: 'center',
                         lineHeight: '1.5'
                     }}>
@@ -89,22 +92,22 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                             style={{
                                 flex: 1,
                                 padding: '12px 24px',
-                                background: 'rgba(255, 255, 255, 0.1)',
+                                background: 'var(--glass-bg)',
                                 backdropFilter: 'blur(10px)',
-                                color: 'white',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                borderRadius: '8px',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
                                 transition: 'all 0.2s ease'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
-                                e.currentTarget.style.transform = 'translateY(-1px)';
+                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                e.currentTarget.style.background = 'var(--glass-bg)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
@@ -118,25 +121,26 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                             style={{
                                 flex: 1,
                                 padding: '12px 24px',
-                                background: 'rgba(220, 53, 69, 0.8)',
+                                background: 'var(--accent-error)',
                                 backdropFilter: 'blur(10px)',
                                 color: 'white',
-                                border: '1px solid rgba(220, 53, 69, 0.4)',
-                                borderRadius: '8px',
+                                border: 'none',
+                                borderRadius: '12px',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
-                                transition: 'all 0.2s ease'
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)'
                             }}
                             onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(220, 53, 69, 1)';
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.3)';
+                                e.currentTarget.style.opacity = '0.9';
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(239, 68, 68, 0.3)';
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(220, 53, 69, 0.8)';
+                                e.currentTarget.style.opacity = '1';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.2)';
                             }}
                         >
                             Evet, Sil
@@ -144,6 +148,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                     </div>
                 </div>
             </div>
+
 
             <style>{`
                 @keyframes modalFadeIn {

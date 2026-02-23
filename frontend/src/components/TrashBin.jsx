@@ -70,7 +70,8 @@ const TrashBin = () => {
         return daysLeft > 0 ? daysLeft : 0;
     };
 
-    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: '#aaa' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Yükleniyor...</div>;
+
 
     return (
         <div className="fade-in">
@@ -79,8 +80,8 @@ const TrashBin = () => {
                     margin: 0,
                     fontSize: '2.5rem',
                     fontWeight: '700',
-                    color: 'white',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                    color: 'var(--text-primary)',
+                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     letterSpacing: '-0.02em',
                     display: 'flex',
                     alignItems: 'center',
@@ -88,14 +89,15 @@ const TrashBin = () => {
                 }}>
                     <FaTrash /> Çöp Kutusu
                 </h2>
+
                 {trashedCards.length > 0 && (
                     <button
                         onClick={() => setConfirmAction({ type: 'empty' })}
                         style={{
-                            background: 'rgba(220, 53, 69, 0.8)',
+                            background: 'var(--accent-error)',
                             backdropFilter: 'blur(10px)',
                             color: 'white',
-                            border: '1px solid rgba(220, 53, 69, 0.4)',
+                            border: '1px solid var(--glass-border)',
                             padding: '12px 24px',
                             borderRadius: '12px',
                             cursor: 'pointer',
@@ -107,16 +109,17 @@ const TrashBin = () => {
                             gap: '10px'
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(220, 53, 69, 1)';
+                            e.target.style.opacity = '0.9';
                             e.target.style.transform = 'translateY(-2px)';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(220, 53, 69, 0.8)';
+                            e.target.style.opacity = '1';
                             e.target.style.transform = 'translateY(0)';
                         }}
                     >
                         <FaTrashRestore /> Çöp Kutusunu Boşalt
                     </button>
+
                 )}
             </div>
 
@@ -124,24 +127,25 @@ const TrashBin = () => {
                 <div style={{
                     textAlign: 'center',
                     padding: '60px 20px',
-                    background: 'rgba(255, 255, 255, 0.05)',
+                    background: 'var(--glass-bg)',
                     borderRadius: '16px',
-                    border: '1px solid rgba(255, 255, 255, 0.1)'
+                    border: '1px solid var(--glass-border)'
                 }}>
-                    <FaTrash size={64} color="rgba(255, 255, 255, 0.2)" />
-                    <p style={{ marginTop: '20px', color: '#888', fontSize: '1.1rem' }}>
+                    <FaTrash size={64} color="var(--text-tertiary)" />
+                    <p style={{ marginTop: '20px', color: 'var(--text-tertiary)', fontSize: '1.1rem' }}>
                         Çöp kutusu boş
                     </p>
                 </div>
+
             ) : (
                 <div style={{ display: 'grid', gap: '20px' }}>
                     {trashedCards.map(card => {
                         const daysLeft = getDaysRemaining(card.deletedAt);
                         return (
                             <div key={card.id} style={{
-                                background: 'rgba(255, 255, 255, 0.08)',
+                                background: 'var(--bg-card)',
                                 backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.15)',
+                                border: '1px solid var(--glass-border)',
                                 padding: '20px',
                                 borderRadius: '16px',
                                 display: 'flex',
@@ -149,36 +153,37 @@ const TrashBin = () => {
                                 alignItems: 'center',
                                 transition: 'all 0.2s ease'
                             }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}
                             >
                                 <div style={{ flex: 1 }}>
-                                    <h3 style={{ margin: '0 0 8px 0', color: 'white', fontSize: '1.3em' }}>
+                                    <h3 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '1.3em' }}>
                                         {card.firstName} {card.lastName}
                                     </h3>
-                                    <p style={{ margin: '0 0 8px 0', color: 'rgba(255, 255, 255, 0.6)' }}>
+                                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.9em', color: 'rgba(255, 255, 255, 0.5)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.9em', color: 'var(--text-tertiary)' }}>
                                         <span>Silinme: {new Date(card.deletedAt).toLocaleDateString('tr-TR')}</span>
                                         <span style={{
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '5px',
-                                            color: daysLeft < 7 ? '#ff6b6b' : '#ffc107'
+                                            color: daysLeft < 7 ? 'var(--accent-error)' : 'var(--accent-warning)'
                                         }}>
                                             <FaClock /> {daysLeft} gün kaldı
                                         </span>
                                     </div>
                                 </div>
+
                                 <div style={{ display: 'flex', gap: '10px' }}>
                                     <button
                                         onClick={() => setConfirmAction({ type: 'restore', card })}
                                         style={{
                                             padding: '10px 20px',
-                                            background: 'rgba(40, 167, 69, 0.2)',
-                                            color: '#2ecc71',
-                                            border: '1px solid rgba(40, 167, 69, 0.4)',
+                                            background: 'var(--glass-bg)',
+                                            color: 'var(--accent-success)',
+                                            border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
                                             fontWeight: '600',
@@ -188,23 +193,24 @@ const TrashBin = () => {
                                             gap: '8px'
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'rgba(40, 167, 69, 0.3)';
+                                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                             e.currentTarget.style.transform = 'translateY(-2px)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'rgba(40, 167, 69, 0.2)';
+                                            e.currentTarget.style.background = 'var(--glass-bg)';
                                             e.currentTarget.style.transform = 'translateY(0)';
                                         }}
                                     >
                                         <FaUndo /> Geri Yükle
                                     </button>
+
                                     <button
                                         onClick={() => setConfirmAction({ type: 'delete', card })}
                                         style={{
                                             padding: '10px 20px',
-                                            background: 'rgba(220, 53, 69, 0.2)',
-                                            color: '#ff6b6b',
-                                            border: '1px solid rgba(220, 53, 69, 0.4)',
+                                            background: 'var(--glass-bg)',
+                                            color: 'var(--accent-error)',
+                                            border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
                                             fontWeight: '600',
@@ -214,16 +220,17 @@ const TrashBin = () => {
                                             gap: '8px'
                                         }}
                                         onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'rgba(220, 53, 69, 0.3)';
+                                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                             e.currentTarget.style.transform = 'translateY(-2px)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'rgba(220, 53, 69, 0.2)';
+                                            e.currentTarget.style.background = 'var(--glass-bg)';
                                             e.currentTarget.style.transform = 'translateY(0)';
                                         }}
                                     >
                                         <FaTrash /> Kalıcı Sil
                                     </button>
+
                                 </div>
                             </div>
                         );

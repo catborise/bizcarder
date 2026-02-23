@@ -80,7 +80,7 @@ const Login = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'var(--bg-dark)',
+            background: 'var(--bg-main)',
             backgroundImage: `
                 radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
                 radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.1) 0%, transparent 40%)
@@ -88,21 +88,23 @@ const Login = () => {
             backgroundAttachment: 'fixed',
             padding: '20px'
         }}>
+
             <div className="fade-in" style={{
                 width: '100%',
                 maxWidth: '440px',
-                background: 'rgba(30, 41, 59, 0.5)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '24px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                border: '1px solid var(--glass-border)',
+                boxShadow: 'var(--glass-shadow)',
                 overflow: 'hidden'
             }}>
+
                 {/* Header Section */}
                 <div style={{
                     padding: '40px 40px 20px',
                     textAlign: 'center',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.05)'
+                    borderBottom: '1px solid var(--glass-border)'
                 }}>
                     <div style={{
                         display: 'inline-flex',
@@ -111,16 +113,16 @@ const Login = () => {
                         width: '64px',
                         height: '64px',
                         borderRadius: '16px',
-                        background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                        background: 'var(--accent-primary)',
                         marginBottom: '20px',
-                        boxShadow: '0 0 20px rgba(59, 130, 246, 0.4)'
+                        boxShadow: 'var(--glass-shadow-hover)'
                     }}>
                         <FaUserLock size={30} color="white" />
                     </div>
                     <h1 style={{
                         margin: 0,
                         fontSize: '1.75rem',
-                        color: 'white',
+                        color: 'var(--text-primary)',
                         fontWeight: '700',
                         letterSpacing: '-0.025em'
                     }}>
@@ -135,6 +137,7 @@ const Login = () => {
                     </p>
                 </div>
 
+
                 {/* Tab Navigation */}
                 <div style={{
                     display: 'flex',
@@ -147,9 +150,9 @@ const Login = () => {
                             flex: 1,
                             padding: '12px 0',
                             backgroundColor: 'transparent',
-                            color: activeTab === 'local' ? '#3b82f6' : 'var(--text-secondary)',
+                            color: activeTab === 'local' ? 'var(--accent-primary)' : 'var(--text-secondary)',
                             border: 'none',
-                            borderBottom: activeTab === 'local' ? '2px solid #3b82f6' : '2px solid transparent',
+                            borderBottom: activeTab === 'local' ? '2px solid var(--accent-primary)' : '2px solid transparent',
                             cursor: 'pointer',
                             fontSize: '0.875rem',
                             fontWeight: '600',
@@ -164,9 +167,9 @@ const Login = () => {
                             flex: 1,
                             padding: '12px 0',
                             backgroundColor: 'transparent',
-                            color: activeTab === 'shibboleth' ? '#3b82f6' : 'var(--text-secondary)',
+                            color: activeTab === 'shibboleth' ? 'var(--accent-primary)' : 'var(--text-secondary)',
                             border: 'none',
-                            borderBottom: activeTab === 'shibboleth' ? '2px solid #3b82f6' : '2px solid transparent',
+                            borderBottom: activeTab === 'shibboleth' ? '2px solid var(--accent-primary)' : '2px solid transparent',
                             cursor: 'pointer',
                             fontSize: '0.875rem',
                             fontWeight: '600',
@@ -177,6 +180,7 @@ const Login = () => {
                     </button>
                 </div>
 
+
                 {/* Main Content Area */}
                 <div style={{ padding: '40px' }}>
                     {error && (
@@ -184,9 +188,9 @@ const Login = () => {
                             padding: '12px 16px',
                             marginBottom: '24px',
                             backgroundColor: error.includes('başarılı') ? 'rgba(34, 197, 94, 0.1)' : (error.includes('bekliyor') ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
-                            border: `1px solid ${error.includes('başarılı') ? 'rgba(34, 197, 94, 0.2)' : (error.includes('bekliyor') ? 'rgba(234, 179, 8, 0.2)' : 'rgba(239, 68, 68, 0.2)')}`,
+                            border: `1px solid ${error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)')}`,
                             borderRadius: '12px',
-                            color: error.includes('başarılı') ? '#4ade80' : (error.includes('bekliyor') ? '#facc15' : '#fca5a5'),
+                            color: error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)'),
                             fontSize: '0.875rem',
                             display: 'flex',
                             alignItems: 'center',
@@ -196,6 +200,7 @@ const Login = () => {
                         </div>
                     )}
 
+
                     {activeTab === 'local' ? (
                         <form onSubmit={handleLocalSubmit}>
                             <div style={{ marginBottom: '20px' }}>
@@ -203,7 +208,7 @@ const Login = () => {
                                     Kullanıcı Adı {isRegisterMode && 'veya E-posta'}
                                 </label>
                                 <div style={{ position: 'relative' }}>
-                                    <FaUser style={{ position: 'absolute', left: '12px', top: '14px', color: 'rgba(255,255,255,0.3)' }} />
+                                    <FaUser style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                     <input
                                         type="text"
                                         value={username}
@@ -213,19 +218,20 @@ const Login = () => {
                                             width: '100%',
                                             padding: '12px 12px 12px 40px',
                                             borderRadius: '12px',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                                            backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                                            color: 'white',
+                                            border: '1px solid var(--glass-border)',
+                                            backgroundColor: 'var(--bg-input)',
+                                            color: 'var(--text-primary)',
                                             fontSize: '0.925rem',
                                             outline: 'none',
                                             transition: 'border-color 0.2s',
                                             boxSizing: 'border-box'
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                                        onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
+                                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
+                                        onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
                                         placeholder={isRegisterMode ? "kullaniciadi" : "kullaniciadi veya email"}
                                     />
                                 </div>
+
                             </div>
 
                             {isRegisterMode && (
@@ -235,7 +241,7 @@ const Login = () => {
                                             E-posta
                                         </label>
                                         <div style={{ position: 'relative' }}>
-                                            <FaEnvelope style={{ position: 'absolute', left: '12px', top: '14px', color: 'rgba(255,255,255,0.3)' }} />
+                                            <FaEnvelope style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                             <input
                                                 type="email"
                                                 value={email}
@@ -245,9 +251,9 @@ const Login = () => {
                                                     width: '100%',
                                                     padding: '12px 12px 12px 40px',
                                                     borderRadius: '12px',
-                                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                                                    color: 'white',
+                                                    border: '1px solid var(--glass-border)',
+                                                    backgroundColor: 'var(--bg-input)',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '0.925rem',
                                                     outline: 'none',
                                                     boxSizing: 'border-box'
@@ -255,6 +261,7 @@ const Login = () => {
                                                 placeholder="ornek@email.com"
                                             />
                                         </div>
+
                                     </div>
 
                                     <div style={{ marginBottom: '20px' }}>
@@ -262,7 +269,7 @@ const Login = () => {
                                             Görünen Ad (Opsiyonel)
                                         </label>
                                         <div style={{ position: 'relative' }}>
-                                            <FaIdCard style={{ position: 'absolute', left: '12px', top: '14px', color: 'rgba(255,255,255,0.3)' }} />
+                                            <FaIdCard style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                             <input
                                                 type="text"
                                                 value={displayName}
@@ -271,9 +278,9 @@ const Login = () => {
                                                     width: '100%',
                                                     padding: '12px 12px 12px 40px',
                                                     borderRadius: '12px',
-                                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                                    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                                                    color: 'white',
+                                                    border: '1px solid var(--glass-border)',
+                                                    backgroundColor: 'var(--bg-input)',
+                                                    color: 'var(--text-primary)',
                                                     fontSize: '0.925rem',
                                                     outline: 'none',
                                                     boxSizing: 'border-box'
@@ -281,6 +288,7 @@ const Login = () => {
                                                 placeholder="Adınız Soyadınız"
                                             />
                                         </div>
+
                                     </div>
                                 </>
                             )}
@@ -290,7 +298,7 @@ const Login = () => {
                                     Şifre
                                 </label>
                                 <div style={{ position: 'relative' }}>
-                                    <FaKey style={{ position: 'absolute', left: '12px', top: '14px', color: 'rgba(255,255,255,0.3)' }} />
+                                    <FaKey style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                     <input
                                         type="password"
                                         value={password}
@@ -300,9 +308,9 @@ const Login = () => {
                                             width: '100%',
                                             padding: '12px 12px 12px 40px',
                                             borderRadius: '12px',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
-                                            backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                                            color: 'white',
+                                            border: '1px solid var(--glass-border)',
+                                            backgroundColor: 'var(--bg-input)',
+                                            color: 'var(--text-primary)',
                                             fontSize: '0.925rem',
                                             outline: 'none',
                                             boxSizing: 'border-box'
@@ -310,6 +318,7 @@ const Login = () => {
                                         placeholder="••••••••"
                                     />
                                 </div>
+
                             </div>
 
                             <button
@@ -318,7 +327,7 @@ const Login = () => {
                                 style={{
                                     width: '100%',
                                     padding: '14px',
-                                    background: 'linear-gradient(135deg, #3b82f6 0%, #6366f1 100%)',
+                                    background: 'var(--accent-primary)',
                                     color: 'white',
                                     border: 'none',
                                     borderRadius: '12px',
@@ -326,7 +335,7 @@ const Login = () => {
                                     fontWeight: '600',
                                     cursor: loading ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+                                    boxShadow: 'var(--glass-shadow-hover)',
                                     opacity: loading ? 0.7 : 1
                                 }}
                                 onMouseEnter={(e) => {
@@ -365,11 +374,12 @@ const Login = () => {
                                             cursor: 'pointer',
                                             transition: 'color 0.2s'
                                         }}
-                                        onMouseEnter={(e) => e.target.style.color = 'white'}
+                                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
                                         onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
                                     >
                                         {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Hesabınız yok mu? Yeni kayıt oluşturun'}
                                     </button>
+
                                 </div>
                             )}
                         </form>
@@ -383,9 +393,9 @@ const Login = () => {
                                 style={{
                                     width: '100%',
                                     padding: '14px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    background: 'var(--glass-bg)',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '12px',
                                     fontSize: '1rem',
                                     fontWeight: '600',
@@ -393,16 +403,17 @@ const Login = () => {
                                     transition: 'all 0.2s ease',
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                                    e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                                    e.currentTarget.style.borderColor = 'var(--accent-primary)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-                                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.background = 'var(--glass-bg)';
+                                    e.currentTarget.style.borderColor = 'var(--glass-border)';
                                 }}
                             >
                                 Shibboleth ile Giriş Yap
                             </button>
+
                             <p style={{ color: 'rgba(255, 255, 255, 0.4)', marginTop: '20px', fontSize: '0.75rem' }}>
                                 Kurumsal kimlik sağlayıcısına yönlendirileceksiniz.
                             </p>

@@ -10,7 +10,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             left: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -19,9 +19,9 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             animation: 'fadeIn 0.2s ease'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-card)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: '1px solid var(--glass-border)',
                 padding: '30px',
                 borderRadius: '20px',
                 maxWidth: '850px',
@@ -29,7 +29,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 maxHeight: '90vh',
                 overflowY: 'auto',
                 position: 'relative',
-                boxShadow: '0 16px 48px rgba(0,0,0,0.4)',
+                boxShadow: 'var(--glass-shadow)',
                 animation: 'fadeIn 0.3s ease'
             }} onClick={e => e.stopPropagation()}>
 
@@ -38,12 +38,12 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     marginBottom: '25px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+                    borderBottom: '1px solid var(--glass-border)',
                     paddingBottom: '15px'
                 }}>
                     <h3 style={{
                         margin: 0,
-                        color: 'white',
+                        color: 'var(--text-primary)',
                         fontSize: '1.6rem',
                         fontWeight: '600',
                         letterSpacing: '-0.02em'
@@ -51,10 +51,10 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     <button
                         onClick={onClose}
                         style={{
-                            background: 'rgba(255, 255, 255, 0.1)',
+                            background: 'var(--glass-bg)',
                             backdropFilter: 'blur(5px)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            color: 'white',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-primary)',
                             fontSize: '28px',
                             cursor: 'pointer',
                             width: '36px',
@@ -67,11 +67,11 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.2)';
+                            e.target.style.background = 'var(--glass-bg-hover)';
                             e.target.style.transform = 'rotate(90deg)';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                            e.target.style.background = 'var(--glass-bg)';
                             e.target.style.transform = 'rotate(0deg)';
                         }}
                     >
@@ -79,11 +79,12 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     </button>
                 </div>
 
-                <div style={{ color: 'white' }}>
+                <div style={{ color: 'var(--text-primary)' }}>
                     {children}
                 </div>
             </div>
         </div>
+
     );
 };
 

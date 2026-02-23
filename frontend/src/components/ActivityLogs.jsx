@@ -74,49 +74,51 @@ const ActivityLogs = () => {
         const actionUpper = action ? action.toUpperCase() : '';
         if (actionUpper.includes('DELETE') || actionUpper.includes('SIL')) {
             return {
-                background: 'rgba(220, 53, 69, 0.15)',
-                border: '1px solid rgba(220, 53, 69, 0.3)',
-                color: '#ff6b6b',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--accent-error)',
+                color: 'var(--accent-error)',
                 icon: '🗑️'
             };
         } else if (actionUpper.includes('UPDATE') || actionUpper.includes('EDIT') || actionUpper.includes('DÜZENLE')) {
             return {
-                background: 'rgba(255, 193, 7, 0.15)',
-                border: '1px solid rgba(255, 193, 7, 0.3)',
-                color: '#ffc107',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--accent-warning)',
+                color: 'var(--accent-warning)',
                 icon: '✏️'
             };
         } else if (actionUpper.includes('CREATE') || actionUpper.includes('ADD') || actionUpper.includes('EKLE')) {
             return {
-                background: 'rgba(40, 167, 69, 0.15)',
-                border: '1px solid rgba(40, 167, 69, 0.3)',
-                color: '#2ecc71',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--accent-success)',
+                color: 'var(--accent-success)',
                 icon: '✨'
             };
         } else if (actionUpper.includes('LOGIN') || actionUpper.includes('AUTH') || actionUpper.includes('GİRİŞ')) {
             return {
-                background: 'rgba(66, 133, 244, 0.15)',
-                border: '1px solid rgba(66, 133, 244, 0.3)',
-                color: '#4285f4',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--accent-primary)',
+                color: 'var(--accent-primary)',
                 icon: '🔐'
             };
         } else if (actionUpper.includes('ERROR') || actionUpper.includes('HATA')) {
             return {
-                background: 'rgba(231, 76, 60, 0.15)',
-                border: '1px solid rgba(231, 76, 60, 0.3)',
-                color: '#e74c3c',
+                background: 'var(--glass-bg)',
+                border: '1px solid var(--accent-error)',
+                color: 'var(--accent-error)',
                 icon: '⚠️'
             };
         }
         return {
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            color: '#ccc',
+            background: 'var(--glass-bg)',
+            border: '1px solid var(--glass-border)',
+            color: 'var(--text-tertiary)',
             icon: '📝'
         };
     };
 
-    if (loading) return <div style={{ color: 'white', padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>;
+
+    if (loading) return <div style={{ color: 'var(--text-primary)', padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>;
+
 
     return (
         <div className="fade-in">
@@ -124,8 +126,8 @@ const ActivityLogs = () => {
                 marginBottom: '30px',
                 fontWeight: '700',
                 fontSize: '2.5rem',
-                color: 'white',
-                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                color: 'var(--text-primary)',
+                textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                 letterSpacing: '-0.02em',
                 display: 'flex',
                 alignItems: 'center',
@@ -134,23 +136,25 @@ const ActivityLogs = () => {
                 <span style={{ fontSize: '2rem' }}>📜</span> Sistem İşlem Geçmişi
             </h2>
 
+
             {/* Filtreleme ve Kontrol Paneli */}
             <div style={{
                 marginBottom: '25px',
                 padding: '20px',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid var(--glass-border)',
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '20px',
                 alignItems: 'center',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+                boxShadow: 'var(--glass-shadow)'
             }}>
+
                 {/* Arama */}
                 <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Ara (İşlem veya Detay)</label>
+                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Ara (İşlem veya Detay)</label>
                     <input
                         type="text"
                         placeholder="Örn: Login, Ekle, Hata..."
@@ -158,63 +162,66 @@ const ActivityLogs = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
                             padding: '10px 15px',
-                            background: 'rgba(0, 0, 0, 0.2)',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            background: 'var(--bg-input)',
+                            border: '1px solid var(--glass-border)',
                             borderRadius: '8px',
-                            color: 'white',
+                            color: 'var(--text-primary)',
                             outline: 'none',
                             fontSize: '0.95rem'
                         }}
                     />
                 </div>
 
+
                 {/* Tarih Aralığı */}
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Başlangıç</label>
+                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Başlangıç</label>
                         <input
                             type="date"
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                             style={{
                                 padding: '10px',
-                                background: 'rgba(0, 0, 0, 0.2)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
-                                color: 'white',
-                                colorScheme: 'dark' // Takvim ikonunu beyaz yapar
+                                color: 'var(--text-primary)',
+                                colorScheme: 'dark'
                             }}
                         />
                     </div>
+
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Bitiş</label>
+                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Bitiş</label>
                         <input
                             type="date"
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                             style={{
                                 padding: '10px',
-                                background: 'rgba(0, 0, 0, 0.2)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
-                                color: 'white',
+                                color: 'var(--text-primary)',
                                 colorScheme: 'dark'
                             }}
                         />
                     </div>
+
                 </div>
 
                 {/* Sıralama */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ color: '#aaa', fontSize: '0.85rem' }}>Sıralama</label>
-                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', padding: '2px' }}>
+                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Sıralama</label>
+                    <div style={{ display: 'flex', background: 'var(--bg-input)', borderRadius: '8px', padding: '2px' }}>
                         <button
                             onClick={() => setSortOrder('desc')}
                             style={{
                                 padding: '8px 12px',
                                 border: 'none',
-                                background: sortOrder === 'desc' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                                color: sortOrder === 'desc' ? 'white' : '#aaa',
+                                background: sortOrder === 'desc' ? 'var(--glass-bg-hover)' : 'transparent',
+                                color: sortOrder === 'desc' ? 'var(--text-primary)' : 'var(--text-tertiary)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
@@ -227,8 +234,8 @@ const ActivityLogs = () => {
                             style={{
                                 padding: '8px 12px',
                                 border: 'none',
-                                background: sortOrder === 'asc' ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
-                                color: sortOrder === 'asc' ? 'white' : '#aaa',
+                                background: sortOrder === 'asc' ? 'var(--glass-bg-hover)' : 'transparent',
+                                color: sortOrder === 'asc' ? 'var(--text-primary)' : 'var(--text-tertiary)',
                                 borderRadius: '6px',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s'
@@ -238,6 +245,7 @@ const ActivityLogs = () => {
                         </button>
                     </div>
                 </div>
+
 
                 {/* Reset Butonu */}
                 <div style={{ alignSelf: 'flex-end' }}>
@@ -251,8 +259,8 @@ const ActivityLogs = () => {
                         style={{
                             padding: '10px 15px',
                             background: 'transparent',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            color: '#aaa',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-tertiary)',
                             borderRadius: '8px',
                             cursor: 'pointer',
                             fontSize: '0.9rem'
@@ -260,6 +268,7 @@ const ActivityLogs = () => {
                     >
                         Temizle
                     </button>
+
                 </div>
             </div>
 
@@ -269,27 +278,29 @@ const ActivityLogs = () => {
                         const style = getActionStyle(log.action);
                         return (
                             <div key={log.id} style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
+                                background: 'var(--bg-card)',
                                 backdropFilter: 'blur(10px)',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
                                 padding: '8px 16px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '15px',
                                 transition: 'all 0.2s ease',
-                                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                                boxShadow: 'var(--glass-shadow)',
                                 height: '48px',
                                 overflow: 'hidden'
                             }}
+
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+                                    e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                     e.currentTarget.style.transform = 'translateX(5px)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.background = 'var(--bg-card)';
                                     e.currentTarget.style.transform = 'translateX(0)';
                                 }}
+
                             >
                                 {/* İkon */}
                                 <div style={{
@@ -312,7 +323,7 @@ const ActivityLogs = () => {
                                     width: '120px',
                                     fontSize: '0.9rem',
                                     fontWeight: '600',
-                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    color: 'var(--text-primary)',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis'
@@ -320,11 +331,12 @@ const ActivityLogs = () => {
                                     {log.user ? (log.user.displayName || log.user.username || log.user.email) : 'Anonim'}
                                 </div>
 
+
                                 {/* Detaylar (Esnek Alan) */}
                                 <div style={{
                                     flex: 1,
                                     fontSize: '0.9rem',
-                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    color: 'var(--text-secondary)',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis'
@@ -332,16 +344,18 @@ const ActivityLogs = () => {
                                     {log.details}
                                 </div>
 
+
                                 {/* Tarih */}
                                 <div style={{
                                     width: '120px',
                                     textAlign: 'right',
                                     fontSize: '0.85rem',
-                                    color: 'rgba(255, 255, 255, 0.5)',
+                                    color: 'var(--text-tertiary)',
                                     whiteSpace: 'nowrap'
                                 }}>
                                     {new Date(log.createdAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                 </div>
+
                             </div>
                         );
                     })
@@ -349,13 +363,14 @@ const ActivityLogs = () => {
                     <div style={{
                         textAlign: 'center',
                         padding: '40px',
-                        background: 'rgba(255, 255, 255, 0.05)',
+                        background: 'var(--glass-bg)',
                         borderRadius: '8px',
-                        color: 'rgba(255, 255, 255, 0.5)',
-                        border: '1px dashed rgba(255, 255, 255, 0.1)'
+                        color: 'var(--text-tertiary)',
+                        border: '1px dashed var(--glass-border)'
                     }}>
                         Kriterlere uygun kayıt bulunamadı.
                     </div>
+
                 )}
             </div>
         </div>

@@ -525,30 +525,30 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const inputStyle = {
         padding: '12px 16px',
         borderRadius: '12px',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        background: 'rgba(255, 255, 255, 0.1)',
+        border: '1px solid var(--glass-border)',
+        background: 'var(--bg-input)',
         backdropFilter: 'blur(5px)',
-        color: 'white',
+        color: 'var(--text-primary)',
         fontSize: '15px',
         outline: 'none',
         transition: 'all 0.2s ease'
     };
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0', color: 'white' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0', color: 'var(--text-primary)' }}>
             {src && (
                 <div style={{
                     marginBottom: '25px',
-                    background: 'rgba(255, 255, 255, 0.08)',
+                    background: 'var(--glass-bg)',
                     backdropFilter: 'blur(5px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    border: '1px solid var(--glass-border)',
                     padding: '20px',
                     borderRadius: '16px',
                     textAlign: 'center',
                     position: 'relative'
                 }}>
                     <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>Perspektif Düzeltme ({activeSide === 'front' ? 'Ön Yüz' : 'Arka Yüz'})</h4>
-                    <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen kartvizitin 4 köşesini işaretleyin.</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen kartvizitin 4 köşesini işaretleyin.</p>
 
                     {isDetecting && (
                         <div style={{
@@ -583,11 +583,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     {/* Ön Yüz */}
                     <div style={{
-                        border: '1px dashed rgba(255, 255, 255, 0.3)',
+                        border: '1px dashed var(--glass-border)',
                         padding: '15px',
                         borderRadius: '12px',
                         textAlign: 'center',
-                        background: 'rgba(255, 255, 255, 0.05)',
+                        background: 'var(--glass-bg)',
                         minHeight: '160px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -606,10 +606,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             fontSize: '13px',
                                             padding: '6px 12px',
                                             cursor: 'pointer',
-                                            background: 'rgba(40, 167, 69, 0.9)',
+                                            background: 'var(--accent-success)',
                                             backdropFilter: 'blur(5px)',
                                             color: 'white',
-                                            border: '1px solid rgba(255,255,255,0.3)',
+                                            border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
                                         }}>{logoPreview ? 'Logoyu Değiştir' : 'Logo Seç'}</button>
@@ -623,13 +623,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             background: 'rgba(0,0,0,0.8)',
                                             backdropFilter: 'blur(5px)',
                                             color: 'white',
-                                            border: '1px solid rgba(255,255,255,0.3)',
+                                            border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
                                         }}>Değiştir</button>
                                 </div>
                                 {logoPreview && (
-                                    <div style={{ position: 'absolute', top: '8px', left: '8px', border: '2px solid #28a745', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div style={{ position: 'absolute', top: '8px', left: '8px', border: '2px solid var(--accent-success)', borderRadius: '4px', overflow: 'hidden' }}>
                                         <img src={logoPreview} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', background: 'white' }} />
                                     </div>
                                 )}
@@ -641,28 +641,28 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: 'rgba(255, 255, 255, 0.05)',
+                                background: 'var(--glass-bg)',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                border: '1px solid var(--glass-border)',
                                 transition: 'all 0.2s ease'
                             }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
                             >
-                                <span style={{ fontSize: '52px', color: 'rgba(255,255,255,0.4)' }}>+</span>
+                                <span style={{ fontSize: '52px', color: 'var(--text-secondary)' }}>+</span>
                             </div>
                         )}
                         <input id="frontInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
-                        {ocrLoading && <p style={{ color: '#ffd700', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>OCR Okunuyor...</p>}
+                        {ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>OCR Okunuyor...</p>}
                     </div>
 
                     {/* Arka Yüz */}
                     <div style={{
-                        border: '1px dashed rgba(255, 255, 255, 0.3)',
+                        border: '1px dashed var(--glass-border)',
                         padding: '15px',
                         borderRadius: '12px',
                         textAlign: 'center',
-                        background: 'rgba(255, 255, 255, 0.05)',
+                        background: 'var(--glass-bg)',
                         minHeight: '160px',
                         display: 'flex',
                         flexDirection: 'column',
@@ -685,7 +685,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         background: 'rgba(0,0,0,0.8)',
                                         backdropFilter: 'blur(5px)',
                                         color: 'white',
-                                        border: '1px solid rgba(255,255,255,0.3)',
+                                        border: '1px solid var(--glass-border)',
                                         borderRadius: '8px',
                                         fontWeight: '500'
                                     }}>Değiştir</button>
@@ -697,22 +697,22 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                background: 'rgba(255, 255, 255, 0.05)',
+                                background: 'var(--glass-bg)',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
+                                border: '1px solid var(--glass-border)',
                                 transition: 'all 0.2s ease'
                             }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
                             >
-                                <span style={{ fontSize: '52px', color: 'rgba(255,255,255,0.4)' }}>+</span>
+                                <span style={{ fontSize: '52px', color: 'var(--text-secondary)' }}>+</span>
                             </div>
                         )}
                         <input id="backInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'back')} style={{ display: 'none' }} />
                     </div>
                 </div>
 
-                <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.1)' }}></div>
+                <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
 
                 {/* Progress Indicator */}
                 <div style={{
@@ -729,8 +729,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             width: '32px',
                             height: '32px',
                             borderRadius: '50%',
-                            background: currentStep >= 1 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.1)',
-                            border: currentStep >= 1 ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.2)',
+                            background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                            border: currentStep >= 1 ? '2px solid rgba(255,255,255,0.2)' : '2px solid var(--glass-border)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -742,7 +742,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             1
                         </div>
                         <span style={{
-                            color: currentStep >= 1 ? 'white' : 'rgba(255,255,255,0.5)',
+                            color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)',
                             fontWeight: currentStep === 1 ? '600' : '400',
                             fontSize: '14px',
                             transition: 'all 0.3s ease'
@@ -755,7 +755,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     <div style={{
                         width: '60px',
                         height: '2px',
-                        background: currentStep >= 2 ? 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.2)',
+                        background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)',
                         transition: 'all 0.3s ease'
                     }}></div>
 
@@ -765,12 +765,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             width: '32px',
                             height: '32px',
                             borderRadius: '50%',
-                            background: currentStep >= 2 ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'rgba(255,255,255,0.1)',
-                            border: currentStep >= 2 ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.2)',
+                            background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                            border: currentStep >= 2 ? '2px solid rgba(255,255,255,0.2)' : '2px solid var(--glass-border)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: currentStep >= 2 ? 'white' : 'rgba(255,255,255,0.4)',
+                            color: currentStep >= 2 ? 'white' : 'var(--text-secondary)',
                             fontWeight: '700',
                             fontSize: '14px',
                             transition: 'all 0.3s ease'
@@ -778,7 +778,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             2
                         </div>
                         <span style={{
-                            color: currentStep >= 2 ? 'white' : 'rgba(255,255,255,0.5)',
+                            color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)',
                             fontWeight: currentStep === 2 ? '600' : '400',
                             fontSize: '14px',
                             transition: 'all 0.3s ease'
@@ -787,6 +787,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         </span>
                     </div>
                 </div>
+
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     {/* Step 1: Basic Information */}
