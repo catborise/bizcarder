@@ -44,27 +44,27 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
             animation: 'fadeIn 0.3s ease'
         }}>
             <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-card)',
                 backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '24px',
                 width: '90%',
                 maxWidth: '600px',
                 maxHeight: '80vh',
-                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5)',
+                boxShadow: 'var(--glass-shadow)',
                 display: 'flex',
                 flexDirection: 'column',
                 overflow: 'hidden',
-                color: 'white'
+                color: 'var(--text-primary)'
             }}>
                 {/* Header */}
                 <div style={{
                     padding: '24px',
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderBottom: '1px solid var(--glass-border)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    background: 'rgba(255, 255, 255, 0.05)'
+                    background: 'var(--glass-bg)'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
@@ -80,9 +80,9 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                     <button
                         onClick={onClose}
                         style={{
-                            background: 'rgba(255, 255, 255, 0.1)',
+                            background: 'var(--glass-bg)',
                             border: 'none',
-                            color: 'white',
+                            color: 'var(--text-primary)',
                             width: '36px',
                             height: '36px',
                             borderRadius: '50%',
@@ -92,8 +92,8 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                             cursor: 'pointer',
                             transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
                     >
                         <FaTimes />
                     </button>
@@ -112,9 +112,9 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                 onClick={() => handleView(card.id)}
                                 style={{
                                     padding: '16px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    background: 'var(--glass-bg)',
                                     borderRadius: '16px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid var(--glass-border)',
                                     display: 'flex',
                                     justifyContent: 'space-between',
                                     alignItems: 'center',
@@ -122,11 +122,11 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                     transition: 'all 0.2s ease'
                                 }}
                                 onMouseEnter={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                                    e.currentTarget.style.background = 'var(--glass-bg-hover)';
                                     e.currentTarget.style.transform = 'translateY(-2px)';
                                 }}
                                 onMouseLeave={(e) => {
-                                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                    e.currentTarget.style.background = 'var(--glass-bg)';
                                     e.currentTarget.style.transform = 'translateY(0)';
                                 }}
                             >
@@ -135,7 +135,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                         {card.firstName} {card.lastName}
                                     </div>
                                     <div style={{
-                                        color: 'rgba(255, 255, 255, 0.6)',
+                                        color: 'var(--text-secondary)',
                                         fontSize: '0.9rem',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -196,25 +196,25 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                 {/* Footer */}
                 <div style={{
                     padding: '20px',
-                    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderTop: '1px solid var(--glass-border)',
                     display: 'flex',
                     justifyContent: 'flex-end',
-                    background: 'rgba(255, 255, 255, 0.05)'
+                    background: 'var(--glass-bg)'
                 }}>
                     <button
                         onClick={onClose}
                         style={{
                             padding: '10px 24px',
-                            background: 'rgba(255, 255, 255, 0.1)',
-                            border: '1px solid rgba(255, 255, 255, 0.2)',
-                            color: 'white',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--glass-border)',
+                            color: 'var(--text-primary)',
                             borderRadius: '12px',
                             cursor: 'pointer',
                             fontWeight: '600',
                             transition: 'all 0.2s ease'
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
                     >
                         Kapat
                     </button>

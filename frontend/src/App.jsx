@@ -216,7 +216,7 @@ const Contacts = () => {
                     fontSize: '2.5rem',
                     fontWeight: '700',
                     color: 'var(--text-primary)',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    textShadow: '0 2px 8px var(--glass-shadow)',
                     letterSpacing: '-0.02em'
                 }}>Kartvizitler</h2>
 
@@ -342,17 +342,17 @@ const Contacts = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                            boxShadow: '0 4px 16px var(--glass-shadow)',
                             transition: 'all 0.2s ease'
                         }}
                         onMouseEnter={(e) => {
                             e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.2)';
+                            e.currentTarget.style.boxShadow = '0 6px 20px var(--glass-shadow-hover)';
                             e.currentTarget.style.opacity = '0.9';
                         }}
                         onMouseLeave={(e) => {
                             e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)';
+                            e.currentTarget.style.boxShadow = '0 4px 16px var(--glass-shadow)';
                             e.currentTarget.style.opacity = '1';
                         }}
                     >
@@ -823,11 +823,11 @@ const Contacts = () => {
                                 <div style={{
                                     marginTop: '20px',
                                     padding: '20px',
-                                    background: 'rgba(255, 255, 255, 0.05)',
+                                    background: 'var(--glass-bg)',
                                     backdropFilter: 'blur(15px)',
                                     borderRadius: '12px',
-                                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                    border: '1px solid var(--glass-border)',
+                                    boxShadow: 'var(--glass-shadow-hover)',
                                     position: 'relative',
                                     overflow: 'hidden'
                                 }}>
@@ -838,14 +838,14 @@ const Contacts = () => {
                                         left: 0,
                                         width: '4px',
                                         height: '100%',
-                                        background: 'linear-gradient(to bottom, #ffc107, #ff6b6b)',
-                                        boxShadow: '0 0 10px rgba(255, 193, 7, 0.5)'
+                                        background: 'linear-gradient(to bottom, var(--accent-warning), var(--accent-error))',
+                                        boxShadow: '0 0 10px var(--accent-warning)'
                                     }}></div>
 
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <FaStickyNote color="#ffc107" size={18} />
-                                            <strong style={{ color: 'white', fontSize: '1.1rem', letterSpacing: '0.03em' }}>Kart Notları</strong>
+                                            <FaStickyNote color="var(--accent-warning)" size={18} />
+                                            <strong style={{ color: 'var(--text-primary)', fontSize: '1.1rem', letterSpacing: '0.03em' }}>Kart Notları</strong>
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '10px' }}>
@@ -857,7 +857,7 @@ const Contacts = () => {
                                                             showNotification('Not panoya kopyalandı.', 'success');
                                                         }}
                                                         style={{
-                                                            background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                                                            background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
                                                         }}
                                                         title="Kopyala"
                                                     >
@@ -869,9 +869,9 @@ const Contacts = () => {
                                                             setEditingNoteText(card.notes || '');
                                                         }}
                                                         style={{
-                                                            background: 'rgba(255, 193, 7, 0.1)',
-                                                            color: '#ffc107',
-                                                            border: '1px solid rgba(255, 193, 7, 0.3)',
+                                                            background: 'var(--glass-bg-hover)',
+                                                            color: 'var(--accent-warning)',
+                                                            border: '1px solid var(--accent-warning)',
                                                             padding: '5px 12px',
                                                             borderRadius: '6px',
                                                             cursor: 'pointer',
@@ -889,7 +889,7 @@ const Contacts = () => {
                                                     <button
                                                         onClick={() => setEditingNoteId(null)}
                                                         style={{
-                                                            background: 'rgba(255, 255, 255, 0.1)', color: 'white', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer'
+                                                            background: 'var(--glass-bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer'
                                                         }}
                                                     >
                                                         İptal
@@ -897,7 +897,7 @@ const Contacts = () => {
                                                     <button
                                                         onClick={() => handleQuickNoteUpdate(card.id)}
                                                         style={{
-                                                            background: '#28a745', color: 'white', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
+                                                            background: 'var(--accent-success)', color: 'var(--bg-card)', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px'
                                                         }}
                                                     >
                                                         <FaSave /> Kaydet
@@ -914,10 +914,10 @@ const Contacts = () => {
                                             style={{
                                                 width: '100%',
                                                 minHeight: '120px',
-                                                background: 'rgba(0,0,0,0.3)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                background: 'var(--bg-input)',
+                                                border: '1px solid var(--glass-border)',
                                                 borderRadius: '8px',
-                                                color: 'white',
+                                                color: 'var(--text-primary)',
                                                 padding: '12px',
                                                 fontSize: '0.95rem',
                                                 fontFamily: 'inherit',
@@ -930,12 +930,12 @@ const Contacts = () => {
                                         <p style={{
                                             margin: 0,
                                             whiteSpace: 'pre-wrap',
-                                            color: 'rgba(255, 255, 255, 0.85)',
+                                            color: 'var(--text-primary)',
                                             fontSize: '1rem',
                                             lineHeight: '1.6',
                                             padding: '5px'
                                         }}>
-                                            {card.notes || <span style={{ color: '#666', fontStyle: 'italic' }}>Not eklenmemiş. "Düzenle" diyerek hemen ekleyebilirsiniz.</span>}
+                                            {card.notes || <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Not eklenmemiş. "Düzenle" diyerek hemen ekleyebilirsiniz.</span>}
                                         </p>
                                     )}
 

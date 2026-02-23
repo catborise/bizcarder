@@ -30,8 +30,11 @@
   --accent-secondary: #6366f1;
   --accent-secondary-rgb: 99, 102, 241;
   --accent-success: #10b981;
+  --accent-success-rgb: 16, 185, 129;
   --accent-warning: #f59e0b;
+  --accent-warning-rgb: 245, 158, 11;
   --accent-error: #ef4444;
+  --accent-error-rgb: 239, 68, 68;
 
   color-scheme: dark;
 }
@@ -56,8 +59,11 @@
   --accent-secondary: #4f46e5;
   --accent-secondary-rgb: 79, 70, 229;
   --accent-success: #059669;
+  --accent-success-rgb: 5, 150, 105;
   --accent-warning: #d97706;
+  --accent-warning-rgb: 217, 119, 6;
   --accent-error: #dc2626;
+  --accent-error-rgb: 220, 38, 38;
 
   color-scheme: light;
 }

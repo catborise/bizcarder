@@ -112,7 +112,11 @@ const Settings = () => {
     const [systemSettings, setSystemSettings] = useState({
         logRetentionLimit: 1000,
         trashRetentionDays: 30,
-        allowPublicRegistration: true
+        allowPublicRegistration: true,
+        developerName: '',
+        developerEmail: '',
+        developerGithub: '',
+        developerLinkedin: ''
     });
     const [aiSettings, setAiSettings] = useState({
         aiOcrEnabled: false,
@@ -354,12 +358,14 @@ const Settings = () => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={handleSaveProfile} style={{
                         background: 'var(--accent-primary)',
-                        color: 'white',
-                        border: '1px solid var(--glass-border)',
-                        padding: '10px 25px',
-                        borderRadius: '10px',
+                        color: 'var(--bg-card)',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '12px 24px',
                         fontWeight: '600',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        boxShadow: 'var(--glass-shadow)',
+                        transition: 'all 0.2s ease',
                     }}>Profili Güncelle</button>
                 </div>
 
@@ -446,8 +452,15 @@ const Settings = () => {
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button onClick={handleSaveAI} style={{
                         background: 'var(--accent-primary)',
-                        color: 'white', border: 'none', padding: '10px 25px', borderRadius: '10px',
-                        fontSize: '0.95rem', fontWeight: '600', cursor: 'pointer'
+                        color: 'var(--bg-card)',
+                        border: '1px solid var(--glass-border)',
+                        padding: '12px 24px',
+                        borderRadius: '12px',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        boxShadow: 'var(--glass-shadow)',
+                        transition: 'all 0.2s ease',
                     }}>AI Ayarlarını Kaydet</button>
                 </div>
             </div>
@@ -481,15 +494,67 @@ const Settings = () => {
                                 style={inputStyle}
                             />
                         </div>
+
+                        <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
+                            <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                👨‍💻 Hakkında Sayfası Geliştirici Bilgileri
+                            </h4>
+
+                            <div style={{ marginBottom: '15px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Geliştirici Adı</label>
+                                <input
+                                    type="text"
+                                    value={systemSettings.developerName}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerName: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="Örn: Muhammet Sağ"
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '15px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Geliştirici E-Posta</label>
+                                <input
+                                    type="email"
+                                    value={systemSettings.developerEmail}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerEmail: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="Örn: m.sag@catborise.com"
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '15px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>GitHub URL</label>
+                                <input
+                                    type="text"
+                                    value={systemSettings.developerGithub}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerGithub: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="https://github.com/..."
+                                />
+                            </div>
+
+                            <div style={{ marginBottom: '15px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>LinkedIn URL</label>
+                                <input
+                                    type="text"
+                                    value={systemSettings.developerLinkedin}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerLinkedin: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="https://linkedin.com/in/..."
+                                />
+                            </div>
+                        </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button onClick={handleSaveSystem} style={{
-                                background: 'var(--glass-bg)',
-                                color: 'var(--text-primary)',
-                                border: '1px solid var(--glass-border)',
-                                padding: '10px 25px',
-                                borderRadius: '10px',
+                                background: 'var(--accent-primary)',
+                                color: 'var(--bg-card)',
+                                border: 'none',
+                                borderRadius: '12px',
+                                padding: '12px 24px',
                                 fontWeight: '600',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                boxShadow: 'var(--glass-shadow)',
+                                transition: 'all 0.2s ease',
                             }}>Sistem Ayarlarını Kaydet</button>
                         </div>
 

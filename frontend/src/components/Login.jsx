@@ -117,7 +117,7 @@ const Login = () => {
                         marginBottom: '20px',
                         boxShadow: 'var(--glass-shadow-hover)'
                     }}>
-                        <FaUserLock size={30} color="white" />
+                        <FaUserLock size={30} color="var(--bg-card)" />
                     </div>
                     <h1 style={{
                         margin: 0,
@@ -328,26 +328,26 @@ const Login = () => {
                                     width: '100%',
                                     padding: '14px',
                                     background: 'var(--accent-primary)',
-                                    color: 'white',
+                                    color: 'var(--bg-card)',
                                     border: 'none',
                                     borderRadius: '12px',
                                     fontSize: '1rem',
                                     fontWeight: '600',
                                     cursor: loading ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: 'var(--glass-shadow-hover)',
+                                    boxShadow: 'var(--glass-shadow)',
                                     opacity: loading ? 0.7 : 1
                                 }}
                                 onMouseEnter={(e) => {
                                     if (!loading) {
                                         e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.4)';
+                                        e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (!loading) {
                                         e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 4px 15px rgba(59, 130, 246, 0.3)';
+                                        e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
                                     }
                                 }}
                             >
@@ -414,7 +414,7 @@ const Login = () => {
                                 Shibboleth ile Giriş Yap
                             </button>
 
-                            <p style={{ color: 'rgba(255, 255, 255, 0.4)', marginTop: '20px', fontSize: '0.75rem' }}>
+                            <p style={{ color: 'var(--text-tertiary)', marginTop: '20px', fontSize: '0.75rem' }}>
                                 Kurumsal kimlik sağlayıcısına yönlendirileceksiniz.
                             </p>
                         </div>

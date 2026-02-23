@@ -140,7 +140,7 @@ const MyCard = () => {
                         margin: '0 auto 30px',
                         boxShadow: 'var(--glass-shadow-hover)'
                     }}>
-                        <FaIdCard size={60} color="white" />
+                        <FaIdCard size={60} color="var(--bg-card)" />
                     </div>
                     <h3 style={{ color: 'var(--text-primary)', fontSize: '1.8rem', marginBottom: '15px' }}>Kendi Kartvizitini Oluştur</h3>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '35px', maxWidth: '500px', margin: '0 auto 35px', lineHeight: '1.6' }}>
@@ -382,7 +382,7 @@ const MyCard = () => {
                                 borderRadius: '24px',
                                 display: 'inline-block',
                                 marginBottom: '25px',
-                                boxShadow: '0 10px 40px rgba(0,0,0,0.4)',
+                                boxShadow: 'var(--glass-shadow-hover)',
                                 border: '8px solid white',
                                 position: 'relative',
                                 cursor: 'pointer'

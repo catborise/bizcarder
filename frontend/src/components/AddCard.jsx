@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 function canvasPreview(image, canvas, crop) {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-        throw new Error('No 2d context');
+        return;
     }
 
     const scaleX = image.naturalWidth / image.width;
@@ -526,9 +526,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         padding: '12px 16px',
         borderRadius: '12px',
         border: '1px solid var(--glass-border)',
-        background: 'var(--bg-input)',
-        backdropFilter: 'blur(5px)',
+        background: 'var(--bg-card)',
         color: 'var(--text-primary)',
+        boxShadow: 'var(--glass-shadow)',
         fontSize: '15px',
         outline: 'none',
         transition: 'all 0.2s ease'
@@ -620,9 +620,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             fontSize: '13px',
                                             padding: '6px 12px',
                                             cursor: 'pointer',
-                                            background: 'rgba(0,0,0,0.8)',
+                                            background: 'var(--bg-card)',
                                             backdropFilter: 'blur(5px)',
-                                            color: 'white',
+                                            color: 'var(--text-primary)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
@@ -682,9 +682,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         fontSize: '13px',
                                         padding: '6px 12px',
                                         cursor: 'pointer',
-                                        background: 'rgba(0,0,0,0.8)',
+                                        background: 'var(--bg-card)',
                                         backdropFilter: 'blur(5px)',
-                                        color: 'white',
+                                        color: 'var(--text-primary)',
                                         border: '1px solid var(--glass-border)',
                                         borderRadius: '8px',
                                         fontWeight: '500'
@@ -838,21 +838,21 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
                             {/* Temel Bilgiler */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
-                                <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} required />
+                                <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
+                                <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                                <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
 
                             {/* İletişim Bilgileri */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="email" name="email" placeholder="E-Posta *" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                                <input type="text" name="phone" placeholder="Telefon *" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                <input type="email" name="email" placeholder="E-Posta *" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="text" name="phone" placeholder="Telefon *" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
-                            <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', margin: '-10px 0 0 0', fontStyle: 'italic' }}>
+                            <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', margin: '-10px 0 0 0', fontStyle: 'italic' }}>
                                 * E-posta veya Telefon alanlarından en az biri doldurulmalıdır
                             </p>
                         </>
@@ -865,13 +865,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             <input type="text" name="website" placeholder="Web Sitesi" value={formData.website} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
 
                             {/* Adres Bilgileri Grubu */}
-                            <fieldset style={{ border: '1px solid rgba(255, 255, 255, 0.2)', borderRadius: '12px', padding: '15px', margin: 0, background: 'rgba(255, 255, 255, 0.03)' }}>
-                                <legend style={{ padding: '0 8px', color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
+                            <fieldset style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '15px', margin: 0, background: 'var(--glass-bg)' }}>
+                                <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
+                                    <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                        <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-                                        <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
+                                        <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                        <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                                     </div>
                                 </div>
                             </fieldset>
@@ -879,15 +879,15 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             {/* CRM Extras: Tags & Reminders */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>Etiketler</label>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Etiketler</label>
                                     <div style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
                                         gap: '8px',
                                         padding: '10px',
-                                        background: 'rgba(255,255,255,0.05)',
+                                        background: 'var(--bg-input)',
                                         borderRadius: '12px',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        border: '1px solid var(--glass-border)'
                                     }}>
                                         {availableTags && availableTags.length > 0 ? availableTags.map(tag => (
                                             <button
@@ -906,15 +906,15 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                     fontWeight: '600',
                                                     cursor: 'pointer',
                                                     border: '1px solid',
-                                                    borderColor: formData.tags.includes(tag.id) ? tag.color : 'rgba(255,255,255,0.1)',
+                                                    borderColor: formData.tags.includes(tag.id) ? tag.color : 'var(--glass-border)',
                                                     background: formData.tags.includes(tag.id) ? tag.color : 'transparent',
-                                                    color: formData.tags.includes(tag.id) ? 'white' : 'rgba(255,255,255,0.6)',
+                                                    color: formData.tags.includes(tag.id) ? 'white' : 'var(--text-secondary)',
                                                     transition: 'all 0.2s'
                                                 }}
                                             >
                                                 {tag.name}
                                             </button>
-                                        )) : <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px' }}>Etiket yükleniyor...</span>}
+                                        )) : <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Etiket yükleniyor...</span>}
                                     </div>
                                 </div>
 
@@ -930,11 +930,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
                             </div>
 
-                            <textarea name="notes" rows="3" placeholder="Notlar..." value={formData.notes} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}></textarea>
+                            <textarea name="notes" rows="3" placeholder="Notlar..." value={formData.notes} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
 
                             <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
-                                <option value="private" style={{ background: '#2a2a2a', color: 'white' }}>Sadece Ben (Private)</option>
-                                <option value="public" style={{ background: '#2a2a2a', color: 'white' }}>Herkes (Public)</option>
+                                <option value="private" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Sadece Ben (Private)</option>
+                                <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Herkes (Public)</option>
                             </select>
                         </>
                     )}
@@ -951,18 +951,18 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 disabled={ocrLoading}
                                 style={{
                                     padding: '14px 24px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    background: 'var(--glass-bg)',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '12px',
                                     fontSize: '16px',
                                     cursor: 'pointer',
                                     fontWeight: '600',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)'
+                                    boxShadow: 'var(--glass-shadow)'
                                 }}
-                                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
-                                onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)'; }}
+                                onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
+                                onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
                                 Kaydet
                             </button>
@@ -998,21 +998,21 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 onClick={handlePrevStep}
                                 style={{
                                     padding: '14px 24px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    background: 'var(--glass-bg)',
+                                    color: 'var(--text-primary)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '12px',
                                     fontSize: '16px',
                                     cursor: 'pointer',
                                     fontWeight: '600',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+                                    boxShadow: 'var(--glass-shadow)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px'
                                 }}
-                                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
-                                onMouseLeave={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.2)'; }}
+                                onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                                onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
                                 ← Geri
                             </button>
@@ -1021,355 +1021,361 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 disabled={ocrLoading}
                                 style={{
                                     padding: '14px 24px',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
                                     color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    border: '1px solid var(--glass-border)',
                                     borderRadius: '12px',
                                     fontSize: '16px',
                                     cursor: 'pointer',
                                     fontWeight: '600',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
+                                    boxShadow: '0 4px 16px rgba(var(--accent-primary-rgb), 0.3)'
                                 }}
-                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
-                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
+                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(var(--accent-primary-rgb), 0.4)'; }}
+                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(var(--accent-primary-rgb), 0.3)'; }}
                             >
                                 {activeCard ? 'Güncelle' : 'Kaydet'}
                             </button>
                         </>
                     )}
                 </div>
-            </form>
+            </form >
 
             {/* OCR Onay Modalı / Overlay */}
-            {showOcrConfirm && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(10px)',
-                    zIndex: 2000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
+            {
+                showOcrConfirm && (
                     <div style={{
-                        background: '#1a1a1a',
-                        border: '1px solid rgba(255,255,255,0.2)',
-                        borderRadius: '24px',
-                        width: '100%',
-                        maxWidth: '600px',
-                        maxHeight: '90vh',
-                        overflowY: 'auto',
-                        padding: '30px',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        backdropFilter: 'blur(10px)',
+                        zIndex: 2000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px'
                     }}>
-                        <h3 style={{ color: 'white', marginTop: 0, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ fontSize: '1.5rem' }}>🔍</span> Tarama Sonuçlarını Onayla
-                        </h3>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '25px' }}>
-                            Kartvizitten okunan bilgiler aşağıdadır. Lütfen doğruluğunu kontrol edin ve gerekiyorsa düzeltin.
-                        </p>
+                        <div style={{
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '24px',
+                            width: '100%',
+                            maxWidth: '600px',
+                            maxHeight: '90vh',
+                            overflowY: 'auto',
+                            padding: '30px',
+                            boxShadow: 'var(--glass-shadow-hover)'
+                        }}>
+                            <h3 style={{ color: 'var(--text-primary)', marginTop: 0, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontSize: '1.5rem' }}>🔍</span> Tarama Sonuçlarını Onayla
+                            </h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '25px' }}>
+                                Kartvizitten okunan bilgiler aşağıdadır. Lütfen doğruluğunu kontrol edin ve gerekiyorsa düzeltin.
+                            </p>
 
-                        <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>AD</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.firstName}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, firstName: e.target.value })}
+                                            style={inputStyle}
+                                            placeholder="Ad..."
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>SOYAD</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.lastName}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, lastName: e.target.value })}
+                                            style={inputStyle}
+                                            placeholder="Soyad..."
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ŞİRKET</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.company}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, company: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ÜNVAN</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.title}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, title: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>E-POSTA</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.email}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, email: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>TELEFON</label>
+                                        <input
+                                            type="text"
+                                            value={ocrResults.phone}
+                                            onChange={(e) => setOcrResults({ ...ocrResults, phone: e.target.value })}
+                                            style={inputStyle}
+                                        />
+                                    </div>
+                                </div>
+
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>AD</label>
+                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>WEB SİTESİ</label>
                                     <input
                                         type="text"
-                                        value={ocrResults.firstName}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, firstName: e.target.value })}
+                                        value={ocrResults.website}
+                                        onChange={(e) => setOcrResults({ ...ocrResults, website: e.target.value })}
                                         style={inputStyle}
-                                        placeholder="Ad..."
                                     />
                                 </div>
+
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>SOYAD</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.lastName}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, lastName: e.target.value })}
-                                        style={inputStyle}
-                                        placeholder="Soyad..."
+                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>ADRES</label>
+                                    <textarea
+                                        value={ocrResults.address}
+                                        onChange={(e) => setOcrResults({ ...ocrResults, address: e.target.value })}
+                                        style={{ ...inputStyle, minHeight: '80px' }}
                                     />
                                 </div>
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>ŞİRKET</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.company}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, company: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>ÜNVAN</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.title}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, title: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
+                            <div style={{ display: 'flex', gap: '15px' }}>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOcrConfirm(false)}
+                                    style={{
+                                        flex: 1,
+                                        padding: '12px',
+                                        background: 'var(--glass-bg)',
+                                        color: 'var(--text-secondary)',
+                                        border: '1px solid var(--glass-border)',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Vazgeç
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            ...ocrResults
+                                        }));
+                                        setShowOcrConfirm(false);
+                                        showNotification('Bilgiler forma aktarıldı.', 'success');
+                                    }}
+                                    style={{
+                                        flex: 2,
+                                        padding: '12px',
+                                        background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: '700',
+                                        boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)'
+                                    }}
+                                >
+                                    Onayla ve Aktar
+                                </button>
                             </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>E-POSTA</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.email}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, email: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>TELEFON</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.phone}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, phone: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>WEB SİTESİ</label>
-                                <input
-                                    type="text"
-                                    value={ocrResults.website}
-                                    onChange={(e) => setOcrResults({ ...ocrResults, website: e.target.value })}
-                                    style={inputStyle}
-                                />
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>ADRES</label>
-                                <textarea
-                                    value={ocrResults.address}
-                                    onChange={(e) => setOcrResults({ ...ocrResults, address: e.target.value })}
-                                    style={{ ...inputStyle, minHeight: '80px' }}
-                                />
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '15px' }}>
-                            <button
-                                type="button"
-                                onClick={() => setShowOcrConfirm(false)}
-                                style={{
-                                    flex: 1,
-                                    padding: '12px',
-                                    background: 'rgba(255,255,255,0.05)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600'
-                                }}
-                            >
-                                Vazgeç
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        ...ocrResults
-                                    }));
-                                    setShowOcrConfirm(false);
-                                    showNotification('Bilgiler forma aktarıldı.', 'success');
-                                }}
-                                style={{
-                                    flex: 2,
-                                    padding: '12px',
-                                    background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '700',
-                                    boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)'
-                                }}
-                            >
-                                Onayla ve Aktar
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
             {/* Logo Kırpma Modalı */}
-            {showLogoCrop && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.9)',
-                    backdropFilter: 'blur(10px)',
-                    zIndex: 3000,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
-                    <div style={{ background: '#1a1a1a', padding: '25px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.2)', maxWidth: '90%', maxHeight: '90%', overflow: 'auto' }}>
-                        <h4 style={{ color: 'white', marginTop: 0 }}>Şirket Logosunu Seçin</h4>
-                        <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen logoyu içeren alanı 4 köşe ile işaretleyin.</p>
-                        <PerspectiveCropper
-                            src={logoTempSrc}
-                            onCropComplete={async (points, image) => {
-                                const canvas = warpPerspective(image, points, 400, 400); // Logo için 400x400
-                                canvas.toBlob((blob) => {
-                                    setLogoBlob(blob);
-                                    setLogoPreview(URL.createObjectURL(blob));
-                                    setShowLogoCrop(false);
-                                }, 'image/png');
-                            }}
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowLogoCrop(false)}
-                            style={{ marginTop: '15px', padding: '10px 20px', background: 'transparent', color: 'white', border: '1px solid #444', borderRadius: '12px', cursor: 'pointer' }}
-                        >Vazgeç</button>
-                    </div>
-                </div>
-            )}
-            {/* Mükerrer Kayıt Uyarısı */}
-            {showDuplicateAlert && duplicateCard && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.85)',
-                    backdropFilter: 'blur(15px)',
-                    zIndex: 4000,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
+            {
+                showLogoCrop && (
                     <div style={{
-                        background: 'rgba(30, 30, 35, 0.95)',
-                        border: '1px solid rgba(255, 193, 7, 0.3)',
-                        borderRadius: '24px',
-                        width: '100%',
-                        maxWidth: '500px',
-                        padding: '30px',
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-                        textAlign: 'center'
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.9)',
+                        backdropFilter: 'blur(10px)',
+                        zIndex: 3000,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px'
+                    }}>
+                        <div style={{ background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', border: '1px solid var(--glass-border)', maxWidth: '90%', maxHeight: '90%', overflow: 'auto', boxShadow: 'var(--glass-shadow-hover)' }}>
+                            <h4 style={{ color: 'var(--text-primary)', marginTop: 0 }}>Şirket Logosunu Seçin</h4>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen logoyu içeren alanı 4 köşe ile işaretleyin.</p>
+                            <PerspectiveCropper
+                                src={logoTempSrc}
+                                onCropComplete={async (points, image) => {
+                                    const canvas = warpPerspective(image, points, 400, 400); // Logo için 400x400
+                                    canvas.toBlob((blob) => {
+                                        setLogoBlob(blob);
+                                        setLogoPreview(URL.createObjectURL(blob));
+                                        setShowLogoCrop(false);
+                                    }, 'image/png');
+                                }}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowLogoCrop(false)}
+                                style={{ marginTop: '15px', padding: '10px 20px', background: 'var(--glass-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '12px', cursor: 'pointer' }}
+                            >Vazgeç</button>
+                        </div>
+                    </div>
+                )
+            }
+            {/* Mükerrer Kayıt Uyarısı */}
+            {
+                showDuplicateAlert && duplicateCard && (
+                    <div style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0,0,0,0.85)',
+                        backdropFilter: 'blur(15px)',
+                        zIndex: 4000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px'
                     }}>
                         <div style={{
-                            width: '70px',
-                            height: '70px',
-                            background: 'rgba(255, 193, 7, 0.15)',
-                            borderRadius: '50%',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto 20px',
-                            fontSize: '2rem'
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '24px',
+                            width: '100%',
+                            maxWidth: '500px',
+                            padding: '30px',
+                            boxShadow: 'var(--glass-shadow-hover)',
+                            textAlign: 'center'
                         }}>
-                            ⚠️
-                        </div>
-                        <h3 style={{ color: '#ffc107', margin: '0 0 10px 0', fontSize: '1.5rem' }}>Benzer Kayıt Tespit Edildi!</h3>
-                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', marginBottom: '25px' }}>
-                            <b>{duplicateCard.firstName} {duplicateCard.lastName}</b> adına zaten bir kayıt mevcut.
-                        </p>
+                            <div style={{
+                                width: '70px',
+                                height: '70px',
+                                background: 'rgba(255, 193, 7, 0.15)',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                fontSize: '2rem'
+                            }}>
+                                ⚠️
+                            </div>
+                            <h3 style={{ color: 'var(--accent-warning)', margin: '0 0 10px 0', fontSize: '1.5rem' }}>Benzer Kayıt Tespit Edildi!</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '25px' }}>
+                                <b>{duplicateCard.firstName} {duplicateCard.lastName}</b> adına zaten bir kayıt mevcut.
+                            </p>
 
-                        <div style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            borderRadius: '16px',
-                            padding: '20px',
-                            marginBottom: '30px',
-                            textAlign: 'left',
-                            border: '1px solid rgba(255,255,255,0.1)'
-                        }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '0.9rem' }}>
-                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Şirket:</span>
-                                <span>{duplicateCard.company || '-'}</span>
-                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>E-Posta:</span>
-                                <span>{duplicateCard.email || '-'}</span>
-                                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Ekleyen:</span>
-                                <span style={{ color: '#4ade80' }}>@{duplicateCard.owner?.displayName || 'Sistem'}</span>
+                            <div style={{
+                                background: 'var(--glass-bg)',
+                                borderRadius: '16px',
+                                padding: '20px',
+                                marginBottom: '30px',
+                                textAlign: 'left',
+                                border: '1px solid var(--glass-border)'
+                            }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '0.9rem' }}>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>Şirket:</span>
+                                    <span>{duplicateCard.company || '-'}</span>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>E-Posta:</span>
+                                    <span>{duplicateCard.email || '-'}</span>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>Ekleyen:</span>
+                                    <span style={{ color: 'var(--accent-success)' }}>@{duplicateCard.owner?.displayName || 'Sistem'}</span>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <button
+                                    onClick={() => {
+                                        // Mevcut kartı düzenleme moduna al
+                                        if (onCardAdded) onCardAdded(duplicateCard);
+                                        setShowDuplicateAlert(false);
+                                        showNotification('Düzenleme moduna geçildi.', 'info');
+                                    }}
+                                    style={{
+                                        padding: '14px',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: '700',
+                                        boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
+                                    }}
+                                >
+                                    Mevcut Kaydı Güncelle
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIgnoreDuplicate(true);
+                                        setShowDuplicateAlert(false);
+                                        // If on Step 1, proceed to Step 2
+                                        if (currentStep === 1) {
+                                            setCurrentStep(2);
+                                        }
+                                        // If on Step 2 or during Quick Save, the form will submit normally
+                                    }}
+                                    style={{
+                                        padding: '12px',
+                                        background: 'var(--glass-bg)',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--glass-border)',
+                                        borderRadius: '12px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600'
+                                    }}
+                                >
+                                    Yine de Yeni Oluştur
+                                </button>
+                                <button
+                                    onClick={() => setShowDuplicateAlert(false)}
+                                    style={{
+                                        background: 'transparent',
+                                        color: 'var(--text-tertiary)',
+                                        border: 'none',
+                                        padding: '5px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.85rem',
+                                        marginTop: '5px',
+                                        textDecoration: 'underline'
+                                    }}
+                                >
+                                    İptal Et
+                                </button>
                             </div>
                         </div>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <button
-                                onClick={() => {
-                                    // Mevcut kartı düzenleme moduna al
-                                    if (onCardAdded) onCardAdded(duplicateCard);
-                                    setShowDuplicateAlert(false);
-                                    showNotification('Düzenleme moduna geçildi.', 'info');
-                                }}
-                                style={{
-                                    padding: '14px',
-                                    background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '700',
-                                    boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
-                                }}
-                            >
-                                Mevcut Kaydı Güncelle
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setIgnoreDuplicate(true);
-                                    setShowDuplicateAlert(false);
-                                    // If on Step 1, proceed to Step 2
-                                    if (currentStep === 1) {
-                                        setCurrentStep(2);
-                                    }
-                                    // If on Step 2 or during Quick Save, the form will submit normally
-                                }}
-                                style={{
-                                    padding: '12px',
-                                    background: 'rgba(255,255,255,0.08)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255,255,255,0.1)',
-                                    borderRadius: '12px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600'
-                                }}
-                            >
-                                Yine de Yeni Oluştur
-                            </button>
-                            <button
-                                onClick={() => setShowDuplicateAlert(false)}
-                                style={{
-                                    background: 'transparent',
-                                    color: 'rgba(255,255,255,0.5)',
-                                    border: 'none',
-                                    padding: '5px',
-                                    cursor: 'pointer',
-                                    fontSize: '0.85rem',
-                                    marginTop: '5px',
-                                    textDecoration: 'underline'
-                                }}
-                            >
-                                İptal Et
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

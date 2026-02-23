@@ -1,13 +1,31 @@
 import React from 'react';
+import api from '../api/axios';
 import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush } from 'react-icons/fa';
 
 const About = () => {
-    const adminInfo = {
+    const [adminInfo, setAdminInfo] = React.useState({
         name: "Muhammet Sağ",
-        email: "m.sag@catborise.com", // Updated based on repo owner name pattern
+        email: "m.sag@catborise.com",
         github: "https://github.com/catborise/bizcarder",
         linkedin: "https://linkedin.com/in/muhammetsag"
-    };
+    });
+
+    React.useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await api.get('/api/settings');
+                setAdminInfo({
+                    name: res.data.developerName || "Muhammet Sağ",
+                    email: res.data.developerEmail || "m.sag@catborise.com",
+                    github: res.data.developerGithub || "https://github.com/catborise/bizcarder",
+                    linkedin: res.data.developerLinkedin || "https://linkedin.com/in/muhammetsag"
+                });
+            } catch (error) {
+                console.error('About settings fetch error:', error);
+            }
+        };
+        fetchSettings();
+    }, []);
 
     const capabilities = [
         {

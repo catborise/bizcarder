@@ -11,7 +11,11 @@ router.get('/', async (req, res) => {
         const defaults = {
             logRetentionLimit: 1000,
             trashRetentionDays: 30,
-            allowPublicRegistration: 'true'
+            allowPublicRegistration: 'true',
+            developerName: 'Muhammet Sağ',
+            developerEmail: 'm.sag@catborise.com',
+            developerGithub: 'https://github.com/catborise/bizcarder',
+            developerLinkedin: 'https://linkedin.com/in/muhammetsag'
         };
 
         // DB'den gelenleri objeye çevir
@@ -38,7 +42,15 @@ router.get('/', async (req, res) => {
 // Ayarları Güncelle
 router.put('/', async (req, res) => {
     try {
-        const { logRetentionLimit, trashRetentionDays, allowPublicRegistration } = req.body;
+        const {
+            logRetentionLimit,
+            trashRetentionDays,
+            allowPublicRegistration,
+            developerName,
+            developerEmail,
+            developerGithub,
+            developerLinkedin
+        } = req.body;
 
         // Validasyon
         if (logRetentionLimit && (isNaN(logRetentionLimit) || logRetentionLimit < 10)) {
@@ -72,6 +84,38 @@ router.put('/', async (req, res) => {
                 key: 'allowPublicRegistration',
                 value: String(allowPublicRegistration),
                 description: 'Yeni kullanıcı kaydı açık mı?'
+            });
+        }
+
+        if (developerName !== undefined) {
+            await SystemSetting.upsert({
+                key: 'developerName',
+                value: String(developerName),
+                description: 'Hakkında sayfasında görünen geliştirici adı'
+            });
+        }
+
+        if (developerEmail !== undefined) {
+            await SystemSetting.upsert({
+                key: 'developerEmail',
+                value: String(developerEmail),
+                description: 'Hakkında sayfasında görünen geliştirici e-postası'
+            });
+        }
+
+        if (developerGithub !== undefined) {
+            await SystemSetting.upsert({
+                key: 'developerGithub',
+                value: String(developerGithub),
+                description: 'Hakkında sayfasında görünen GitHub linki'
+            });
+        }
+
+        if (developerLinkedin !== undefined) {
+            await SystemSetting.upsert({
+                key: 'developerLinkedin',
+                value: String(developerLinkedin),
+                description: 'Hakkında sayfasında görünen LinkedIn linki'
             });
         }
 

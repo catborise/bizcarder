@@ -200,7 +200,7 @@ const Dashboard = () => {
                                 background: editMode
                                     ? 'var(--accent-primary)'
                                     : 'var(--glass-bg)',
-                                color: 'white',
+                                color: editMode ? 'var(--bg-card)' : 'var(--text-primary)',
                                 border: editMode ? 'none' : '1px solid var(--glass-border)',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
@@ -223,7 +223,7 @@ const Dashboard = () => {
                             style={{
                                 padding: '10px 20px',
                                 background: 'var(--accent-primary)',
-                                color: 'white',
+                                color: 'var(--bg-card)',
                                 border: 'none',
                                 borderRadius: '12px',
                                 cursor: 'pointer',

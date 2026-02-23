@@ -187,7 +187,7 @@ const ActivityLogs = () => {
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
                                 color: 'var(--text-primary)',
-                                colorScheme: 'dark'
+                                color: 'var(--text-primary)'
                             }}
                         />
                     </div>
@@ -203,8 +203,7 @@ const ActivityLogs = () => {
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
-                                color: 'var(--text-primary)',
-                                colorScheme: 'dark'
+                                color: 'var(--text-primary)'
                             }}
                         />
                     </div>
