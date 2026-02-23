@@ -17,6 +17,7 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [allowRegistration, setAllowRegistration] = useState(true);
+    const [samlEnabled, setSamlEnabled] = useState(true); // Varsayılan true (flash olmaması için)
 
     const { loginLocal, registerLocal } = useAuth();
     const navigate = useNavigate();
@@ -30,12 +31,30 @@ const Login = () => {
                 const res = await fetch(`${API_URL}/auth/config`);
                 const data = await res.json();
                 setAllowRegistration(data.allowPublicRegistration);
+
+                if (data.samlEnabled === false) {
+                    setSamlEnabled(false);
+                    setShowLocalForm(true); // SAML kapalıysa doğrudan yerel formu göster
+                } else {
+                    setSamlEnabled(true);
+                }
             } catch (err) {
                 console.error("Config fetch error:", err);
             }
         };
         fetchConfig();
     }, []);
+
+    // URL'den hata mesajı kontrolü (SAML dönüşü için)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const errorMsg = params.get('error');
+        if (errorMsg) {
+            setError(decodeURIComponent(errorMsg));
+            // URL'deki hata parametresini temizle
+            window.history.replaceState({}, document.title, location.pathname);
+        }
+    }, [location]);
 
     const handleLocalSubmit = async (e) => {
         e.preventDefault();
@@ -132,7 +151,9 @@ const Login = () => {
                         color: 'var(--text-secondary)',
                         fontSize: '0.925rem'
                     }}>
-                        {showLocalForm ? 'Yerel hesap ile oturum açın' : 'Devam etmek için kurumsal hesabınızı kullanın'}
+                        {showLocalForm
+                            ? (samlEnabled ? 'Yerel hesap ile oturum açın' : 'Kurumsal giriş devre dışı, yerel hesap kullanın')
+                            : 'Devam etmek için kurumsal hesabınızı kullanın'}
                     </p>
                 </div>
 
@@ -325,24 +346,26 @@ const Login = () => {
                                         {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Yeni yönetici hesabı oluştur'}
                                     </button>
                                 )}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowLocalForm(false);
-                                        setError('');
-                                    }}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: 'var(--accent-primary)',
-                                        fontSize: '0.875rem',
-                                        fontWeight: '600',
-                                        cursor: 'pointer',
-                                        marginTop: '10px'
-                                    }}
-                                >
-                                    ← Kurumsal Girişe Dön
-                                </button>
+                                {samlEnabled && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setShowLocalForm(false);
+                                            setError('');
+                                        }}
+                                        style={{
+                                            background: 'none',
+                                            border: 'none',
+                                            color: 'var(--accent-primary)',
+                                            fontSize: '0.875rem',
+                                            fontWeight: '600',
+                                            cursor: 'pointer',
+                                            marginTop: '10px'
+                                        }}
+                                    >
+                                        ← Kurumsal Girişe Dön
+                                    </button>
+                                )}
                             </div>
                         </form>
                     ) : (
@@ -411,7 +434,7 @@ const Login = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

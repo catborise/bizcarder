@@ -7,18 +7,26 @@ const router = express.Router();
 
 // Giriş Başlatma
 // Kullanıcıyı IdP giriş sayfasına yönlendirir.
-router.get('/login',
-    passport.authenticate('saml', { failureRedirect: '/login/fail' }),
-    (req, res) => {
-        res.redirect('/');
+router.get('/login', (req, res, next) => {
+    // SAML stratejisi yapılandırılmamışsa (Geliştirme ortamı vs.)
+    // passport.authenticate doğrudan hata fırlatır, bu yüzden önce kontrol ediyoruz.
+    const isSamlConfigured = passport._strategies && passport._strategies.saml;
+
+    if (!isSamlConfigured) {
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const message = 'Kurumsal giriş (SAML) şu anda aktif değil. Lütfen yönetici hesabınızla yerel giriş yapın.';
+        console.warn('[AUTH] SAML login attempted but strategy not configured. Redirecting to login with error.');
+        return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(message)}`);
     }
-);
+
+    return passport.authenticate('saml', { failureRedirect: '/auth/login/fail' })(req, res, next);
+});
 
 // IdP'den Dönüş (ACS URL)
 // Başarılı girişten sonra IdP buraya POST isteği atar.
 router.post('/login/callback',
     passport.authenticate('saml', {
-        failureRedirect: '/login/fail',
+        failureRedirect: '/auth/login/fail',
         failureFlash: true
     }),
     (req, res) => {
@@ -28,11 +36,20 @@ router.post('/login/callback',
     }
 );
 
+// Giriş Başarısızlığı Durumu
+router.get('/login/fail', (req, res) => {
+    const messages = req.flash('error');
+    const message = messages.length > 0 ? messages[0] : 'Kurumsal giriş başarısız oldu.';
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    console.warn('[SAML AUTH FAIL] Redirecting to frontend with error:', message);
+    res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(message)}`);
+});
+
 // SAML Metadata Endpoint (IdP yetkilendirmesi için)
 // Bu rota reverse proxy (Caddy/Nginx) tarafından /auth/* kapsamında olduğu için otomatik yönlendirilir.
 router.get('/metadata.xml', (req, res) => {
     try {
-        const strategy = passport._strategy('saml');
+        const strategy = passport.samlStrategy || (passport._strategies && passport._strategies.saml);
         if (!strategy) {
             return res.status(404).send('SAML stratejisi aktif değil.');
         }
@@ -300,9 +317,19 @@ router.get('/config', async (req, res) => {
     try {
         const regSetting = await SystemSetting.findByPk('allowPublicRegistration');
         const isRegistrationAllowed = regSetting ? regSetting.value === 'true' : true;
-        res.json({ allowPublicRegistration: isRegistrationAllowed });
+
+        // SAML stratejisinin yüklü olup olmadığını kontrol et
+        const samlEnabled = !!(passport._strategies && passport._strategies.saml);
+
+        res.json({
+            allowPublicRegistration: isRegistrationAllowed,
+            samlEnabled: samlEnabled
+        });
     } catch (error) {
-        res.json({ allowPublicRegistration: true }); // Hata durumunda varsayılan true
+        res.json({
+            allowPublicRegistration: true,
+            samlEnabled: false
+        }); // Hata durumunda varsayılan değerler
     }
 });
 

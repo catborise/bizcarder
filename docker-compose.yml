@@ -4,6 +4,10 @@ services:
   db:
     image: postgres:15-alpine
     container_name: crm_db
+    deploy:
+      resources:
+        limits:
+          memory: ${DB_MEMORY_LIMIT:-512M}
     env_file:
       - .env
     environment:
@@ -23,6 +27,10 @@ services:
   backend:
     build: ./backend
     container_name: crm_backend
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-1024M}
     ports:
       - "5000:5000"
     env_file:
@@ -51,13 +59,17 @@ services:
   frontend:
     build: ./frontend
     container_name: crm_frontend
+    deploy:
+      resources:
+        limits:
+          memory: ${FRONTEND_MEMORY_LIMIT:-1536M}
     ports:
       - "5173:5173"
     env_file:
       - .env
     environment:
       - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
-      - NODE_OPTIONS=--max-old-space-size=4096
+      - NODE_OPTIONS=--max-old-space-size=${FRONTEND_NODE_MAX_MEM:-1024}
     depends_on:
       - backend
     volumes:

@@ -1,5 +1,5 @@
 const passport = require('passport');
-const SamlStrategy = require('passport-saml').Strategy;
+const { Strategy: SamlStrategy } = require('@node-saml/passport-saml');
 const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../models');
 
@@ -24,7 +24,9 @@ passport.deserializeUser(async (id, done) => {
 const samlEntryPoint = process.env.SAML_ENTRY_POINT;
 const samlCert = process.env.SAML_CERT;
 
-if (samlEntryPoint && samlCert) {
+const isDummyCert = samlCert && samlCert.includes('BURAYA_IDP_SERTIFIKASINI_YAPISTIRIN');
+
+if (samlEntryPoint && samlCert && !isDummyCert) {
     console.log('SAML Yapılandırması Tespit Edildi:');
     console.log('- Entry Point:', samlEntryPoint);
     console.log('- Cert (İlk 10 kar.):', samlCert.substring(0, 10) + '...');
@@ -35,7 +37,7 @@ if (samlEntryPoint && samlCert) {
             entryPoint: samlEntryPoint,
             issuer: process.env.SAML_ISSUER || 'crm-bizcard-app',
             callbackUrl: process.env.SAML_CALLBACK_URL || 'http://localhost:5000/auth/login/callback',
-            cert: samlCert, // IdP Sertifikası (.pem formatında, tırnaksız)
+            idpCert: samlCert, // @node-saml/passport-saml için idpCert kullanılmalı
 
             // Gelişmiş Ayarlar
             identifierFormat: null, // Genellikle IdP tarafından belirlenir

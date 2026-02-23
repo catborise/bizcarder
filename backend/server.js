@@ -4,6 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const { syncDatabase } = require('./models');
 const passport = require('./config/passport');
+const flash = require('connect-flash');
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const { startAutoCleanup } = require('./utils/trashCleanup');
@@ -83,6 +84,9 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000 // 24 saat
     }
 }));
+
+// Flash Messages
+app.use(flash());
 
 // Passport Başlatma
 app.use(passport.initialize());
