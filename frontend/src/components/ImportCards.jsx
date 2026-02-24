@@ -63,24 +63,17 @@ const ImportCards = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px' }}>
                 <button
                     onClick={() => navigate('/')}
+                    className="glass-button"
                     style={{
-                        background: 'rgba(255, 255, 255, 0.1)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)',
-                        color: 'white',
                         padding: '10px',
                         borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s'
+                        width: '40px',
+                        height: '40px'
                     }}
-                    onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                    onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.1)'}
                 >
                     <FaArrowLeft />
                 </button>
-                <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: '700', color: 'white' }}>
+                <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: '700' }}>
                     Toplu İçe Aktarma (Bulk Import)
                 </h2>
             </div>
@@ -88,8 +81,8 @@ const ImportCards = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                 {/* Step 1: Template */}
                 <div style={cardStyle}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#60a5fa', fontSize: '1.2rem' }}>1. Şablonu İndirin</h4>
-                    <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)', marginBottom: '20px' }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>1. Şablonu İndirin</h4>
+                    <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
                         Verilerinizi doğru formatta yüklemek için şablonu kullanın. (*) işaretli alanlar zorunludur.
                     </p>
                     <div style={{ display: 'flex', gap: '15px' }}>
@@ -104,12 +97,12 @@ const ImportCards = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '8px',
-                            color: '#fbbf24',
+                            color: 'var(--accent-warning)',
                             fontSize: '0.9rem',
-                            background: 'rgba(251, 191, 36, 0.1)',
+                            background: 'rgba(var(--accent-warning-rgb), 0.1)',
                             padding: '8px 12px',
                             borderRadius: '8px',
-                            border: '1px solid rgba(251, 191, 36, 0.2)'
+                            border: '1px solid rgba(var(--accent-warning-rgb), 0.2)'
                         }}>
                             <FaAddressCard /> vCard (.vcf) Doğrudan Desteklenir
                         </div>
@@ -118,7 +111,7 @@ const ImportCards = () => {
 
                 {/* Step 2: Upload */}
                 <div style={cardStyle}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#60a5fa', fontSize: '1.2rem' }}>2. Dosyayı Yükleyin</h4>
+                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>2. Dosyayı Yükleyin</h4>
                     <input
                         type="file"
                         accept=".xlsx,.csv,.vcf"
@@ -133,12 +126,12 @@ const ImportCards = () => {
                         justifyContent: 'center',
                         gap: '15px',
                         padding: '40px 20px',
-                        border: '2px dashed rgba(255,255,255,0.2)',
+                        border: '2px dashed var(--glass-border)',
                         borderRadius: '16px',
                         cursor: 'pointer',
-                        color: file ? '#60a5fa' : 'rgba(255,255,255,0.5)',
+                        color: file ? 'var(--accent-primary)' : 'var(--text-tertiary)',
                         transition: 'all 0.2s',
-                        background: 'rgba(255,255,255,0.02)'
+                        background: 'var(--bg-input)'
                     }}>
                         <FaFileUpload size={48} />
                         <div style={{ textAlign: 'center' }}>
@@ -165,12 +158,12 @@ const ImportCards = () => {
                 {/* Step 3: Result Summary */}
                 {result && (
                     <div style={cardStyle}>
-                        <h4 style={{ margin: '0 0 20px 0', color: '#60a5fa', fontSize: '1.2rem' }}>İşlem Özeti</h4>
-                        <div style={{ display: 'flex', gap: '30px', marginBottom: '20px', padding: '15px', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#4ade80', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                        <h4 style={{ margin: '0 0 20px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>İşlem Özeti</h4>
+                        <div style={{ display: 'flex', gap: '30px', marginBottom: '20px', padding: '15px', background: 'var(--bg-input)', borderRadius: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-success)', fontSize: '1.2rem', fontWeight: 'bold' }}>
                                 <FaCheckCircle /> {result.importedCount} Başarılı
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#f87171', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-error)', fontSize: '1.2rem', fontWeight: 'bold' }}>
                                 <FaExclamationTriangle /> {result.errorCount} Hata
                             </div>
                         </div>
@@ -180,11 +173,11 @@ const ImportCards = () => {
                                 maxHeight: '300px',
                                 overflowY: 'auto',
                                 fontSize: '0.9rem',
-                                color: '#f87171',
-                                background: 'rgba(248, 113, 113, 0.1)',
+                                color: 'var(--accent-error)',
+                                background: 'rgba(var(--accent-error-rgb), 0.1)',
                                 padding: '15px',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(248, 113, 113, 0.2)'
+                                border: '1px solid rgba(var(--accent-error-rgb), 0.2)'
                             }}>
                                 <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Hata Detayları:</div>
                                 {result.errors.map((err, i) => <div key={i} style={{ marginBottom: '5px' }}>• {err}</div>)}
@@ -212,16 +205,16 @@ const ImportCards = () => {
 
 const cardStyle = {
     padding: '25px',
-    background: 'rgba(255,255,255,0.05)',
+    background: 'var(--glass-bg)',
     backdropFilter: 'blur(10px)',
     borderRadius: '20px',
-    border: '1px solid rgba(255,255,255,0.1)',
-    boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+    border: '1px solid var(--glass-border)',
+    boxShadow: 'var(--glass-shadow)'
 };
 
 const btnPrimary = {
     padding: '12px 24px',
-    background: '#3b82f6',
+    background: 'var(--accent-primary)',
     color: 'white',
     border: 'none',
     borderRadius: '12px',
@@ -237,9 +230,9 @@ const btnPrimary = {
 
 const btnSecondary = {
     padding: '12px 20px',
-    background: 'rgba(255,255,255,0.1)',
-    color: 'white',
-    border: '1px solid rgba(255,255,255,0.2)',
+    background: 'var(--glass-bg)',
+    color: 'var(--text-primary)',
+    border: '1px solid var(--glass-border)',
     borderRadius: '12px',
     cursor: 'pointer',
     fontSize: '0.95rem',
