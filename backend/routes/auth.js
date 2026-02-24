@@ -42,6 +42,12 @@ router.get('/login/fail', (req, res) => {
     const message = messages.length > 0 ? messages[0] : 'Kurumsal giriş başarısız oldu.';
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     console.warn('[SAML AUTH FAIL] Redirecting to frontend with error:', message);
+
+    // Organizasyon kısıtlaması nedeniyle reddedildiyse, özel sayfaya yönlendir
+    if (message.includes('Organizasyon kısıtlaması') || message.includes('giriş yetkiniz')) {
+        return res.redirect(`${frontendUrl}/access-denied?message=${encodeURIComponent(message)}`);
+    }
+
     res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(message)}`);
 });
 

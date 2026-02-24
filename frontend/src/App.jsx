@@ -21,6 +21,7 @@ import ImportCards from './components/ImportCards';
 import About from './components/About';
 import MyCard from './components/MyCard';
 import ContactProfile from './components/ContactProfile';
+import AccessDenied from './components/AccessDenied';
 import { FaTrash, FaSignInAlt, FaWifi, FaPlane, FaTimes } from 'react-icons/fa';
 
 import Contacts from './components/Contacts';
@@ -461,6 +462,7 @@ const AppContent = () => {
                         }
                     />
                     <Route path="/about" element={<About />} />
+                    <Route path="/access-denied" element={<AccessDenied />} />
                     {/* Public Route for Business Card Sharing */}
                     <Route path="/contact-profile/:id" element={<ContactProfile />} />
                 </Routes>
