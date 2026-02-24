@@ -608,7 +608,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             cursor: 'pointer',
                                             background: 'var(--accent-success)',
                                             backdropFilter: 'blur(5px)',
-                                            color: 'white',
+                                            color: 'var(--bg-card)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
@@ -730,11 +730,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             height: '32px',
                             borderRadius: '50%',
                             background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
-                            border: currentStep >= 1 ? '2px solid rgba(255,255,255,0.2)' : '2px solid var(--glass-border)',
+                            border: currentStep >= 1 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: 'white',
+                            color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700',
                             fontSize: '14px',
                             transition: 'all 0.3s ease'
@@ -766,11 +766,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             height: '32px',
                             borderRadius: '50%',
                             background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
-                            border: currentStep >= 2 ? '2px solid rgba(255,255,255,0.2)' : '2px solid var(--glass-border)',
+                            border: currentStep >= 2 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: currentStep >= 2 ? 'white' : 'var(--text-secondary)',
+                            color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700',
                             fontSize: '14px',
                             transition: 'all 0.3s ease'
@@ -1022,17 +1022,17 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 style={{
                                     padding: '14px 24px',
                                     background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                                    color: 'white',
+                                    color: 'var(--bg-card)',
                                     border: '1px solid var(--glass-border)',
                                     borderRadius: '12px',
                                     fontSize: '16px',
                                     cursor: 'pointer',
                                     fontWeight: '600',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 16px rgba(var(--accent-primary-rgb), 0.3)'
+                                    boxShadow: 'var(--glass-shadow)'
                                 }}
-                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(var(--accent-primary-rgb), 0.4)'; }}
-                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(var(--accent-primary-rgb), 0.3)'; }}
+                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
                                 {activeCard ? 'Güncelle' : 'Kaydet'}
                             </button>
@@ -1153,7 +1153,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: '#ffc107', fontSize: '0.8rem', fontWeight: 'bold' }}>ADRES</label>
+                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ADRES</label>
                                     <textarea
                                         value={ocrResults.address}
                                         onChange={(e) => setOcrResults({ ...ocrResults, address: e.target.value })}
@@ -1192,13 +1192,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     style={{
                                         flex: 2,
                                         padding: '12px',
-                                        background: 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)',
-                                        color: 'white',
+                                        background: 'linear-gradient(135deg, var(--accent-success) 0%, #22c55e 100%)',
+                                        color: 'var(--bg-card)',
                                         border: 'none',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
                                         fontWeight: '700',
-                                        boxShadow: '0 4px 15px rgba(34, 197, 94, 0.3)'
+                                        boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
                                     Onayla ve Aktar
@@ -1322,13 +1322,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     }}
                                     style={{
                                         padding: '14px',
-                                        background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                                        color: 'white',
+                                        background: 'linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%)',
+                                        color: 'var(--bg-card)',
                                         border: 'none',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
                                         fontWeight: '700',
-                                        boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)'
+                                        boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
                                     Mevcut Kaydı Güncelle

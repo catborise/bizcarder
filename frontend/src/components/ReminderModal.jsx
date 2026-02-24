@@ -69,9 +69,9 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{
                             padding: '10px',
-                            background: 'rgba(251, 191, 36, 0.2)',
+                            background: 'rgba(var(--accent-warning-rgb), 0.2)',
                             borderRadius: '12px',
-                            color: '#fbbf24'
+                            color: 'var(--accent-warning)'
                         }}>
                             <FaCalendarCheck size={24} />
                         </div>
@@ -144,8 +144,8 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                         <span>{card.company}</span>
                                         <span style={{
                                             padding: '2px 8px',
-                                            background: 'rgba(251, 191, 36, 0.2)',
-                                            color: '#fbbf24',
+                                            background: 'rgba(var(--accent-warning-rgb), 0.2)',
+                                            color: 'var(--accent-warning)',
                                             borderRadius: '6px',
                                             fontSize: '0.8rem',
                                             fontWeight: '600'
@@ -160,24 +160,24 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                         title="Hatırlatıcıyı Temizle"
                                         style={{
                                             padding: '8px',
-                                            background: 'rgba(239, 68, 68, 0.2)',
+                                            background: 'var(--accent-error-transparent)',
                                             border: 'none',
-                                            color: '#f87171',
+                                            color: 'var(--accent-error)',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
                                             transition: 'all 0.2s ease'
                                         }}
-                                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'}
-                                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)'}
+                                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(var(--accent-error-rgb), 0.3)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.background = 'var(--accent-error-transparent)'}
                                     >
                                         <FaTrashAlt size={16} />
                                     </button>
                                     <button
                                         style={{
                                             padding: '8px',
-                                            background: 'rgba(59, 130, 246, 0.2)',
+                                            background: 'var(--accent-primary-transparent)',
                                             border: 'none',
-                                            color: '#60a5fa',
+                                            color: 'var(--accent-primary)',
                                             borderRadius: '8px',
                                             cursor: 'pointer',
                                             display: 'flex',

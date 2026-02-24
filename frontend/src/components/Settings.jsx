@@ -91,13 +91,15 @@ const PasswordChangeForm = ({ showNotification }) => {
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <button type="submit" style={{
-                    background: 'var(--glass-bg)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--glass-border)',
-                    padding: '10px 25px',
-                    borderRadius: '10px',
+                    background: 'var(--accent-primary)',
+                    color: 'var(--bg-card)',
+                    border: 'none',
+                    padding: '12px 25px',
+                    borderRadius: '12px',
                     fontWeight: '600',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    boxShadow: 'var(--glass-shadow)',
+                    transition: 'all 0.2s ease'
                 }}>Şifreyi Güncelle</button>
             </div>
 
@@ -325,7 +327,7 @@ const Settings = () => {
         <div className="fade-in" style={{ paddingBottom: '50px' }}>
             <h2 style={{
                 marginBottom: '40px', fontWeight: '700', fontSize: '2.5rem',
-                color: 'var(--text-primary)', textShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                color: 'var(--text-primary)',
                 letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '15px'
             }}>
                 <span style={{ fontSize: '2rem' }}>⚙️</span> Ayarlar
@@ -595,7 +597,7 @@ const Settings = () => {
                                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Kurumsal Logo (Navbar)</label>
                                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
                                         {systemSettings.companyLogo && (
-                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'white', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <img src={`${API_URL}${systemSettings.companyLogo}`} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                             </div>
                                         )}
@@ -613,7 +615,7 @@ const Settings = () => {
                                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Uygulama İkonu (Favicon)</label>
                                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
                                         {systemSettings.companyIcon && (
-                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'white', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                                 <img src={`${API_URL}${systemSettings.companyIcon}`} alt="Icon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                             </div>
                                         )}
@@ -704,7 +706,7 @@ const Settings = () => {
                     </div>
                     <button type="submit" style={{
                         background: editingTag ? 'var(--accent-warning)' : 'var(--accent-primary)',
-                        color: 'white', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600'
+                        color: 'var(--bg-card)', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600'
                     }}>{editingTag ? 'Güncelle' : 'Ekle'}</button>
 
                 </form>

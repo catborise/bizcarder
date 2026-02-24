@@ -223,7 +223,7 @@ const InteractionLog = ({ cardId }) => {
                     />
                     <button type="submit" style={{
                         background: 'var(--accent-primary)',
-                        color: 'white',
+                        color: 'var(--bg-card)',
                         border: 'none',
                         padding: '10px 20px',
                         borderRadius: '8px',

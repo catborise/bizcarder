@@ -35,6 +35,8 @@
   --accent-warning-rgb: 245, 158, 11;
   --accent-error: #ef4444;
   --accent-error-rgb: 239, 68, 68;
+  --accent-primary-transparent: rgba(59, 130, 246, 0.1);
+  --accent-error-transparent: rgba(239, 68, 68, 0.1);
 
   color-scheme: dark;
 }
@@ -64,6 +66,8 @@
   --accent-warning-rgb: 217, 119, 6;
   --accent-error: #dc2626;
   --accent-error-rgb: 220, 38, 38;
+  --accent-primary-transparent: rgba(37, 99, 235, 0.1);
+  --accent-error-transparent: rgba(220, 38, 38, 0.1);
 
   color-scheme: light;
 }

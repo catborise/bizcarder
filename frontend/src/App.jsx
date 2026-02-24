@@ -157,8 +157,8 @@ const AppContent = () => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    background: '#ef4444',
-                    color: 'white',
+                    background: 'var(--accent-error)',
+                    color: 'var(--bg-card)',
                     padding: '10px',
                     textAlign: 'center',
                     zIndex: 2000,
@@ -180,15 +180,15 @@ const AppContent = () => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    background: 'rgba(59, 130, 246, 0.95)',
+                    background: 'rgba(var(--accent-primary-rgb), 0.9)',
                     backdropFilter: 'blur(10px)',
-                    color: 'white',
+                    color: 'var(--bg-card)',
                     padding: '12px 20px',
                     zIndex: 1999,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                    boxShadow: 'var(--glass-shadow)'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <FaWifi /> <span>Uygulamayı ana ekrana ekleyerek daha hızlı erişebilirsiniz.</span>
@@ -197,8 +197,8 @@ const AppContent = () => {
                         <button
                             onClick={handleInstallClick}
                             style={{
-                                background: 'white',
-                                color: '#3b82f6',
+                                background: 'var(--bg-card)',
+                                color: 'var(--accent-primary)',
                                 border: 'none',
                                 padding: '6px 16px',
                                 borderRadius: '8px',
@@ -210,7 +210,7 @@ const AppContent = () => {
                         </button>
                         <button
                             onClick={() => setShowInstallBanner(false)}
-                            style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--bg-card)', cursor: 'pointer' }}
                         >
                             <FaTimes />
                         </button>
@@ -252,9 +252,10 @@ const AppContent = () => {
                                 style={{
                                     height: '35px',
                                     borderRadius: '6px',
-                                    background: 'white',
+                                    background: 'var(--bg-card)',
                                     padding: '3px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                    border: '1px solid var(--glass-border)',
+                                    boxShadow: 'var(--glass-shadow)'
                                 }}
                             />
                         ) : (

@@ -122,24 +122,24 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                                 flex: 1,
                                 padding: '12px 24px',
                                 background: 'var(--accent-error)',
-                                color: 'white',
+                                color: 'var(--bg-card)',
                                 border: 'none',
                                 borderRadius: '12px',
                                 cursor: 'pointer',
                                 fontSize: '15px',
                                 fontWeight: '600',
                                 transition: 'all 0.2s ease',
-                                boxShadow: '0 4px 12px rgba(var(--accent-error-rgb), 0.2)'
+                                boxShadow: 'var(--glass-shadow)'
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.opacity = '0.9';
                                 e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 6px 16px rgba(var(--accent-error-rgb), 0.3)';
+                                e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
                             }}
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.opacity = '1';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(var(--accent-error-rgb), 0.2)';
+                                e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
                             }}
                         >
                             Evet, Sil

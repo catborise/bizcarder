@@ -111,7 +111,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         );
 
         // Draw crosshair
-        ctx.strokeStyle = '#4ade80';
+        ctx.strokeStyle = '#10b981'; // var(--accent-success) in dark, similar in light
         ctx.lineWidth = 1;
 
         ctx.beginPath();
@@ -337,7 +337,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         overflow: 'hidden',
                         zIndex: 100,
                         pointerEvents: 'none',
-                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                        boxShadow: 'var(--glass-shadow-hover)',
                         background: 'var(--bg-card)'
                     }}>
                         <canvas ref={magnifierCanvasRef} width={120} height={120} />
@@ -366,7 +366,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
 
                             cursor: 'grab',
                             zIndex: 10,
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                            boxShadow: 'var(--glass-shadow)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
@@ -398,7 +398,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                     style={{
                         padding: '10px 24px',
                         background: 'var(--accent-success)',
-                        color: 'white',
+                        color: 'var(--bg-card)',
                         border: 'none',
                         borderRadius: '10px',
                         cursor: 'pointer',

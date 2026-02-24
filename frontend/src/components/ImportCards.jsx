@@ -102,7 +102,7 @@ const ImportCards = () => {
                             background: 'rgba(var(--accent-warning-rgb), 0.1)',
                             padding: '8px 12px',
                             borderRadius: '8px',
-                            border: '1px solid rgba(var(--accent-warning-rgb), 0.2)'
+                            border: '1px solid var(--glass-border)'
                         }}>
                             <FaAddressCard /> vCard (.vcf) Doğrudan Desteklenir
                         </div>
@@ -177,7 +177,7 @@ const ImportCards = () => {
                                 background: 'rgba(var(--accent-error-rgb), 0.1)',
                                 padding: '15px',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(var(--accent-error-rgb), 0.2)'
+                                border: '1px solid var(--glass-border)'
                             }}>
                                 <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Hata Detayları:</div>
                                 {result.errors.map((err, i) => <div key={i} style={{ marginBottom: '5px' }}>• {err}</div>)}
@@ -215,7 +215,7 @@ const cardStyle = {
 const btnPrimary = {
     padding: '12px 24px',
     background: 'var(--accent-primary)',
-    color: 'white',
+    color: 'var(--bg-card)',
     border: 'none',
     borderRadius: '12px',
     cursor: 'pointer',

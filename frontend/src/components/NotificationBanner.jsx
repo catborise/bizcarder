@@ -12,10 +12,12 @@ const NotificationBanner = () => {
         right: '20px',
         zIndex: 9999,
         padding: '15px 25px',
-        borderRadius: '8px',
-        color: 'white',
-        fontWeight: '500',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        borderRadius: '12px',
+        color: 'var(--bg-card)',
+        fontWeight: '600',
+        boxShadow: 'var(--glass-shadow)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid var(--glass-border)',
         display: 'flex',
         alignItems: 'center',
         gap: '15px',
@@ -24,10 +26,10 @@ const NotificationBanner = () => {
     };
 
     const typeStyles = {
-        success: { backgroundColor: '#2ecc71' }, // Yeşil
-        error: { backgroundColor: '#e74c3c' },   // Kırmızı
-        info: { backgroundColor: '#3498db' }     // Mavi
-    }[notification.type] || { backgroundColor: '#34495e' };
+        success: { backgroundColor: 'var(--accent-success)' },
+        error: { backgroundColor: 'var(--accent-error)' },
+        info: { backgroundColor: 'var(--accent-primary)' }
+    }[notification.type] || { backgroundColor: 'var(--bg-card)' };
 
     return (
         <div style={{ ...styles, ...typeStyles }}>
@@ -42,7 +44,7 @@ const NotificationBanner = () => {
                 style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'white',
+                    color: 'var(--bg-card)',
                     cursor: 'pointer',
                     fontSize: '18px',
                     opacity: 0.8

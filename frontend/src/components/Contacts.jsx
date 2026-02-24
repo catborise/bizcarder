@@ -185,7 +185,6 @@ const Contacts = () => {
                     fontSize: '2.5rem',
                     fontWeight: '700',
                     color: 'var(--text-primary)',
-                    textShadow: '0 2px 8px var(--glass-shadow)',
                     letterSpacing: '-0.02em'
                 }}>Kartvizitler</h2>
 
@@ -237,7 +236,7 @@ const Contacts = () => {
                         onClick={openNewCardModal}
                         style={{
                             background: 'var(--accent-primary)',
-                            color: 'white',
+                            color: 'var(--bg-card)',
                             border: '1px solid var(--glass-border)',
                             padding: '12px 24px',
                             borderRadius: '12px',
@@ -247,7 +246,7 @@ const Contacts = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            boxShadow: '0 4px 16px var(--glass-shadow)'
+                            boxShadow: 'var(--glass-shadow)'
                         }}
                     >
                         <span style={{ fontSize: '20px', fontWeight: 'bold' }}>+</span> Yeni Kart Ekle
@@ -274,14 +273,14 @@ const Contacts = () => {
                                 {card.frontImageUrl ? (
                                     <div
                                         onClick={() => setSelectedImageCard(card)}
-                                        style={{ width: '240px', height: '140px', backgroundColor: '#000', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+                                        style={{ width: '240px', height: '140px', backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.8 }}>v{card.version || 1}</div>
                                     </div>
                                 ) : (
                                     <div style={{ width: '240px', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
-                                        <FaIdCard size={64} />
+                                        <FaIdCard size={64} style={{ opacity: 0.5 }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.5 }}>v{card.version || 1}</div>
                                     </div>
                                 )}
@@ -289,14 +288,14 @@ const Contacts = () => {
                                 <div style={{ flex: 1, minWidth: '300px' }}>
                                     <h3 style={{ margin: '0 0 8px 0', fontSize: '1.4em', color: 'var(--text-primary)', fontWeight: '600' }}>{card.firstName} {card.lastName}</h3>
                                     <p style={{ margin: '0 0 15px 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '1.05em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'white', padding: '2px' }} />}
+                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
                                     {card.tags && card.tags.length > 0 && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '15px' }}>
                                             {card.tags.map(tag => (
-                                                <span key={tag.id} style={{ padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600', background: tag.color || '#3b82f6', color: 'white' }}>{tag.name}</span>
+                                                <span key={tag.id} style={{ padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', background: tag.color || 'var(--accent-primary)', color: 'var(--bg-card)' }}>{tag.name}</span>
                                             ))}
                                         </div>
                                     )}
@@ -382,8 +381,8 @@ const Contacts = () => {
             <Modal title={selectedImageCard ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}` : 'Görsel'} isOpen={!!selectedImageCard} onClose={() => setSelectedImageCard(null)}>
                 {selectedImageCard && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div><h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>Ön Yüz</h4><img src={`${API_URL}${selectedImageCard.frontImageUrl}`} alt="Ön Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)' }} /></div>
-                        {selectedImageCard.backImageUrl && (<div><h4 style={{ color: '#ffc107', textAlign: 'center', marginBottom: '10px' }}>Arka Yüz</h4><img src={`${API_URL}${selectedImageCard.backImageUrl}`} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid #444' }} /></div>)}
+                        <div><h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>Ön Yüz</h4><img src={`${API_URL}${selectedImageCard.frontImageUrl}`} alt="Ön Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>
+                        {selectedImageCard.backImageUrl && (<div><h4 style={{ color: 'var(--accent-warning)', textAlign: 'center', marginBottom: '10px' }}>Arka Yüz</h4><img src={`${API_URL}${selectedImageCard.backImageUrl}`} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>)}
                     </div>
                 )}
             </Modal>

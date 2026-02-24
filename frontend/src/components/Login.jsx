@@ -107,7 +107,7 @@ const Login = () => {
         width: branding.companyLogo ? 'auto' : '64px',
         height: branding.companyLogo ? 'auto' : '64px',
         borderRadius: '16px',
-        background: branding.companyLogo ? 'white' : 'var(--accent-primary)',
+        background: branding.companyLogo ? 'var(--bg-card)' : 'var(--accent-primary)',
         padding: branding.companyLogo ? '10px' : '0',
         marginBottom: '20px',
         boxShadow: 'var(--glass-shadow-hover)',
@@ -183,7 +183,7 @@ const Login = () => {
                         <div style={{
                             padding: '12px 16px',
                             marginBottom: '24px',
-                            backgroundColor: error.includes('başarılı') ? 'rgba(34, 197, 94, 0.1)' : (error.includes('bekliyor') ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)'),
+                            backgroundColor: error.includes('başarılı') ? 'rgba(var(--accent-success-rgb), 0.1)' : (error.includes('bekliyor') ? 'rgba(var(--accent-warning-rgb), 0.1)' : 'rgba(var(--accent-error-rgb), 0.1)'),
                             border: `1px solid ${error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)')}`,
                             borderRadius: '12px',
                             color: error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)'),
@@ -378,7 +378,7 @@ const Login = () => {
                         <div style={{ textAlign: 'center' }}>
                             <div style={{
                                 padding: '30px',
-                                background: 'rgba(var(--accent-primary-rgb), 0.05)',
+                                background: 'var(--glass-bg)',
                                 borderRadius: '20px',
                                 border: '1px dashed var(--glass-border)',
                                 marginBottom: '30px'
@@ -395,7 +395,7 @@ const Login = () => {
                                         width: '100%',
                                         padding: '16px',
                                         background: 'var(--accent-primary)',
-                                        color: 'white',
+                                        color: 'var(--bg-card)',
                                         border: 'none',
                                         borderRadius: '12px',
                                         fontSize: '1rem',
@@ -406,7 +406,7 @@ const Login = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '10px',
-                                        boxShadow: '0 4px 12px rgba(var(--accent-primary-rgb), 0.3)'
+                                        boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
                                     Kurumsal Giriş (SAML/SSO)
@@ -430,7 +430,7 @@ const Login = () => {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

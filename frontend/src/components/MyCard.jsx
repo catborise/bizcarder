@@ -88,8 +88,7 @@ const MyCard = () => {
                     color: 'var(--text-primary)',
                     margin: 0,
                     fontSize: '2.5rem',
-                    fontWeight: '700',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                    fontWeight: '700'
                 }}>Dijital Kartvizitim</h2>
 
 
@@ -151,13 +150,13 @@ const MyCard = () => {
                         style={{
                             padding: '16px 40px',
                             background: 'var(--accent-primary)',
-                            color: 'white',
+                            color: 'var(--bg-card)',
                             border: 'none',
                             borderRadius: '14px',
                             cursor: 'pointer',
                             fontWeight: '700',
                             fontSize: '1.1rem',
-                            boxShadow: 'var(--glass-shadow-hover)',
+                            boxShadow: 'var(--glass-shadow)',
                             transition: 'all 0.3s ease'
                         }}
                         onMouseEnter={(e) => {
@@ -209,11 +208,11 @@ const MyCard = () => {
                                 backdropFilter: 'blur(5px)',
                                 borderRadius: '20px',
                                 fontSize: '0.8rem',
-                                color: 'white',
-                                fontWeight: '600',
+                                color: 'rgba(255,255,255,0.9)',
+                                fontWeight: '700',
                                 zIndex: 2
                             }}>
-                                <FaCircle size={8} color="#4ade80" /> Yayında
+                                <FaCircle size={8} color="var(--accent-success)" /> Yayında
                             </div>
                         </div>
 
@@ -346,7 +345,7 @@ const MyCard = () => {
                                     style={{
                                         padding: '14px 20px',
                                         background: 'var(--accent-primary)',
-                                        color: 'white',
+                                        color: 'var(--bg-card)',
                                         border: '1px solid var(--glass-border)',
                                         borderRadius: '12px',
                                         cursor: 'pointer',
@@ -377,13 +376,13 @@ const MyCard = () => {
                             <h4 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '25px', fontWeight: '700' }}>QR Kod ile Paylaş</h4>
 
                             <div style={{
-                                background: 'white',
+                                background: 'var(--bg-main)',
                                 padding: '20px',
                                 borderRadius: '24px',
                                 display: 'inline-block',
                                 marginBottom: '25px',
-                                boxShadow: 'var(--glass-shadow-hover)',
-                                border: '8px solid white',
+                                boxShadow: 'var(--glass-shadow)',
+                                border: '8px solid var(--bg-main)',
                                 position: 'relative',
                                 cursor: 'pointer'
                             }}

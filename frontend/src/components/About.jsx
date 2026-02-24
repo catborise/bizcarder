@@ -136,7 +136,7 @@ const About = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         fontSize: '3rem',
-                        color: 'white'
+                        color: 'var(--bg-card)'
                     }}>
                         <FaCode />
                     </div>
@@ -147,7 +147,7 @@ const About = () => {
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
                             <a href={`mailto:${adminInfo.email}`} style={{
                                 textDecoration: 'none',
-                                color: 'white',
+                                color: 'var(--bg-card)',
                                 background: 'var(--accent-primary)',
                                 padding: '10px 20px',
                                 borderRadius: '10px',

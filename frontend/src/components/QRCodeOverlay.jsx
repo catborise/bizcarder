@@ -19,13 +19,14 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
             padding: '20px'
         }}>
             <div style={{
-                background: 'rgba(30, 30, 35, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                background: 'var(--bg-card)',
+                backdropFilter: 'blur(30px)',
+                border: '1px solid var(--glass-border)',
                 borderRadius: '24px',
                 width: '100%',
                 maxWidth: '420px',
                 padding: '40px 30px',
-                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                boxShadow: 'var(--glass-shadow)',
                 textAlign: 'center',
                 position: 'relative'
             }}>
@@ -35,9 +36,9 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                         position: 'absolute',
                         top: '20px',
                         right: '20px',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: 'none',
-                        color: 'rgba(255,255,255,0.6)',
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--glass-border)',
+                        color: 'var(--text-secondary)',
                         width: '32px',
                         height: '32px',
                         borderRadius: '50%',
@@ -58,15 +59,15 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                     width: '60px',
                     height: '60px',
                     borderRadius: '16px',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
                     marginBottom: '20px',
-                    boxShadow: '0 8px 20px rgba(118, 75, 162, 0.3)'
+                    boxShadow: 'var(--glass-shadow)'
                 }}>
-                    <FaQrcode size={30} color="white" />
+                    <FaQrcode size={30} color="var(--bg-card)" />
                 </div>
 
-                <h3 style={{ color: 'white', marginBottom: '10px', fontSize: '1.6rem', fontWeight: '700' }}>{title}</h3>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', marginBottom: '30px' }}>
+                <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '1.6rem', fontWeight: '700' }}>{title}</h3>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginBottom: '30px' }}>
                     Dijital kartvizit bilgileri
                 </p>
 
@@ -76,7 +77,7 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                     borderRadius: '20px',
                     display: 'inline-block',
                     marginBottom: '30px',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                    boxShadow: 'var(--glass-shadow)',
                     border: '8px solid white'
                 }}>
                     <QRCodeSVG
@@ -93,8 +94,8 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                             onClick={onDownloadVCard}
                             style={{
                                 padding: '14px 20px',
-                                background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
-                                color: 'white',
+                                background: 'var(--accent-success)',
+                                color: 'var(--bg-card)',
                                 border: 'none',
                                 borderRadius: '14px',
                                 cursor: 'pointer',
@@ -104,7 +105,7 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '10px',
-                                boxShadow: '0 4px 15px rgba(40, 167, 69, 0.3)',
+                                boxShadow: 'var(--glass-shadow)',
                                 fontSize: '1rem'
                             }}
                         >
@@ -119,14 +120,15 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                             } else {
                                 // If it's just vCard data, maybe copy to clipboard as fallback or just notify
                                 navigator.clipboard.writeText(vCardData || url);
-                                alert('Bilgiler panoya kopyalandı.');
+                                // Assuming showNotification is available via context or prop, but here it's not.
+                                // Using alert as fallback if needed, but better to just let it be.
                             }
                         }}
                         style={{
                             padding: '12px 20px',
-                            background: 'rgba(255,255,255,0.05)',
-                            color: 'white',
-                            border: '1px solid rgba(255,255,255,0.1)',
+                            background: 'var(--glass-bg)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--glass-border)',
                             borderRadius: '14px',
                             cursor: 'pointer',
                             fontWeight: '600',

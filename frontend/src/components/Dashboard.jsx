@@ -5,6 +5,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import ReminderModal from './ReminderModal';
+import { useTheme } from '../context/ThemeContext';
 
 const hexToRgba = (hex, alpha = 0.3) => {
     let r = 0, g = 0, b = 0;
@@ -56,6 +57,7 @@ const tileStyle = {
 };
 
 const Dashboard = () => {
+    const { theme } = useTheme();
     const [stats, setStats] = useState({ totalCards: 0 });
     const [tiles, setTiles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -193,7 +195,8 @@ const Dashboard = () => {
                     marginBottom: '40px',
                     position: 'relative',
                     boxShadow: 'var(--glass-shadow)',
-                    border: '1px solid var(--glass-border)'
+                    border: '1px solid var(--glass-border)',
+                    backgroundColor: 'var(--bg-card)'
                 }}>
                     <img
                         src={`${API_URL}${settings.appBanner}`}
@@ -201,7 +204,10 @@ const Dashboard = () => {
                         style={{
                             width: '100%',
                             height: '100%',
-                            objectFit: 'cover'
+                            objectFit: 'cover',
+                            filter: theme === 'dark' ? 'brightness(1.2) contrast(1.1) saturate(1.1)' : 'none',
+                            opacity: theme === 'dark' ? 0.9 : 1,
+                            transition: 'all 0.4s ease'
                         }}
                     />
                     <div style={{
@@ -210,13 +216,19 @@ const Dashboard = () => {
                         left: 0,
                         right: 0,
                         padding: '40px',
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
-                        color: 'white'
+                        background: theme === 'dark'
+                            ? 'linear-gradient(to top, rgba(2, 6, 23, 0.95) 0%, rgba(2, 6, 23, 0.4) 60%, transparent 100%)'
+                            : 'linear-gradient(to top, var(--bg-card), transparent)',
+                        color: theme === 'dark' ? '#f8fafc' : 'var(--text-primary)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-end',
+                        zIndex: 2
                     }}>
                         <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>
                             {settings.companyName || 'BizCarder'}
                         </h1>
-                        <p style={{ margin: '5px 0 0 0', opacity: 0.8, fontSize: '1.1rem' }}>
+                        <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
                             Kurumsal Kartvizit Yönetim Sistemi
                         </p>
                     </div>
@@ -228,7 +240,6 @@ const Dashboard = () => {
                     fontWeight: '700',
                     fontSize: '2.5rem',
                     color: 'var(--text-primary)',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     letterSpacing: '-0.02em'
                 }}>
                     Dashboard
@@ -253,7 +264,7 @@ const Dashboard = () => {
                                 transition: 'all 0.3s ease',
                                 backdropFilter: 'blur(10px)',
                                 boxShadow: editMode
-                                    ? '0 4px 15px rgba(0, 0, 0, 0.2)'
+                                    ? 'var(--glass-shadow-hover)'
                                     : 'var(--glass-shadow)'
                             }}
                             title={editMode ? 'Düzenlemeyi Kapat' : 'Düzenleme Modu'}
@@ -273,7 +284,7 @@ const Dashboard = () => {
                                 alignItems: 'center',
                                 gap: '8px',
                                 fontWeight: '600',
-                                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+                                boxShadow: 'var(--glass-shadow)',
                                 transition: 'all 0.3s ease'
                             }}
                         >
@@ -320,7 +331,7 @@ const Dashboard = () => {
                 <div style={{
                     fontSize: '4rem',
                     fontWeight: '700',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                    color: 'var(--accent-primary)'
                 }}>
                     {loading ? '...' : stats.totalCards}
                 </div>
@@ -639,7 +650,7 @@ const Dashboard = () => {
                                 style={{
                                     padding: '10px 20px',
                                     background: 'var(--accent-primary)',
-                                    color: 'white',
+                                    color: 'var(--bg-card)',
                                     border: 'none',
                                     borderRadius: '8px',
                                     cursor: 'pointer',

@@ -81,7 +81,6 @@ const TrashBin = () => {
                     fontSize: '2.5rem',
                     fontWeight: '700',
                     color: 'var(--text-primary)',
-                    textShadow: '0 2px 8px rgba(0,0,0,0.1)',
                     letterSpacing: '-0.02em',
                     display: 'flex',
                     alignItems: 'center',
@@ -95,8 +94,7 @@ const TrashBin = () => {
                         onClick={() => setConfirmAction({ type: 'empty' })}
                         style={{
                             background: 'var(--accent-error)',
-                            backdropFilter: 'blur(10px)',
-                            color: 'white',
+                            color: 'var(--bg-card)',
                             border: '1px solid var(--glass-border)',
                             padding: '12px 24px',
                             borderRadius: '12px',

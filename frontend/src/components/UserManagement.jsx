@@ -300,10 +300,10 @@ const UserManagement = () => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontWeight: 'bold',
-                                    color: 'white',
+                                    color: 'var(--bg-card)',
                                     fontSize: '1.1rem',
                                     flexShrink: 0,
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                                    boxShadow: 'var(--glass-shadow)'
                                 }}>
                                     {u.displayName?.substring(0, 1).toUpperCase() || u.username?.substring(0, 1).toUpperCase()}
                                 </div>
@@ -373,8 +373,8 @@ const UserManagement = () => {
                                         onClick={() => openPasswordModal(u)}
                                         title="Şifre Sıfırla"
                                         style={{
-                                            background: 'rgba(255, 255, 255, 0.05)',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            background: 'var(--glass-bg)',
+                                            border: '1px solid var(--glass-border)',
                                             color: 'var(--text-secondary)',
                                             width: '38px',
                                             height: '38px',
@@ -394,9 +394,9 @@ const UserManagement = () => {
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'scale(1)';
-                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.background = 'var(--glass-bg)';
                                             e.currentTarget.style.color = 'var(--text-secondary)';
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                            e.currentTarget.style.borderColor = 'var(--glass-border)';
                                         }}
                                     >
                                         <FaKey size={14} />
@@ -407,8 +407,8 @@ const UserManagement = () => {
                                         onClick={() => openDeleteModal(u)}
                                         title="Kullanıcıyı Sil"
                                         style={{
-                                            background: 'rgba(255, 255, 255, 0.05)',
-                                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                                            background: 'var(--glass-bg)',
+                                            border: '1px solid var(--glass-border)',
                                             color: 'var(--text-secondary)',
                                             width: '38px',
                                             height: '38px',
@@ -427,9 +427,9 @@ const UserManagement = () => {
                                         }}
                                         onMouseLeave={(e) => {
                                             e.currentTarget.style.transform = 'scale(1)';
-                                            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                                            e.currentTarget.style.background = 'var(--glass-bg)';
                                             e.currentTarget.style.color = 'var(--text-secondary)';
-                                            e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                                            e.currentTarget.style.borderColor = 'var(--glass-border)';
                                         }}
                                     >
                                         <FaTrash size={14} />
@@ -487,7 +487,7 @@ const UserManagement = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontWeight: 'bold',
-                            color: 'white'
+                            color: 'var(--bg-card)'
                         }}>
                             {selectedUser?.displayName?.substring(0, 1).toUpperCase() || selectedUser?.username?.substring(0, 1).toUpperCase()}
                         </div>
@@ -532,8 +532,8 @@ const UserManagement = () => {
                             style={{
                                 padding: '10px 20px',
                                 background: 'transparent',
-                                border: '1px solid rgba(255, 255, 255, 0.2)',
-                                color: 'white',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-primary)',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
                                 display: 'flex',
@@ -541,7 +541,7 @@ const UserManagement = () => {
                                 gap: '8px',
                                 transition: 'all 0.2s'
                             }}
-                            onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                            onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
                             onMouseLeave={(e) => e.target.style.background = 'transparent'}
                         >
                             <FaTimes /> İptal
@@ -553,7 +553,7 @@ const UserManagement = () => {
                                 padding: '10px 20px',
                                 background: 'var(--accent-primary)',
                                 border: 'none',
-                                color: 'white',
+                                color: 'var(--bg-card)',
                                 borderRadius: '8px',
                                 cursor: !newPassword || passwordLoading ? 'not-allowed' : 'pointer',
                                 display: 'flex',
@@ -562,7 +562,7 @@ const UserManagement = () => {
                                 opacity: !newPassword || passwordLoading ? 0.7 : 1,
                                 transition: 'all 0.2s',
                                 fontWeight: 'bold',
-                                boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                                boxShadow: 'var(--glass-shadow)'
                             }}
                             onMouseEnter={(e) => {
                                 if (newPassword && !passwordLoading) {
@@ -611,7 +611,7 @@ const UserManagement = () => {
                             justifyContent: 'center',
                             flexShrink: 0
                         }}>
-                            <FaTrash color="white" size={18} />
+                            <FaTrash color="var(--bg-card)" size={18} />
                         </div>
                         <div>
                             <h4 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>Bu kullanıcıyı silmek istediğinize emin misiniz?</h4>
@@ -647,7 +647,7 @@ const UserManagement = () => {
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.background = 'var(--accent-primary)';
-                                    e.currentTarget.style.color = 'white';
+                                    e.currentTarget.style.color = 'var(--bg-card)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.background = 'var(--accent-primary-transparent)';
@@ -661,11 +661,11 @@ const UserManagement = () => {
                                     borderRadius: '6px',
                                     display: 'flex'
                                 }}>
-                                    <FaExchangeAlt size={16} color="#60a5fa" />
+                                    <FaExchangeAlt size={16} color="var(--accent-primary)" />
                                 </div>
                                 <div>
                                     <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>Kartvizitleri Bana Aktar ve Sil</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Kartvizitler sizin hesabınıza aktarılır.</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Kartvizitler sizin hesabınıza aktarılır.</div>
                                 </div>
                             </button>
 
@@ -688,7 +688,7 @@ const UserManagement = () => {
                                 }}
                                 onMouseEnter={(e) => {
                                     e.currentTarget.style.background = 'var(--accent-error)';
-                                    e.currentTarget.style.color = 'white';
+                                    e.currentTarget.style.color = 'var(--bg-card)';
                                 }}
                                 onMouseLeave={(e) => {
                                     e.currentTarget.style.background = 'var(--accent-error-transparent)';
@@ -702,11 +702,11 @@ const UserManagement = () => {
                                     borderRadius: '6px',
                                     display: 'flex'
                                 }}>
-                                    <FaTrash size={16} color="#f87171" />
+                                    <FaTrash size={16} color="var(--accent-error)" />
                                 </div>
                                 <div>
                                     <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>Kartvizitlerle Birlikte Sil</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>Kartvizitler çöp kutusuna taşınır.</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Kartvizitler çöp kutusuna taşınır.</div>
                                 </div>
                             </button>
                         </div>
@@ -719,7 +719,7 @@ const UserManagement = () => {
                             style={{
                                 padding: '8px 16px',
                                 background: 'transparent',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                border: '1px solid var(--glass-border)',
                                 borderRadius: '6px',
                                 color: 'var(--text-secondary)',
                                 cursor: 'pointer',
