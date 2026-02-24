@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { API_URL } from '../api/axios';
+import api, { API_URL } from '../api/axios';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
 const Login = () => {
@@ -17,7 +17,11 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [allowRegistration, setAllowRegistration] = useState(true);
-    const [samlEnabled, setSamlEnabled] = useState(true); // Varsayılan true (flash olmaması için)
+    const [samlEnabled, setSamlEnabled] = useState(true);
+    const [branding, setBranding] = useState({
+        companyName: 'BizCarder',
+        companyLogo: ''
+    });
 
     const { loginLocal, registerLocal } = useAuth();
     const navigate = useNavigate();
@@ -28,15 +32,19 @@ const Login = () => {
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const res = await fetch(`${API_URL}/auth/config`);
-                const data = await res.json();
-                setAllowRegistration(data.allowPublicRegistration);
+                // auth/config yerine artık /api/settings kullanıyoruz (branding dahil)
+                const res = await api.get('/api/settings');
+                const data = res.data;
+
+                setAllowRegistration(data.allowPublicRegistration !== false);
+                setSamlEnabled(data.samlEnabled !== false);
+                setBranding({
+                    companyName: data.companyName || 'BizCarder',
+                    companyLogo: data.companyLogo || ''
+                });
 
                 if (data.samlEnabled === false) {
-                    setSamlEnabled(false);
-                    setShowLocalForm(true); // SAML kapalıysa doğrudan yerel formu göster
-                } else {
-                    setSamlEnabled(true);
+                    setShowLocalForm(true);
                 }
             } catch (err) {
                 console.error("Config fetch error:", err);
@@ -92,6 +100,20 @@ const Login = () => {
         window.location.href = `${API_URL}/auth/login`;
     };
 
+    const iconWrapperStyle = {
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: branding.companyLogo ? 'auto' : '64px',
+        height: branding.companyLogo ? 'auto' : '64px',
+        borderRadius: '16px',
+        background: branding.companyLogo ? 'white' : 'var(--accent-primary)',
+        padding: branding.companyLogo ? '10px' : '0',
+        marginBottom: '20px',
+        boxShadow: 'var(--glass-shadow-hover)',
+        border: branding.companyLogo ? '1px solid var(--glass-border)' : 'none'
+    };
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -124,18 +146,16 @@ const Login = () => {
                     textAlign: 'center',
                     borderBottom: '1px solid var(--glass-border)'
                 }}>
-                    <div style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '64px',
-                        height: '64px',
-                        borderRadius: '16px',
-                        background: 'var(--accent-primary)',
-                        marginBottom: '20px',
-                        boxShadow: 'var(--glass-shadow-hover)'
-                    }}>
-                        <FaUserLock size={30} color="var(--bg-card)" />
+                    <div style={iconWrapperStyle}>
+                        {branding.companyLogo ? (
+                            <img
+                                src={`${API_URL}${branding.companyLogo}`}
+                                alt="Logo"
+                                style={{ maxHeight: '60px', maxWidth: '180px', objectFit: 'contain' }}
+                            />
+                        ) : (
+                            <FaUserLock size={30} color="var(--bg-card)" />
+                        )}
                     </div>
                     <h1 style={{
                         margin: 0,
@@ -144,7 +164,7 @@ const Login = () => {
                         fontWeight: '700',
                         letterSpacing: '-0.025em'
                     }}>
-                        {showLocalForm ? 'Yönetici Girişi' : 'CRM Giriş'}
+                        {branding.companyName}
                     </h1>
                     <p style={{
                         margin: '10px 0 0',
@@ -175,7 +195,6 @@ const Login = () => {
                             <span>{error}</span>
                         </div>
                     )}
-
 
                     {showLocalForm ? (
                         <form onSubmit={handleLocalSubmit}>
@@ -310,18 +329,6 @@ const Login = () => {
                                     boxShadow: 'var(--glass-shadow)',
                                     opacity: loading ? 0.7 : 1
                                 }}
-                                onMouseEnter={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!loading) {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
-                                    }
-                                }}
                             >
                                 {loading ? 'İşleniyor...' : (isRegisterMode ? 'Hesap Oluştur' : 'Giriş Yap')}
                             </button>
@@ -339,8 +346,7 @@ const Login = () => {
                                             border: 'none',
                                             color: 'var(--text-secondary)',
                                             fontSize: '0.825rem',
-                                            cursor: 'pointer',
-                                            transition: 'color 0.2s'
+                                            cursor: 'pointer'
                                         }}
                                     >
                                         {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Yeni yönetici hesabı oluştur'}
@@ -402,14 +408,6 @@ const Login = () => {
                                         gap: '10px',
                                         boxShadow: '0 4px 12px rgba(var(--accent-primary-rgb), 0.3)'
                                     }}
-                                    onMouseEnter={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(-2px)';
-                                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(var(--accent-primary-rgb), 0.4)';
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        e.currentTarget.style.transform = 'translateY(0)';
-                                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(var(--accent-primary-rgb), 0.3)';
-                                    }}
                                 >
                                     Kurumsal Giriş (SAML/SSO)
                                 </button>
@@ -425,8 +423,6 @@ const Login = () => {
                                     cursor: 'pointer',
                                     textDecoration: 'underline'
                                 }}
-                                onMouseEnter={(e) => e.target.style.color = 'var(--text-secondary)'}
-                                onMouseLeave={(e) => e.target.style.color = 'var(--text-tertiary)'}
                             >
                                 Yönetici misiniz? Yerel hesapla giriş yapın
                             </button>
@@ -434,7 +430,7 @@ const Login = () => {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

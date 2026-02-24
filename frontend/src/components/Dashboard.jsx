@@ -62,6 +62,7 @@ const Dashboard = () => {
     const [showModal, setShowModal] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentTile, setCurrentTile] = useState(null);
+    const [settings, setSettings] = useState(null);
     const [dueReminders, setDueReminders] = useState([]);
     const [showReminderModal, setShowReminderModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -81,7 +82,7 @@ const Dashboard = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const urls = ['/api/cards/stats', '/api/db-tiles'];
+            const urls = ['/api/cards/stats', '/api/db-tiles', '/api/settings'];
             if (isAuthenticated) {
                 urls.push('/api/cards/due-reminders');
             }
@@ -90,10 +91,11 @@ const Dashboard = () => {
 
             setStats(responses[0].data);
             setTiles(responses[1].data);
+            setSettings(responses[2].data);
 
             if (isAuthenticated && responses[2]) {
-                setDueReminders(responses[2].data);
-                if (responses[2].data.length > 0) {
+                setDueReminders(responses[3].data);
+                if (responses[3].data.length > 0) {
                     setShowReminderModal(true);
                 }
             } else {
@@ -178,8 +180,48 @@ const Dashboard = () => {
         e.currentTarget.style.borderColor = 'var(--glass-border)';
     };
 
+    const API_URL = api.defaults.baseURL || 'http://localhost:5000';
+
     return (
         <div className="fade-in">
+            {settings?.appBanner && (
+                <div style={{
+                    width: '100%',
+                    height: '250px',
+                    borderRadius: '24px',
+                    overflow: 'hidden',
+                    marginBottom: '40px',
+                    position: 'relative',
+                    boxShadow: 'var(--glass-shadow)',
+                    border: '1px solid var(--glass-border)'
+                }}>
+                    <img
+                        src={`${API_URL}${settings.appBanner}`}
+                        alt="Banner"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                        }}
+                    />
+                    <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: '40px',
+                        background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                        color: 'white'
+                    }}>
+                        <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: '800' }}>
+                            {settings.companyName || 'BizCarder'}
+                        </h1>
+                        <p style={{ margin: '5px 0 0 0', opacity: 0.8, fontSize: '1.1rem' }}>
+                            Kurumsal Kartvizit Yönetim Sistemi
+                        </p>
+                    </div>
+                </div>
+            )}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <h2 style={{
                     margin: 0,

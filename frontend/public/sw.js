@@ -40,7 +40,9 @@ self.addEventListener('fetch', event => {
     if (
         event.request.method !== 'GET' ||
         !event.request.url.startsWith('http') ||
-        event.request.url.includes('/api/')
+        event.request.url.includes('/api/') ||
+        event.request.url.includes('?t=') ||
+        event.request.url.includes('?v=')
     ) {
         return;
     }
@@ -57,10 +59,6 @@ self.addEventListener('fetch', event => {
                 return cachedResponse;
             }
 
-            // Exclude Vite dev server HMR and dynamic modules from secondary cache
-            if (event.request.url.includes('?t=') || event.request.url.includes('?v=')) {
-                return fetch(event.request);
-            }
 
             return fetch(event.request).then(networkResponse => {
                 if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {

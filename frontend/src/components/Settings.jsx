@@ -113,10 +113,15 @@ const Settings = () => {
         logRetentionLimit: 1000,
         trashRetentionDays: 30,
         allowPublicRegistration: true,
-        developerName: '',
-        developerEmail: '',
-        developerGithub: '',
-        developerLinkedin: ''
+        developerName: 'Muhammet Sağ',
+        developerEmail: 'm.sag@catborise.com',
+        developerGithub: 'https://github.com/catborise/bizcarder',
+        developerLinkedin: '',
+        companyName: 'BizCarder',
+        companyLogo: '',
+        companyIcon: '',
+        appBanner: '',
+        footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
     });
     const [aiSettings, setAiSettings] = useState({
         aiOcrEnabled: false,
@@ -242,6 +247,28 @@ const Settings = () => {
             refreshTags();
         } catch (error) {
             showNotification('Etiket işlemi başarısız: ' + (error.response?.data?.error || error.message), 'error');
+        }
+    };
+
+    const API_URL = api.defaults.baseURL || 'http://localhost:5000';
+
+    const handleBrandingUpload = async (e, field) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            showNotification('Dosya yükleniyor...', 'info');
+            const res = await api.post('/api/settings/upload-branding', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setSystemSettings({ ...systemSettings, [field]: res.data.url });
+            showNotification('Dosya başarıyla yüklendi.', 'success');
+        } catch (error) {
+            console.error('Upload error:', error);
+            showNotification('Yükleme başarısız.', 'error');
         }
     };
 
@@ -544,6 +571,92 @@ const Settings = () => {
                                 />
                             </div>
                         </div>
+
+                        {/* Kurumsal Markalama */}
+                        <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
+                            <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🎨 Kurumsal Markalama
+                            </h4>
+
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Şirket / Uygulama Adı</label>
+                                <input
+                                    type="text"
+                                    value={systemSettings.companyName}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, companyName: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="BizCarder"
+                                />
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+                                {/* Logo Yükleme */}
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Kurumsal Logo (Navbar)</label>
+                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
+                                        {systemSettings.companyLogo && (
+                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'white', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <img src={`${API_URL}${systemSettings.companyLogo}`} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleBrandingUpload(e, 'companyLogo')}
+                                            style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Icon / Favicon Yükleme */}
+                                <div>
+                                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Uygulama İkonu (Favicon)</label>
+                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
+                                        {systemSettings.companyIcon && (
+                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'white', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                <img src={`${API_URL}${systemSettings.companyIcon}`} alt="Icon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleBrandingUpload(e, 'companyIcon')}
+                                            style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Dashboard Banner Görseli</label>
+                                <div style={{ marginTop: '8px' }}>
+                                    {systemSettings.appBanner && (
+                                        <div style={{ width: '100%', height: '100px', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px', border: '1px solid var(--glass-border)' }}>
+                                            <img src={`${API_URL}${systemSettings.appBanner}`} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        </div>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => handleBrandingUpload(e, 'appBanner')}
+                                        style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Footer / Alt Bilgi Metni</label>
+                                <input
+                                    type="text"
+                                    value={systemSettings.footerText}
+                                    onChange={(e) => setSystemSettings({ ...systemSettings, footerText: e.target.value })}
+                                    style={inputStyle}
+                                    placeholder="© 2026 BizCarder. Tüm Hakları Saklıdır."
+                                />
+                                <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>Tüm sayfalarda en altta gösterilecek olan telif/üretici bilgisidir.</small>
+                            </div>
+                        </div>
+
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                             <button onClick={handleSaveSystem} style={{
                                 background: 'var(--accent-primary)',

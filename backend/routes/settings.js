@@ -1,6 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const { SystemSetting } = require('../models');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { requireAdmin } = require('../middleware/auth');
+
+// Multer Ayarları (Branding Dosyaları)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        const dir = 'uploads/branding/';
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'branding-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // Ayarları Getir
 router.get('/', async (req, res) => {
@@ -12,10 +33,15 @@ router.get('/', async (req, res) => {
             logRetentionLimit: 1000,
             trashRetentionDays: 30,
             allowPublicRegistration: 'true',
-            developerName: 'Muhammet Sağ',
-            developerEmail: 'm.sag@catborise.com',
+            developerName: 'Developer',
+            developerEmail: 'catborise@gmail.com',
             developerGithub: 'https://github.com/catborise/bizcarder',
-            developerLinkedin: 'https://linkedin.com/in/muhammetsag'
+            developerLinkedin: 'https://linkedin.com/in/muhammetalisag',
+            companyName: 'BizCarder',
+            companyLogo: '',
+            companyIcon: '',
+            appBanner: '',
+            footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
         };
 
         // DB'den gelenleri objeye çevir
@@ -32,6 +58,22 @@ router.get('/', async (req, res) => {
         result.trashRetentionDays = parseInt(result.trashRetentionDays, 10);
         result.allowPublicRegistration = result.allowPublicRegistration === 'true';
 
+        // Yetki kontrolü: Admin değilse sadece branding bilgilerini döndür
+        if (!req.isAuthenticated || !req.isAuthenticated() || req.user?.role !== 'admin') {
+            const passport = require('passport');
+            const samlEnabled = !!(passport._strategies && passport._strategies.saml);
+
+            return res.json({
+                companyName: result.companyName,
+                companyLogo: result.companyLogo,
+                companyIcon: result.companyIcon,
+                appBanner: result.appBanner,
+                footerText: result.footerText,
+                allowPublicRegistration: result.allowPublicRegistration,
+                samlEnabled: samlEnabled
+            });
+        }
+
         res.json(result);
     } catch (error) {
         console.error('Settings fetch error:', error);
@@ -40,7 +82,7 @@ router.get('/', async (req, res) => {
 });
 
 // Ayarları Güncelle
-router.put('/', async (req, res) => {
+router.put('/', requireAdmin, async (req, res) => {
     try {
         const {
             logRetentionLimit,
@@ -49,7 +91,12 @@ router.put('/', async (req, res) => {
             developerName,
             developerEmail,
             developerGithub,
-            developerLinkedin
+            developerLinkedin,
+            companyName,
+            companyLogo,
+            companyIcon,
+            appBanner,
+            footerText
         } = req.body;
 
         // Validasyon
@@ -119,9 +166,62 @@ router.put('/', async (req, res) => {
             });
         }
 
+        if (companyName !== undefined) {
+            await SystemSetting.upsert({
+                key: 'companyName',
+                value: String(companyName),
+                description: 'Şirket/Uygulama adı'
+            });
+        }
+
+        if (companyLogo !== undefined) {
+            await SystemSetting.upsert({
+                key: 'companyLogo',
+                value: String(companyLogo),
+                description: 'Uygulama logosu URL'
+            });
+        }
+
+        if (companyIcon !== undefined) {
+            await SystemSetting.upsert({
+                key: 'companyIcon',
+                value: String(companyIcon),
+                description: 'Uygulama simgesi (favicon) URL'
+            });
+        }
+
+        if (appBanner !== undefined) {
+            await SystemSetting.upsert({
+                key: 'appBanner',
+                value: String(appBanner),
+                description: 'Dashboard banner görseli URL'
+            });
+        }
+
+        if (footerText !== undefined) {
+            await SystemSetting.upsert({
+                key: 'footerText',
+                value: String(footerText),
+                description: 'Sayfa altı (footer) trademark metni'
+            });
+        }
+
         res.json({ message: 'Ayarlar güncellendi.', settings: req.body });
     } catch (error) {
         console.error('Settings update error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Branding Dosyası Yükle
+router.post('/upload-branding', requireAdmin, upload.single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Dosya yüklenemedi.' });
+        }
+        const fileUrl = `/uploads/branding/${req.file.filename}`;
+        res.json({ url: fileUrl });
+    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
