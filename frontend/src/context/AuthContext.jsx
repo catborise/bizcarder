@@ -91,9 +91,14 @@ export const AuthProvider = ({ children }) => {
     // Çıkış yap
     const logout = async () => {
         try {
-            await api.post('/auth/logout');
+            const response = await api.post('/auth/logout');
             setUser(null);
             setIsAuthenticated(false);
+
+            // Eğer backend bir logoutUrl döndürürse (SAML için), oraya yönlendir
+            if (response.data.logoutUrl) {
+                window.location.href = response.data.logoutUrl;
+            }
         } catch (error) {
             console.error('Logout error:', error);
         }

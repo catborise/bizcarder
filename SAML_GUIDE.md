@@ -29,6 +29,7 @@ SAML_ENTRY_POINT=https://sso.example.com/idp/profile/SAML2/Redirect/SSO
 SAML_ISSUER=https://crm.example.com
 SAML_CALLBACK_URL=https://crm.example.com/auth/login/callback
 SAML_CERT="MIID....CERT_ICERIGI...."
+SAML_LOGOUT_URL=https://sso.example.com/idp/profile/Logout # Opsiyonel: Global Logout için IdP çıkış adresi
 
 # --- FILTRELEME (OPSIYONEL) ---
 # Sadece belirli organizasyon birimlerine izin vermek için (Virgül ile ayırın)

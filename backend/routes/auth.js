@@ -172,10 +172,21 @@ router.post('/local/register', async (req, res) => {
 
 // Çıkış Yap
 router.post('/logout', (req, res) => {
+    const isSamlUser = !!req.user?.shibbolethId;
     req.logout((err) => {
         if (err) {
             return res.status(500).json({ error: 'Çıkış yapılırken hata oluştu.' });
         }
+
+        // Eğer SAML kullanıcısı ise ve bir logout URL tanımlanmışsa, frontend'e bildir
+        if (isSamlUser && process.env.SAML_LOGOUT_URL) {
+            return res.json({
+                success: true,
+                message: 'Başarıyla çıkış yapıldı.',
+                logoutUrl: process.env.SAML_LOGOUT_URL
+            });
+        }
+
         res.json({ success: true, message: 'Başarıyla çıkış yapıldı.' });
     });
 });
