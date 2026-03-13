@@ -1,4 +1,16 @@
 /**
+ * vCard özel karakterlerini temizler.
+ */
+const escapeVCard = (text) => {
+    if (!text) return '';
+    return String(text)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\n/g, '\\n');
+};
+
+/**
  * Kartvizit objesini vCard (VCF) formatına dönüştürür.
  * @param {Object} card - BusinessCard model örneği
  * @returns {String} - vCard formatında metin
@@ -7,15 +19,15 @@ const generateVCard = (card) => {
     const lines = [
         'BEGIN:VCARD',
         'VERSION:3.0',
-        `FN:${card.firstName || ''} ${card.lastName || ''}`,
-        `N:${card.lastName || ''};${card.firstName || ''};;;`,
-        card.company ? `ORG:${card.company}` : null,
-        card.title ? `TITLE:${card.title}` : null,
-        card.email ? `EMAIL;TYPE=INTERNET;TYPE=WORK:${card.email}` : null,
-        card.phone ? `TEL;TYPE=CELL:${card.phone}` : null,
-        card.website ? `URL:${card.website}` : null,
-        card.address || card.city || card.country ? `ADR;TYPE=WORK:;;${card.address || ''};${card.city || ''};;${card.country || ''}` : null,
-        card.notes ? `NOTE:${card.notes.replace(/\n/g, '\\n')}` : null,
+        `FN:${escapeVCard(card.firstName)} ${escapeVCard(card.lastName)}`,
+        `N:${escapeVCard(card.lastName)};${escapeVCard(card.firstName)};;;`,
+        card.company ? `ORG:${escapeVCard(card.company)}` : null,
+        card.title ? `TITLE:${escapeVCard(card.title)}` : null,
+        card.email ? `EMAIL;TYPE=INTERNET;TYPE=WORK:${escapeVCard(card.email)}` : null,
+        card.phone ? `TEL;TYPE=CELL:${escapeVCard(card.phone)}` : null,
+        card.website ? `URL:${escapeVCard(card.website)}` : null,
+        card.address || card.city || card.country ? `ADR;TYPE=WORK:;;${escapeVCard(card.address)};${escapeVCard(card.city)};;${escapeVCard(card.country)}` : null,
+        card.notes ? `NOTE:${escapeVCard(card.notes)}` : null,
         'END:VCARD'
     ];
 

@@ -1,13 +1,14 @@
 const express = require('express');
 const passport = require('passport');
 const { User, SystemSetting } = require('../models');
+const { authLimiter } = require('../middleware/rateLimiter');
 const router = express.Router();
 
 // ============== SHIBBOLETH (SAML) AUTHENTICATION ==============
 
 // Giriş Başlatma
 // Kullanıcıyı IdP giriş sayfasına yönlendirir.
-router.get('/login', (req, res, next) => {
+router.get('/login', authLimiter, (req, res, next) => {
     // SAML stratejisi yapılandırılmamışsa (Geliştirme ortamı vs.)
     // passport.authenticate doğrudan hata fırlatır, bu yüzden önce kontrol ediyoruz.
     const isSamlConfigured = passport._strategies && passport._strategies.saml;
@@ -77,6 +78,7 @@ router.get('/metadata.xml', (req, res) => {
 
 // Yerel Kullanıcı Girişi
 router.post('/local/login',
+    authLimiter,
     passport.authenticate('local', { failureMessage: true }),
     (req, res) => {
         // Sadece adminler yerel giriş yapabilir
@@ -115,7 +117,7 @@ router.post('/local/login',
 );
 
 // Yerel Kullanıcı Kaydı
-router.post('/local/register', async (req, res) => {
+router.post('/local/register', authLimiter, async (req, res) => {
     try {
         // Kayıt yeteneği kontrolü
         const regSetting = await SystemSetting.findByPk('allowPublicRegistration');

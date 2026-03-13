@@ -216,7 +216,7 @@ exports.importCards = async (req, res) => {
 
     } catch (error) {
         console.error('Import processing error:', error);
-        res.status(500).json({ error: 'Dosya işlenirken hata oluştu: ' + error.message });
+        res.status(500).json({ error: 'Dosya işlenirken teknik bir hata oluştu.' });
     }
 };
 

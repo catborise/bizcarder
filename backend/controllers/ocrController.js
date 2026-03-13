@@ -78,8 +78,7 @@ const analyzeWithAI = async (req, res) => {
         }
 
         res.status(error.response?.status || 500).json({
-            error: errorMessage,
-            providerError: apiError || error.message
+            error: errorMessage
         });
     } finally {
         // Geçici dosyayı sil (isteğe bağlı, multer diskStorage kullanıyorsa)

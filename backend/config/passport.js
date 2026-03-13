@@ -50,10 +50,8 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
         },
         async (profile, done) => {
             try {
-                // DEBUG: Gelen profil bilgilerini incele
-                console.log('--- SAML Profil Verisi Girişi ---');
-                console.log(JSON.stringify(profile, null, 2));
-                console.log('--------------------------');
+                // DEBUG: Sadece başarılı girişi logla (PII sızdırmadan)
+                console.log(`[SAML AUTH] Profil girişi: ${profile.nameID || 'Bilinmiyor'}`);
 
                 // Öznitelikleri hem kökte hem de .attributes altında ara (Büyük/Küçük harf duyarsız)
                 const attr = profile.attributes || {};

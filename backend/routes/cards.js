@@ -8,6 +8,7 @@ const { logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
 const ocrController = require('../controllers/ocrController');
+const { ocrLimiter } = require('../middleware/rateLimiter');
 
 // Multer Ayarları (Dosya Yükleme)
 const storage = multer.diskStorage({
@@ -22,17 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// İstatistikleri Getir (Dashboard için)
-router.get('/stats', async (req, res) => {
-    try {
-        console.log('[DEBUG] Stats endpoint hit');
-        const count = await BusinessCard.count();
-        res.json({ totalCards: count });
-    } catch (error) {
-        console.error("Count error:", error);
-        res.status(500).json({ error: error.message });
-    }
-});
+// stats rotası server.js içinde public olarak tanımlandığı için buradakine gerek yok.
 
 // Tarihi Gelmiş Hatırlatıcıları Getir
 router.get('/due-reminders', async (req, res) => {
@@ -71,12 +62,12 @@ router.get('/due-reminders', async (req, res) => {
         res.json(cards);
     } catch (error) {
         console.error("[ERROR] due-reminders error:", error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Hatırlatıcılar yüklenirken bir hata oluştu.' });
     }
 });
 
 // AI OCR Analiz Endpoint
-router.post('/analyze-ai', upload.single('image'), ocrController.analyzeWithAI);
+router.post('/analyze-ai', ocrLimiter, upload.single('image'), ocrController.analyzeWithAI);
 
 // Kullanıcının Kendi Kartını Getir
 router.get('/personal', async (req, res) => {
@@ -90,7 +81,8 @@ router.get('/personal', async (req, res) => {
         });
         res.json(card);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Personal card fetch error:', error);
+        res.status(500).json({ error: 'Kişisel kartvizit yüklenemedi.' });
     }
 });
 
@@ -115,7 +107,7 @@ router.get('/check-duplicate', async (req, res) => {
         res.json(existingCard);
     } catch (error) {
         console.error('Duplicate check error:', error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Kayıt kontrolü sırasında bir hata oluştu.' });
     }
 });
 
@@ -169,7 +161,8 @@ router.get('/', async (req, res) => {
         });
         res.json(cards);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Cards list error:', error);
+        res.status(500).json({ error: 'Kartvizitler listelenirken bir hata oluştu.' });
     }
 });
 
@@ -393,8 +386,7 @@ router.post('/', uploadFields, async (req, res) => {
             req
         });
         res.status(500).json({
-            error: error.message,
-            stack: error.stack // Temporarily return stack for debugging
+            error: 'Kart eklenirken bir sunucu hatası oluştu.'
         });
     }
 });
@@ -409,6 +401,11 @@ router.put('/:id', uploadFields, async (req, res) => {
 
         if (!card) {
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+        }
+
+        // Yetki kontrolü: Sadece sahibi veya admin güncelleyebilir
+        if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Bu kartviziti güncelleme yetkiniz bulunmuyor.' });
         }
 
         const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
@@ -468,7 +465,7 @@ router.put('/:id', uploadFields, async (req, res) => {
             details: error.message,
             req
         });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Kart güncellenirken bir sunucu hatası oluştu.' });
     }
 });
 
@@ -502,7 +499,8 @@ router.get('/:id/history', async (req, res) => {
 
         res.json(history);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('History fetch error:', error);
+        res.status(500).json({ error: 'Geçmiş kayıtları yüklenemedi.' });
     }
 });
 
@@ -534,7 +532,8 @@ router.get('/:id/vcf', async (req, res) => {
             req
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('vcf download error:', error);
+        res.status(500).json({ error: 'vCard oluşturulamadı.' });
     }
 });
 
@@ -547,6 +546,11 @@ router.delete('/:id', async (req, res) => {
 
         if (!card) {
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+        }
+
+        // Yetki kontrolü: Sadece sahibi veya admin silebilir
+        if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Bu kartviziti silme yetkiniz bulunmuyor.' });
         }
 
         if (card.deletedAt) {
@@ -567,12 +571,13 @@ router.delete('/:id', async (req, res) => {
 
         res.json({ message: 'Kartvizit çöp kutusuna taşındı.' });
     } catch (error) {
+        console.error('Soft delete error:', error);
         await logAction({
             action: 'CARD_DELETE_ERROR',
             details: error.message,
             req
         });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Kart silinirken bir hata oluştu.' });
     }
 });
 
@@ -603,7 +608,8 @@ router.get('/trash', async (req, res) => {
 
         res.json(cards);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Trash list error:', error);
+        res.status(500).json({ error: 'Çöp kutusu listelenirken bir hata oluştu.' });
     }
 });
 
@@ -639,7 +645,8 @@ router.post('/:id/restore', async (req, res) => {
 
         res.json({ message: 'Kartvizit geri yüklendi.', card });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Restore error:', error);
+        res.status(500).json({ error: 'Kart geri yüklenirken bir hata oluştu.' });
     }
 });
 
@@ -669,7 +676,8 @@ router.delete('/:id/permanent', async (req, res) => {
 
         res.json({ message: 'Kartvizit kalıcı olarak silindi.' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Permanent delete error:', error);
+        res.status(500).json({ error: 'Kart kalıcı olarak silinemedi.' });
     }
 });
 
@@ -698,7 +706,8 @@ router.delete('/trash/empty', async (req, res) => {
 
         res.json({ message: `${deletedCount} kartvizit kalıcı olarak silindi.` });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Trash empty error:', error);
+        res.status(500).json({ error: 'Çöp kutusu boşaltılamadı.' });
     }
 });
 
