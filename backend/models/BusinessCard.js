@@ -109,6 +109,11 @@ const BusinessCard = sequelize.define('BusinessCard', {
             model: 'Users',
             key: 'id'
         }
+    },
+    sharingToken: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        unique: true
     }
 });
 
