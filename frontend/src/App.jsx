@@ -463,8 +463,8 @@ const AppContent = () => {
                     />
                     <Route path="/about" element={<About />} />
                     <Route path="/access-denied" element={<AccessDenied />} />
-                    {/* Public Route for Business Card Sharing */}
-                    <Route path="/contact-profile/:id" element={<ContactProfile />} />
+                    {/* Public Route for Business Card Sharing (using token) */}
+                    <Route path="/contact-profile/:token" element={<ContactProfile />} />
                 </Routes>
             </main >
 

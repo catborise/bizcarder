@@ -76,7 +76,7 @@ const MyCard = () => {
         }
     };
 
-    const shareUrl = personalCard ? `${window.location.origin}/contact-profile/${personalCard.id}` : '';
+    const shareUrl = personalCard ? `${window.location.origin}/contact-profile/${personalCard.sharingToken}` : '';
 
     if (loading) return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
 

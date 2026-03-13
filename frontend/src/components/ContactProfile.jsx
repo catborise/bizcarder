@@ -8,7 +8,7 @@ import QRCodeOverlay from './QRCodeOverlay';
 import { generateVCardString } from '../utils/vcardHelper';
 
 const ContactProfile = () => {
-    const { id } = useParams();
+    const { token } = useParams();
     const [card, setCard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,8 +18,8 @@ const ContactProfile = () => {
     useEffect(() => {
         const fetchPublicCard = async () => {
             try {
-                // Public endpoint'i kullan
-                const res = await api.get(`/api/cards/public/${id}`);
+                // Public endpoint'i kullan (token ile)
+                const res = await api.get(`/api/cards/public/${token}`);
                 setCard(res.data);
             } catch (err) {
                 console.error('Error fetching public card:', err);
@@ -36,8 +36,8 @@ const ContactProfile = () => {
         if (!card) return;
         try {
             showNotification('vCard dosyası hazırlanıyor...', 'info');
-            // Public vCF endpoint'ini kullan
-            const response = await api.get(`/api/cards/public/${card.id}/vcf`, {
+            // Public vCF endpoint'ini kullan (sharingToken ile)
+            const response = await api.get(`/api/cards/public/${card.sharingToken}/vcf`, {
                 responseType: 'blob'
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
