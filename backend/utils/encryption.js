@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
-// Bu anahtar prod ortamında mutlaka ENV'den gelmeli!
-const ENCRYPTION_KEY = process.env.CRM_API_ENCRYPTION_KEY || 'crm-bizcard-app-secret-32-chars-long-key-fallback';
+// Bu anahtar üretim ortamında (.env) dosyasında mutlaka tanımlanmalıdır!
+const ENCRYPTION_KEY = process.env.CRM_API_ENCRYPTION_KEY;
 const IV_LENGTH = 16; // AES için 16 byte IV
 
 function encrypt(text) {

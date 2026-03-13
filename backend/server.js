@@ -2,12 +2,13 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
-const { syncDatabase } = require('./models');
+const { connectDatabase } = require('./models');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const { startAutoCleanup } = require('./utils/trashCleanup');
+const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -54,10 +55,8 @@ app.use(cors({
         if (!origin) return callback(null, true);
 
         // Check if origin is whitelisted or starts with a whitelisted pattern
-        const isAllowed = allowedOrigins.some(allowed =>
-            origin === allowed ||
-            (allowed.startsWith('http') && origin.startsWith(allowed))
-        );
+        // Sadece tam eşleşmeye izin ver
+        const isAllowed = allowedOrigins.includes(origin);
 
         if (isAllowed) {
             return callback(null, true);
@@ -73,9 +72,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Rate Limiting (Tüm API rotalarına uygula)
+app.use('/api/', apiLimiter);
+
 // Session Ayarları
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'crm-bizcard-app-session-key-fallback', // Prod ortamında env'den alınmalı
+    secret: process.env.SESSION_SECRET, // Üretim ortamında (.env) mutlaka tanımlanmalıdır
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -105,20 +107,21 @@ app.get('/api/cards/stats', async (req, res) => {
         const count = await BusinessCard.count({ where: { deletedAt: null } });
         res.json({ totalCards: count });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Stats fetch error:", error);
+        res.status(500).json({ error: 'İstatistikler alınamadı.' });
     }
 });
 
 // Public Dashboard Tiles
 app.use('/api/db-tiles', require('./routes/dashboardTiles'));
 
-// Public Card View (Dijital Kartvizit Paylaşımı için)
-app.get('/api/cards/public/:id', async (req, res) => {
+// Public Card View (sharingToken üzerinden)
+app.get('/api/cards/public/:token', async (req, res) => {
     try {
         const { BusinessCard, Tag, User } = require('./models');
         const card = await BusinessCard.findOne({
             where: {
-                id: req.params.id,
+                sharingToken: req.params.token,
                 deletedAt: null,
                 visibility: 'public'
             },
@@ -134,18 +137,19 @@ app.get('/api/cards/public/:id', async (req, res) => {
 
         res.json(card);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public card error:", error);
+        res.status(500).json({ error: 'Kartvizit bilgileri alınamadı.' });
     }
 });
 
-// vCard (Public Download)
-app.get('/api/cards/public/:id/vcf', async (req, res) => {
+// vCard (Public Download via Token)
+app.get('/api/cards/public/:token/vcf', async (req, res) => {
     try {
         const { BusinessCard } = require('./models');
         const { generateVCard } = require('./utils/vcard');
         const card = await BusinessCard.findOne({
             where: {
-                id: req.params.id,
+                sharingToken: req.params.token,
                 deletedAt: null,
                 visibility: 'public'
             }
@@ -160,7 +164,8 @@ app.get('/api/cards/public/:id/vcf', async (req, res) => {
         res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
         res.send(vCardContent);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Public vcf error:", error);
+        res.status(500).json({ error: 'vCard dosyası oluşturulamadı.' });
     }
 });
 
@@ -176,24 +181,13 @@ app.get('/', (req, res) => {
     res.json({ message: 'CRM Backend API Çalışıyor!' });
 });
 
-// Sunucuyu Başlat ve DB'yi Senkronize Et
+// Sunucuyu Başlat ve DB'ye Bağlan
 app.listen(port, async () => {
     console.log(`Sunucu ${port} portunda çalışıyor.`);
-    await syncDatabase();
-
-    // Veritabanı sütunlarından emin ol
     try {
-        const { sequelize } = require('./models');
-        const queryInterface = sequelize.getQueryInterface();
-        const tableInfo = await queryInterface.describeTable('BusinessCards');
-        if (!tableInfo.logoUrl) {
-            await queryInterface.addColumn('BusinessCards', 'logoUrl', { type: require('sequelize').DataTypes.STRING, allowNull: true });
-        }
-        if (!tableInfo.ownerId) {
-            await queryInterface.addColumn('BusinessCards', 'ownerId', { type: require('sequelize').DataTypes.INTEGER, allowNull: true });
-        }
+        await connectDatabase();
     } catch (e) {
-        console.error('Column check failed:', e.message);
+        console.error('Database connection failed:', e.message);
     }
 
     // Otomatik çöp kutusu temizlemeyi başlat
