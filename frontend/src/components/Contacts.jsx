@@ -225,7 +225,7 @@ const Contacts = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 style={{
                     margin: 0,
-                    fontSize: '2.5rem',
+                    fontSize: '1.8rem',
                     fontWeight: '700',
                     color: 'var(--text-primary)',
                     letterSpacing: '-0.02em'
@@ -287,14 +287,14 @@ const Contacts = () => {
                             background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
                             color: '#fff',
                             border: 'none',
-                            padding: '12px 26px',
-                            borderRadius: '14px',
+                            padding: '10px 20px',
+                            borderRadius: '12px',
                             cursor: 'pointer',
-                            fontSize: '16px',
+                            fontSize: '14px',
                             fontWeight: '700',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '10px',
+                            gap: '8px',
                             boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             letterSpacing: '-0.01em'
@@ -325,22 +325,22 @@ const Contacts = () => {
                                 {card.frontImageUrl ? (
                                     <div
                                         onClick={() => setSelectedImageCard(card)}
-                                        style={{ width: '240px', height: '140px', backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+                                        style={{ width: '200px', height: '120px', backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.8 }}>v{card.version || 1}</div>
                                     </div>
                                 ) : (
-                                    <div style={{ width: '240px', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
+                                    <div style={{ width: '200px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
                                         <FaIdCard size={64} style={{ opacity: 0.5 }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.5 }}>v{card.version || 1}</div>
                                     </div>
                                 )}
 
                                 <div style={{ flex: 1, minWidth: '300px' }}>
-                                    <h3 style={{ margin: '0 0 8px 0', fontSize: '1.4em', color: 'var(--text-primary)', fontWeight: '600' }}>{card.firstName} {card.lastName}</h3>
-                                    <p style={{ margin: '0 0 15px 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '1.05em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '24px', height: '24px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
+                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.2em', color: 'var(--text-primary)', fontWeight: '600' }}>{card.firstName} {card.lastName}</h3>
+                                    <p style={{ margin: '0 0 10px 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.95em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
@@ -368,12 +368,12 @@ const Contacts = () => {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '160px', padding: '10px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                                    <button onClick={() => toggleNotes(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> Notlar</span>
-                                        {expandedNotesId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px', padding: '10px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                    <button onClick={() => toggleNotes(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '8px 12px', fontSize: '0.85rem' }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaStickyNote /> Notlar</span>
+                                        {expandedNotesId === card.id ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
                                     </button>
-                                    <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-primary)' }}><FaClock /> Görüşmeler</button>
+                                    <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-primary)', padding: '8px 12px', fontSize: '0.85rem' }}><FaClock /> Görüşmeler</button>
 
                                     <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
 

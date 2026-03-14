@@ -19,6 +19,7 @@ import Settings from './components/Settings';
 import TrashBin from './components/TrashBin';
 import ImportCards from './components/ImportCards';
 import About from './components/About';
+import Help from './components/Help';
 import MyCard from './components/MyCard';
 import ContactProfile from './components/ContactProfile';
 import AccessDenied from './components/AccessDenied';
@@ -227,7 +228,7 @@ const AppContent = () => {
                 backdropFilter: 'blur(20px)',
                 borderBottom: '1px solid var(--glass-border)',
                 boxShadow: 'var(--glass-shadow)',
-                padding: '1rem 2rem',
+                padding: '0.6rem 2rem',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -269,7 +270,7 @@ const AppContent = () => {
                             to="/"
                             style={{
                                 color: 'var(--text-primary)',
-                                padding: '0.5rem 1rem',
+                                padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
                                 fontWeight: '500',
@@ -288,7 +289,7 @@ const AppContent = () => {
                             to="/contacts"
                             style={{
                                 color: 'var(--text-primary)',
-                                padding: '0.5rem 1rem',
+                                padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
                                 fontWeight: '500',
@@ -307,7 +308,7 @@ const AppContent = () => {
                             to="/my-card"
                             style={{
                                 color: 'var(--text-primary)',
-                                padding: '0.5rem 1rem',
+                                padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
                                 fontWeight: '500',
@@ -321,25 +322,6 @@ const AppContent = () => {
                             }}
                         >
                             Kartım
-                        </Link>
-                        <Link
-                            to="/about"
-                            style={{
-                                color: 'var(--text-primary)',
-                                padding: '0.5rem 1rem',
-                                borderRadius: '8px',
-                                transition: 'all 0.2s ease',
-                                fontWeight: '500',
-                                opacity: 0.9
-                            }}
-                            onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--glass-bg-hover)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.target.style.background = 'transparent';
-                            }}
-                        >
-                            Hakkında
                         </Link>
                     </div>
                 </div>
@@ -462,30 +444,30 @@ const AppContent = () => {
                         }
                     />
                     <Route path="/about" element={<About />} />
+                    <Route path="/help" element={<Help />} />
                     <Route path="/access-denied" element={<AccessDenied />} />
                     {/* Public Route for Business Card Sharing (using token) */}
                     <Route path="/contact-profile/:token" element={<ContactProfile />} />
                 </Routes>
             </main >
 
-            {/* Premium Footer */}
+            {/* Ultra-Compact Footer */}
             <footer style={{
-                padding: '1.2rem 2rem',
+                padding: '0.6rem 2rem',
                 marginTop: 'auto',
                 borderTop: '1px solid var(--glass-border)',
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
-                textAlign: 'center',
-                color: 'var(--text-secondary)',
-                fontSize: '0.85rem'
+                color: 'var(--text-tertiary)',
+                fontSize: '0.75rem'
             }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        {settings.footerText || `© ${new Date().getFullYear()} BizCarder. Tüm Hakları Saklıdır.`}
+                        {settings.footerText || `© ${new Date().getFullYear()} BizCarder.`}
                     </div>
-                    <div style={{ display: 'flex', gap: '25px' }}>
-                        <Link to="/about" style={{ color: 'var(--text-tertiary)', textDecoration: 'none', transition: 'color 0.2s' }}>Hakkında</Link>
-                        {isAuthenticated && <Link to="/about" style={{ color: 'var(--text-tertiary)', textDecoration: 'none', transition: 'color 0.2s' }}>Yardım</Link>}
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                        <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>Hakkında</Link>
+                        {isAuthenticated && <Link to="/help" style={{ color: 'inherit', textDecoration: 'none' }}>Yardım</Link>}
                     </div>
                 </div>
             </footer>
