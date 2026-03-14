@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 // CORS Configuration
 const allowedOrigins = [
     'http://localhost',
-    'http://127.0.0.1'
+    'http://127.0.0.1',
 ];
 
 // FRONTEND_URL ekle
