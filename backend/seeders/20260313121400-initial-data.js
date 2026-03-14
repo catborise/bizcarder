@@ -43,11 +43,23 @@ module.exports = {
       { name: 'Sıcak Satış', color: '#f87171', createdAt: new Date(), updatedAt: new Date() },
       { name: 'Fuar/Etkinlik', color: '#a78bfa', createdAt: new Date(), updatedAt: new Date() }
     ], {});
+
+    // 4. System Settings
+    await queryInterface.bulkInsert('SystemSettings', [
+      {
+        key: 'trashRetentionDays',
+        value: '30',
+        description: 'Çöp kutusundaki öğelerin kaç gün sonra kalıcı olarak silineceği',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+    ], {});
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.bulkDelete('Users', { username: 'admin' }, {});
     await queryInterface.bulkDelete('DashboardTiles', null, {});
     await queryInterface.bulkDelete('Tags', null, {});
+    await queryInterface.bulkDelete('SystemSettings', null, {});
   }
 };
