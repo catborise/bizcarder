@@ -13,6 +13,8 @@ import AddCard from './AddCard';
 import InteractionLog from './InteractionLog';
 import { generateVCardString } from '../utils/vcardHelper';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 const Contacts = () => {
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
@@ -166,16 +168,57 @@ const Contacts = () => {
         }
     };
 
-    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)', fontSize: '18px' }}>Yükleniyor...</div>;
-    if (error) return (
-        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--accent-error)' }}>
-            <h3>Bir Hata Oluştu</h3>
-            <p>{error}</p>
-            <button onClick={fetchCards} style={{ padding: '8px 16px', backgroundColor: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}>
-                Tekrar Dene
-            </button>
-        </div>
-    );
+    if (loading) {
+        return (
+            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
+                    <div className="skeleton skeleton-title" style={{ width: '300px' }}></div>
+                    <div className="skeleton skeleton-btn" style={{ width: '150px' }}></div>
+                </div>
+                <div className="skeleton" style={{ height: '60px', borderRadius: '12px', marginBottom: '30px' }}></div>
+                {[1, 2, 3].map(i => (
+                    <div key={i} className="glass-container" style={{ padding: '20px', borderRadius: '16px', marginBottom: '20px', display: 'flex', gap: '20px' }}>
+                        <div className="skeleton" style={{ width: '240px', height: '140px', borderRadius: '8px' }}></div>
+                        <div style={{ flex: 1 }}>
+                            <div className="skeleton skeleton-text" style={{ width: '40%', height: '24px', marginBottom: '15px' }}></div>
+                            <div className="skeleton skeleton-text" style={{ width: '60%', height: '18px', marginBottom: '20px' }}></div>
+                            <div style={{ display: 'grid', gap: '10px' }}>
+                                <div className="skeleton skeleton-text" style={{ width: '30%' }}></div>
+                                <div className="skeleton skeleton-text" style={{ width: '35%' }}></div>
+                                <div className="skeleton skeleton-text" style={{ width: '25%' }}></div>
+                            </div>
+                        </div>
+                        <div className="skeleton" style={{ width: '160px', height: '110px', borderRadius: '12px' }}></div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--accent-error)' }}>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Bir Hata Oluştu</h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>{error}</p>
+                <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={fetchCards} 
+                    style={{ 
+                        padding: '12px 24px', 
+                        backgroundColor: 'var(--bg-card)', 
+                        color: 'var(--text-primary)', 
+                        border: '1px solid var(--glass-border)', 
+                        borderRadius: '10px', 
+                        cursor: 'pointer',
+                        fontWeight: '600'
+                    }}
+                >
+                    Tekrar Dene
+                </motion.button>
+            </div>
+        );
+    }
 
     return (
         <div className="fade-in">
@@ -232,25 +275,34 @@ const Contacts = () => {
                         </button>
                     </div>
 
-                    <button
+                    <motion.button
+                        whileHover={{ 
+                            scale: 1.02, 
+                            boxShadow: '0 8px 32px rgba(var(--accent-primary-rgb), 0.3)',
+                            background: 'linear-gradient(135deg, var(--accent-secondary), var(--accent-primary))'
+                        }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={openNewCardModal}
                         style={{
-                            background: 'var(--accent-primary)',
-                            color: 'var(--bg-card)',
-                            border: '1px solid var(--glass-border)',
-                            padding: '12px 24px',
-                            borderRadius: '12px',
+                            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '12px 26px',
+                            borderRadius: '14px',
                             cursor: 'pointer',
                             fontSize: '16px',
-                            fontWeight: '600',
+                            fontWeight: '700',
                             display: 'flex',
                             alignItems: 'center',
                             gap: '10px',
-                            boxShadow: 'var(--glass-shadow)'
+                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            letterSpacing: '-0.01em'
                         }}
                     >
-                        <span style={{ fontSize: '20px', fontWeight: 'bold' }}>+</span> Yeni Kart Ekle
-                    </button>
+                        <span style={{ fontSize: '22px', fontWeight: '800', lineHeight: 1 }}>+</span> 
+                        Yeni Kart Ekle
+                    </motion.button>
                 </div>
             </div>
 
@@ -394,6 +446,17 @@ const Contacts = () => {
             {qrModalCard && (
                 <QRCodeOverlay title={`${qrModalCard.firstName} ${qrModalCard.lastName}`} url={`${window.location.origin}/contact-profile/${qrModalCard.sharingToken}`} vCardData={generateVCardString(qrModalCard)} onClose={() => setQrModalCard(null)} onDownloadVCard={() => handleDownloadVCard(qrModalCard)} />
             )}
+
+            <Modal 
+                title={editingCard ? 'Kartviziti Düzenle' : 'Yeni Kartvizit Ekle'} 
+                isOpen={isModalOpen} 
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setEditingCard(null);
+                }}
+            >
+                <AddCard onCardAdded={handleCardAddedOrUpdated} activeCard={editingCard} />
+            </Modal>
         </div>
     );
 };
