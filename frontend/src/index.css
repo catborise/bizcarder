@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* Common Structure */
@@ -22,8 +22,8 @@
   --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.5);
 
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
+  --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
 
   --accent-primary: #3b82f6;
   --accent-primary-rgb: 59, 130, 246;
@@ -53,8 +53,8 @@
   --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.1);
 
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-secondary: #334155;
+  --text-tertiary: #64748b;
 
   --accent-primary: #2563eb;
   --accent-primary-rgb: 37, 99, 235;
@@ -147,8 +147,8 @@ h4,
 h5,
 h6 {
   color: var(--text-primary);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
 h1 {
@@ -220,16 +220,59 @@ textarea:focus {
 
 /* Responsive Adjustments */
 @media (max-width: 768px) {
+  :root {
+    --border-radius-lg: 12px;
+  }
+
   h1 {
-    font-size: 2em;
+    font-size: 1.75rem;
   }
 
   h2 {
-    font-size: 1.5em;
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
   }
 
   .glass-container {
     border-radius: var(--border-radius-md);
+    padding: 1rem !important;
+  }
+
+  .my-card-layout {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  
+  body {
+    padding-bottom: 20px;
+  }
+
+  .glass-container {
+    padding: 0.75rem !important;
+  }
+}
+
+.my-card-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.my-card-layout > div {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .my-card-layout {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -427,4 +470,73 @@ input:checked+.slider.role-switch {
 .glass-button-small:hover {
   background: var(--glass-bg-hover);
   color: var(--text-primary);
+}
+/* Skeleton Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(to right, 
+    var(--glass-bg) 8%, 
+    var(--glass-bg-hover) 18%, 
+    var(--glass-bg) 33%
+  );
+  background-size: 800px 104px;
+  animation: shimmer 1.5s linear infinite forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme='light'] .skeleton {
+  background: linear-gradient(to right, 
+    #eeeeee 8%, 
+    #dddddd 18%, 
+    #eeeeee 33%
+  );
+  background-size: 800px 104px;
+}
+
+.skeleton-text {
+  height: 20px;
+  width: 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.skeleton-title {
+  height: 40px;
+  width: 70%;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.skeleton-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 22px;
+  margin-bottom: 20px;
+}
+
+.skeleton-btn {
+  height: 48px;
+  border-radius: 12px;
+}
+
+/* Footer Link Styles */
+footer a {
+  color: var(--text-tertiary) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  font-weight: 500 !important;
+}
+
+footer a:hover {
+  color: var(--text-primary) !important;
+  transform: translateY(-1px);
 }
