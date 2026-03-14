@@ -470,22 +470,22 @@ const AppContent = () => {
 
             {/* Premium Footer */}
             <footer style={{
-                padding: '2rem',
+                padding: '1.2rem 2rem',
                 marginTop: 'auto',
                 borderTop: '1px solid var(--glass-border)',
                 background: 'var(--glass-bg)',
                 backdropFilter: 'blur(10px)',
                 textAlign: 'center',
                 color: 'var(--text-secondary)',
-                fontSize: '0.9rem'
+                fontSize: '0.85rem'
             }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         {settings.footerText || `© ${new Date().getFullYear()} BizCarder. Tüm Hakları Saklıdır.`}
                     </div>
-                    <div style={{ display: 'flex', gap: '20px' }}>
-                        <Link to="/about" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Hakkında</Link>
-                        {isAuthenticated && <Link to="/settings" style={{ color: 'var(--text-tertiary)', textDecoration: 'none' }}>Yardım</Link>}
+                    <div style={{ display: 'flex', gap: '25px' }}>
+                        <Link to="/about" style={{ color: 'var(--text-tertiary)', textDecoration: 'none', transition: 'color 0.2s' }}>Hakkında</Link>
+                        {isAuthenticated && <Link to="/about" style={{ color: 'var(--text-tertiary)', textDecoration: 'none', transition: 'color 0.2s' }}>Yardım</Link>}
                     </div>
                 </div>
             </footer>
