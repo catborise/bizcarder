@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion, AnimatePresence } from 'framer-motion';
 import api, { API_URL } from '../api/axios';
 import { downloadFile } from '../utils/downloadHelper';
 import { useNotification } from '../context/NotificationContext';
@@ -78,22 +79,94 @@ const MyCard = () => {
 
     const shareUrl = personalCard ? `${window.location.origin}/contact-profile/${personalCard.sharingToken}` : '';
 
-    if (loading) return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>Yükleniyor...</div>;
+    const itemVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+    };
 
+    if (loading) {
+        return (
+            <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+                    <div className="skeleton skeleton-title" style={{ width: '300px', margin: 0 }}></div>
+                    <div className="skeleton skeleton-btn" style={{ width: '150px' }}></div>
+                </div>
+                <div className="my-card-layout">
+                    {/* Profile Skeleton */}
+                    <div style={{
+                        background: 'var(--bg-card)',
+                        borderRadius: '24px',
+                        border: '1px solid var(--glass-border)',
+                        overflow: 'hidden',
+                        padding: '0 30px 40px'
+                    }}>
+                        <div className="skeleton" style={{ height: '120px', margin: '0 -30px 20px', width: 'calc(100% + 60px)' }}></div>
+                        <div className="skeleton skeleton-avatar"></div>
+                        <div className="skeleton skeleton-title"></div>
+                        <div className="skeleton skeleton-text" style={{ width: '60%' }}></div>
+                        <div style={{ height: '1px', background: 'var(--glass-border)', margin: '20px 0' }}></div>
+                        {[1, 2, 3].map(i => (
+                            <div key={i} style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                                <div className="skeleton" style={{ width: '40px', height: '40px', borderRadius: '10px' }}></div>
+                                <div className="skeleton skeleton-text" style={{ flex: 1, height: '30px' }}></div>
+                            </div>
+                        ))}
+                    </div>
+                    {/* QR Sidebar Skeleton */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        <div style={{
+                            background: 'var(--glass-bg)',
+                            padding: '30px',
+                            borderRadius: '24px',
+                            border: '1px solid var(--glass-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            minHeight: '400px'
+                        }}>
+                            <div className="skeleton skeleton-text" style={{ width: '150px', height: '25px', marginBottom: '30px' }}></div>
+                            <div className="skeleton" style={{ width: '150px', height: '150px', borderRadius: '18px', marginBottom: '30px' }}></div>
+                            <div className="skeleton skeleton-text" style={{ width: '90%' }}></div>
+                            <div className="skeleton skeleton-text" style={{ width: '70%' }}></div>
+                            <div className="skeleton skeleton-btn" style={{ width: '100%', marginTop: 'auto' }}></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+    const containerVariants = {
+        hidden: { opacity: 0, y: 20 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.5,
+                staggerChildren: 0.1
+            }
+        }
+    };
 
     return (
-        <div className="fade-in" style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+        <motion.div 
+            initial="hidden" 
+            animate="visible" 
+            variants={containerVariants}
+            style={{ maxWidth: '1000px', margin: '0 auto', padding: '20px' }}
+        >
+            <motion.div variants={itemVariants} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 style={{
                     color: 'var(--text-primary)',
                     margin: 0,
-                    fontSize: '2.5rem',
+                    fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
                     fontWeight: '700'
                 }}>Dijital Kartvizitim</h2>
 
 
                 {personalCard && (
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => setIsEditModalOpen(true)}
                         style={{
                             display: 'flex',
@@ -107,16 +180,16 @@ const MyCard = () => {
                             borderRadius: '12px',
                             cursor: 'pointer',
                             fontWeight: '600',
-                            transition: 'all 0.2s ease'
+                            transition: 'background 0.2s ease'
                         }}
                         onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
                         onMouseLeave={(e) => e.target.style.background = 'var(--glass-bg)'}
                     >
                         <FaEdit /> Bilgileri Düzenle
-                    </button>
+                    </motion.button>
 
                 )}
-            </div>
+            </motion.div>
 
             {!personalCard ? (
                 <div style={{
@@ -171,7 +244,7 @@ const MyCard = () => {
                 </div>
 
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
+                <motion.div variants={itemVariants} className="my-card-layout">
 
                     {/* Premium Profile Card */}
                     <div style={{
@@ -217,23 +290,23 @@ const MyCard = () => {
                         </div>
 
                         <div style={{ padding: '0 30px 40px', marginTop: '-60px', position: 'relative' }}>
-                            {/* Company Logo - New Professional Placement */}
+                            {/* Company Logo - Refined Placement */}
                             {personalCard.logoUrl && (
                                 <div style={{
                                     position: 'absolute',
-                                    top: '80px', // Below the overlap but aligned right
-                                    right: '30px',
-                                    width: '80px',
-                                    height: '80px',
-                                    background: 'var(--bg-input)',
+                                    top: '10px',
+                                    right: '25px',
+                                    width: '70px',
+                                    height: '70px',
+                                    background: 'rgba(255, 255, 255, 0.9)',
                                     backdropFilter: 'blur(10px)',
-                                    borderRadius: '16px',
-                                    border: '1px solid var(--glass-border)',
-                                    padding: '10px',
+                                    borderRadius: '12px',
+                                    padding: '8px',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    boxShadow: 'var(--glass-shadow)'
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                    zIndex: 5
                                 }}>
                                     <img
                                         src={`${API_URL}${personalCard.logoUrl}`}
@@ -268,10 +341,22 @@ const MyCard = () => {
                                 )}
                             </div>
 
-                            <h3 style={{ color: 'var(--text-primary)', fontSize: '2.2rem', margin: '0 0 5px 0', fontWeight: '800' }}>
+                            <h3 style={{ 
+                                color: 'var(--text-primary)', 
+                                fontSize: 'clamp(1.5rem, 4vw, 2.2rem)', 
+                                margin: '0 0 5px 0', 
+                                fontWeight: '800',
+                                lineHeight: '1.2'
+                            }}>
                                 {personalCard.firstName} {personalCard.lastName}
                             </h3>
-                            <p style={{ color: 'var(--accent-primary)', fontSize: '1.2rem', margin: '0 0 25px 0', fontWeight: '500' }}>
+                            <p style={{ 
+                                color: 'var(--accent-primary)', 
+                                fontSize: 'clamp(1rem, 3vw, 1.2rem)', 
+                                margin: '0 0 25px 0', 
+                                fontWeight: '500',
+                                lineHeight: '1.4'
+                            }}>
                                 {personalCard.title} {personalCard.company && `@ ${personalCard.company}`}
                             </p>
 
@@ -316,8 +401,15 @@ const MyCard = () => {
 
                             </div>
 
-                            <div style={{ marginTop: '40px', display: 'flex', gap: '15px' }}>
-                                <button
+                            <div style={{ 
+                                marginTop: '30px', 
+                                display: 'flex', 
+                                gap: '10px',
+                                flexWrap: 'wrap' 
+                            }}>
+                                <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: 'var(--glass-bg-hover)' }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={handleDownloadVCard}
                                     style={{
                                         flex: 1,
@@ -332,15 +424,15 @@ const MyCard = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '10px',
-                                        transition: 'all 0.2s'
+                                        transition: 'background 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
-                                    onMouseLeave={(e) => e.target.style.background = 'var(--glass-bg)'}
                                 >
                                     <FaDownload /> vCard İndir
-                                </button>
+                                </motion.button>
 
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.05, opacity: 0.9 }}
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={handleShare}
                                     style={{
                                         padding: '14px 20px',
@@ -352,11 +444,9 @@ const MyCard = () => {
                                         fontWeight: '600',
                                         transition: 'all 0.2s'
                                     }}
-                                    onMouseEnter={(e) => e.target.style.opacity = '0.9'}
-                                    onMouseLeave={(e) => e.target.style.opacity = '1'}
                                 >
                                     <FaShareAlt />
-                                </button>
+                                </motion.button>
 
                             </div>
                         </div>
@@ -367,28 +457,33 @@ const MyCard = () => {
                         <div style={{
                             background: 'var(--glass-bg)',
                             backdropFilter: 'blur(20px)',
-                            padding: '35px',
+                            padding: '30px',
                             borderRadius: '24px',
                             border: '1px solid var(--glass-border)',
                             textAlign: 'center',
-                            boxShadow: 'var(--glass-shadow)'
+                            boxShadow: 'var(--glass-shadow)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '400px'
                         }}>
-                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '25px', fontWeight: '700' }}>QR Kod ile Paylaş</h4>
+                            <h4 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '20px', fontWeight: '700' }}>QR Kod ile Paylaş</h4>
 
                             <div style={{
-                                background: 'var(--bg-main)',
-                                padding: '20px',
-                                borderRadius: '24px',
+                                background: '#fff',
+                                padding: '15px',
+                                borderRadius: '18px',
                                 display: 'inline-block',
                                 marginBottom: '25px',
-                                boxShadow: 'var(--glass-shadow)',
-                                border: '8px solid var(--bg-main)',
+                                boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                border: '1px solid var(--glass-border)',
                                 position: 'relative',
                                 cursor: 'pointer'
                             }}
                                 onClick={() => setIsQrModalOpen(true)}
                             >
-                                <QRCodeSVG value={shareUrl} size={180} />
+                                <QRCodeSVG value={shareUrl} size={150} />
                             </div>
                             <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', lineHeight: '1.5', padding: '0 10px' }}>
                                 Diğer kullanıcılar bu QR kodu taratarak dijital kartvizit bilgilerinize anında ulaşabilir.
@@ -408,11 +503,12 @@ const MyCard = () => {
                                 <div style={{
                                     flex: 1,
                                     color: 'var(--text-tertiary)',
-                                    fontSize: '0.8rem',
+                                    fontSize: '0.75rem',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
-                                    textAlign: 'left'
+                                    textAlign: 'left',
+                                    maxWidth: '180px' // Limit the width to prevent expansion
                                 }}>
                                     {shareUrl}
                                 </div>
@@ -453,7 +549,7 @@ const MyCard = () => {
 
                     </div>
 
-                </div>
+                </motion.div>
             )}
 
             <Modal
@@ -468,16 +564,18 @@ const MyCard = () => {
                 />
             </Modal>
 
-            {isQrModalOpen && (
-                <QRCodeOverlay
-                    title={`${personalCard?.firstName} ${personalCard?.lastName}`}
-                    url={shareUrl}
-                    vCardData={generateVCardString(personalCard)}
-                    onClose={() => setIsQrModalOpen(false)}
-                    onDownloadVCard={handleDownloadVCard}
-                />
-            )}
-        </div>
+            <AnimatePresence>
+                {isQrModalOpen && (
+                    <QRCodeOverlay
+                        title={`${personalCard?.firstName} ${personalCard?.lastName}`}
+                        url={shareUrl}
+                        vCardData={generateVCardString(personalCard)}
+                        onClose={() => setIsQrModalOpen(false)}
+                        onDownloadVCard={handleDownloadVCard}
+                    />
+                )}
+            </AnimatePresence>
+        </motion.div>
     );
 };
 
