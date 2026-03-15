@@ -39,7 +39,11 @@ const BusinessCardHistory = sequelize.define('BusinessCardHistory', {
     }
 }, {
     timestamps: true,
-    updatedAt: false // Sadece createdAt yeterli
+    updatedAt: false, // Sadece createdAt yeterli
+    indexes: [
+        { fields: ['cardId'] },
+        { fields: ['changedBy'] }
+    ]
 });
 
 // İlişkiler

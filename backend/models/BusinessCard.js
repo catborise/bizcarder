@@ -115,6 +115,17 @@ const BusinessCard = sequelize.define('BusinessCard', {
         defaultValue: DataTypes.UUIDV4,
         unique: true
     }
+}, {
+    indexes: [
+        { fields: ['firstName'] },
+        { fields: ['lastName'] },
+        { fields: ['company'] },
+        { fields: ['email'] },
+        { fields: ['ownerId'] },
+        { fields: ['deletedAt'] },
+        { fields: ['visibility'] },
+        { fields: ['sharingToken'] }
+    ]
 });
 
 // Hooks Helper
