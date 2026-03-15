@@ -7,3 +7,5 @@ coverage/
 pgdata/
 .agent/
 .env
+backend/logs/
+backend/uploads/
