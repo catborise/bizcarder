@@ -30,6 +30,16 @@ const Contacts = () => {
         hasReminder: false
     });
 
+    const [pagination, setPagination] = useState({
+        totalItems: 0,
+        totalPages: 1,
+        currentPage: 1,
+        limit: 20
+    });
+
+    const [availableTags, setAvailableTags] = useState([]);
+    const [availableCities, setAvailableCities] = useState([]);
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCard, setEditingCard] = useState(null);
     const [historyCard, setHistoryCard] = useState(null);
@@ -42,15 +52,42 @@ const Contacts = () => {
     const [error, setError] = useState(null);
     const [isCachedData, setIsCachedData] = useState(false);
 
-    const fetchCards = async () => {
+    const fetchAvailableFilters = async () => {
+        try {
+            const [tagsRes, citiesRes] = await Promise.all([
+                api.get('/api/tags'),
+                api.get('/api/cards/cities')
+            ]);
+            setAvailableTags(tagsRes.data);
+            setAvailableCities(citiesRes.data);
+        } catch (err) {
+            console.error('Filtreler yüklenemedi:', err);
+        }
+    };
+
+    const fetchCards = async (page = 1) => {
         setLoading(true);
         setError(null);
         try {
-            const res = await api.get('/api/cards');
-            if (Array.isArray(res.data)) {
-                setCards(res.data);
+            const params = {
+                page,
+                limit: pagination.limit,
+                search: searchTerm,
+                sort: sortOption,
+                tagId: advancedFilters.tagId,
+                city: advancedFilters.city,
+                hasReminder: advancedFilters.hasReminder
+            };
+
+            const res = await api.get('/api/cards', { params });
+            
+            if (res.data && Array.isArray(res.data.cards)) {
+                setCards(res.data.cards);
+                setPagination(res.data.pagination);
                 setIsCachedData(false);
-                await saveCardsToOffline(res.data);
+                if (page === 1 && !searchTerm) {
+                    await saveCardsToOffline(res.data.cards);
+                }
             } else {
                 setCards([]);
                 setError('API beklenen formatta veri dönmedi.');
@@ -70,8 +107,16 @@ const Contacts = () => {
     };
 
     useEffect(() => {
-        fetchCards();
+        fetchAvailableFilters();
     }, []);
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            fetchCards(1);
+        }, 500);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, sortOption, advancedFilters]);
 
     const toggleDetails = (id) => {
         setExpandedCardId(expandedCardId === id ? null : id);
@@ -108,35 +153,7 @@ const Contacts = () => {
         setIsModalOpen(true);
     };
 
-    const allTags = Array.from(new Set(cards.flatMap(c => c.tags || []).map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
-    const allCities = Array.from(new Set(cards.map(c => c.city).filter(Boolean).map(c => c.trim().toUpperCase()))).sort();
-
-    const filteredCards = cards.filter(card => {
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = searchTerm === '' || (
-            (card.firstName && card.firstName.toLowerCase().includes(searchLower)) ||
-            (card.lastName && card.lastName.toLowerCase().includes(searchLower)) ||
-            (card.company && card.company.toLowerCase().includes(searchLower)) ||
-            (card.email && card.email.toLowerCase().includes(searchLower)) ||
-            (card.title && card.title.toLowerCase().includes(searchLower)) ||
-            (card.city && card.city.toLowerCase().includes(searchLower))
-        );
-
-        const matchesTag = advancedFilters.tagId === '' || (card.tags && card.tags.some(t => String(t.id) === String(advancedFilters.tagId)));
-        const matchesCity = advancedFilters.city === '' || (card.city && card.city.trim().toUpperCase() === advancedFilters.city);
-        const matchesReminder = !advancedFilters.hasReminder || (card.reminderDate !== null);
-
-        return matchesSearch && matchesTag && matchesCity && matchesReminder;
-    }).sort((a, b) => {
-        switch (sortOption) {
-            case 'newest': return new Date(b.createdAt) - new Date(a.createdAt);
-            case 'oldest': return new Date(a.createdAt) - new Date(b.createdAt);
-            case 'nameAsc': return (a.firstName || '').localeCompare(b.firstName || '');
-            case 'nameDesc': return (b.firstName || '').localeCompare(a.firstName || '');
-            case 'companyAsc': return (a.company || '').localeCompare(b.company || '');
-            default: return 0;
-        }
-    });
+    const filteredCards = cards; // Filtered by backend now
 
     const handleCardAddedOrUpdated = () => {
         fetchCards();
@@ -313,8 +330,8 @@ const Contacts = () => {
                 onSortChange={setSortOption}
                 advancedFilters={advancedFilters}
                 onAdvancedFilterChange={setAdvancedFilters}
-                allTags={allTags}
-                allCities={allCities}
+                allTags={availableTags}
+                allCities={availableCities}
             />
 
             <div style={{ marginTop: '30px', display: 'grid', gap: '20px' }}>
@@ -429,6 +446,48 @@ const Contacts = () => {
                     <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>Kayıt bulunamadı</h3></div>
                 )}
             </div>
+
+            {/* Pagination Controls */}
+            {pagination.totalPages > 1 && (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '20px',
+                    marginTop: '40px',
+                    padding: '20px'
+                }}>
+                    <button
+                        onClick={() => fetchCards(pagination.currentPage - 1)}
+                        disabled={pagination.currentPage === 1}
+                        className="glass-button"
+                        style={{
+                            padding: '10px 20px',
+                            opacity: pagination.currentPage === 1 ? 0.5 : 1,
+                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Önceki
+                    </button>
+                    
+                    <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
+                        Sayfa {pagination.currentPage} / {pagination.totalPages}
+                    </span>
+
+                    <button
+                        onClick={() => fetchCards(pagination.currentPage + 1)}
+                        disabled={pagination.currentPage === pagination.totalPages}
+                        className="glass-button"
+                        style={{
+                            padding: '10px 20px',
+                            opacity: pagination.currentPage === pagination.totalPages ? 0.5 : 1,
+                            cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Sonraki
+                    </button>
+                </div>
+            )}
 
             <Modal title={selectedImageCard ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}` : 'Görsel'} isOpen={!!selectedImageCard} onClose={() => setSelectedImageCard(null)}>
                 {selectedImageCard && (

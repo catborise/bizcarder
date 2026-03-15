@@ -2,6 +2,8 @@ const express = require('express');
 const passport = require('passport');
 const { User, SystemSetting } = require('../models');
 const { authLimiter } = require('../middleware/rateLimiter');
+const { body } = require('express-validator');
+const { validate } = require('../middleware/validator');
 const router = express.Router();
 
 // ============== SHIBBOLETH (SAML) AUTHENTICATION ==============
@@ -117,7 +119,16 @@ router.post('/local/login',
 );
 
 // Yerel Kullanıcı Kaydı
-router.post('/local/register', authLimiter, async (req, res) => {
+router.post('/local/register', 
+    authLimiter,
+    [
+        body('username').trim().isLength({ min: 3 }).withMessage('Kullanıcı adı en az 3 karakter olmalıdır.'),
+        body('email').isEmail().withMessage('Geçerli bir e-posta adresi giriniz.'),
+        body('password').isLength({ min: 6 }).withMessage('Şifre en az 6 karakter olmalıdır.'),
+        body('displayName').optional().trim().isLength({ max: 50 }).withMessage('Görünen ad çok uzun.')
+    ],
+    validate,
+    async (req, res) => {
     try {
         // Kayıt yeteneği kontrolü
         const regSetting = await SystemSetting.findByPk('allowPublicRegistration');

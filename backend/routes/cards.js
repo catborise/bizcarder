@@ -1,5 +1,8 @@
 const express = require('express');
 const { Op } = require('sequelize');
+const sequelize = require('../config/database');
+const { body } = require('express-validator');
+const { validate } = require('../middleware/validator');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
@@ -111,6 +114,22 @@ router.get('/check-duplicate', async (req, res) => {
     }
 });
 
+// Benzersiz Şehirleri Getir
+router.get('/cities', async (req, res) => {
+    try {
+        const cities = await BusinessCard.findAll({
+            attributes: [[require('sequelize').fn('DISTINCT', require('sequelize').col('city')), 'city']],
+            where: {
+                city: { [require('sequelize').Op.ne]: null },
+                deletedAt: null
+            }
+        });
+        res.json(cities.map(c => c.city).filter(Boolean).sort());
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Helper: Sorgu Oluşturucu
 const buildCardsQuery = (req) => {
     const { Op } = require('sequelize');
@@ -119,10 +138,11 @@ const buildCardsQuery = (req) => {
     };
 
     // Filtreleme: Sadece Hatırlırıcalar
-    if (req.query.remindersOnly === 'true') {
+    if (req.query.remindersOnly === 'true' || req.query.hasReminder === 'true') {
         whereClause.reminderDate = { [Op.ne]: null };
     }
 
+    // Yetki kontrolü
     if (req.user && req.user.role !== 'admin') {
         whereClause[Op.or] = [
             { ownerId: req.user.id },
@@ -130,36 +150,82 @@ const buildCardsQuery = (req) => {
         ];
     }
 
-    // Arama filtresi varsa eklenebilir (req.query.search)
+    // Arama filtresi
     if (req.query.search) {
         const search = req.query.search.toLowerCase();
-        whereClause[Op.and] = [
-            {
-                [Op.or]: [
-                    { firstName: { [Op.iLike]: `%${search}%` } },
-                    { lastName: { [Op.iLike]: `%${search}%` } },
-                    { company: { [Op.iLike]: `%${search}%` } },
-                    { email: { [Op.iLike]: `%${search}%` } }
-                ]
-            }
-        ];
+        whereClause[Op.and] = whereClause[Op.and] || [];
+        whereClause[Op.and].push({
+            [Op.or]: [
+                { firstName: { [Op.iLike]: `%${search}%` } },
+                { lastName: { [Op.iLike]: `%${search}%` } },
+                { company: { [Op.iLike]: `%${search}%` } },
+                { email: { [Op.iLike]: `%${search}%` } },
+                { title: { [Op.iLike]: `%${search}%` } },
+                { city: { [Op.iLike]: `%${search}%` } }
+            ]
+        });
     }
 
-    return whereClause;
+    // Şehir filtresi
+    if (req.query.city) {
+        whereClause.city = { [Op.iLike]: req.query.city };
+    }
+
+    // Tag filtresi - Bunu route içinde handle edeceğiz çünkü bir join gerekiyor (include)
+
+    // Sıralama
+    let order = [['createdAt', 'DESC']]; // Varsayılan
+    if (req.query.sort) {
+        switch (req.query.sort) {
+            case 'oldest': order = [['createdAt', 'ASC']]; break;
+            case 'nameAsc': order = [['firstName', 'ASC']]; break;
+            case 'nameDesc': order = [['firstName', 'DESC']]; break;
+            case 'companyAsc': order = [['company', 'ASC']]; break;
+            case 'newest': order = [['createdAt', 'DESC']]; break;
+        }
+    }
+
+    return { whereClause, order };
 };
 
 router.get('/', async (req, res) => {
     try {
-        const whereClause = buildCardsQuery(req);
-        const cards = await BusinessCard.findAll({
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 50;
+        const offset = (page - 1) * limit;
+
+        const { whereClause, order } = buildCardsQuery(req);
+
+        // Include Logic for Tags
+        const include = [
+            { model: User, as: 'owner', attributes: ['displayName', 'email'] },
+            { 
+                model: Tag, 
+                as: 'tags', 
+                through: { attributes: [] },
+                required: req.query.tagId ? true : false, // Tag araması varsa INNER JOIN yap
+                where: req.query.tagId ? { id: req.query.tagId } : undefined
+            }
+        ];
+        
+        const { count, rows } = await BusinessCard.findAndCountAll({
             where: whereClause,
-            include: [
-                { model: User, as: 'owner', attributes: ['displayName', 'email'] },
-                { model: Tag, as: 'tags', through: { attributes: [] } }
-            ],
-            order: [['createdAt', 'DESC']]
+            include,
+            order,
+            limit,
+            offset,
+            distinct: true // findAndCountAll with include and limit needs distinct for correct count
         });
-        res.json(cards);
+
+        res.json({
+            cards: rows,
+            pagination: {
+                totalItems: count,
+                totalPages: Math.ceil(count / limit),
+                currentPage: page,
+                limit: limit
+            }
+        });
     } catch (error) {
         console.error('Cards list error:', error);
         res.status(500).json({ error: 'Kartvizitler listelenirken bir hata oluştu.' });
@@ -314,7 +380,15 @@ const uploadFields = upload.fields([
     { name: 'logoImage', maxCount: 1 }
 ]);
 
-router.post('/', uploadFields, async (req, res) => {
+const cardValidationRules = [
+    body('firstName').trim().notEmpty().withMessage('Ad alanı zorunludur.'),
+    body('lastName').trim().notEmpty().withMessage('Soyad alanı zorunludur.'),
+    body('email').optional({ checkFalsy: true }).isEmail().withMessage('Geçerli bir e-posta adresi giriniz.'),
+    // phone, website vb. için de eklenebilir
+];
+
+router.post('/', uploadFields, cardValidationRules, validate, async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
 
@@ -361,12 +435,12 @@ router.post('/', uploadFields, async (req, res) => {
             ownerId: req.user.id // Kart sahibini kaydet
         };
 
-        const newCard = await BusinessCard.create(cleanData);
+        const newCard = await BusinessCard.create(cleanData, { transaction: t });
 
         // Etiket Eşleştirme
         if (tags) {
             const tagIds = Array.isArray(tags) ? tags : JSON.parse(tags);
-            await newCard.setTags(tagIds);
+            await newCard.setTags(tagIds, { transaction: t });
         }
 
         // LOG: Başarılı Ekleme
@@ -376,8 +450,10 @@ router.post('/', uploadFields, async (req, res) => {
             req
         });
 
+        await t.commit();
         res.status(201).json(newCard);
     } catch (error) {
+        await t.rollback();
         console.error("CARD_CREATE_ERROR Stack:", error.stack);
         // LOG: Hata
         await logAction({
@@ -394,7 +470,8 @@ router.post('/', uploadFields, async (req, res) => {
 // ... POST Router
 
 // Kart Güncelle (PUT)
-router.put('/:id', uploadFields, async (req, res) => {
+router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
         const card = await BusinessCard.findByPk(id);
@@ -442,12 +519,12 @@ router.put('/:id', uploadFields, async (req, res) => {
             visibility: visibility || card.visibility,
             reminderDate: reminderDate !== undefined ? (reminderDate || null) : card.reminderDate,
             isPersonal: req.body.isPersonal !== undefined ? (req.body.isPersonal === 'true') : card.isPersonal
-        });
+        }, { transaction: t });
 
         // Etiket Güncelleme
         if (tags) {
             const tagIds = Array.isArray(tags) ? tags : JSON.parse(tags);
-            await card.setTags(tagIds);
+            await card.setTags(tagIds, { transaction: t });
         }
 
         // LOG: Güncelleme
@@ -457,8 +534,10 @@ router.put('/:id', uploadFields, async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json(card);
     } catch (error) {
+        await t.rollback();
         console.error("CARD_UPDATE_ERROR Stack:", error.stack);
         await logAction({
             action: 'CARD_UPDATE_ERROR',
