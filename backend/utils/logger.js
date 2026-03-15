@@ -1,12 +1,43 @@
+const winston = require('winston');
 const { AuditLog } = require('../models');
+const path = require('path');
+
+// Winston Configuration (Application Logs)
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json()
+    ),
+    defaultMeta: { service: 'crm-backend' },
+    transports: [
+        // Hataları 'error.log' dosyasına yaz
+        new winston.transports.File({ 
+            filename: path.join(__dirname, '../logs/error.log'), 
+            level: 'error' 
+        }),
+        // Tüm logları 'combined.log' dosyasına yaz
+        new winston.transports.File({ 
+            filename: path.join(__dirname, '../logs/combined.log') 
+        })
+    ]
+});
+
+// Geliştirme ortamında konsola da yaz
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        )
+    }));
+}
 
 /**
- * İşlem kaydı oluşturur.
- * @param {Object} params - Log parametreleri
- * @param {string} params.action - İşlem tipi (Örn: 'LOGIN_SUCCESS', 'CARD_ADDED')
- * @param {number|null} params.userId - İşlemi yapan kullanıcı ID
- * @param {string} params.details - Detaylı açıklama veya hata mesajı
- * @param {Object} params.req - Express request objesi (IP ve UserAgent için)
+ * İş Kritik Denetim Kaydı (Audit Log) - Veritabanına yazar.
+ * KVKK/GDPR uyumu ve önemli kullanıcı hareketleri için.
  */
 const logAction = async ({ action, userId, details, req }) => {
     try {
@@ -20,9 +51,15 @@ const logAction = async ({ action, userId, details, req }) => {
             ipAddress,
             userAgent
         });
+
+        // Aynı zamanda winston log'una da ekle
+        logger.info(`Audit: ${action}`, { userId, ipAddress, details });
     } catch (error) {
-        console.error('Loglama hatası:', error); // Loglama başarısız olsa bile uygulama durmamalı
+        logger.error('Loglama hatası (DB):', error);
     }
 };
 
-module.exports = { logAction };
+module.exports = {
+    logger,
+    logAction
+};

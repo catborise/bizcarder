@@ -2,6 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const { logger } = require('./utils/logger');
 const { connectDatabase } = require('./models');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
@@ -12,6 +15,24 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 
 const app = express();
 const port = process.env.PORT || 5000;
+
+// HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
+app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+
+// Security Middleware (Helmet)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "blob:", "*"],
+            connectSrc: ["'self'", "*", "https://kimlik.ulakbim.gov.tr"]
+        }
+    },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false
+}));
 
 // Reverse Proxy (Caddy, Nginx vs) arkasında çalışırken session/cookie güvenliği için
 app.set('trust proxy', 1);
@@ -181,16 +202,27 @@ app.get('/', (req, res) => {
     res.json({ message: 'CRM Backend API Çalışıyor!' });
 });
 
-// Sunucuyu Başlat ve DB'ye Bağlan
-app.listen(port, async () => {
-    console.log(`Sunucu ${port} portunda çalışıyor.`);
-    try {
-        await connectDatabase();
-    } catch (e) {
-        console.error('Database connection failed:', e.message);
+// Merkezi Hata Yönetimi (Error Handler)
+app.use((err, req, res, next) => {
+    logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    
+    // Üretim ortamında detaylı stack trace gönderme
+    const response = {
+        error: 'Sunucu Hatası',
+        message: process.env.NODE_ENV === 'production' ? 'Bir şeyler ters gitti.' : err.message
+    };
+
+    if (process.env.NODE_ENV !== 'production') {
+        response.stack = err.stack;
     }
 
-    // Otomatik çöp kutusu temizlemeyi başlat
+    res.status(err.status || 500).json(response);
+});
+
+// Sunucuyu Başlat ve DB'ye Bağlan
+app.listen(port, () => {
+    logger.info(`Sunucu ${port} portunda çalışıyor...`);
+    connectDatabase();
     startAutoCleanup();
     console.log('Otomatik çöp kutusu temizleme aktif.');
 });
