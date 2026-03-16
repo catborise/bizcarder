@@ -16,6 +16,9 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Caddy arkasında çalışırken HTTPS/Session sağlıklı çalışması için kritik.
+app.set('trust proxy', 1);
+
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
@@ -98,13 +101,15 @@ app.use('/api/', apiLimiter);
 
 // Session Ayarları
 app.use(session({
-    secret: process.env.SESSION_SECRET, // Üretim ortamında (.env) mutlaka tanımlanmalıdır
+    secret: process.env.SESSION_SECRET || 'varsayilan-guvenli-olmayan-secret',
     resave: false,
     saveUninitialized: false,
+    name: 'bizcarder.sid', // Özel cookie ismi
     cookie: {
-        secure: process.env.SESSION_SECURE === 'true', // HTTPS varsa true olmalı
+        secure: process.env.SESSION_SECURE === 'true', // HTTPS varsa true (prod'da true olmalı)
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 24 saat
+        maxAge: 24 * 60 * 60 * 1000, // 24 saat
+        sameSite: 'lax' // Aynı domain (single-site) için 'lax' en güvenli ve uyumlu seçenektir
     }
 }));
 
