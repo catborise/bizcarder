@@ -4,6 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const { logger } = require('./utils/logger');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
