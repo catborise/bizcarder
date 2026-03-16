@@ -37,8 +37,6 @@ app.use(helmet({
     crossOriginEmbedderPolicy: false
 }));
 
-// Reverse Proxy (Caddy, Nginx vs) arkasında çalışırken session/cookie güvenliği için
-app.set('trust proxy', 1);
 
 // Debug Middleware: Gelen isteklerin yetki durumunu logla
 app.use((req, res, next) => {
@@ -99,17 +97,18 @@ app.use(express.urlencoded({ extended: false }));
 // Rate Limiting (Tüm API rotalarına uygula)
 app.use('/api/', apiLimiter);
 
-// Session Ayarları
+
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'varsayilan-guvenli-olmayan-secret',
+    secret: process.env.SESSION_SECRET || 'varsayilan-secret',
+    proxy: true, // Proxy arkasında (Caddy/Nginx) secure cookie desteği için
     resave: false,
     saveUninitialized: false,
-    name: 'bizcarder.sid', // Özel cookie ismi
+    name: 'bizcarder.sid', 
     cookie: {
-        secure: process.env.SESSION_SECURE === 'true', // HTTPS varsa true (prod'da true olmalı)
+        secure: process.env.SESSION_SECURE === 'true', 
         httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000, // 24 saat
-        sameSite: 'lax' // Aynı domain (single-site) için 'lax' en güvenli ve uyumlu seçenektir
+        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'lax' 
     }
 }));
 

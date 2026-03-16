@@ -2,6 +2,8 @@ const passport = require('passport');
 const { Strategy: SamlStrategy } = require('@node-saml/passport-saml');
 const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../models');
+const { Op } = require('sequelize');
+
 
 // Serileştirme: Kullanıcı oturuma nasıl kaydedilecek
 passport.serializeUser((user, done) => {
@@ -193,18 +195,17 @@ passport.use(new LocalStrategy(
     },
     async (username, password, done) => {
         try {
-            // Kullanıcıyı username veya email ile bul
             const user = await User.findOne({
                 where: {
-                    [require('sequelize').Op.or]: [
+                    [Op.or]: [
                         { username: username },
                         { email: username }
                     ]
                 }
             });
 
-            if (!user) {
-                return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı.' });
+            if (!user || !user.password) {
+                return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı veya bu hesap sadece kurumsal giriş destekliyor.' });
             }
 
             // Şifreyi doğrula
