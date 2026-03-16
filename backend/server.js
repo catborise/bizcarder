@@ -4,10 +4,10 @@ const cors = require('cors');
 const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
-const { logger } = require('./utils/logger');
-const { connectDatabase } = require('./models');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
+const { sequelize, connectDatabase } = require('./models');
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const { startAutoCleanup } = require('./utils/trashCleanup');
@@ -98,9 +98,16 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/', apiLimiter);
 
 
+const sessionStore = new SequelizeStore({
+    db: sequelize,
+    checkExpirationInterval: 15 * 60 * 1000, // Temizlik aralığı (15 dk)
+    expiration: 24 * 60 * 60 * 1000  // Oturum ömrü (24 saat)
+});
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'varsayilan-secret',
-    proxy: true, // Proxy arkasında (Caddy/Nginx) secure cookie desteği için
+    store: sessionStore,
+    proxy: true,
     resave: false,
     saveUninitialized: false,
     name: 'bizcarder.sid', 
@@ -111,6 +118,9 @@ app.use(session({
         sameSite: 'lax' 
     }
 }));
+
+// Session tablosunu oluştur (ilk seferde)
+sessionStore.sync();
 
 // Flash Messages
 app.use(flash());
