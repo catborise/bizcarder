@@ -182,37 +182,44 @@ const AppContent = () => {
                     top: 0,
                     left: 0,
                     right: 0,
-                    background: 'rgba(var(--accent-primary-rgb), 0.9)',
-                    backdropFilter: 'blur(10px)',
-                    color: 'var(--bg-card)',
-                    padding: '12px 20px',
-                    zIndex: 1999,
+                    background: 'linear-gradient(135deg, var(--accent-primary), #1e40af)',
+                    backdropFilter: 'blur(15px)',
+                    color: 'white',
+                    padding: '12px 24px',
+                    zIndex: 2001,
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    boxShadow: 'var(--glass-shadow)'
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                    animation: 'slideDown 0.5s ease-out'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <FaWifi /> <span>Uygulamayı ana ekrana ekleyerek daha hızlı erişebilirsiniz.</span>
+                        <div style={{ fontSize: '24px' }}>📱</div>
+                        <div>
+                            <div style={{ fontWeight: 'bold', fontSize: '15px' }}>Kurumsal CRM Uygulamasını Yükleyin</div>
+                            <div style={{ fontSize: '12px', opacity: 0.9 }}>Daha hızlı erişim ve çevrimdışı kullanım için ana ekranınıza ekleyin.</div>
+                        </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                         <button
                             onClick={handleInstallClick}
                             style={{
-                                background: 'var(--bg-card)',
+                                background: 'white',
                                 color: 'var(--accent-primary)',
                                 border: 'none',
-                                padding: '6px 16px',
-                                borderRadius: '8px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer'
+                                padding: '8px 20px',
+                                borderRadius: '10px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                             }}
                         >
-                            Yükle
+                            Hemen Yükle
                         </button>
                         <button
                             onClick={() => setShowInstallBanner(false)}
-                            style={{ background: 'transparent', border: 'none', color: 'var(--bg-card)', cursor: 'pointer' }}
+                            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
                             <FaTimes />
                         </button>

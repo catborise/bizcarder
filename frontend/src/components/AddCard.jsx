@@ -295,7 +295,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             setSrc(null);
             setActiveSide(null);
 
-        }, 'image/jpeg');
+        }, 'image/jpeg', 0.7); // Client-side sıkıştırma eklendi (0.7 kalite)
     };
 
     const performOCR = async (fileBlob) => {
@@ -626,33 +626,59 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
-                                        }}>Değiştir</button>
+                                        }}>Seç</button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => document.getElementById('frontCamera').click()}
+                                        style={{
+                                            fontSize: '13px',
+                                            padding: '6px 12px',
+                                            cursor: 'pointer',
+                                            background: 'var(--accent-primary)',
+                                            color: 'var(--bg-card)',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: '600'
+                                        }}>Kamera</button>
                                 </div>
-                                {logoPreview && (
-                                    <div style={{ position: 'absolute', top: '8px', left: '8px', border: '2px solid var(--accent-success)', borderRadius: '4px', overflow: 'hidden' }}>
-                                        <img src={logoPreview} alt="Logo" style={{ width: '40px', height: '40px', objectFit: 'contain', background: 'white' }} />
-                                    </div>
-                                )}
                             </div>
                         ) : (
-                            <div onClick={() => document.getElementById('frontInput').click()} style={{
-                                cursor: 'pointer',
-                                height: '110px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'var(--glass-bg)',
-                                borderRadius: '12px',
-                                border: '1px solid var(--glass-border)',
-                                transition: 'all 0.2s ease'
-                            }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
-                            >
-                                <span style={{ fontSize: '52px', color: 'var(--text-secondary)' }}>+</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div onClick={() => document.getElementById('frontInput').click()} style={{
+                                    cursor: 'pointer',
+                                    height: '80px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'var(--glass-bg)',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--glass-border)',
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '14px'
+                                }}>
+                                    <span>Dosya Seç</span>
+                                </div>
+                                <div onClick={() => document.getElementById('frontCamera').click()} style={{
+                                    cursor: 'pointer',
+                                    height: '80px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'var(--accent-primary)',
+                                    color: 'var(--bg-card)',
+                                    borderRadius: '12px',
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold'
+                                }}>
+                                    <span>📷 Kameradan Çek</span>
+                                </div>
                             </div>
                         )}
                         <input id="frontInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
+                        <input id="frontCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
                         {ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>OCR Okunuyor...</p>}
                     </div>
 
@@ -672,43 +698,73 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         {backPreview ? (
                             <div style={{ position: 'relative' }}>
                                 <img src={backPreview} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
-                                <button
-                                    type="button"
-                                    onClick={(e) => document.getElementById('backInput').click()}
-                                    style={{
-                                        position: 'absolute',
-                                        bottom: '8px',
-                                        right: '8px',
-                                        fontSize: '13px',
-                                        padding: '6px 12px',
-                                        cursor: 'pointer',
-                                        background: 'var(--bg-card)',
-                                        backdropFilter: 'blur(5px)',
-                                        color: 'var(--text-primary)',
-                                        border: '1px solid var(--glass-border)',
-                                        borderRadius: '8px',
-                                        fontWeight: '500'
-                                    }}>Değiştir</button>
+                                <div style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => document.getElementById('backInput').click()}
+                                        style={{
+                                            fontSize: '13px',
+                                            padding: '6px 12px',
+                                            cursor: 'pointer',
+                                            background: 'var(--bg-card)',
+                                            backdropFilter: 'blur(5px)',
+                                            color: 'var(--text-primary)',
+                                            border: '1px solid var(--glass-border)',
+                                            borderRadius: '8px',
+                                            fontWeight: '500'
+                                        }}>Seç</button>
+                                     <button
+                                        type="button"
+                                        onClick={(e) => document.getElementById('backCamera').click()}
+                                        style={{
+                                            fontSize: '13px',
+                                            padding: '6px 12px',
+                                            cursor: 'pointer',
+                                            background: 'var(--accent-primary)',
+                                            color: 'var(--bg-card)',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: '600'
+                                        }}>Kamera</button>
+                                </div>
                             </div>
                         ) : (
-                            <div onClick={() => document.getElementById('backInput').click()} style={{
-                                cursor: 'pointer',
-                                height: '110px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'var(--glass-bg)',
-                                borderRadius: '12px',
-                                border: '1px solid var(--glass-border)',
-                                transition: 'all 0.2s ease'
-                            }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
-                            >
-                                <span style={{ fontSize: '52px', color: 'var(--text-secondary)' }}>+</span>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div onClick={() => document.getElementById('backInput').click()} style={{
+                                    cursor: 'pointer',
+                                    height: '80px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'var(--glass-bg)',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--glass-border)',
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '14px'
+                                }}>
+                                    <span>Dosya Seç</span>
+                                </div>
+                                <div onClick={() => document.getElementById('backCamera').click()} style={{
+                                    cursor: 'pointer',
+                                    height: '80px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    background: 'var(--accent-primary)',
+                                    color: 'var(--bg-card)',
+                                    borderRadius: '12px',
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '14px',
+                                    fontWeight: 'bold'
+                                }}>
+                                    <span>📷 Kameradan Çek</span>
+                                </div>
                             </div>
                         )}
                         <input id="backInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'back')} style={{ display: 'none' }} />
+                        <input id="backCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'back')} style={{ display: 'none' }} />
                     </div>
                 </div>
 
