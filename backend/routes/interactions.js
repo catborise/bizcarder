@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Interaction, User } = require('../models');
+const { Interaction, User, BusinessCard } = require('../models');
 
 // Bir karta ait etkileşimleri getir
 router.get('/:cardId', async (req, res) => {
@@ -30,6 +30,12 @@ router.post('/:cardId', async (req, res) => {
             date: date || new Date(),
             authorId: req.user ? req.user.id : null
         });
+
+        // Nurturing: Kartın son etkileşim tarihini güncelle
+        await BusinessCard.update(
+            { lastInteractionDate: interaction.date },
+            { where: { id: cardId } }
+        );
 
         res.status(201).json(interaction);
     } catch (error) {

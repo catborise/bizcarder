@@ -57,14 +57,17 @@ services:
       - crm_uploads:/app/uploads
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
     container_name: crm_frontend
     deploy:
       resources:
         limits:
           memory: ${FRONTEND_MEMORY_LIMIT:-1536M}
     ports:
-      - "5173:5173"
+      - "5173:80"
     env_file:
       - .env
     environment:
@@ -72,9 +75,6 @@ services:
       - NODE_OPTIONS=--max-old-space-size=${FRONTEND_NODE_MAX_MEM:-1024}
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
 volumes:
   pgdata:

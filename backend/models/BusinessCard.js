@@ -79,6 +79,24 @@ const BusinessCard = sequelize.define('BusinessCard', {
         type: DataTypes.DATE,
         allowNull: true
     },
+    leadStatus: {
+        type: DataTypes.ENUM('Cold', 'Warm', 'Hot', 'Following-up', 'Converted'),
+        defaultValue: 'Cold',
+        allowNull: true
+    },
+    priority: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true
+    },
+    lastInteractionDate: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
+    source: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     deletedAt: {
         type: DataTypes.DATE,
         allowNull: true,

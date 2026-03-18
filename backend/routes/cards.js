@@ -92,16 +92,35 @@ router.get('/personal', async (req, res) => {
 // Mükerrer Kayıt Kontrolü
 router.get('/check-duplicate', async (req, res) => {
     try {
-        const { firstName, lastName } = req.query;
-        if (!firstName || !lastName) {
+        const { firstName, lastName, email, phone } = req.query;
+        const { Op } = require('sequelize');
+
+        const conditions = [];
+
+        if (firstName && lastName) {
+            conditions.push({
+                [Op.and]: [
+                    { firstName: { [Op.iLike]: firstName.trim() } },
+                    { lastName: { [Op.iLike]: lastName.trim() } }
+                ]
+            });
+        }
+
+        if (email && email.trim()) {
+            conditions.push({ email: { [Op.iLike]: email.trim() } });
+        }
+
+        if (phone && phone.trim()) {
+            conditions.push({ phone: { [Op.like]: `%${phone.trim()}%` } });
+        }
+
+        if (conditions.length === 0) {
             return res.json(null);
         }
 
-        const { Op } = require('sequelize');
         const existingCard = await BusinessCard.findOne({
             where: {
-                firstName: { [Op.iLike]: firstName.trim() },
-                lastName: { [Op.iLike]: lastName.trim() },
+                [Op.or]: conditions,
                 deletedAt: null
             },
             include: [{ model: User, as: 'owner', attributes: ['displayName'] }]

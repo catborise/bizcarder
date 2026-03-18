@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { FaStar, FaIdCard, FaBuilding, FaUser, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaTags, FaClock, FaEye } from 'react-icons/fa';
 import Tesseract from 'tesseract.js';
 import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../utils/perspectiveHelper';
@@ -81,10 +82,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         notes: '',
         visibility: 'private',
         reminderDate: '',
-        tags: []
+        tags: [],
+        leadStatus: 'Cold',
+        priority: 1,
+        source: ''
     });
 
     const [availableTags, setAvailableTags] = useState([]);
+    const [tagsLoading, setTagsLoading] = useState(true);
     const [currentStep, setCurrentStep] = useState(1); // Wizard step: 1 or 2
 
     const [ocrResults, setOcrResults] = useState(null); // Geçici OCR sonuçları
@@ -93,6 +98,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [duplicateCard, setDuplicateCard] = useState(null);
     const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
     const [ignoreDuplicate, setIgnoreDuplicate] = useState(false);
+
+    // Kamera Modalı Durumu
+    const [showCameraModal, setShowCameraModal] = useState(false);
+    const [cameraSide, setCameraSide] = useState(null); // 'front' or 'back'
+    const videoRef = useRef(null);
+    const streamRef = useRef(null);
 
     // Düzenleme Modu: Verileri Yükle
     useEffect(() => {
@@ -109,10 +120,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 country: activeCard.country || '',
                 website: activeCard.website || '',
                 ocrText: activeCard.ocrText || '',
-                notes: activeCard.notes || '',
+                notes: activeCard?.notes || '',
                 visibility: activeCard.visibility || 'private',
-                reminderDate: activeCard.reminderDate ? new Date(activeCard.reminderDate).toISOString().split('T')[0] : '',
-                tags: activeCard.tags ? activeCard.tags.map(t => t.id) : []
+                reminderDate: activeCard.reminderDate ? activeCard.reminderDate.split('T')[0] : '',
+                tags: activeCard.tags ? activeCard.tags.map(t => t.id) : [],
+                leadStatus: activeCard.leadStatus || 'Cold',
+                priority: activeCard.priority || 1,
+                source: activeCard.source || ''
             });
             // Var olan resimleri göster
             if (activeCard.frontImageUrl) setFrontPreview(`${API_URL}${activeCard.frontImageUrl}`);
@@ -143,11 +157,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     }, [formData, activeCard]);
 
     const fetchTags = async () => {
+        setTagsLoading(true);
         try {
             const res = await api.get('/api/tags');
-            setAvailableTags(res.data);
+            setAvailableTags(res.data || []);
         } catch (err) {
             console.error('Error fetching tags:', err);
+        } finally {
+            setTagsLoading(false);
         }
     };
 
@@ -171,14 +188,18 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
     const handleNextStep = (e) => {
         if (e) e.preventDefault();
-        if (validateStep1()) {
-            setCurrentStep(2);
+        if (currentStep === 1) {
+            if (validateStep1()) {
+                setCurrentStep(2);
+            }
+        } else if (currentStep === 2) {
+            setCurrentStep(3);
         }
     };
 
     const handlePrevStep = (e) => {
         if (e) e.preventDefault();
-        setCurrentStep(1);
+        setCurrentStep(prev => Math.max(prev - 1, 1));
     };
 
     const handleQuickSave = async (e) => {
@@ -189,7 +210,91 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     };
 
 
-    // ... (OCR ve Resim Yükleme kodları aynı kalabilir, sadece input onChange eklenmeli)
+    // Kamera Başlatma
+    const startCamera = async () => {
+        try {
+            const constraints = {
+                video: {
+                    facingMode: 'environment', // Mümkünse arka kamera
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 }
+                }
+            };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+            streamRef.current = stream;
+        } catch (err) {
+            console.error('Kamera erişim hatası:', err);
+            showNotification('Kamera başlatılamadı. Lütfen izin verin veya HTTPS kullandığınızdan emin olun.', 'error');
+            // Fallback: Modalı kapat ve dosya diyaloğunu aç
+            setShowCameraModal(false);
+            const inputId = cameraSide === 'front' ? 'frontInput' : 'backInput';
+            document.getElementById(inputId).click();
+        }
+    };
+
+    const stopCamera = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+        }
+        setShowCameraModal(false);
+    };
+
+    const capturePhoto = () => {
+        if (!videoRef.current) return;
+        
+        const canvas = document.createElement('canvas');
+        const video = videoRef.current;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0);
+        
+        canvas.toBlob(async (blob) => {
+            if (blob) {
+                // Sıkıştırma sonrası handle
+                const compressedBlob = await compressImage(blob);
+                const file = new File([compressedBlob], `camera_${cameraSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                
+                // onSelectFile benzeri bir mantık ama File nesnesi ile
+                const reader = new FileReader();
+                reader.onload = () => {
+                    setSrc(reader.result);
+                    setActiveSide(cameraSide);
+                };
+                reader.readAsDataURL(file);
+                
+                if (cameraSide === 'front') {
+                    setFrontBlob(compressedBlob);
+                    setFrontPreview(URL.createObjectURL(compressedBlob));
+                } else {
+                    setBackBlob(compressedBlob);
+                    setBackPreview(URL.createObjectURL(compressedBlob));
+                }
+                
+                stopCamera();
+            }
+        }, 'image/jpeg', 0.9);
+    };
+
+    const openCamera = (side) => {
+        setCameraSide(side);
+        setShowCameraModal(true);
+        // useEffect veya modal açıkken tetiklenecek
+    };
+
+    useEffect(() => {
+        if (showCameraModal) {
+            startCamera();
+        } else {
+            stopCamera();
+        }
+        return () => stopCamera();
+    }, [showCameraModal]);
     // Dosya Seçimi Başlat
     const [aiDetectedPoints, setAiDetectedPoints] = useState(null);
     const [isDetecting, setIsDetecting] = useState(false);
@@ -446,7 +551,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         if (!activeCard && !forceAdd && !ignoreDuplicate) {
             try {
                 const dupCheck = await api.get(`/api/cards/check-duplicate`, {
-                    params: { firstName: formData.firstName, lastName: formData.lastName }
+                    params: { 
+                        firstName: formData.firstName, 
+                        lastName: formData.lastName,
+                        email: formData.email,
+                        phone: formData.phone
+                    }
                 });
 
                 if (dupCheck.data) {
@@ -629,7 +739,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         }}>Seç</button>
                                     <button
                                         type="button"
-                                        onClick={(e) => document.getElementById('frontCamera').click()}
+                                        onClick={(e) => openCamera('front')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -659,7 +769,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 }}>
                                     <span>Dosya Seç</span>
                                 </div>
-                                <div onClick={() => document.getElementById('frontCamera').click()} style={{
+                                <div onClick={() => openCamera('front')} style={{
                                     cursor: 'pointer',
                                     height: '80px',
                                     display: 'flex',
@@ -715,7 +825,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         }}>Seç</button>
                                      <button
                                         type="button"
-                                        onClick={(e) => document.getElementById('backCamera').click()}
+                                        onClick={(e) => openCamera('back')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -745,7 +855,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 }}>
                                     <span>Dosya Seç</span>
                                 </div>
-                                <div onClick={() => document.getElementById('backCamera').click()} style={{
+                                <div onClick={() => openCamera('back')} style={{
                                     cursor: 'pointer',
                                     height: '80px',
                                     display: 'flex',
@@ -775,72 +885,51 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    gap: '12px',
+                    gap: '20px',
                     padding: '20px 0',
                     marginBottom: '10px'
                 }}>
                     {/* Step 1 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
+                            width: '32px', height: '32px', borderRadius: '50%',
                             background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
                             border: currentStep >= 1 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
-                            fontWeight: '700',
-                            fontSize: '14px',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            1
-                        </div>
-                        <span style={{
-                            color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            fontWeight: currentStep === 1 ? '600' : '400',
-                            fontSize: '14px',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            Temel Bilgiler
-                        </span>
+                            fontWeight: '700', fontSize: '14px'
+                        }}>1</div>
+                        <span style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Temel</span>
                     </div>
 
-                    {/* Connector Line */}
-                    <div style={{
-                        width: '60px',
-                        height: '2px',
-                        background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)',
-                        transition: 'all 0.3s ease'
-                    }}></div>
+                    <div style={{ width: '40px', height: '2px', background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
 
                     {/* Step 2 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
+                            width: '32px', height: '32px', borderRadius: '50%',
                             background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
                             border: currentStep >= 2 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
-                            fontWeight: '700',
-                            fontSize: '14px',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            2
-                        </div>
-                        <span style={{
-                            color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)',
-                            fontWeight: currentStep === 2 ? '600' : '400',
-                            fontSize: '14px',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            Detaylı Bilgiler
-                        </span>
+                            fontWeight: '700', fontSize: '14px'
+                        }}>2</div>
+                        <span style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Detay</span>
+                    </div>
+
+                    <div style={{ width: '40px', height: '2px', background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
+
+                    {/* Step 3 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                            width: '32px', height: '32px', borderRadius: '50%',
+                            background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                            border: currentStep >= 3 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: currentStep >= 3 ? 'var(--bg-card)' : 'var(--text-secondary)',
+                            fontWeight: '700', fontSize: '14px'
+                        }}>3</div>
+                        <span style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Lead</span>
                     </div>
                 </div>
 
@@ -945,7 +1034,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         borderRadius: '12px',
                                         border: '1px solid var(--glass-border)'
                                     }}>
-                                        {availableTags && availableTags.length > 0 ? availableTags.map(tag => (
+                                        {tagsLoading ? (
+                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Etiketler yükleniyor...</span>
+                                        ) : availableTags && availableTags.length > 0 ? availableTags.map(tag => (
                                             <button
                                                 key={tag.id}
                                                 type="button"
@@ -970,7 +1061,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             >
                                                 {tag.name}
                                             </button>
-                                        )) : <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Etiket yükleniyor...</span>}
+                                        )) : (
+                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Henüz etiket tanımlanmamış. Ayarlardan oluşturabilirsiniz.</span>
+                                        )}
                                     </div>
                                 </div>
 
@@ -986,13 +1079,72 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
                             </div>
 
-                            <textarea name="notes" rows="3" placeholder="Notlar..." value={formData.notes} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
-
                             <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
                                 <option value="private" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Sadece Ben (Private)</option>
                                 <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Herkes (Public)</option>
                             </select>
                         </>
+                    )}
+
+                    {/* Step 3: Relationship Management (Nurturing) */}
+                    {currentStep === 3 && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>İlişki Durumu (Lead Status)</label>
+                                    <select 
+                                        name="leadStatus" 
+                                        value={formData.leadStatus} 
+                                        onChange={handleInputChange} 
+                                        style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}
+                                    >
+                                        <option value="Cold">❄️ Soğuk (Cold)</option>
+                                        <option value="Warm">⛅ Ilık (Warm)</option>
+                                        <option value="Hot">🔥 Sıcak (Hot)</option>
+                                        <option value="Following-up">🔄 Takipte (Following-up)</option>
+                                        <option value="Converted">✅ Dönüştü (Converted)</option>
+                                    </select>
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Önem Derecesi (Priority)</label>
+                                    <div style={{ display: 'flex', gap: '10px', height: '45px', alignItems: 'center', background: 'var(--bg-card)', borderRadius: '10px', padding: '0 15px', border: '1px solid var(--glass-border)' }}>
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <FaStar 
+                                                key={star}
+                                                size={20}
+                                                color={formData.priority >= star ? 'var(--accent-warning)' : 'var(--text-tertiary)'}
+                                                style={{ cursor: 'pointer', opacity: formData.priority >= star ? 1 : 0.3 }}
+                                                onClick={() => setFormData(prev => ({ ...prev, priority: star }))}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Tanışma Kaynağı (Source)</label>
+                                <input 
+                                    type="text" 
+                                    name="source" 
+                                    placeholder="Örn: Expo 2026, LinkedIn, Referans..." 
+                                    value={formData.source} 
+                                    onChange={handleInputChange} 
+                                    style={inputStyle} 
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Notlar</label>
+                                <textarea 
+                                    name="notes" 
+                                    rows="4" 
+                                    placeholder="Kişi hakkında özel notlar, hobiler, ilgi alanları..." 
+                                    value={formData.notes} 
+                                    onChange={handleInputChange} 
+                                    style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }}
+                                />
+                            </div>
+                        </div>
                     )}
                 </div>
 
@@ -1022,30 +1174,30 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             >
                                 Kaydet
                             </button>
-                            <button
-                                type="button"
-                                onClick={handleNextStep}
-                                disabled={ocrLoading}
-                                style={{
-                                    padding: '14px 24px',
-                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                    color: 'white',
-                                    border: '1px solid rgba(255, 255, 255, 0.3)',
-                                    borderRadius: '12px',
-                                    fontSize: '16px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px'
-                                }}
-                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
-                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
-                            >
-                                İleri: Detaylar →
-                            </button>
+                             <button
+                                 type="button"
+                                 onClick={handleNextStep}
+                                 disabled={ocrLoading}
+                                 style={{
+                                     padding: '14px 24px',
+                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                     color: 'white',
+                                     border: '1px solid rgba(255, 255, 255, 0.3)',
+                                     borderRadius: '12px',
+                                     fontSize: '16px',
+                                     cursor: 'pointer',
+                                     fontWeight: '600',
+                                     transition: 'all 0.2s ease',
+                                     boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+                                     display: 'flex',
+                                     alignItems: 'center',
+                                     gap: '8px'
+                                 }}
+                                 onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
+                                 onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
+                             >
+                                 İleri →
+                             </button>
                         </>
                     ) : (
                         <>
@@ -1072,26 +1224,47 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             >
                                 ← Geri
                             </button>
-                            <button
-                                type="submit"
-                                disabled={ocrLoading}
-                                style={{
-                                    padding: '14px 24px',
-                                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                                    color: 'var(--bg-card)',
-                                    border: '1px solid var(--glass-border)',
-                                    borderRadius: '12px',
-                                    fontSize: '16px',
-                                    cursor: 'pointer',
-                                    fontWeight: '600',
-                                    transition: 'all 0.2s ease',
-                                    boxShadow: 'var(--glass-shadow)'
-                                }}
-                                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
-                            >
-                                {activeCard ? 'Güncelle' : 'Kaydet'}
-                            </button>
+                            {currentStep === 2 ? (
+                                <button
+                                    type="button"
+                                    onClick={handleNextStep}
+                                    style={{
+                                        padding: '14px 24px',
+                                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                                        color: 'var(--bg-card)',
+                                        border: '1px solid var(--glass-border)',
+                                        borderRadius: '12px',
+                                        fontSize: '16px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: 'var(--glass-shadow)'
+                                    }}
+                                >
+                                    İleri →
+                                </button>
+                            ) : (
+                                <button
+                                    type="submit"
+                                    disabled={ocrLoading}
+                                    style={{
+                                        padding: '14px 24px',
+                                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                                        color: 'var(--bg-card)',
+                                        border: '1px solid var(--glass-border)',
+                                        borderRadius: '12px',
+                                        fontSize: '16px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: 'var(--glass-shadow)'
+                                    }}
+                                    onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
+                                >
+                                    {activeCard ? 'Güncelle' : 'Kaydet'}
+                                </button>
+                            )}
                         </>
                     )}
                 </div>
@@ -1431,6 +1604,78 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     </div>
                 )
             }
+            {/* Kamera Yakalama Modalı */}
+            {showCameraModal && (
+                <div style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.95)',
+                    zIndex: 5000,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '20px'
+                }}>
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '640px', aspectRatio: '4/3', background: 'black', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--accent-primary)' }}>
+                        <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        
+                        {/* Vizör Çerçevesi */}
+                        <div style={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '85%',
+                            height: '60%',
+                            border: '2px dashed var(--accent-primary)',
+                            borderRadius: '12px',
+                            pointerEvents: 'none',
+                            boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
+                        }}>
+                             <div style={{ position: 'absolute', top: '-30px', left: 0, right: 0, textAlign: 'center', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: 'bold' }}>
+                                Kartı buraya hizalayın
+                             </div>
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
+                        <button
+                            type="button"
+                            onClick={stopCamera}
+                            style={{
+                                padding: '12px 24px',
+                                background: 'white',
+                                color: 'black',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                border: 'none',
+                                cursor: 'pointer'
+                            }}
+                        >İptal</button>
+                        <button
+                            type="button"
+                            onClick={capturePhoto}
+                            style={{
+                                padding: '12px 40px',
+                                background: 'var(--accent-primary)',
+                                color: 'white',
+                                borderRadius: '12px',
+                                fontWeight: 'bold',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '18px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}
+                        >📸 Fotoğraf Çek</button>
+                    </div>
+                </div>
+            )}
         </div >
     );
 };

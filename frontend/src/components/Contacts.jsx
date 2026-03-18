@@ -3,7 +3,7 @@ import api, { API_URL } from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../utils/offlineStore';
 import { downloadFile } from '../utils/downloadHelper';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode } from 'react-icons/fa';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode, FaStar, FaWhatsapp } from 'react-icons/fa';
 import SearchBar from './SearchBar';
 import Modal from './Modal';
 import ConfirmModal from './ConfirmModal';
@@ -185,6 +185,29 @@ const Contacts = () => {
         }
     };
 
+    const handleWhatsAppFollowUp = (card) => {
+        const message = `Merhaba ${card.firstName + (card.lastName ? ' ' + card.lastName : '')}, az önce tanıştığımıza çok memnun oldum. İletişim bilgilerimi iletiyorum. Görüşmek dileğiyle.`;
+        const phone = card.phone.replace(/\D/g, '');
+        window.open(`https://wa.me/${phone.startsWith('0') ? '9' + phone : phone}?text=${encodeURIComponent(message)}`, '_blank');
+    };
+
+    const handleEmailFollowUp = (card) => {
+        const subject = "Tanıştığımıza Memnun Oldum";
+        const body = `Sayın ${card.firstName} ${card.lastName},\n\nAz önce tanıştığımıza çok memnun oldum. Kartvizitinizi CRM sistemime kaydettim.\n\nEn kısa sürede tekrar görüşmek dileğiyle.\n\nİyi çalışmalar.`;
+        window.location.href = `mailto:${card.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    };
+
+    const getStatusStyle = (status) => {
+        switch(status) {
+            case 'Hot': return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', icon: '🔥', label: 'Sıcak' };
+            case 'Warm': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: '⛅', label: 'Ilık' };
+            case 'Cold': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: '❄️', label: 'Soğuk' };
+            case 'Following-up': return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', icon: '🔄', label: 'Takipte' };
+            case 'Converted': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: '✅', label: 'Dönüştü' };
+            default: return { bg: 'rgba(156, 163, 175, 0.1)', color: '#9ca3af', icon: '👤', label: 'Bilinmiyor' };
+        }
+    };
+
     if (loading) {
         return (
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
@@ -361,13 +384,39 @@ const Contacts = () => {
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
-                                    {card.tags && card.tags.length > 0 && (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '15px' }}>
-                                            {card.tags.map(tag => (
-                                                <span key={tag.id} style={{ padding: '2px 10px', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700', background: tag.color || 'var(--accent-primary)', color: 'var(--bg-card)' }}>{tag.name}</span>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                        {card.leadStatus && (
+                                            <div style={{ 
+                                                padding: '4px 10px', 
+                                                borderRadius: '8px', 
+                                                fontSize: '0.75rem', 
+                                                fontWeight: 'bold',
+                                                background: getStatusStyle(card.leadStatus).bg,
+                                                color: getStatusStyle(card.leadStatus).color,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '5px',
+                                                border: `1px solid ${getStatusStyle(card.leadStatus).color}33`
+                                            }}>
+                                                <span>{getStatusStyle(card.leadStatus).icon}</span>
+                                                {getStatusStyle(card.leadStatus).label}
+                                            </div>
+                                        )}
+                                        {card.priority > 0 && (
+                                            <div style={{ display: 'flex', gap: '2px' }}>
+                                                {[1, 2, 3, 4, 5].map(star => (
+                                                    <FaStar key={star} size={12} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(255,255,255,0.1)'} />
+                                                ))}
+                                            </div>
+                                        )}
+                                        {card.tags && card.tags.length > 0 && (
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                                                {card.tags.map(tag => (
+                                                    <span key={tag.id} style={{ padding: '2px 10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '700', background: tag.color || 'var(--accent-primary)', color: 'var(--bg-card)' }}>{tag.name}</span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', fontSize: '0.9em' }}>
                                         {card.reminderDate && (
@@ -377,11 +426,19 @@ const Contacts = () => {
                                                 <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.reminderDate).toLocaleDateString('tr-TR')}</span>
                                             </div>
                                         )}
+                                        {card.lastInteractionDate && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <FaClock color="var(--accent-primary)" size={12} /> 
+                                                <strong style={{ color: 'var(--text-tertiary)' }}>Son Etkileşim:</strong> 
+                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.lastInteractionDate).toLocaleDateString('tr-TR')}</span>
+                                            </div>
+                                        )}
                                         {card.email && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>E-Posta:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span></div>}
                                         {card.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPhone color="var(--accent-success)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Telefon:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.phone}</span></div>}
                                         {card.website && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaGlobe color="var(--accent-primary)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Web:</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)' }}>{card.website}</a></div>}
                                         {(card.city || card.country) && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCity color="var(--accent-error)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Konum:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.city}{card.city && card.country && ', '}{card.country}</span></div>}
                                         {card.address && <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}><FaMapMarkerAlt color="var(--accent-error)" style={{ marginTop: '3px' }} /><strong style={{ color: 'var(--text-tertiary)' }}>Adres:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.address}</span></div>}
+                                        {card.source && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaIdCard color="var(--accent-primary)" size={12} /> <strong style={{ color: 'var(--text-tertiary)' }}>Kaynak:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.source}</span></div>}
                                     </div>
                                 </div>
 
@@ -391,6 +448,30 @@ const Contacts = () => {
                                         {expandedNotesId === card.id ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
                                     </button>
                                     <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-primary)', padding: '8px 12px', fontSize: '0.85rem' }}><FaClock /> Görüşmeler</button>
+                                    
+                                    {/* Hızlı Takip Butonları */}
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                        {card.phone && (
+                                            <button 
+                                                onClick={() => handleWhatsAppFollowUp(card)} 
+                                                className="glass-button-square" 
+                                                title="WhatsApp Takip" 
+                                                style={{ color: '#25D366', borderColor: 'rgba(37, 211, 102, 0.3)' }}
+                                            >
+                                                <FaWhatsapp size={20} />
+                                            </button>
+                                        )}
+                                        {card.email && (
+                                            <button 
+                                                onClick={() => handleEmailFollowUp(card)} 
+                                                className="glass-button-square" 
+                                                title="E-Posta Takip" 
+                                                style={{ color: 'var(--accent-warning)', borderColor: 'rgba(255, 193, 7, 0.3)' }}
+                                            >
+                                                <FaEnvelope size={18} />
+                                            </button>
+                                        )}
+                                    </div>
 
                                     <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
 

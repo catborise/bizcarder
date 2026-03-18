@@ -18,7 +18,8 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Caddy arkasında çalışırken HTTPS/Session sağlıklı çalışması için kritik.
-app.set('trust proxy', 1);
+app.set('trust proxy', false); 
+
 
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
@@ -108,9 +109,9 @@ const sessionStore = new SequelizeStore({
 app.use(session({
     secret: process.env.SESSION_SECRET || 'varsayilan-secret',
     store: sessionStore,
-    proxy: true,
     resave: false,
     saveUninitialized: false,
+    proxy: false, // Doğrudan erişim için false olmalı
     name: 'bizcarder.sid', 
     cookie: {
         secure: process.env.SESSION_SECURE === 'true', 
