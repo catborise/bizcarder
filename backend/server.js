@@ -24,6 +24,17 @@ app.set('trust proxy', false);
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 
+// Determine IdP Domain for CSP dynamically
+let idpDomain = '';
+if (process.env.SAML_ENTRY_POINT) {
+    try {
+        idpDomain = new URL(process.env.SAML_ENTRY_POINT).origin;
+    } catch (e) {}
+}
+
+const connectSrcList = ["'self'", "*"];
+if (idpDomain) connectSrcList.push(idpDomain);
+
 // Security Middleware (Helmet)
 app.use(helmet({
     contentSecurityPolicy: {
@@ -32,7 +43,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'"],
             styleSrc: ["'self'", "'unsafe-inline'"],
             imgSrc: ["'self'", "data:", "blob:", "*"],
-            connectSrc: ["'self'", "*", "https://kimlik.ulakbim.gov.tr"]
+            connectSrc: connectSrcList
         }
     },
     crossOriginResourcePolicy: { policy: "cross-origin" },
