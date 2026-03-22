@@ -150,7 +150,10 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                             fontSize: '0.8rem',
                                             fontWeight: '600'
                                         }}>
-                                            {new Date(card.reminderDate).toLocaleDateString('tr-TR')}
+                                            {(() => {
+                                                const d = new Date(card.reminderDate);
+                                                return isNaN(d.getTime()) ? 'Geçersiz Tarih' : d.toLocaleDateString('tr-TR');
+                                            })()}
                                         </span>
                                     </div>
                                 </div>

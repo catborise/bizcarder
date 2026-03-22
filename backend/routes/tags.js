@@ -35,6 +35,7 @@ router.get('/stats', async (req, res) => {
             }],
             group: ['Tag.id'],
             order: [[sequelize.literal('"cardCount"'), 'DESC']],
+            subQuery: false,
             limit: 10
         });
         res.json(stats);

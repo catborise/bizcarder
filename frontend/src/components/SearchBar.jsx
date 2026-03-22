@@ -15,14 +15,22 @@ const SearchBar = ({
     const hasActiveAdvancedFilters =
         advancedFilters.tagId !== '' ||
         advancedFilters.city !== '' ||
-        advancedFilters.hasReminder === true;
+        advancedFilters.hasReminder === true ||
+        advancedFilters.leadStatus !== '' ||
+        advancedFilters.source !== '' ||
+        advancedFilters.dateStart !== '' ||
+        advancedFilters.dateEnd !== '';
 
     const clearFilters = () => {
         onSearchChange('');
         onAdvancedFilterChange({
             tagId: '',
             city: '',
-            hasReminder: false
+            hasReminder: false,
+            leadStatus: '',
+            source: '',
+            dateStart: '',
+            dateEnd: ''
         });
     };
 
@@ -85,6 +93,8 @@ const SearchBar = ({
                     <option value="nameAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>İsim (A-Z)</option>
                     <option value="nameDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>İsim (Z-A)</option>
                     <option value="companyAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Şirket (A-Z)</option>
+                    <option value="priorityDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Önem Sırası (5-1)</option>
+                    <option value="lastInteraction" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Son Etkileşim</option>
                 </select>
 
                 <button
@@ -188,6 +198,88 @@ const SearchBar = ({
                         </select>
                     </div>
 
+                    {/* Lead Status Filter */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>SÜREÇ DURUMU</label>
+                        <select
+                            value={advancedFilters.leadStatus}
+                            onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, leadStatus: e.target.value })}
+                            style={{
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-primary)',
+                                outline: 'none'
+                            }}
+                        >
+                            <option value="" style={{ background: 'var(--bg-card)' }}>Tümü</option>
+                            <option value="Cold" style={{ background: 'var(--bg-card)' }}>❄️ Soğuk (Cold)</option>
+                            <option value="Warm" style={{ background: 'var(--bg-card)' }}>⛅ Ilık (Warm)</option>
+                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>🔥 Sıcak (Hot)</option>
+                            <option value="Following-up" style={{ background: 'var(--bg-card)' }}>🔄 Takipte (Following-up)</option>
+                            <option value="Converted" style={{ background: 'var(--bg-card)' }}>✅ Dönüştü (Converted)</option>
+                        </select>
+                    </div>
+
+                    {/* Source Filter */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>KAYNAK</label>
+                        <input
+                            type="text"
+                            placeholder="Kaynak (Örn: LinkedIn)"
+                            value={advancedFilters.source}
+                            onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, source: e.target.value })}
+                            style={{
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-primary)',
+                                outline: 'none',
+                                fontSize: '13px'
+                            }}
+                        />
+                    </div>
+
+                    {/* Date Range Start */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>BAŞLANGIÇ TARİHİ</label>
+                        <input
+                            type="date"
+                            value={advancedFilters.dateStart}
+                            onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, dateStart: e.target.value })}
+                            style={{
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-primary)',
+                                outline: 'none',
+                                fontSize: '13px'
+                            }}
+                        />
+                    </div>
+
+                    {/* Date Range End */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>BİTİŞ TARİHİ</label>
+                        <input
+                            type="date"
+                            value={advancedFilters.dateEnd}
+                            onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, dateEnd: e.target.value })}
+                            style={{
+                                padding: '10px',
+                                borderRadius: '10px',
+                                background: 'var(--bg-input)',
+                                border: '1px solid var(--glass-border)',
+                                color: 'var(--text-primary)',
+                                outline: 'none',
+                                fontSize: '13px'
+                            }}
+                        />
+                    </div>
+
                     {/* Reminder Toggle */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
                         <label style={{
@@ -211,6 +303,78 @@ const SearchBar = ({
                             />
                             Sadece Hatırlatıcılar
                         </label>
+                    </div>
+
+                    {/* Saved Filters Section */}
+                    <div style={{ 
+                        gridColumn: '1 / -1', 
+                        paddingTop: '15px', 
+                        marginTop: '5px',
+                        borderTop: '1px solid var(--glass-border)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>KAYITLI FİLTRELER</label>
+                            <button 
+                                onClick={() => {
+                                    const filterName = prompt('Filtre için bir isim girin:');
+                                    if (filterName) {
+                                        const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
+                                        saved.push({ name: filterName, filters: { ...advancedFilters }, id: Date.now() });
+                                        localStorage.setItem('savedFilters', JSON.stringify(saved));
+                                        // Noter: SearchBar direct access to showNotification? I might need to pass it or use context
+                                    }
+                                }}
+                                style={{
+                                    padding: '4px 12px',
+                                    borderRadius: '8px',
+                                    background: 'var(--accent-primary-transparent)',
+                                    border: '1px solid var(--accent-primary)',
+                                    color: 'var(--accent-primary)',
+                                    fontSize: '12px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600'
+                                }}
+                            >
+                                + Mevcut Filtreyi Kaydet
+                            </button>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                            {JSON.parse(localStorage.getItem('savedFilters') || '[]').map(sf => (
+                                <div key={sf.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    <button
+                                        onClick={() => onAdvancedFilterChange(sf.filters)}
+                                        style={{
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            background: 'var(--glass-bg)',
+                                            border: '1px solid var(--glass-border)',
+                                            color: 'var(--text-primary)',
+                                            fontSize: '12px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                    >
+                                        {sf.name}
+                                    </button>
+                                    <button 
+                                        onClick={() => {
+                                            const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
+                                            localStorage.setItem('savedFilters', JSON.stringify(saved.filter(f => f.id !== sf.id)));
+                                        }}
+                                        style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer', fontSize: '12px' }}
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            ))}
+                            {JSON.parse(localStorage.getItem('savedFilters') || '[]').length === 0 && (
+                                <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Henüz kayıtlı filtre yok.</span>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

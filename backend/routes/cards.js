@@ -58,10 +58,11 @@ router.get('/due-reminders', async (req, res) => {
             include: [
                 { model: User, as: 'owner', attributes: ['displayName'] }
             ],
+            distinct: true,
             order: [['reminderDate', 'ASC']]
         });
 
-        console.log(`[DEBUG] Found ${cards.length} reminders.`);
+        console.log(`[DEBUG] Found ${cards.length} reminders. IDs:`, cards.map(c => c.id));
         res.json(cards);
     } catch (error) {
         console.error("[ERROR] due-reminders error:", error);
@@ -150,55 +151,98 @@ router.get('/cities', async (req, res) => {
 
 // Helper: Sorgu Oluşturucu
 const buildCardsQuery = (req) => {
+    const { 
+        remindersOnly, hasReminder, search, city, cities, 
+        tagId, tagIds, sort, dateStart, dateEnd, 
+        leadStatus, statuses, source, priority 
+    } = req.query;
+
     const whereClause = {
         deletedAt: null
     };
 
     // Filtreleme: Sadece Hatırlırıcalar
-    if (req.query.remindersOnly === 'true' || req.query.hasReminder === 'true') {
+    if (remindersOnly === 'true' || hasReminder === 'true') {
         whereClause.reminderDate = { [Op.ne]: null };
     }
 
-    // Yetki kontrolü
+    // Yetki kontrolü (Admin değilse sadece kendi kartları + public olanlar)
     if (req.user && req.user.role !== 'admin') {
-        whereClause[Op.or] = [
-            { ownerId: req.user.id },
-            { visibility: 'public' }
-        ];
-    }
-
-    // Arama filtresi
-    if (req.query.search) {
-        const search = req.query.search.toLowerCase();
         whereClause[Op.and] = whereClause[Op.and] || [];
         whereClause[Op.and].push({
             [Op.or]: [
-                { firstName: { [Op.iLike]: `%${search}%` } },
-                { lastName: { [Op.iLike]: `%${search}%` } },
-                { company: { [Op.iLike]: `%${search}%` } },
-                { email: { [Op.iLike]: `%${search}%` } },
-                { title: { [Op.iLike]: `%${search}%` } },
-                { city: { [Op.iLike]: `%${search}%` } }
+                { ownerId: req.user.id },
+                { visibility: 'public' }
             ]
         });
     }
 
-    // Şehir filtresi
-    if (req.query.city) {
-        whereClause.city = { [Op.iLike]: req.query.city };
+    // Arama filtresi
+    if (search) {
+        const searchTerm = search.toLowerCase();
+        whereClause[Op.and] = whereClause[Op.and] || [];
+        whereClause[Op.and].push({
+            [Op.or]: [
+                { firstName: { [Op.iLike]: `%${searchTerm}%` } },
+                { lastName: { [Op.iLike]: `%${searchTerm}%` } },
+                { company: { [Op.iLike]: `%${searchTerm}%` } },
+                { email: { [Op.iLike]: `%${searchTerm}%` } },
+                { title: { [Op.iLike]: `%${searchTerm}%` } },
+                { city: { [Op.iLike]: `%${searchTerm}%` } },
+                { phone: { [Op.iLike]: `%${searchTerm}%` } },
+                { source: { [Op.iLike]: `%${searchTerm}%` } }
+            ]
+        });
     }
 
-    // Tag filtresi - Bunu route içinde handle edeceğiz çünkü bir join gerekiyor (include)
+    // Şehir filtresi (Tekil veya Çoklu)
+    if (city) {
+        whereClause.city = { [Op.iLike]: city };
+    } else if (cities) {
+        const cityList = Array.isArray(cities) ? cities : cities.split(',');
+        whereClause.city = { [Op.in]: cityList };
+    }
+
+    // Lead Status filtresi (Tekil veya Çoklu)
+    if (leadStatus) {
+        whereClause.leadStatus = leadStatus;
+    } else if (statuses) {
+        const statusList = Array.isArray(statuses) ? statuses : statuses.split(',');
+        whereClause.leadStatus = { [Op.in]: statusList };
+    }
+
+    // Kaynak filtresi
+    if (source) {
+        whereClause.source = { [Op.iLike]: `%${source}%` };
+    }
+
+    // Öncelik filtresi
+    if (priority) {
+        whereClause.priority = parseInt(priority);
+    }
+
+    // Tarih Aralığı (createdAt üzerinden)
+    if (dateStart || dateEnd) {
+        whereClause.createdAt = {};
+        if (dateStart) whereClause.createdAt[Op.gte] = new Date(dateStart);
+        if (dateEnd) {
+            const end = new Date(dateEnd);
+            end.setHours(23, 59, 59, 999);
+            whereClause.createdAt[Op.lte] = end;
+        }
+    }
 
     // Sıralama
     let order = [['createdAt', 'DESC']]; // Varsayılan
-    if (req.query.sort) {
-        switch (req.query.sort) {
+    if (sort) {
+        switch (sort) {
             case 'oldest': order = [['createdAt', 'ASC']]; break;
             case 'nameAsc': order = [['firstName', 'ASC']]; break;
             case 'nameDesc': order = [['firstName', 'DESC']]; break;
             case 'companyAsc': order = [['company', 'ASC']]; break;
             case 'newest': order = [['createdAt', 'DESC']]; break;
+            case 'priorityDesc': order = [['priority', 'DESC']]; break;
+            case 'lastInteraction': order = [['lastInteractionDate', 'DESC']]; break;
         }
     }
 
@@ -220,8 +264,12 @@ router.get('/', async (req, res) => {
                 model: Tag, 
                 as: 'tags', 
                 through: { attributes: [] },
-                required: req.query.tagId ? true : false, // Tag araması varsa INNER JOIN yap
-                where: req.query.tagId ? { id: req.query.tagId } : undefined
+                required: (req.query.tagId || req.query.tagIds) ? true : false,
+                where: req.query.tagId 
+                    ? { id: req.query.tagId } 
+                    : (req.query.tagIds 
+                        ? { id: { [Op.in]: Array.isArray(req.query.tagIds) ? req.query.tagIds : req.query.tagIds.split(',') } } 
+                        : undefined)
             }
         ];
         

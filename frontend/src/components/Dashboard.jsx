@@ -101,9 +101,9 @@ const Dashboard = () => {
             setSettings(responses[2].data);
             setTagStats(responses[3].data);
 
-            if (isAuthenticated && responses[2]) {
-                setDueReminders(responses[3].data);
-                if (responses[3].data.length > 0) {
+            if (isAuthenticated && responses[4]) {
+                setDueReminders(responses[4].data);
+                if (responses[4].data.length > 0) {
                     setShowReminderModal(true);
                 }
             } else {

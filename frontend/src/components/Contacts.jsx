@@ -25,10 +25,17 @@ const Contacts = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('newest');
-    const [advancedFilters, setAdvancedFilters] = useState({
-        tagId: '',
-        city: '',
-        hasReminder: false
+    const [advancedFilters, setAdvancedFilters] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        return {
+            tagId: params.get('tagId') || '',
+            city: '',
+            hasReminder: false,
+            leadStatus: '',
+            source: '',
+            dateStart: '',
+            dateEnd: ''
+        };
     });
 
     const [pagination, setPagination] = useState({
@@ -84,7 +91,11 @@ const Contacts = () => {
                 sort: sortOption,
                 tagId: advancedFilters.tagId,
                 city: advancedFilters.city,
-                hasReminder: advancedFilters.hasReminder
+                hasReminder: advancedFilters.hasReminder,
+                leadStatus: advancedFilters.leadStatus,
+                source: advancedFilters.source,
+                dateStart: advancedFilters.dateStart,
+                dateEnd: advancedFilters.dateEnd
             };
 
             const res = await api.get('/api/cards', { params });
@@ -115,25 +126,26 @@ const Contacts = () => {
     };
 
     useEffect(() => {
-        const params = new URLSearchParams(location.search);
-        const tagId = params.get('tagId');
-        if (tagId) {
-            setAdvancedFilters(prev => ({ ...prev, tagId }));
-        }
         fetchAvailableFilters();
-    }, [location.search]);
+    }, []); // Sadece bir kez yükle
 
+    // Filtreleri veya Arama Terimini Takip Eden Tek Bir Effect
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             fetchCards(1);
-        }, 500);
-        return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm]);
+        }, searchTerm ? 500 : 0); // Boş aramada anında çek, yazarken bekle
 
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm, sortOption, advancedFilters]);
+
+    // Sadece Sayfa Değişimi İçin (Filtreler Değiştiğinde Değil)
+    // Bu Effect, Sayfa Değiştiğinde fetchCards'ı çağırmak için gerekli
     useEffect(() => {
-        if (searchTerm) return; // Debounce effect handles search
-        fetchCards(pagination.currentPage);
-    }, [sortOption, advancedFilters, pagination.currentPage]);
+        // Eğer sayfa 1 değilse (başlangıçta 1 olduğu için ilk renderda kaçınabiliriz ama sayfa değişimi kritik)
+        if (pagination.currentPage !== 1) {
+            fetchCards(pagination.currentPage);
+        }
+    }, [pagination.currentPage]);
 
     const toggleDetails = (id) => {
         setExpandedCardId(expandedCardId === id ? null : id);
@@ -153,7 +165,7 @@ const Contacts = () => {
         try {
             await api.delete(`/api/cards/${deleteConfirmCard.id}`);
             showNotification('Kartvizit silindi.', 'success');
-            fetchCards();
+            fetchCards(pagination.currentPage);
             setDeleteConfirmCard(null);
         } catch (error) {
             showNotification('Silme işlemi başarısız: ' + (error.response?.data?.error || error.message), 'error');
@@ -173,7 +185,7 @@ const Contacts = () => {
     const filteredCards = cards; // Filtered by backend now
 
     const handleCardAddedOrUpdated = () => {
-        fetchCards();
+        fetchCards(1);
         setIsModalOpen(false);
         setEditingCard(null);
         setSelectedIds([]);
@@ -199,7 +211,7 @@ const Contacts = () => {
             showNotification(`${selectedIds.length} kart silindi.`, 'success');
             setSelectedIds([]);
             setIsBulkDeleteConfirmOpen(false);
-            fetchCards();
+            fetchCards(pagination.currentPage);
         } catch (error) {
             showNotification('Toplu silme başarısız.', 'error');
         }
@@ -210,7 +222,7 @@ const Contacts = () => {
             await api.post('/api/cards/bulk-visibility', { ids: selectedIds, visibility });
             showNotification(`Görünürlük ${visibility === 'public' ? 'Herkese Açık' : 'Özel'} olarak güncellendi.`, 'success');
             setSelectedIds([]);
-            fetchCards();
+            fetchCards(pagination.currentPage);
         } catch (error) {
             showNotification('Görünürlük güncellenemedi.', 'error');
         }
@@ -227,7 +239,7 @@ const Contacts = () => {
             setSelectedIds([]);
             setIsBulkTagModalOpen(false);
             setSelectedBulkTags([]);
-            fetchCards();
+            fetchCards(pagination.currentPage);
         } catch (error) {
             showNotification('Etiketleme işlemi başarısız.', 'error');
         }
@@ -269,7 +281,7 @@ const Contacts = () => {
             await api.put(`/api/cards/${cardId}`, { notes: editingNoteText });
             showNotification('Not güncellendi.', 'success');
             setEditingNoteId(null);
-            fetchCards();
+            fetchCards(pagination.currentPage);
         } catch (error) {
             showNotification('Not güncellenemedi: ' + (error.response?.data?.error || error.message), 'error');
         }
@@ -298,7 +310,7 @@ const Contacts = () => {
         }
     };
 
-    if (loading) {
+    if (loading && cards.length === 0) {
         return (
             <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
@@ -586,7 +598,12 @@ const Contacts = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--accent-warning)', marginBottom: '5px' }}>
                                                 <FaCalendarCheck color="var(--accent-warning)" />
                                                 <strong style={{ color: 'var(--text-primary)' }}>Hatırlatıcı:</strong>
-                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.reminderDate).toLocaleDateString('tr-TR')}</span>
+                                                <span style={{ color: 'var(--text-secondary)' }}>
+                                                    {(() => {
+                                                        const d = new Date(card.reminderDate);
+                                                        return isNaN(d.getTime()) ? 'Tarih Belirtilmedi' : d.toLocaleDateString('tr-TR');
+                                                    })()}
+                                                </span>
                                             </div>
                                         )}
                                         {card.lastInteractionDate && (
