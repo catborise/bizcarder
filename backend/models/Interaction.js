@@ -20,6 +20,11 @@ const Interaction = sequelize.define('Interaction', {
     notes: {
         type: DataTypes.TEXT,
         allowNull: false
+    },
+    isPinned: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false
     }
 });
 

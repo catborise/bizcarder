@@ -9,7 +9,10 @@ router.get('/:cardId', async (req, res) => {
         const interactions = await Interaction.findAll({
             where: { cardId },
             include: [{ model: User, as: 'author', attributes: ['displayName'] }],
-            order: [['date', 'DESC']]
+            order: [
+                ['isPinned', 'DESC'],
+                ['date', 'DESC']
+            ]
         });
         res.json(interactions);
     } catch (error) {
@@ -78,6 +81,26 @@ router.delete('/:id', async (req, res) => {
 
         await interaction.destroy();
         res.json({ message: 'Kayıt silindi.' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Etkileşim sabitleme/kaldırma
+router.put('/:id/pin', async (req, res) => {
+    try {
+        const interaction = await Interaction.findByPk(req.params.id);
+        if (!interaction) {
+            return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+        }
+
+        // Yetki kontrolü: Sadece admin veya kaydı oluşturan kişi
+        if (req.user.role !== 'admin' && interaction.authorId !== req.user.id) {
+            return res.status(403).json({ error: 'Bu kaydı sabitleme yetkiniz yok.' });
+        }
+
+        await interaction.update({ isPinned: !interaction.isPinned });
+        res.json(interaction);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

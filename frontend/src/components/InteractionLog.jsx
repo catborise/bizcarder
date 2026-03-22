@@ -14,7 +14,9 @@ import {
     FaPlus,
     FaHistory,
     FaTimes,
-    FaCheck
+    FaCheck,
+    FaThumbtack,
+    FaStickyNote
 } from 'react-icons/fa';
 
 const InteractionLog = ({ cardId }) => {
@@ -53,6 +55,7 @@ const InteractionLog = ({ cardId }) => {
             case 'Toplantı': return <FaHandshake style={{ color: 'var(--accent-primary)' }} />;
             case 'E-posta': return <FaEnvelope style={{ color: 'var(--accent-primary)' }} />;
             case 'Sipariş': return <FaShoppingCart style={{ color: 'var(--accent-warning)' }} />;
+            case 'Not': return <FaStickyNote style={{ color: 'var(--accent-warning)' }} />;
             default: return <FaComment style={{ color: 'var(--text-tertiary)' }} />;
         }
     };
@@ -63,10 +66,10 @@ const InteractionLog = ({ cardId }) => {
             case 'Toplantı': return 'var(--accent-primary)';
             case 'E-posta': return 'var(--accent-primary)';
             case 'Sipariş': return 'var(--accent-warning)';
+            case 'Not': return 'var(--accent-warning)';
             default: return 'var(--text-tertiary)';
         }
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -112,6 +115,15 @@ const InteractionLog = ({ cardId }) => {
         }
     };
 
+    const handleTogglePin = async (id) => {
+        try {
+            await api.put(`/api/interactions/${id}/pin`);
+            fetchInteractions();
+        } catch (err) {
+            showNotification('İşlem başarısız.', 'error');
+        }
+    };
+
     const cardContainerStyle = {
         background: 'var(--glass-bg)',
         borderRadius: '16px',
@@ -120,7 +132,6 @@ const InteractionLog = ({ cardId }) => {
         marginTop: '25px'
     };
 
-
     const timelineItemStyle = {
         position: 'relative',
         paddingLeft: '45px',
@@ -128,7 +139,6 @@ const InteractionLog = ({ cardId }) => {
         borderLeft: '2px solid var(--glass-border)',
         marginLeft: '15px'
     };
-
 
     const iconBoxStyle = (type) => ({
         position: 'absolute',
@@ -147,20 +157,20 @@ const InteractionLog = ({ cardId }) => {
         fontSize: '14px'
     });
 
-
-    const itemCardStyle = {
-        background: 'var(--bg-card)',
+    const itemCardStyle = (log) => ({
+        background: log.isPinned ? 'rgba(241, 196, 15, 0.05)' : 'var(--bg-card)',
         backdropFilter: 'blur(10px)',
         borderRadius: '12px',
         padding: '15px',
-        border: '1px solid var(--glass-border)',
+        border: log.isPinned ? '1px solid var(--accent-warning)' : '1px solid var(--glass-border)',
         transition: 'all 0.2s ease',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
-        boxShadow: 'var(--glass-shadow)'
-    };
-
+        boxShadow: log.isPinned ? '0 0 15px rgba(241, 196, 15, 0.2)' : 'var(--glass-shadow)',
+        position: 'relative',
+        overflow: 'hidden'
+    });
 
     const formInputStyle = {
         background: 'var(--bg-input)',
@@ -172,16 +182,14 @@ const InteractionLog = ({ cardId }) => {
         outline: 'none'
     };
 
-
     return (
         <div style={cardContainerStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} /> Görüşme Akışı
+                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} /> Aktivite ve Not Akışı
                 </h3>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{interactions.length} Kayıt</span>
             </div>
-
 
             {/* Yeni Kayıt Formu */}
             <form onSubmit={handleSubmit} style={{
@@ -195,20 +203,18 @@ const InteractionLog = ({ cardId }) => {
                 flexDirection: 'column',
                 gap: '12px'
             }}>
-
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <select
                         value={formData.type}
                         onChange={e => setFormData({ ...formData, type: e.target.value })}
                         style={{ ...formInputStyle, width: '130px', cursor: 'pointer' }}
                     >
-                        <option value="Toplantı" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Toplantı</option>
-                        <option value="Arama" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Arama</option>
-                        <option value="E-posta" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>E-posta</option>
-                        <option value="Sipariş" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Sipariş</option>
-                        <option value="Not" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Diğer / Not</option>
+                        <option value="Toplantı">Toplantı</option>
+                        <option value="Arama">Arama</option>
+                        <option value="E-posta">E-posta</option>
+                        <option value="Sipariş">Sipariş</option>
+                        <option value="Not">Not / Bilgi</option>
                     </select>
-
                     <input
                         type="date"
                         value={formData.date}
@@ -218,7 +224,7 @@ const InteractionLog = ({ cardId }) => {
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <textarea
-                        placeholder="Görüşme detaylarını girin..."
+                        placeholder="Not veya görüşme detayı girin..."
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
                         required
@@ -240,19 +246,16 @@ const InteractionLog = ({ cardId }) => {
                     }}>
                         <FaPlus /> Ekle
                     </button>
-
                 </div>
             </form>
 
-            {/* Timeline Akışı */}
             <div style={{ maxHeight: '500px', overflowY: 'auto', paddingRight: '10px' }}>
                 {interactions.length === 0 && !isLoading && (
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
                         <FaComment style={{ fontSize: '2rem', marginBottom: '10px', opacity: 0.5 }} />
-                        <p>Henüz bir görüşme kaydı bulunmuyor.</p>
+                        <p>Henüz bir kayıt bulunmuyor.</p>
                     </div>
                 )}
-
 
                 {interactions.map((log, index) => (
                     <div key={log.id} style={{
@@ -263,7 +266,26 @@ const InteractionLog = ({ cardId }) => {
                             {getIcon(log.type)}
                         </div>
 
-                        <div style={itemCardStyle}>
+                        <div style={itemCardStyle(log)}>
+                            {log.isPinned && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '0',
+                                    right: '0',
+                                    width: '30px',
+                                    height: '30px',
+                                    background: 'var(--accent-warning)',
+                                    color: 'black',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+                                    paddingLeft: '8px',
+                                    paddingBottom: '8px'
+                                }}>
+                                    <FaThumbtack size={10} />
+                                </div>
+                            )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     {editingId === log.id ? (
@@ -272,17 +294,16 @@ const InteractionLog = ({ cardId }) => {
                                             onChange={e => setEditForm({ ...editForm, type: e.target.value })}
                                             style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                         >
-                                            <option value="Toplantı" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Toplantı</option>
-                                            <option value="Arama" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Arama</option>
-                                            <option value="E-posta" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>E-posta</option>
-                                            <option value="Sipariş" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Sipariş</option>
-                                            <option value="Not" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Not</option>
+                                            <option value="Toplantı">Toplantı</option>
+                                            <option value="Arama">Arama</option>
+                                            <option value="E-posta">E-posta</option>
+                                            <option value="Sipariş">Sipariş</option>
+                                            <option value="Not">Not</option>
                                         </select>
-
                                     ) : (
                                         <span style={{
                                             fontSize: '0.75rem',
-                                            background: `var(--glass-bg)`,
+                                            background: `rgba(255,255,255,0.05)`,
                                             color: getTypeColor(log.type),
                                             padding: '3px 8px',
                                             borderRadius: '20px',
@@ -302,45 +323,50 @@ const InteractionLog = ({ cardId }) => {
                                             />
                                         ) : new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </span>
-
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    {(user?.role === 'admin' || log.authorId === user?.id) && (
+                                    {user?.role === 'admin' || log.authorId === user?.id ? (
                                         <>
                                             {editingId === log.id ? (
                                                 <>
-                                                    <button onClick={() => handleUpdate(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-success)', cursor: 'pointer' }} title="Kaydet"><FaCheck /></button>
-                                                    <button onClick={() => setEditingId(null)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer' }} title="İptal"><FaTimes /></button>
+                                                    <button onClick={() => handleUpdate(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-success)', cursor: 'pointer' }}><FaCheck /></button>
+                                                    <button onClick={() => setEditingId(null)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer' }}><FaTimes /></button>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <button onClick={() => startEdit(log)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', transition: '0.2s' }} title="Düzenle"><FaEdit /></button>
-                                                    <button onClick={() => setDeleteConfirmId(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', transition: '0.2s' }} title="Sil"><FaTrash /></button>
+                                                    <button 
+                                                        onClick={() => handleTogglePin(log.id)} 
+                                                        style={{ background: 'transparent', border: 'none', color: log.isPinned ? 'var(--accent-warning)' : 'var(--text-tertiary)', cursor: 'pointer' }}
+                                                        title={log.isPinned ? "Sabitlemeyi Kaldır" : "Sabitle"}
+                                                    >
+                                                        <FaThumbtack />
+                                                    </button>
+                                                    <button onClick={() => startEdit(log)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><FaEdit /></button>
+                                                    <button onClick={() => setDeleteConfirmId(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><FaTrash /></button>
                                                 </>
                                             )}
                                         </>
+                                    ) : (
+                                        log.isPinned && <FaThumbtack style={{ color: 'var(--accent-warning)' }} />
                                     )}
                                 </div>
-
                             </div>
 
                             {editingId === log.id ? (
                                 <textarea
                                     value={editForm.notes}
                                     onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
-                                    style={{ ...formInputStyle, marginTop: '5px', minHeight: '60px' }}
+                                    style={{ ...formInputStyle, marginTop: '10px', minHeight: '80px', width: '100%', resize: 'vertical' }}
                                 />
                             ) : (
-                                <p style={{ margin: '5px 0', color: 'var(--text-primary)', lineHeight: '1.5', fontSize: '0.95rem' }}>{log.notes}</p>
+                                <p style={{ margin: '8px 0', color: 'var(--text-primary)', lineHeight: '1.6', fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{log.notes}</p>
                             )}
-
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '5px' }}>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
                                     {log.author?.displayName || 'Sistem'} tarafından kaydedildi
                                 </span>
                             </div>
-
                         </div>
                     </div>
                 ))}

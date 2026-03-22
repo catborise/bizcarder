@@ -19,9 +19,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const Contacts = () => {
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
-    const [expandedNotesId, setExpandedNotesId] = useState(null);
-    const [editingNoteId, setEditingNoteId] = useState(null);
-    const [editingNoteText, setEditingNoteText] = useState('');
 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOption, setSortOption] = useState('newest');
@@ -273,17 +270,6 @@ const Contacts = () => {
             showNotification('vCard indirildi.', 'success');
         } catch (error) {
             showNotification('İndirme başarısız.', 'error');
-        }
-    };
-
-    const handleQuickNoteUpdate = async (cardId) => {
-        try {
-            await api.put(`/api/cards/${cardId}`, { notes: editingNoteText });
-            showNotification('Not güncellendi.', 'success');
-            setEditingNoteId(null);
-            fetchCards(pagination.currentPage);
-        } catch (error) {
-            showNotification('Not güncellenemedi: ' + (error.response?.data?.error || error.message), 'error');
         }
     };
 
@@ -623,11 +609,10 @@ const Contacts = () => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px', padding: '10px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                                    <button onClick={() => toggleNotes(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '8px 12px', fontSize: '0.85rem' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><FaStickyNote /> Notlar</span>
-                                        {expandedNotesId === card.id ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+                                    <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '10px 12px', fontSize: '0.9rem', border: '1px solid var(--accent-warning)', background: expandedCardId === card.id ? 'var(--glass-bg-hover)' : 'transparent' }}>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> Aktivite ve Notlar</span>
+                                        {expandedCardId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
                                     </button>
-                                    <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-primary)', padding: '8px 12px', fontSize: '0.85rem' }}><FaClock /> Görüşmeler</button>
                                     
                                     {/* Hızlı Takip Butonları */}
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
@@ -668,36 +653,8 @@ const Contacts = () => {
                                 </div>
                             </div>
 
-                            {expandedNotesId === card.id && (
-                                <div style={{ marginTop: '20px', padding: '20px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)', position: 'relative' }}>
-                                    <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'linear-gradient(to bottom, var(--accent-warning), var(--accent-error))' }}></div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote color="var(--accent-warning)" size={18} /><strong>Kart Notları</strong></div>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            {!editingNoteId ? (
-                                                <>
-                                                    <button onClick={() => { navigator.clipboard.writeText(card.notes || ''); showNotification('Kopyalandı', 'success'); }} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><FaCopy /> Kopyala</button>
-                                                    <button onClick={() => { setEditingNoteId(card.id); setEditingNoteText(card.notes || ''); }} style={{ background: 'var(--glass-bg-hover)', color: 'var(--accent-warning)', border: '1px solid var(--accent-warning)', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer' }}><FaEdit /> Düzenle</button>
-                                                </>
-                                            ) : (
-                                                <div style={{ display: 'flex', gap: '5px' }}>
-                                                    <button onClick={() => setEditingNoteId(null)} style={{ background: 'var(--glass-bg-hover)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer' }}>İptal</button>
-                                                    <button onClick={() => handleQuickNoteUpdate(card.id)} style={{ background: 'var(--accent-success)', color: 'var(--bg-card)', border: 'none', padding: '5px 12px', borderRadius: '6px', cursor: 'pointer' }}><FaSave /> Kaydet</button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    {editingNoteId === card.id ? (
-                                        <textarea value={editingNoteText} onChange={(e) => setEditingNoteText(e.target.value)} style={{ width: '100%', minHeight: '120px', background: 'var(--bg-input)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--text-primary)', padding: '12px' }} autoFocus />
-                                    ) : (
-                                        <p style={{ margin: 0, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>{card.notes || 'Not eklenmemiş.'}</p>
-                                    )}
-                                </div>
-                            )}
-
                             {expandedCardId === card.id && (
                                 <div style={{ marginTop: '15px', padding: '20px', background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                                    <h4 style={{ margin: '0 0 15px 0', fontSize: '1rem', color: 'var(--accent-primary)' }}>Son Etkileşimler</h4>
                                     <InteractionLog cardId={card.id} />
                                 </div>
                             )}
