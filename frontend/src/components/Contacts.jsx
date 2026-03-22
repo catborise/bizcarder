@@ -350,7 +350,7 @@ const Contacts = () => {
 
     return (
         <div className="fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+            <div className="contacts-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <h2 style={{
                     margin: 0,
                     fontSize: '1.8rem',
@@ -479,7 +479,7 @@ const Contacts = () => {
                             border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
                             backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)'
                         }}>
-                            <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                            <div className="contact-card" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
                                 {/* Row Checkbox */}
                                 <div style={{ display: 'flex', alignItems: 'center', height: '120px' }}>
                                     <input 
@@ -493,19 +493,20 @@ const Contacts = () => {
                                 {card.frontImageUrl ? (
                                     <div
                                         onClick={() => setSelectedImageCard(card)}
-                                        style={{ width: '200px', height: '120px', backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
+                                        className="card-image-container"
+                                        style={{ backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.8 }}>v{card.version || 1}</div>
                                     </div>
                                 ) : (
-                                    <div style={{ width: '200px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
+                                    <div className="card-image-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
                                         <FaIdCard size={64} style={{ opacity: 0.5 }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.5 }}>v{card.version || 1}</div>
                                     </div>
                                 )}
 
-                                <div style={{ flex: 1, minWidth: '300px' }}>
+                                <div className="card-info-container" style={{ flex: 1, minWidth: '300px' }}>
                                     <h3 style={{ margin: '0 0 4px 0', fontSize: '1.2em', color: 'var(--text-primary)', fontWeight: '600' }}>{card.firstName} {card.lastName}</h3>
                                     <p style={{ margin: '0 0 10px 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.95em', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
@@ -608,7 +609,7 @@ const Contacts = () => {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px', padding: '10px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                                <div className="card-actions-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', minWidth: '150px', padding: '10px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
                                     <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '10px 12px', fontSize: '0.9rem', border: '1px solid var(--accent-warning)', background: expandedCardId === card.id ? 'var(--glass-bg-hover)' : 'transparent' }}>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> Aktivite ve Notlar</span>
                                         {expandedCardId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}

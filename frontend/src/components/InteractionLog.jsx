@@ -258,7 +258,7 @@ const InteractionLog = ({ cardId }) => {
                 )}
 
                 {interactions.map((log, index) => (
-                    <div key={log.id} style={{
+                    <div key={log.id} className="timeline-item" style={{
                         ...timelineItemStyle,
                         borderLeft: index === interactions.length - 1 ? 'none' : timelineItemStyle.borderLeft
                     }}>
@@ -266,7 +266,7 @@ const InteractionLog = ({ cardId }) => {
                             {getIcon(log.type)}
                         </div>
 
-                        <div style={itemCardStyle(log)}>
+                        <div className="interaction-card" style={itemCardStyle(log)}>
                             {log.isPinned && (
                                 <div style={{
                                     position: 'absolute',

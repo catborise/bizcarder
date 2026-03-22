@@ -37,7 +37,7 @@ const SearchBar = ({
     return (
         <div style={{ marginBottom: '25px' }}>
             {/* Main Search Bar */}
-            <div style={{
+            <div className="search-bar-container" style={{
                 display: 'flex',
                 gap: '15px',
                 padding: '18px',
@@ -141,7 +141,7 @@ const SearchBar = ({
 
             {/* Advanced Filters Panel */}
             {isAdvancedOpen && (
-                <div style={{
+                <div className="advanced-filters-panel" style={{
                     marginTop: '10px',
                     padding: '20px',
                     background: 'var(--glass-bg)',
