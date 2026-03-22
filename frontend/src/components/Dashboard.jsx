@@ -195,9 +195,7 @@ const Dashboard = () => {
     return (
         <div className="fade-in">
             {settings?.appBanner && (
-                <div style={{
-                    width: '100%',
-                    height: '250px',
+                <div className="dashboard-banner" style={{
                     borderRadius: '24px',
                     overflow: 'hidden',
                     marginBottom: '40px',
@@ -218,7 +216,7 @@ const Dashboard = () => {
                             transition: 'all 0.4s ease'
                         }}
                     />
-                    <div style={{
+                    <div className="dashboard-banner-content" style={{
                         position: 'absolute',
                         bottom: 0,
                         left: 0,
@@ -242,7 +240,7 @@ const Dashboard = () => {
                     </div>
                 </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+            <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <h2 style={{
                     margin: 0,
                     fontWeight: '700',
@@ -305,7 +303,7 @@ const Dashboard = () => {
             </div>
 
             {/* İstatistikler (Glass Container) */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '20px', marginBottom: '40px' }}>
+            <div className="dashboard-stats-grid">
                 <div style={{
                     background: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
@@ -403,10 +401,7 @@ const Dashboard = () => {
 
 
             {/* Core Application Tiles - Always at top, under stats */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '20px',
+            <div className="dashboard-tiles-grid-3col" style={{
                 marginBottom: '40px'
             }}>
                 {tiles
@@ -450,11 +445,7 @@ const Dashboard = () => {
             </div>
 
             {/* Custom/Other Tiles Grid */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '20px'
-            }}>
+            <div className="dashboard-tiles-grid">
                 {tiles
                     .filter(t => !['/contacts', '/logs', '/import'].includes(t.url))
                     .map((tile) => {

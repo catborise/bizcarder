@@ -23,7 +23,7 @@ const UserMenu = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '8px',
-                    padding: '8px 16px',
+                    padding: '8px 12px',
                     backgroundColor: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
                     color: 'var(--text-primary)',
@@ -44,7 +44,7 @@ const UserMenu = () => {
                 }}
             >
                 <FaUser size={16} />
-                <span style={{ fontWeight: 500 }}>{user.displayName || user.username}</span>
+                <span className="user-name-text" style={{ fontWeight: 500 }}>{user.displayName || user.username}</span>
                 <FaChevronDown size={12} style={{
                     transform: showDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s ease',

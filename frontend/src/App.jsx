@@ -241,7 +241,7 @@ const AppContent = () => {
                 justifyContent: 'space-between',
                 alignItems: 'center'
             }}>
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+                <div className="nav-brand-group" style={{ display: 'flex', alignItems: 'center' }}>
                     <Link
                         to="/"
                         style={{
@@ -252,7 +252,8 @@ const AppContent = () => {
                             letterSpacing: '-0.02em',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px'
+                            gap: '12px',
+                            minWidth: 0
                         }}
                     >
                         {settings.companyLogo ? (
@@ -265,15 +266,16 @@ const AppContent = () => {
                                     background: 'var(--bg-card)',
                                     padding: '3px',
                                     border: '1px solid var(--glass-border)',
-                                    boxShadow: 'var(--glass-shadow)'
+                                    boxShadow: 'var(--glass-shadow)',
+                                    flexShrink: 0
                                 }}
                             />
                         ) : (
-                            <span style={{ fontSize: '1.8rem' }}>🏢</span>
+                            <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>🏢</span>
                         )}
-                        {settings.companyName || 'CRM'}
+                        <span className="navbar-logo-text">{settings.companyName || 'CRM'}</span>
                     </Link>
-                    <div style={{ display: 'flex', gap: '1.5rem' }}>
+                    <div className="nav-links">
                         <Link
                             to="/"
                             style={{
@@ -339,10 +341,13 @@ const AppContent = () => {
                         </Link>
                     </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <ThemeToggle />
+                <div className="nav-actions">
+                    <div className="theme-toggle-nav">
+                        <ThemeToggle />
+                    </div>
                     <Link
                         to="/trash"
+                        className="trash-link-nav"
                         style={{
                             color: 'var(--text-secondary)',
                             padding: '0.5rem',
@@ -390,13 +395,7 @@ const AppContent = () => {
             </nav>
 
             {/* Main Content Area */}
-            <main style={{
-                padding: '2rem',
-                maxWidth: '1400px',
-                margin: '0 auto',
-                flex: 1,
-                width: '100%'
-            }}>
+            <main>
 
                 <Routes>
                     <Route path="/" element={<Dashboard />} />
