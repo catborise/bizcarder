@@ -83,6 +83,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         visibility: 'private',
         reminderDate: '',
         tags: [],
+        newTagName: '',
+        showNewTagInput: false,
         leadStatus: 'Cold',
         priority: 1,
         source: ''
@@ -1036,33 +1038,98 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     }}>
                                         {tagsLoading ? (
                                             <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Etiketler yükleniyor...</span>
-                                        ) : availableTags && availableTags.length > 0 ? availableTags.map(tag => (
-                                            <button
-                                                key={tag.id}
-                                                type="button"
-                                                onClick={() => {
-                                                    const newTags = formData.tags.includes(tag.id)
-                                                        ? formData.tags.filter(id => id !== tag.id)
-                                                        : [...formData.tags, tag.id];
-                                                    setFormData(prev => ({ ...prev, tags: newTags }));
-                                                }}
-                                                style={{
-                                                    padding: '4px 12px',
-                                                    borderRadius: '20px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600',
-                                                    cursor: 'pointer',
-                                                    border: '1px solid',
-                                                    borderColor: formData.tags.includes(tag.id) ? tag.color : 'var(--glass-border)',
-                                                    background: formData.tags.includes(tag.id) ? tag.color : 'transparent',
-                                                    color: formData.tags.includes(tag.id) ? 'white' : 'var(--text-secondary)',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                            >
-                                                {tag.name}
-                                            </button>
-                                        )) : (
-                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Henüz etiket tanımlanmamış. Ayarlardan oluşturabilirsiniz.</span>
+                                        ) : (
+                                            <>
+                                                {availableTags && availableTags.length > 0 && availableTags.map(tag => (
+                                                    <button
+                                                        key={tag.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const newTags = formData.tags.includes(tag.id)
+                                                                ? formData.tags.filter(id => id !== tag.id)
+                                                                : [...formData.tags, tag.id];
+                                                            setFormData(prev => ({ ...prev, tags: newTags }));
+                                                        }}
+                                                        style={{
+                                                            padding: '4px 12px',
+                                                            borderRadius: '20px',
+                                                            fontSize: '12px',
+                                                            fontWeight: '600',
+                                                            cursor: 'pointer',
+                                                            border: '1px solid',
+                                                            borderColor: formData.tags.includes(tag.id) ? tag.color : 'var(--glass-border)',
+                                                            background: formData.tags.includes(tag.id) ? tag.color : 'transparent',
+                                                            color: formData.tags.includes(tag.id) ? 'white' : 'var(--text-secondary)',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        {tag.name}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, showNewTagInput: !prev.showNewTagInput }))}
+                                                    style={{
+                                                        padding: '4px 12px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '12px',
+                                                        fontWeight: '600',
+                                                        cursor: 'pointer',
+                                                        border: '1px dashed var(--accent-primary)',
+                                                        background: 'transparent',
+                                                        color: 'var(--accent-primary)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px'
+                                                    }}
+                                                >
+                                                    {formData.showNewTagInput ? '×' : '+ Yeni'}
+                                                </button>
+                                                {formData.showNewTagInput && (
+                                                    <div style={{ display: 'flex', gap: '5px', width: '100%', marginTop: '5px' }}>
+                                                        <input 
+                                                            type="text" 
+                                                            placeholder="Etiket adı..." 
+                                                            value={formData.newTagName}
+                                                            onChange={(e) => setFormData(prev => ({ ...prev, newTagName: e.target.value }))}
+                                                            style={{ ...inputStyle, flex: 1, padding: '5px 10px', height: '32px', fontSize: '12px' }}
+                                                        />
+                                                        <button 
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                if (!formData.newTagName.trim()) return;
+                                                                try {
+                                                                    const res = await api.post('/api/tags', { 
+                                                                        name: formData.newTagName,
+                                                                        color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+                                                                    });
+                                                                    setAvailableTags(prev => [...prev, res.data]);
+                                                                    setFormData(prev => ({ 
+                                                                        ...prev, 
+                                                                        tags: [...prev.tags, res.data.id],
+                                                                        newTagName: '',
+                                                                        showNewTagInput: false
+                                                                    }));
+                                                                    showNotification('Etiket oluşturuldu.', 'success');
+                                                                } catch (err) {
+                                                                    showNotification('Etiket oluşturulamadı.', 'error');
+                                                                }
+                                                            }}
+                                                            style={{ 
+                                                                padding: '0 10px', 
+                                                                background: 'var(--accent-primary)', 
+                                                                color: 'var(--bg-card)', 
+                                                                border: 'none', 
+                                                                borderRadius: '8px', 
+                                                                fontSize: '12px', 
+                                                                cursor: 'pointer' 
+                                                            }}
+                                                        >
+                                                            Ekle
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </>
                                         )}
                                     </div>
                                 </div>

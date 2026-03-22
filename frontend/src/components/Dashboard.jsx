@@ -61,6 +61,7 @@ const tileStyle = {
 const Dashboard = () => {
     const { theme } = useTheme();
     const [stats, setStats] = useState({ totalCards: 0 });
+    const [tagStats, setTagStats] = useState([]);
     const [tiles, setTiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -88,7 +89,7 @@ const Dashboard = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const urls = ['/api/cards/stats', '/api/db-tiles', '/api/settings'];
+            const urls = ['/api/cards/stats', '/api/db-tiles', '/api/settings', '/api/tags/stats'];
             if (isAuthenticated) {
                 urls.push('/api/cards/due-reminders');
             }
@@ -98,6 +99,7 @@ const Dashboard = () => {
             setStats(responses[0].data);
             setTiles(responses[1].data);
             setSettings(responses[2].data);
+            setTagStats(responses[3].data);
 
             if (isAuthenticated && responses[2]) {
                 setDueReminders(responses[3].data);
@@ -303,43 +305,99 @@ const Dashboard = () => {
             </div>
 
             {/* İstatistikler (Glass Container) */}
-            <div style={{
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '20px',
-                padding: '30px',
-                marginBottom: '40px',
-                color: 'var(--text-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                boxShadow: 'var(--glass-shadow)'
-            }}>
-                <div>
-                    <h3 style={{
-                        margin: 0,
-                        fontSize: '1.3rem',
-                        fontWeight: '600',
-                        marginBottom: '5px',
-                        color: 'var(--text-primary)'
-                    }}>
-                        Kayıtlı Kartvizitler
-                    </h3>
-                    <p style={{
-                        margin: 0,
-                        fontSize: '0.95rem',
-                        color: 'var(--text-secondary)'
-                    }}>
-                        Kayıtlı kartvizit sayısı
-                    </p>
-                </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 2fr', gap: '20px', marginBottom: '40px' }}>
                 <div style={{
-                    fontSize: '4rem',
-                    fontWeight: '700',
-                    color: 'var(--accent-primary)'
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '20px',
+                    padding: '30px',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: 'var(--glass-shadow)'
                 }}>
-                    {loading ? '...' : stats.totalCards}
+                    <div>
+                        <h3 style={{
+                            margin: 0,
+                            fontSize: '1.3rem',
+                            fontWeight: '600',
+                            marginBottom: '5px',
+                            color: 'var(--text-primary)'
+                        }}>
+                            Kayıtlı Kartlar
+                        </h3>
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.9rem',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            Toplam kartvizit
+                        </p>
+                    </div>
+                    <div style={{
+                        fontSize: '3.5rem',
+                        fontWeight: '700',
+                        color: 'var(--accent-primary)'
+                    }}>
+                        {loading ? '...' : stats.totalCards}
+                    </div>
+                </div>
+
+                <div style={{
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '20px',
+                    padding: '25px',
+                    color: 'var(--text-primary)',
+                    boxShadow: 'var(--glass-shadow)',
+                    overflow: 'hidden'
+                }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>En Çok Kullanılan Etiketler</h3>
+                        <Link to="/contacts" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Tümünü Gör</Link>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                        {loading ? 'Yükleniyor...' : (
+                            tagStats.length > 0 ? (
+                                tagStats.map(tag => (
+                                    <Link 
+                                        key={tag.id} 
+                                        to={`/contacts?tagId=${tag.id}`}
+                                        style={{ 
+                                            padding: '8px 15px', 
+                                            borderRadius: '12px', 
+                                            background: tag.color + '1A', // %10 alpha for background
+                                            border: `1px solid ${tag.color}40`,
+                                            color: 'var(--text-primary)',
+                                            textDecoration: 'none',
+                                            fontSize: '0.9rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            transition: 'all 0.2s ease'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.background = tag.color + '33';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.background = tag.color + '1A';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color }}></span>
+                                        {tag.name}
+                                        <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>({tag.getDataValue ? tag.getDataValue('cardCount') : tag.cardCount})</span>
+                                    </Link>
+                                ))
+                            ) : (
+                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Henüz etiket bulunmuyor.</p>
+                            )
+                        )}
+                    </div>
                 </div>
             </div>
 

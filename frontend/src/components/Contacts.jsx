@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api, { API_URL } from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../utils/offlineStore';
@@ -52,6 +53,8 @@ const Contacts = () => {
     const [selectedBulkTags, setSelectedBulkTags] = useState([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const { showNotification } = useNotification();
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -112,16 +115,25 @@ const Contacts = () => {
     };
 
     useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tagId = params.get('tagId');
+        if (tagId) {
+            setAdvancedFilters(prev => ({ ...prev, tagId }));
+        }
         fetchAvailableFilters();
-    }, []);
+    }, [location.search]);
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
             fetchCards(1);
         }, 500);
-
         return () => clearTimeout(delayDebounceFn);
-    }, [searchTerm, sortOption, advancedFilters]);
+    }, [searchTerm]);
+
+    useEffect(() => {
+        if (searchTerm) return; // Debounce effect handles search
+        fetchCards(pagination.currentPage);
+    }, [sortOption, advancedFilters, pagination.currentPage]);
 
     const toggleDetails = (id) => {
         setExpandedCardId(expandedCardId === id ? null : id);
@@ -529,9 +541,42 @@ const Contacts = () => {
                                         )}
                                         {card.tags && card.tags.length > 0 && (
                                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                                {card.tags.map(tag => (
-                                                    <span key={tag.id} style={{ padding: '2px 10px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '700', background: tag.color || 'var(--accent-primary)', color: 'var(--bg-card)' }}>{tag.name}</span>
-                                                ))}
+                                                {card.tags.map(tag => {
+                                                    // Determine if text should be light or dark based on background color
+                                                    const isLight = (color) => {
+                                                        if (!color || color.length < 7) return true;
+                                                        const hex = color.replace('#', '');
+                                                        const r = parseInt(hex.substring(0, 2), 16);
+                                                        const g = parseInt(hex.substring(2, 4), 16);
+                                                        const b = parseInt(hex.substring(4, 6), 16);
+                                                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                                                        return brightness > 155;
+                                                    };
+                                                    
+                                                    return (
+                                                        <span 
+                                                            key={tag.id} 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/contacts?tagId=${tag.id}`);
+                                                            }}
+                                                            style={{ 
+                                                                padding: '2px 10px', 
+                                                                borderRadius: '12px', 
+                                                                fontSize: '0.7rem', 
+                                                                fontWeight: '700', 
+                                                                background: tag.color || 'var(--accent-primary)', 
+                                                                color: isLight(tag.color) ? '#000' : '#fff',
+                                                                cursor: 'pointer',
+                                                                transition: 'transform 0.2s ease'
+                                                            }}
+                                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                                        >
+                                                            {tag.name}
+                                                        </span>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
