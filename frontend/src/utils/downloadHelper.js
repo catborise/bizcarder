@@ -1,4 +1,4 @@
-/**
+ /**
  * Tarayıcılar arası dosya indirme işlemini yönetir.
  * Chrome'daki 'blob' olarak inme sorununu gidermek için zamanlama ve MIME tipi kontrolü eklenmiştir.
  */

@@ -5,7 +5,9 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import ReminderModal from './ReminderModal';
+import ConfirmModal from './ConfirmModal';
 import { useTheme } from '../context/ThemeContext';
+import { useNotification } from '../context/NotificationContext';
 
 const hexToRgba = (hex, alpha = 0.3) => {
     let r = 0, g = 0, b = 0;
@@ -62,6 +64,7 @@ const Dashboard = () => {
     const [tiles, setTiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [deleteConfirmTileId, setDeleteConfirmTileId] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [currentTile, setCurrentTile] = useState(null);
     const [settings, setSettings] = useState(null);
@@ -79,6 +82,7 @@ const Dashboard = () => {
 
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
+    const { showNotification } = useNotification();
     const isAdmin = user?.role === 'admin';
 
     const fetchData = async () => {
@@ -122,20 +126,22 @@ const Dashboard = () => {
             } else {
                 await api.post('/api/db-tiles', formData);
             }
-            setShowModal(false);
             fetchData();
+            showNotification('Kutucuk başarıyla kaydedildi.', 'success');
         } catch (error) {
-            alert('Kaydedilirken hata oluştu: ' + (error.response?.data?.error || error.message));
+            showNotification('Kaydedilirken hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
         }
     };
 
-    const handleDeleteTile = async (id) => {
-        if (!window.confirm('Bu kutucuğu silmek istediğinize emin misiniz?')) return;
+    const handleDeleteTile = async () => {
+        if (!deleteConfirmTileId) return;
         try {
-            await api.delete(`/api/db-tiles/${id}`);
+            await api.delete(`/api/db-tiles/${deleteConfirmTileId}`);
+            setDeleteConfirmTileId(null);
             fetchData();
+            showNotification('Kutucuk silindi.', 'success');
         } catch (error) {
-            alert('Silinirken hata oluştu: ' + (error.response?.data?.error || error.message));
+            showNotification('Silinirken hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
         }
     };
 
@@ -463,7 +469,7 @@ const Dashboard = () => {
                                             <Icons.FaEdit size={14} />
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteTile(tile.id)}
+                                            onClick={() => setDeleteConfirmTileId(tile.id)}
                                             style={{
                                                 background: 'var(--accent-error)',
                                                 opacity: 0.8,
@@ -674,7 +680,13 @@ const Dashboard = () => {
                 />
             )}
 
-            {/* Modal removed as it's now a standalone page */}
+            <ConfirmModal 
+                isOpen={!!deleteConfirmTileId}
+                onClose={() => setDeleteConfirmTileId(null)}
+                onConfirm={handleDeleteTile}
+                title="Kutucuğu Sil"
+                message="Bu kutucuğu silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
+            />
         </div>
     );
 };

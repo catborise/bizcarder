@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
 import {
     FaPhone,
     FaHandshake,
@@ -22,6 +23,7 @@ const InteractionLog = ({ cardId }) => {
     const [interactions, setInteractions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
     const [editForm, setEditForm] = useState({ type: '', notes: '', date: '' });
 
     const [formData, setFormData] = useState({
@@ -78,10 +80,11 @@ const InteractionLog = ({ cardId }) => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Bu kaydı silmek istediğinize emin misiniz?')) return;
+    const handleDelete = async () => {
+        if (!deleteConfirmId) return;
         try {
-            await api.delete(`/api/interactions/${id}`);
+            await api.delete(`/api/interactions/${deleteConfirmId}`);
+            setDeleteConfirmId(null);
             showNotification('Kayıt silindi.', 'success');
             fetchInteractions();
         } catch (err) {
@@ -312,7 +315,7 @@ const InteractionLog = ({ cardId }) => {
                                             ) : (
                                                 <>
                                                     <button onClick={() => startEdit(log)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', transition: '0.2s' }} title="Düzenle"><FaEdit /></button>
-                                                    <button onClick={() => handleDelete(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', transition: '0.2s' }} title="Sil"><FaTrash /></button>
+                                                    <button onClick={() => setDeleteConfirmId(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', transition: '0.2s' }} title="Sil"><FaTrash /></button>
                                                 </>
                                             )}
                                         </>
@@ -342,6 +345,14 @@ const InteractionLog = ({ cardId }) => {
                     </div>
                 ))}
             </div>
+
+            <ConfirmModal 
+                isOpen={!!deleteConfirmId}
+                onClose={() => setDeleteConfirmId(null)}
+                onConfirm={handleDelete}
+                title="Kaydı Sil"
+                message="Bu görüşme kaydını silmek istediğinize emin misiniz?"
+            />
         </div>
     );
 };

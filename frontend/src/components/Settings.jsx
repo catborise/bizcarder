@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import ConfirmModal from './ConfirmModal';
 
 const PasswordChangeForm = ({ showNotification }) => {
     const [formData, setFormData] = useState({
@@ -140,6 +141,7 @@ const Settings = () => {
     });
 
     const [editingTag, setEditingTag] = useState(null);
+    const [deleteTagConfirmId, setDeleteTagConfirmId] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -274,10 +276,11 @@ const Settings = () => {
         }
     };
 
-    const handleDeleteTag = async (id) => {
-        if (!window.confirm('Bu etiketi silmek istediğinize emin misiniz?')) return;
+    const handleDeleteTag = async () => {
+        if (!deleteTagConfirmId) return;
         try {
-            await api.delete(`/api/tags/${id}`);
+            await api.delete(`/api/tags/${deleteTagConfirmId}`);
+            setDeleteTagConfirmId(null);
             showNotification('Etiket silindi.', 'success');
             refreshTags();
         } catch (error) {
@@ -725,12 +728,20 @@ const Settings = () => {
                             </div>
                             <div style={{ display: 'flex', gap: '8px' }}>
                                 <button onClick={() => { setEditingTag(tag); setTagForm({ name: tag.name, color: tag.color }); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>✏️</button>
-                                <button onClick={() => handleDeleteTag(tag.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
+                                <button onClick={() => setDeleteTagConfirmId(tag.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
                             </div>
                         </div>
                     ))}
                 </div>
             </div>
+
+            <ConfirmModal 
+                isOpen={!!deleteTagConfirmId}
+                onClose={() => setDeleteTagConfirmId(null)}
+                onConfirm={handleDeleteTag}
+                title="Etiketi Sil"
+                message="Bu etiketi silmek istediğinize emin misiniz? Bu etikete sahip kartvizitlerdeki etiket ilişkisi kaldırılacaktır."
+            />
         </div >
     );
 };

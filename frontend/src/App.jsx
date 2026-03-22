@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import ActivityLogs from './components/ActivityLogs';
 import UserManagement from './components/UserManagement';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
@@ -31,6 +31,7 @@ import Contacts from './components/Contacts';
 const AppContent = () => {
     const { isAuthenticated, user: currentUser } = useAuth();
     const { showNotification } = useNotification();
+    const location = useLocation();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -276,18 +277,20 @@ const AppContent = () => {
                         <Link
                             to="/"
                             style={{
-                                color: 'var(--text-primary)',
+                                color: location.pathname === '/' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                                background: location.pathname === '/' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                border: location.pathname === '/' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
                                 padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500',
+                                fontWeight: location.pathname === '/' ? '600' : '500',
                                 opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--glass-bg-hover)';
+                                if (location.pathname !== '/') e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'transparent';
+                                if (location.pathname !== '/') e.target.style.background = 'transparent';
                             }}
                         >
                             Dashboard
@@ -295,18 +298,20 @@ const AppContent = () => {
                         <Link
                             to="/contacts"
                             style={{
-                                color: 'var(--text-primary)',
+                                color: location.pathname === '/contacts' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                                background: location.pathname === '/contacts' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                border: location.pathname === '/contacts' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
                                 padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500',
+                                fontWeight: location.pathname === '/contacts' ? '600' : '500',
                                 opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--glass-bg-hover)';
+                                if (location.pathname !== '/contacts') e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'transparent';
+                                if (location.pathname !== '/contacts') e.target.style.background = 'transparent';
                             }}
                         >
                             Kartvizitler
@@ -314,18 +319,20 @@ const AppContent = () => {
                         <Link
                             to="/my-card"
                             style={{
-                                color: 'var(--text-primary)',
+                                color: location.pathname === '/my-card' ? 'var(--accent-primary)' : 'var(--text-primary)',
+                                background: location.pathname === '/my-card' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                border: location.pathname === '/my-card' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
                                 padding: '0.4rem 0.8rem',
                                 borderRadius: '8px',
                                 transition: 'all 0.2s ease',
-                                fontWeight: '500',
+                                fontWeight: location.pathname === '/my-card' ? '600' : '500',
                                 opacity: 0.9
                             }}
                             onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--glass-bg-hover)';
+                                if (location.pathname !== '/my-card') e.target.style.background = 'var(--glass-bg-hover)';
                             }}
                             onMouseLeave={(e) => {
-                                e.target.style.background = 'transparent';
+                                if (location.pathname !== '/my-card') e.target.style.background = 'transparent';
                             }}
                         >
                             Kartım

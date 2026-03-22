@@ -7,6 +7,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { BusinessCard, User, BusinessCardHistory, Tag } = require('../models');
+const { toTitleCase } = require('../utils/helpers');
 const { logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
@@ -432,14 +433,6 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
             return res.status(400).json({ error: 'E-posta veya Telefon bilgisinden en az biri girilmelidir.' });
         }
 
-        // Formatlama Fonksiyonları
-        const toTitleCase = (str) => {
-            if (!str) return '';
-            return str.replace(/\w\S*/g, (txt) => {
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-        };
-
         // Veri Formatlama ve Temizleme
         const cleanData = {
             firstName: toTitleCase(firstName.trim()),
@@ -521,12 +514,6 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
         const logoUrl = (req.files && req.files['logoImage']) ? `/uploads/${req.files['logoImage'][0].filename}` : card.logoUrl;
 
         // Veri Temizleme ve Güncelleme
-        const toTitleCase = (str) => {
-            if (!str) return null;
-            return str.replace(/\w\S*/g, (txt) => {
-                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-            });
-        };
 
         await card.update({
             firstName: firstName ? toTitleCase(firstName.trim()) : card.firstName,
