@@ -1,5 +1,5 @@
 const express = require('express');
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
@@ -31,7 +31,6 @@ const upload = multer({ storage: storage });
 // Tarihi Gelmiş Hatırlatıcıları Getir
 router.get('/due-reminders', async (req, res) => {
     try {
-        const { Op } = require('sequelize');
         const now = new Date();
         // Günün sonuna ayarla (Günün herhangi bir saatindeki hatırlatıcıları yakalamak için)
         const endOfDay = new Date(now);
@@ -93,7 +92,6 @@ router.get('/personal', async (req, res) => {
 router.get('/check-duplicate', async (req, res) => {
     try {
         const { firstName, lastName, email, phone } = req.query;
-        const { Op } = require('sequelize');
 
         const conditions = [];
 
@@ -137,9 +135,9 @@ router.get('/check-duplicate', async (req, res) => {
 router.get('/cities', async (req, res) => {
     try {
         const cities = await BusinessCard.findAll({
-            attributes: [[require('sequelize').fn('DISTINCT', require('sequelize').col('city')), 'city']],
+            attributes: [[fn('DISTINCT', col('city')), 'city']],
             where: {
-                city: { [require('sequelize').Op.ne]: null },
+                city: { [Op.ne]: null },
                 deletedAt: null
             }
         });
@@ -151,7 +149,6 @@ router.get('/cities', async (req, res) => {
 
 // Helper: Sorgu Oluşturucu
 const buildCardsQuery = (req) => {
-    const { Op } = require('sequelize');
     const whereClause = {
         deletedAt: null
     };
@@ -256,7 +253,13 @@ router.get('/', async (req, res) => {
 router.get('/export/excel', async (req, res) => {
     try {
         const ExcelJS = require('exceljs');
-        const whereClause = buildCardsQuery(req);
+        const { whereClause } = buildCardsQuery(req);
+        
+        // Eğer ID listesi geldiyse sadece onları çek
+        if (req.query.ids) {
+            const ids = req.query.ids.split(',').map(id => parseInt(id));
+            whereClause.id = { [Op.in]: ids };
+        }
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
@@ -324,7 +327,13 @@ router.get('/export/excel', async (req, res) => {
 router.get('/export/pdf', async (req, res) => {
     try {
         const PDFDocument = require('pdfkit-table');
-        const whereClause = buildCardsQuery(req);
+        const { whereClause } = buildCardsQuery(req);
+
+        // Eğer ID listesi geldiyse sadece onları çek
+        if (req.query.ids) {
+            const ids = req.query.ids.split(',').map(id => parseInt(id));
+            whereClause.id = { [Op.in]: ids };
+        }
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
@@ -679,7 +688,110 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// Çöp Kutusunu Listele
+// --- BULK ACTIONS ---
+
+// Toplu Silme (Soft Delete)
+router.post('/bulk-delete', async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'ID listesi eksik.' });
+        }
+
+        const whereClause = { id: { [Op.in]: ids } };
+        
+        // Yetki kontrolü (Normal kullanıcı sadece kendi kartlarını silebilir)
+        if (req.user.role !== 'admin') {
+            whereClause.ownerId = req.user.id;
+        }
+
+        const [updatedCount] = await BusinessCard.update({
+            deletedAt: new Date(),
+            deletedBy: req.user.id
+        }, { where: whereClause });
+
+        await logAction({
+            action: 'CARD_BULK_DELETE',
+            details: `${updatedCount} adet kart çöp kutusuna taşındı.`,
+            req
+        });
+
+        res.json({ message: `${updatedCount} adet kart vizit başarıyla silindi.`, count: updatedCount });
+    } catch (error) {
+        console.error('Bulk delete error:', error);
+        res.status(500).json({ error: 'Toplu silme sırasında bir hata oluştu.' });
+    }
+});
+
+// Toplu Görünürlük Güncelleme
+router.post('/bulk-visibility', async (req, res) => {
+    try {
+        const { ids, visibility } = req.body;
+        if (!ids || !Array.isArray(ids) || !['public', 'private'].includes(visibility)) {
+            return res.status(400).json({ error: 'Geçersiz parametreler.' });
+        }
+
+        const whereClause = { id: { [Op.in]: ids } };
+        if (req.user.role !== 'admin') {
+            whereClause.ownerId = req.user.id;
+        }
+
+        const [updatedCount] = await BusinessCard.update({ visibility }, { where: whereClause });
+
+        await logAction({
+            action: 'CARD_BULK_VISIBILITY',
+            details: `${updatedCount} adet kartın görünürlüğü ${visibility} yapıldı.`,
+            req
+        });
+
+        res.json({ message: 'Görünürlük başarıyla güncellendi.', count: updatedCount });
+    } catch (error) {
+        console.error('Bulk visibility error:', error);
+        res.status(500).json({ error: 'Toplu güncelleme sırasında bir hata oluştu.' });
+    }
+});
+
+// Toplu Etiket Ekleme
+router.post('/bulk-tags', async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const { ids, tagIds, mode = 'add' } = req.body; // mode: 'add' (mevcutlara ekle) veya 'replace' (temizle ve yenilerini ekle)
+        
+        if (!ids || !Array.isArray(ids) || !tagIds || !Array.isArray(tagIds)) {
+            return res.status(400).json({ error: 'Geçersiz parametreler.' });
+        }
+
+        const whereClause = { id: { [Op.in]: ids } };
+        if (req.user.role !== 'admin') {
+            whereClause.ownerId = req.user.id;
+        }
+
+        const cards = await BusinessCard.findAll({ where: whereClause, transaction: t });
+        
+        for (const card of cards) {
+            if (mode === 'add') {
+                await card.addTags(tagIds, { transaction: t });
+            } else {
+                await card.setTags(tagIds, { transaction: t });
+            }
+        }
+
+        await logAction({
+            action: 'CARD_BULK_TAGS',
+            details: `${cards.length} adet karta toplu etiket işlemi yapıldı.`,
+            req
+        });
+
+        await t.commit();
+        res.json({ message: 'Etiketler başarıyla güncellendi.', count: cards.length });
+    } catch (error) {
+        await t.rollback();
+        console.error('Bulk tags error:', error);
+        res.status(500).json({ error: 'Toplu etiketleme sırasında bir hata oluştu.' });
+    }
+});
+
+// --- ... (rest of the file follows) ---
 router.get('/trash', async (req, res) => {
     try {
         const { Op } = require('sequelize');

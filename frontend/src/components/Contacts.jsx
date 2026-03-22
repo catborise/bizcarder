@@ -46,6 +46,11 @@ const Contacts = () => {
     const [selectedImageCard, setSelectedImageCard] = useState(null);
     const [qrModalCard, setQrModalCard] = useState(null);
     const [deleteConfirmCard, setDeleteConfirmCard] = useState(null);
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [isBulkTagModalOpen, setIsBulkTagModalOpen] = useState(false);
+    const [bulkTagAction, setBulkTagAction] = useState('add'); // 'add' or 'replace'
+    const [selectedBulkTags, setSelectedBulkTags] = useState([]);
+    const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const { showNotification } = useNotification();
 
     const [loading, setLoading] = useState(true);
@@ -159,6 +164,79 @@ const Contacts = () => {
         fetchCards();
         setIsModalOpen(false);
         setEditingCard(null);
+        setSelectedIds([]);
+    };
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(cards.map(c => c.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectCard = (id) => {
+        setSelectedIds(prev => 
+            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+        );
+    };
+
+    const handleBulkDelete = async () => {
+        try {
+            await api.post('/api/cards/bulk-delete', { ids: selectedIds });
+            showNotification(`${selectedIds.length} kart silindi.`, 'success');
+            setSelectedIds([]);
+            setIsBulkDeleteConfirmOpen(false);
+            fetchCards();
+        } catch (error) {
+            showNotification('Toplu silme başarısız.', 'error');
+        }
+    };
+
+    const handleBulkVisibility = async (visibility) => {
+        try {
+            await api.post('/api/cards/bulk-visibility', { ids: selectedIds, visibility });
+            showNotification(`Görünürlük ${visibility === 'public' ? 'Herkese Açık' : 'Özel'} olarak güncellendi.`, 'success');
+            setSelectedIds([]);
+            fetchCards();
+        } catch (error) {
+            showNotification('Görünürlük güncellenemedi.', 'error');
+        }
+    };
+
+    const handleBulkTags = async () => {
+        try {
+            await api.post('/api/cards/bulk-tags', { 
+                ids: selectedIds, 
+                tagIds: selectedBulkTags,
+                mode: bulkTagAction
+            });
+            showNotification('Etiketler başarıyla güncellendi.', 'success');
+            setSelectedIds([]);
+            setIsBulkTagModalOpen(false);
+            setSelectedBulkTags([]);
+            fetchCards();
+        } catch (error) {
+            showNotification('Etiketleme işlemi başarısız.', 'error');
+        }
+    };
+
+    const handleBulkExport = async (type) => {
+        try {
+            const endpoint = type === 'excel' ? '/api/cards/export/excel' : '/api/cards/export/pdf';
+            const fileName = `secilen_kartvizitler.${type === 'excel' ? 'xlsx' : 'pdf'}`;
+            const mimeType = type === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/pdf';
+            
+            showNotification(`${type.toUpperCase()} dosyası hazırlanıyor...`, 'info');
+            const response = await api.get(endpoint, {
+                params: { ids: selectedIds.join(',') },
+                responseType: 'blob'
+            });
+            downloadFile(response.data, fileName, mimeType);
+            showNotification('Dosya indirildi.', 'success');
+        } catch (error) {
+            showNotification('İndirme başarısız.', 'error');
+        }
     };
 
     const handleDownloadVCard = async (card) => {
@@ -357,11 +435,51 @@ const Contacts = () => {
                 allCities={availableCities}
             />
 
+            {/* Select All Bar */}
+            <div style={{ 
+                margin: '20px 0 10px 0', 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                padding: '0 10px'
+            }}>
+                <input 
+                    type="checkbox" 
+                    onChange={handleSelectAll}
+                    checked={selectedIds.length === cards.length && cards.length > 0}
+                    style={{ 
+                        width: '18px', 
+                        height: '18px', 
+                        cursor: 'pointer',
+                        accentColor: 'var(--accent-primary)'
+                    }} 
+                />
+                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                    {selectedIds.length > 0 ? `${selectedIds.length} seçili` : 'Tümünü Seç'}
+                </span>
+            </div>
+
             <div style={{ marginTop: '30px', display: 'grid', gap: '20px' }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map(card => (
-                        <div key={card.id} className="glass-container" style={{ padding: '20px', borderRadius: '16px', position: 'relative' }}>
+                        <div key={card.id} className="glass-container" style={{ 
+                            padding: '20px', 
+                            borderRadius: '16px', 
+                            position: 'relative',
+                            border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                            backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)'
+                        }}>
                             <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                                {/* Row Checkbox */}
+                                <div style={{ display: 'flex', alignItems: 'center', height: '120px' }}>
+                                    <input 
+                                        type="checkbox"
+                                        checked={selectedIds.includes(card.id)}
+                                        onChange={() => handleSelectCard(card.id)}
+                                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                                    />
+                                </div>
+
                                 {card.frontImageUrl ? (
                                     <div
                                         onClick={() => setSelectedImageCard(card)}
@@ -597,6 +715,161 @@ const Contacts = () => {
             >
                 <AddCard onCardAdded={handleCardAddedOrUpdated} activeCard={editingCard} />
             </Modal>
+
+            {/* Bulk Tag Modal */}
+            <Modal title="Toplu Etiket Geliştirme" isOpen={isBulkTagModalOpen} onClose={() => setIsBulkTagModalOpen(false)}>
+                <div style={{ padding: '10px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>İşlem Tipi</label>
+                        <div style={{ display: 'flex', gap: '15px' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <input type="radio" name="bulkTagAction" value="add" checked={bulkTagAction === 'add'} onChange={(e) => setBulkTagAction(e.target.value)} />
+                                Mevcutlara Ekle
+                            </label>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <input type="radio" name="bulkTagAction" value="replace" checked={bulkTagAction === 'replace'} onChange={(e) => setBulkTagAction(e.target.value)} />
+                                Tümünü Değiştir
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style={{ marginBottom: '25px' }}>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Etiketler</label>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                            {availableTags.map(tag => (
+                                <button
+                                    key={tag.id}
+                                    onClick={() => setSelectedBulkTags(prev => prev.includes(tag.id) ? prev.filter(i => i !== tag.id) : [...prev, tag.id])}
+                                    style={{
+                                        padding: '5px 12px',
+                                        borderRadius: '20px',
+                                        border: '1px solid var(--glass-border)',
+                                        background: selectedBulkTags.includes(tag.id) ? (tag.color || 'var(--accent-primary)') : 'var(--glass-bg)',
+                                        color: selectedBulkTags.includes(tag.id) ? 'var(--bg-card)' : 'var(--text-primary)',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem',
+                                        fontWeight: '600',
+                                        transition: 'all 0.2s ease'
+                                    }}
+                                >
+                                    {tag.name}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                        <button onClick={() => setIsBulkTagModalOpen(false)} className="glass-button" style={{ padding: '8px 20px' }}>İptal</button>
+                        <button 
+                            onClick={handleBulkTags} 
+                            disabled={selectedBulkTags.length === 0}
+                            style={{ 
+                                padding: '8px 25px', 
+                                background: 'var(--accent-primary)', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '10px', 
+                                fontWeight: 'bold',
+                                opacity: selectedBulkTags.length === 0 ? 0.5 : 1,
+                                cursor: selectedBulkTags.length === 0 ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            Uygula
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
+            <ConfirmModal 
+                isOpen={isBulkDeleteConfirmOpen} 
+                onClose={() => setIsBulkDeleteConfirmOpen(false)} 
+                onConfirm={handleBulkDelete} 
+                title="Toplu Silme" 
+                message={`${selectedIds.length} adet kartviziti silmek istediğinizden emin misiniz?`} 
+            />
+
+            {/* Floating Bulk Action Bar */}
+            <AnimatePresence>
+                {selectedIds.length > 0 && (
+                    <motion.div
+                        initial={{ y: 100, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 100, opacity: 0 }}
+                        style={{
+                            position: 'fixed',
+                            bottom: '30px',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--accent-primary)',
+                            borderRadius: '20px',
+                            padding: '12px 25px',
+                            boxShadow: '0 10px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-primary-transparent)',
+                            zIndex: 1000,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '20px',
+                            backdropFilter: 'blur(20px)'
+                        }}
+                    >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '15px', borderRight: '1px solid var(--glass-border)' }}>
+                            <div style={{ width: '32px', height: '32px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                                {selectedIds.length}
+                            </div>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>Seçili</span>
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button" style={{ color: 'var(--accent-warning)', gap: '8px' }}>
+                                <FaStar /> Etiketle
+                            </button>
+                            
+                            <div style={{ position: 'relative', display: 'flex', gap: '5px' }}>
+                                <button onClick={() => handleBulkVisibility('public')} className="glass-button" style={{ color: 'var(--accent-success)', gap: '8px' }}>
+                                    <FaGlobe /> Herkese Açık
+                                </button>
+                                <button onClick={() => handleBulkVisibility('private')} className="glass-button" style={{ color: 'var(--text-tertiary)', gap: '8px' }}>
+                                    <FaIdCard /> Özel Yap
+                                </button>
+                            </div>
+
+                            <div style={{ height: '30px', width: '1px', background: 'var(--glass-border)', margin: '0 5px' }}></div>
+
+                            <button onClick={() => handleBulkExport('excel')} className="glass-button" style={{ color: '#27ae60' }}>
+                                <FaFileExcel /> Excel
+                            </button>
+                            <button onClick={() => handleBulkExport('pdf')} className="glass-button" style={{ color: '#e74c3c' }}>
+                                <FaFilePdf /> PDF
+                            </button>
+
+                            <button 
+                                onClick={() => setIsBulkDeleteConfirmOpen(true)} 
+                                style={{ 
+                                    background: 'var(--accent-error)', 
+                                    color: 'white', 
+                                    border: 'none', 
+                                    padding: '8px 16px', 
+                                    borderRadius: '10px', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '8px', 
+                                    fontWeight: 'bold',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                <FaTrash /> Sil
+                            </button>
+                            
+                            <button 
+                                onClick={() => setSelectedIds([])} 
+                                style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', padding: '5px', cursor: 'pointer' }}
+                            >
+                                <FaDownload style={{ transform: 'rotate(180deg)' }} /> Vazgeç
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
