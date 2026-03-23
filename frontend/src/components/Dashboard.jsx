@@ -303,43 +303,53 @@ const Dashboard = () => {
             </div>
 
             {/* İstatistikler (Glass Container) */}
-            <div className="dashboard-stats-grid">
+            <div className="dashboard-stats-grid stagger-enter" style={{ animationDelay: '0.1s' }}>
                 <div style={{
                     background: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid var(--glass-border)',
-                    borderRadius: '20px',
+                    borderRadius: '24px',
                     padding: '30px',
                     color: 'var(--text-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    boxShadow: 'var(--glass-shadow)'
-                }}>
+                    boxShadow: 'var(--glass-shadow)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
                     <div>
                         <h3 style={{
                             margin: 0,
-                            fontSize: '1.3rem',
-                            fontWeight: '600',
+                            fontSize: '1.4rem',
+                            fontWeight: '700',
                             marginBottom: '5px',
-                            color: 'var(--text-primary)'
+                            color: 'var(--text-primary)',
+                            letterSpacing: '-0.02em'
                         }}>
                             Kayıtlı Kartlar
                         </h3>
                         <p style={{
                             margin: 0,
-                            fontSize: '0.9rem',
+                            fontSize: '0.95rem',
                             color: 'var(--text-secondary)'
                         }}>
-                            Toplam kartvizit
+                            Toplam bağlantı ağınız
                         </p>
                     </div>
                     <div style={{
-                        fontSize: '3.5rem',
-                        fontWeight: '700',
-                        color: 'var(--accent-primary)'
+                        fontSize: '4rem',
+                        fontWeight: '800',
+                        color: 'var(--accent-primary)',
+                        lineHeight: '1',
+                        letterSpacing: '-0.03em'
                     }}>
-                        {loading ? '...' : stats.totalCards}
+                        {loading ? (
+                            <div className="skeleton-box" style={{ width: '70px', height: '64px', borderRadius: '12px' }}></div>
+                        ) : (
+                            stats.totalCards
+                        )}
                     </div>
                 </div>
 
@@ -347,35 +357,42 @@ const Dashboard = () => {
                     background: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid var(--glass-border)',
-                    borderRadius: '20px',
+                    borderRadius: '24px',
                     padding: '25px',
                     color: 'var(--text-primary)',
                     boxShadow: 'var(--glass-shadow)',
                     overflow: 'hidden'
                 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600' }}>En Çok Kullanılan Etiketler</h3>
-                        <Link to="/contacts" style={{ fontSize: '0.85rem', color: 'var(--accent-primary)', textDecoration: 'none' }}>Tümünü Gör</Link>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', letterSpacing: '-0.01em' }}>Sık Kullanılan Etiketler</h3>
+                        <Link to="/contacts" style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent-primary)', textDecoration: 'none' }}>Tümünü Gör</Link>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                        {loading ? 'Yükleniyor...' : (
+                        {loading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="skeleton-box" style={{ width: '80px', height: '34px', borderRadius: '12px' }}></div>
+                            ))
+                        ) : (
                             tagStats.length > 0 ? (
-                                tagStats.map(tag => (
+                                tagStats.map((tag, index) => (
                                     <Link 
                                         key={tag.id} 
                                         to={`/contacts?tagId=${tag.id}`}
+                                        className="stagger-enter"
                                         style={{ 
-                                            padding: '8px 15px', 
+                                            padding: '8px 16px', 
                                             borderRadius: '12px', 
                                             background: tag.color + '1A', // %10 alpha for background
                                             border: `1px solid ${tag.color}40`,
                                             color: 'var(--text-primary)',
                                             textDecoration: 'none',
-                                            fontSize: '0.9rem',
+                                            fontSize: '0.95rem',
+                                            fontWeight: '500',
                                             display: 'flex',
                                             alignItems: 'center',
                                             gap: '8px',
-                                            transition: 'all 0.2s ease'
+                                            transition: 'all 0.2s ease',
+                                            animationDelay: `${index * 0.05}s`
                                         }}
                                         onMouseEnter={(e) => {
                                             e.currentTarget.style.background = tag.color + '33';
@@ -388,11 +405,11 @@ const Dashboard = () => {
                                     >
                                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color }}></span>
                                         {tag.name}
-                                        <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>({tag.getDataValue ? tag.getDataValue('cardCount') : tag.cardCount})</span>
+                                        <span style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: '600' }}>({tag.getDataValue ? tag.getDataValue('cardCount') : tag.cardCount})</span>
                                     </Link>
                                 ))
                             ) : (
-                                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Henüz etiket bulunmuyor.</p>
+                                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem' }}>İstatistik oluşturacak etkiet yok.</p>
                             )
                         )}
                     </div>
@@ -401,94 +418,111 @@ const Dashboard = () => {
 
 
             {/* Core Application Tiles - Always at top, under stats */}
-            <div className="dashboard-tiles-grid-3col" style={{
-                marginBottom: '40px'
+            <div className="dashboard-tiles-grid-3col stagger-enter" style={{
+                marginBottom: '40px',
+                animationDelay: '0.2s'
             }}>
-                {tiles
-                    .filter(t => ['/contacts', '/logs', '/import'].includes(t.url))
-                    .map((tile) => (
-                        <div key={tile.id} style={{ position: 'relative' }}>
-                            <Link
-                                to={tile.url}
-                                style={{ ...tileStyle, background: tile.backgroundColor }}
-                                onMouseEnter={handleMouseEnter}
-                                onMouseLeave={handleMouseLeave}
-                            >
-                                <div style={{
-                                    display: 'inline-flex',
-                                    padding: '12px',
-                                    background: 'var(--glass-bg)',
-                                    borderRadius: '12px',
-                                    width: 'fit-content'
-                                }}>
-                                    <DynamicIcon name={tile.icon} />
-                                </div>
-                                <div>
-                                    <span style={{
-                                        fontSize: '1.5rem',
-                                        display: 'block',
-                                        fontWeight: '600',
-                                        marginBottom: '5px'
-                                    }}>
-                                        {tile.title}
-                                    </span>
-                                    <span style={{
-                                        fontSize: '0.9rem',
-                                        color: 'var(--text-secondary)'
-                                    }}>
-                                        {tile.subtitle}
-                                    </span>
-                                </div>
-                            </Link>
-                        </div>
-                    ))}
-            </div>
-
-            {/* Custom/Other Tiles Grid */}
-            <div className="dashboard-tiles-grid">
-                {tiles
-                    .filter(t => !['/contacts', '/logs', '/import'].includes(t.url))
-                    .map((tile) => {
-                        const TileWrapper = tile.isInternal ? Link : 'a';
-                        const wrapperProps = tile.isInternal ? { to: tile.url } : { href: tile.url, target: tile.url.startsWith('http') ? '_blank' : '_self' };
-
-                        return (
-                            <div key={tile.id} style={{ position: 'relative' }}>
-                                <TileWrapper
-                                    {...wrapperProps}
+                {loading ? (
+                    Array.from({ length: 3 }).map((_, i) => (
+                        <div key={`skel-c-${i}`} className="skeleton-box" style={{ height: '160px', borderRadius: '16px' }}></div>
+                    ))
+                ) : (
+                    tiles
+                        .filter(t => ['/contacts', '/logs', '/import'].includes(t.url))
+                        .map((tile, i) => (
+                            <div key={tile.id} className="stagger-enter" style={{ position: 'relative', animationDelay: `${i * 0.1}s` }}>
+                                <Link
+                                    to={tile.url}
                                     style={{ ...tileStyle, background: tile.backgroundColor }}
                                     onMouseEnter={handleMouseEnter}
                                     onMouseLeave={handleMouseLeave}
-                                    onClick={(e) => {
-                                        if (tile.url === '#') e.preventDefault();
-                                    }}
                                 >
                                     <div style={{
                                         display: 'inline-flex',
                                         padding: '12px',
                                         background: 'var(--glass-bg)',
                                         borderRadius: '12px',
-                                        width: 'fit-content'
+                                        width: 'fit-content',
+                                        border: '1px solid rgba(255,255,255,0.1)'
                                     }}>
                                         <DynamicIcon name={tile.icon} />
                                     </div>
                                     <div>
                                         <span style={{
-                                            fontSize: '1.5rem',
+                                            fontSize: '1.6rem',
                                             display: 'block',
-                                            fontWeight: '600',
-                                            marginBottom: '5px'
+                                            fontWeight: '700',
+                                            marginBottom: '6px',
+                                            letterSpacing: '-0.02em'
                                         }}>
                                             {tile.title}
                                         </span>
                                         <span style={{
-                                            fontSize: '0.9rem',
-                                            color: 'var(--text-secondary)'
+                                            fontSize: '0.95rem',
+                                            color: 'var(--text-secondary)',
+                                            fontWeight: '500'
                                         }}>
                                             {tile.subtitle}
                                         </span>
                                     </div>
-                                </TileWrapper>
+                                </Link>
+                            </div>
+                        ))
+                )}
+            </div>
+
+            {/* Custom/Other Tiles Grid */}
+            <div className="dashboard-tiles-grid stagger-enter" style={{ animationDelay: '0.3s' }}>
+                {loading ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                         <div key={`skel-o-${i}`} className="skeleton-box" style={{ height: '160px', borderRadius: '16px' }}></div>
+                    ))
+                ) : (
+                    tiles
+                        .filter(t => !['/contacts', '/logs', '/import'].includes(t.url))
+                        .map((tile, i) => {
+                            const TileWrapper = tile.isInternal ? Link : 'a';
+                            const wrapperProps = tile.isInternal ? { to: tile.url } : { href: tile.url, target: tile.url.startsWith('http') ? '_blank' : '_self' };
+
+                            return (
+                                <div key={tile.id} className="stagger-enter" style={{ position: 'relative', animationDelay: `${i * 0.08}s` }}>
+                                    <TileWrapper
+                                        {...wrapperProps}
+                                        style={{ ...tileStyle, background: tile.backgroundColor }}
+                                        onMouseEnter={handleMouseEnter}
+                                        onMouseLeave={handleMouseLeave}
+                                        onClick={(e) => {
+                                            if (tile.url === '#') e.preventDefault();
+                                        }}
+                                    >
+                                        <div style={{
+                                            display: 'inline-flex',
+                                            padding: '12px',
+                                            background: 'var(--glass-bg)',
+                                            borderRadius: '12px',
+                                            width: 'fit-content',
+                                            border: '1px solid rgba(255,255,255,0.05)'
+                                        }}>
+                                            <DynamicIcon name={tile.icon} />
+                                        </div>
+                                        <div>
+                                            <span style={{
+                                                fontSize: '1.4rem',
+                                                display: 'block',
+                                                fontWeight: '700',
+                                                marginBottom: '6px',
+                                                letterSpacing: '-0.02em'
+                                            }}>
+                                                {tile.title}
+                                            </span>
+                                            <span style={{
+                                                fontSize: '0.9rem',
+                                                color: 'var(--text-secondary)'
+                                            }}>
+                                                {tile.subtitle}
+                                            </span>
+                                        </div>
+                                    </TileWrapper>
                                 {isAdmin && editMode && (
                                     <div style={{
                                         position: 'absolute',
@@ -541,7 +575,8 @@ const Dashboard = () => {
                                 )}
                             </div>
                         );
-                    })}
+                    })
+                )}
             </div>
 
             {/* Yönetim Modalı */}
