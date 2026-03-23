@@ -129,7 +129,9 @@ app.use(session({
         secure: process.env.SESSION_SECURE === 'true', 
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
-        sameSite: 'lax' 
+        // SAML login (IdP'den POST dönmesi) senaryosunda modern tarayıcıların 
+        // cookie'leri düşürmemesi için eğer HTTPS ise 'none' olması kritik!
+        sameSite: process.env.SESSION_SECURE === 'true' ? 'none' : 'lax'
     }
 }));
 

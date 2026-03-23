@@ -34,8 +34,12 @@ router.post('/login/callback',
     }),
     (req, res) => {
         // Başarılı giriş
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        res.redirect(`${frontendUrl}/`);
+        // Race condition'ı önlemek için session'ın veritabanına yazılmasını bekle, sonra yönlendir
+        req.session.save((err) => {
+            if (err) console.error("SAML callback session save error:", err);
+            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            res.redirect(`${frontendUrl}/`);
+        });
     }
 );
 
