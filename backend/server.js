@@ -18,7 +18,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Caddy veya çoklu Reverse proxy (Nginx, LB vb.) arkasında IP limitlerini ve Secure cookie'yi doğru alabilmesi için
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
