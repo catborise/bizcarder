@@ -89,24 +89,39 @@ const Dashboard = () => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const urls = ['/api/cards/stats', '/api/db-tiles', '/api/settings', '/api/tags/stats'];
+            const urls = ['/api/cards/stats', '/api/db-tiles', '/api/settings'];
             if (isAuthenticated) {
+                urls.push('/api/tags/stats');
                 urls.push('/api/cards/due-reminders');
             }
 
-            const responses = await Promise.all(urls.map(url => api.get(url)));
+            const responses = await Promise.all(
+                urls.map(url => api.get(url).catch(err => {
+                    console.warn(`${url} endpointinden veri alınamadı:`, err.message);
+                    if (url === '/api/cards/stats') return { data: { totalCards: 0 } };
+                    if (url === '/api/tags/stats') return { data: [] };
+                    if (url === '/api/cards/due-reminders') return { data: [] };
+                    if (url === '/api/db-tiles') return { data: [] };
+                    return { data: null };
+                }))
+            );
 
-            setStats(responses[0].data);
-            setTiles(responses[1].data);
-            setSettings(responses[2].data);
-            setTagStats(responses[3].data);
+            setStats(responses[0]?.data || { totalCards: 0 });
+            setTiles(responses[1]?.data || []);
+            setSettings(responses[2]?.data || null);
 
-            if (isAuthenticated && responses[4]) {
-                setDueReminders(responses[4].data);
-                if (responses[4].data.length > 0) {
-                    setShowReminderModal(true);
+            if (isAuthenticated) {
+                setTagStats(responses[3]?.data || []);
+                if (responses[4]?.data) {
+                    setDueReminders(responses[4].data);
+                    if (responses[4].data.length > 0) {
+                        setShowReminderModal(true);
+                    }
+                } else {
+                    setDueReminders([]);
                 }
             } else {
+                setTagStats([]);
                 setDueReminders([]);
             }
         } catch (error) {
