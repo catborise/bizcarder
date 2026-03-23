@@ -350,86 +350,71 @@ const Contacts = () => {
 
     return (
         <div className="fade-in">
-            <div className="contacts-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h2 style={{
-                    margin: 0,
-                    fontSize: '1.8rem',
-                    fontWeight: '700',
-                    color: 'var(--text-primary)',
-                    letterSpacing: '-0.02em'
-                }}>Kartvizitler</h2>
+            <div className="contacts-header">
+                <h2>Kartvizitler</h2>
 
                 <div className="contacts-actions">
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                        <button
-                            onClick={async () => {
-                                try {
-                                    showNotification('Excel dosyası hazırlanıyor...', 'info');
-                                    const response = await api.get('/api/cards/export/excel', {
-                                        params: { search: searchTerm },
-                                        responseType: 'blob'
-                                    });
-                                    downloadFile(response.data, 'kartvizitler.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                    showNotification('Excel dosyası indirildi.', 'success');
-                                } catch (error) {
-                                    showNotification('İndirme başarısız.', 'error');
-                                }
-                            }}
-                            title="Excel Olarak İndir"
-                            className="glass-button"
-                            style={{ color: 'var(--accent-success)' }}
-                        >
-                            <FaFileExcel size={20} />
-                        </button>
-                        <button
-                            onClick={async () => {
-                                try {
-                                    showNotification('PDF dosyası hazırlanıyor...', 'info');
-                                    const response = await api.get('/api/cards/export/pdf', {
-                                        params: { search: searchTerm },
-                                        responseType: 'blob'
-                                    });
-                                    downloadFile(response.data, 'kartvizitler.pdf', 'application/pdf');
-                                    showNotification('PDF dosyası indirildi.', 'success');
-                                } catch (error) {
-                                    showNotification('İndirme başarısız.', 'error');
-                                }
-                            }}
-                            title="PDF Olarak İndir"
-                            className="glass-button"
-                            style={{ color: 'var(--accent-error)' }}
-                        >
-                            <FaFilePdf size={20} />
-                        </button>
-                    </div>
+                    <button
+                        onClick={async () => {
+                            try {
+                                showNotification('Excel dosyası hazırlanıyor...', 'info');
+                                const response = await api.get('/api/cards/export/excel', {
+                                    params: { search: searchTerm },
+                                    responseType: 'blob'
+                                });
+                                downloadFile(response.data, 'kartvizitler.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                                showNotification('Excel dosyası indirildi.', 'success');
+                            } catch (error) {
+                                showNotification('İndirme başarısız.', 'error');
+                            }
+                        }}
+                        title="Excel Olarak İndir"
+                        style={{
+                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
+                            cursor: 'pointer', color: 'var(--accent-success)', transition: 'all 0.2s ease',
+                            backdropFilter: 'blur(10px)'
+                        }}
+                    >
+                        <FaFileExcel size={20} />
+                    </button>
+                    <button
+                        onClick={async () => {
+                            try {
+                                showNotification('PDF dosyası hazırlanıyor...', 'info');
+                                const response = await api.get('/api/cards/export/pdf', {
+                                    params: { search: searchTerm },
+                                    responseType: 'blob'
+                                });
+                                downloadFile(response.data, 'kartvizitler.pdf', 'application/pdf');
+                                showNotification('PDF dosyası indirildi.', 'success');
+                            } catch (error) {
+                                showNotification('İndirme başarısız.', 'error');
+                            }
+                        }}
+                        title="PDF Olarak İndir"
+                        style={{
+                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
+                            cursor: 'pointer', color: 'var(--accent-error)', transition: 'all 0.2s ease',
+                            backdropFilter: 'blur(10px)'
+                        }}
+                    >
+                        <FaFilePdf size={20} />
+                    </button>
 
                     <motion.button
-                        whileHover={{ 
-                            scale: 1.02, 
-                            boxShadow: '0 8px 32px rgba(var(--accent-primary-rgb), 0.3)',
-                            background: 'linear-gradient(135deg, var(--accent-secondary), var(--accent-primary))'
-                        }}
+                        whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={openNewCardModal}
                         style={{
+                            height: '44px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '8px',
                             background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '10px 20px',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '700',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            letterSpacing: '-0.01em'
+                            color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer',
+                            fontSize: '14px', fontWeight: '700', whiteSpace: 'nowrap'
                         }}
                     >
-                        <span style={{ fontSize: '22px', fontWeight: '800', lineHeight: 1 }}>+</span> 
-                        Yeni Kart Ekle
+                        <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: '800' }}>+</span> Yeni Kart Ekle
                     </motion.button>
                 </div>
             </div>
@@ -469,19 +454,17 @@ const Contacts = () => {
                 </span>
             </div>
 
-            <div style={{ marginTop: '30px', display: 'grid', gap: '20px' }}>
+            <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map(card => (
                         <div key={card.id} className="glass-container" style={{ 
-                            padding: '20px', 
-                            borderRadius: '16px', 
-                            position: 'relative',
                             border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                            backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)'
+                            backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)',
+                            padding: '20px'
                         }}>
-                            <div className="contact-card" style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                            <div className="contact-card">
                                 {/* Row Checkbox */}
-                                <div className="checkbox-container" style={{ display: 'flex', alignItems: 'center' }}>
+                                <div className="checkbox-container">
                                     <input 
                                         type="checkbox"
                                         checked={selectedIds.includes(card.id)}
@@ -490,95 +473,91 @@ const Contacts = () => {
                                     />
                                 </div>
 
+                                {/* Image + Status Badges Column */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
                                 {card.frontImageUrl ? (
                                     <div
                                         onClick={() => setSelectedImageCard(card)}
                                         className="card-image-container"
-                                        style={{ backgroundColor: 'var(--bg-input)', borderRadius: '8px', overflow: 'hidden', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.8 }}>v{card.version || 1}</div>
                                     </div>
                                 ) : (
-                                    <div className="card-image-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-input)', color: 'var(--text-tertiary)', borderRadius: '8px', border: '1px solid var(--glass-border)', position: 'relative' }}>
+                                    <div className="card-image-container">
                                         <FaIdCard size={64} style={{ opacity: 0.5 }} />
                                         <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.5 }}>v{card.version || 1}</div>
                                     </div>
                                 )}
 
-                                <div className="card-info" style={{ flex: 1 }}>
-                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.2em', color: 'var(--text-primary)', fontWeight: '600' }}>{card.firstName} {card.lastName}</h3>
-                                    <p style={{ margin: '0 0 10px 0', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.95em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                {/* Status / Priority / Tags — below the image */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                    {card.leadStatus && (
+                                        <div style={{ 
+                                            padding: '4px 10px', 
+                                            borderRadius: '8px', 
+                                            fontSize: '0.75rem', 
+                                            fontWeight: 'bold',
+                                            background: getStatusStyle(card.leadStatus).bg,
+                                            color: getStatusStyle(card.leadStatus).color,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            gap: '5px',
+                                            border: `1px solid ${getStatusStyle(card.leadStatus).color}33`
+                                        }}>
+                                            <span>{getStatusStyle(card.leadStatus).icon}</span>
+                                            {getStatusStyle(card.leadStatus).label}
+                                        </div>
+                                    )}
+                                    {card.priority > 0 && (
+                                        <div style={{ display: 'flex', gap: '2px', justifyContent: 'center' }}>
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <FaStar key={star} size={12} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(128,128,128,0.3)'} />
+                                            ))}
+                                        </div>
+                                    )}
+                                    {card.tags && card.tags.length > 0 && (
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
+                                            {card.tags.map(tag => {
+                                                const isLight = (color) => {
+                                                    if (!color || color.length < 7) return true;
+                                                    const hex = color.replace('#', '');
+                                                    const r = parseInt(hex.substring(0, 2), 16);
+                                                    const g = parseInt(hex.substring(2, 4), 16);
+                                                    const b = parseInt(hex.substring(4, 6), 16);
+                                                    return (r * 299 + g * 587 + b * 114) / 1000 > 155;
+                                                };
+                                                return (
+                                                    <span 
+                                                        key={tag.id} 
+                                                        onClick={(e) => { e.stopPropagation(); navigate(`/contacts?tagId=${tag.id}`); }}
+                                                        style={{ 
+                                                            padding: '2px 8px', 
+                                                            borderRadius: '12px', 
+                                                            fontSize: '0.7rem', 
+                                                            fontWeight: '700', 
+                                                            background: tag.color || 'var(--accent-primary)', 
+                                                            color: isLight(tag.color) ? '#000' : '#fff',
+                                                            cursor: 'pointer'
+                                                        }}
+                                                    >
+                                                        {tag.name}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                                </div>
+
+                                <div className="card-info">
+                                    <h3>{card.firstName} {card.lastName}</h3>
+                                    <p className="company-line">
                                         {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                                        {card.leadStatus && (
-                                            <div style={{ 
-                                                padding: '4px 10px', 
-                                                borderRadius: '8px', 
-                                                fontSize: '0.75rem', 
-                                                fontWeight: 'bold',
-                                                background: getStatusStyle(card.leadStatus).bg,
-                                                color: getStatusStyle(card.leadStatus).color,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '5px',
-                                                border: `1px solid ${getStatusStyle(card.leadStatus).color}33`
-                                            }}>
-                                                <span>{getStatusStyle(card.leadStatus).icon}</span>
-                                                {getStatusStyle(card.leadStatus).label}
-                                            </div>
-                                        )}
-                                        {card.priority > 0 && (
-                                            <div style={{ display: 'flex', gap: '2px' }}>
-                                                {[1, 2, 3, 4, 5].map(star => (
-                                                    <FaStar key={star} size={12} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(255,255,255,0.1)'} />
-                                                ))}
-                                            </div>
-                                        )}
-                                        {card.tags && card.tags.length > 0 && (
-                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                                                {card.tags.map(tag => {
-                                                    // Determine if text should be light or dark based on background color
-                                                    const isLight = (color) => {
-                                                        if (!color || color.length < 7) return true;
-                                                        const hex = color.replace('#', '');
-                                                        const r = parseInt(hex.substring(0, 2), 16);
-                                                        const g = parseInt(hex.substring(2, 4), 16);
-                                                        const b = parseInt(hex.substring(4, 6), 16);
-                                                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                                                        return brightness > 155;
-                                                    };
-                                                    
-                                                    return (
-                                                        <span 
-                                                            key={tag.id} 
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                navigate(`/contacts?tagId=${tag.id}`);
-                                                            }}
-                                                            style={{ 
-                                                                padding: '2px 10px', 
-                                                                borderRadius: '12px', 
-                                                                fontSize: '0.7rem', 
-                                                                fontWeight: '700', 
-                                                                background: tag.color || 'var(--accent-primary)', 
-                                                                color: isLight(tag.color) ? '#000' : '#fff',
-                                                                cursor: 'pointer',
-                                                                transition: 'transform 0.2s ease'
-                                                            }}
-                                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-                                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                                                        >
-                                                            {tag.name}
-                                                        </span>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', fontSize: '0.9em' }}>
                                         {card.reminderDate && (
@@ -647,7 +626,7 @@ const Contacts = () => {
                                         <button onClick={() => setHistoryCard(card)} className="glass-button-square" title="Geçmiş"><FaClock size={16} /></button>
                                     </div>
 
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                    <div style={{ display: 'flex', gap: '8px' }}>
                                         <button onClick={() => handleEdit(card)} className="glass-button-small" style={{ flex: 1 }}>Düzenle</button>
                                         <button onClick={() => handleDeleteClick(card)} className="glass-button-small" style={{ color: 'var(--accent-error)', width: '40px' }}><FaTrash size={14} /></button>
                                     </div>

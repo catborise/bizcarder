@@ -1151,36 +1151,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>🌍 Herkese Açık (Ortak)</option>
                             </select>
 
-                            {/* CRM Status & Source Group */}
-                            <fieldset style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '15px', margin: 0, background: 'var(--glass-bg)' }}>
-                                <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>CRM Detayları</legend>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>Süreç Durumu</label>
-                                        <select name="leadStatus" value={formData.leadStatus} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', padding: '8px' }}>
-                                            <option value="Cold">❄️ Soğuk (Cold)</option>
-                                            <option value="Warm">⛅ Ilık (Warm)</option>
-                                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>🔥 Sıcak (Hot)</option>
-                                            <option value="Following-up">🔄 Takipte</option>
-                                            <option value="Converted">✅ Dönüştü</option>
-                                        </select>
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>Öncelik (1-5)</label>
-                                        <select name="priority" value={formData.priority} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', padding: '8px' }}>
-                                            <option value="1">1 - Düşük</option>
-                                            <option value="2">2 - Orta-Alt</option>
-                                            <option value="3">3 - Orta</option>
-                                            <option value="4">4 - Yüksek</option>
-                                            <option value="5">5 - Kritik</option>
-                                        </select>
-                                    </div>
-                                    <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ fontSize: '13px', color: 'var(--text-tertiary)' }}>Kaynak (Örn: LinkedIn, Fuar vb.)</label>
-                                        <input type="text" name="source" placeholder="Kaynak" value={formData.source} onChange={handleInputChange} style={{ ...inputStyle, padding: '8px' }} />
-                                    </div>
-                                </div>
-                            </fieldset>
+
                         </>
                     )}
 

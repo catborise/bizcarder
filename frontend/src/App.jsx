@@ -23,7 +23,7 @@ import Help from './components/Help';
 import MyCard from './components/MyCard';
 import ContactProfile from './components/ContactProfile';
 import AccessDenied from './components/AccessDenied';
-import { FaTrash, FaSignInAlt, FaWifi, FaPlane, FaTimes } from 'react-icons/fa';
+import { FaTrash, FaSignInAlt, FaWifi, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
 
 import Contacts from './components/Contacts';
 
@@ -228,169 +228,143 @@ const AppContent = () => {
                 </div>
             )}
             {/* Premium Glassmorphism Navbar */}
-            <nav style={{
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(20px)',
-                borderBottom: '1px solid var(--glass-border)',
-                boxShadow: 'var(--glass-shadow)',
-                padding: '0.6rem 2rem',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-            }}>
-                <div className="nav-brand-group" style={{ display: 'flex', alignItems: 'center' }}>
-                    <Link
-                        to="/"
-                        style={{
-                            fontSize: '1.5rem',
-                            fontWeight: '700',
-                            color: 'var(--text-primary)',
-                            textShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                            letterSpacing: '-0.02em',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            minWidth: 0
-                        }}
-                    >
-                        {settings.companyLogo ? (
-                            <img
-                                src={`${API_URL}${settings.companyLogo}`}
-                                alt="Logo"
-                                style={{
-                                    height: '35px',
-                                    borderRadius: '6px',
-                                    background: 'var(--bg-card)',
-                                    padding: '3px',
-                                    border: '1px solid var(--glass-border)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                    flexShrink: 0
-                                }}
-                            />
-                        ) : (
-                            <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>🏢</span>
-                        )}
-                        <span className="navbar-logo-text">{settings.companyName || 'CRM'}</span>
-                    </Link>
-                    <div className="nav-links">
+            <nav>
+                <div className="nav-container">
+                    <div className="nav-brand-group">
                         <Link
                             to="/"
                             style={{
-                                color: location.pathname === '/' ? 'var(--accent-primary)' : 'var(--text-primary)',
-                                background: location.pathname === '/' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                border: location.pathname === '/' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
-                                padding: '0.4rem 0.8rem',
-                                borderRadius: '8px',
-                                transition: 'all 0.2s ease',
-                                fontWeight: location.pathname === '/' ? '600' : '500',
-                                opacity: 0.9
-                            }}
-                            onMouseEnter={(e) => {
-                                if (location.pathname !== '/') e.target.style.background = 'var(--glass-bg-hover)';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (location.pathname !== '/') e.target.style.background = 'transparent';
-                            }}
-                        >
-                            Dashboard
-                        </Link>
-                        <Link
-                            to="/contacts"
-                            style={{
-                                color: location.pathname === '/contacts' ? 'var(--accent-primary)' : 'var(--text-primary)',
-                                background: location.pathname === '/contacts' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                border: location.pathname === '/contacts' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
-                                padding: '0.4rem 0.8rem',
-                                borderRadius: '8px',
-                                transition: 'all 0.2s ease',
-                                fontWeight: location.pathname === '/contacts' ? '600' : '500',
-                                opacity: 0.9
-                            }}
-                            onMouseEnter={(e) => {
-                                if (location.pathname !== '/contacts') e.target.style.background = 'var(--glass-bg-hover)';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (location.pathname !== '/contacts') e.target.style.background = 'transparent';
-                            }}
-                        >
-                            Kartvizitler
-                        </Link>
-                        <Link
-                            to="/my-card"
-                            style={{
-                                color: location.pathname === '/my-card' ? 'var(--accent-primary)' : 'var(--text-primary)',
-                                background: location.pathname === '/my-card' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                border: location.pathname === '/my-card' ? '1px solid var(--accent-primary-transparent)' : '1px solid transparent',
-                                padding: '0.4rem 0.8rem',
-                                borderRadius: '8px',
-                                transition: 'all 0.2s ease',
-                                fontWeight: location.pathname === '/my-card' ? '600' : '500',
-                                opacity: 0.9
-                            }}
-                            onMouseEnter={(e) => {
-                                if (location.pathname !== '/my-card') e.target.style.background = 'var(--glass-bg-hover)';
-                            }}
-                            onMouseLeave={(e) => {
-                                if (location.pathname !== '/my-card') e.target.style.background = 'transparent';
-                            }}
-                        >
-                            Kartım
-                        </Link>
-                    </div>
-                </div>
-                <div className="nav-actions">
-                    <div className="theme-toggle-nav">
-                        <ThemeToggle />
-                    </div>
-                    <Link
-                        to="/trash"
-                        className="trash-link-nav"
-                        style={{
-                            color: 'var(--text-secondary)',
-                            padding: '0.5rem',
-                            borderRadius: '8px',
-                            transition: 'all 0.2s ease',
-                            fontSize: '1.2rem',
-                            display: 'flex',
-                            alignItems: 'center'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
-                            e.currentTarget.style.color = 'var(--text-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = 'var(--text-secondary)';
-                        }}
-                        title="Çöp Kutusu"
-                    >
-                        <FaTrash />
-                    </Link>
-                    {isAuthenticated ? <UserMenu /> : (
-                        <Link
-                            to="/login"
-                            style={{
+                                fontSize: '1.5rem',
+                                fontWeight: '700',
+                                color: 'var(--text-primary)',
+                                textShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                letterSpacing: '-0.02em',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '8px 16px',
-                                backgroundColor: 'var(--bg-card)',
-                                color: 'var(--text-primary)',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                transition: 'all 0.2s ease',
-                                textDecoration: 'none'
+                                gap: '12px',
+                                minWidth: 0
                             }}
                         >
-                            <FaSignInAlt size={16} />
-                            <span>Oturum Aç</span>
+                            {settings.companyLogo ? (
+                                <img
+                                    src={`${API_URL}${settings.companyLogo}`}
+                                    alt="Logo"
+                                    style={{
+                                        height: '35px',
+                                        borderRadius: '6px',
+                                        background: 'var(--bg-card)',
+                                        padding: '3px',
+                                        border: '1px solid var(--glass-border)',
+                                        boxShadow: 'var(--glass-shadow)',
+                                        flexShrink: 0
+                                    }}
+                                />
+                            ) : (
+                                <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>🏢</span>
+                            )}
+                            <span className="navbar-logo-text">{settings.companyName || 'CRM'}</span>
                         </Link>
-                    )}
+                        <div className="nav-links">
+                            <Link
+                                to="/"
+                                style={{
+                                    color: location.pathname === '/' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                                    fontWeight: location.pathname === '/' ? '600' : '400',
+                                    padding: '0.6rem 1.2rem',
+                                    borderRadius: '10px',
+                                    background: location.pathname === '/' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <FaChartPie size={18} />
+                                <span>Dashboard</span>
+                            </Link>
+                            <Link
+                                to="/contacts"
+                                style={{
+                                    color: location.pathname === '/contacts' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                                    fontWeight: location.pathname === '/contacts' ? '600' : '400',
+                                    padding: '0.6rem 1.2rem',
+                                    borderRadius: '10px',
+                                    background: location.pathname === '/contacts' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <FaUsers size={18} />
+                                <span>Kartvizitler</span>
+                            </Link>
+                            <Link
+                                to="/my-card"
+                                style={{
+                                    color: location.pathname === '/my-card' ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                                    fontWeight: location.pathname === '/my-card' ? '600' : '400',
+                                    padding: '0.6rem 1.2rem',
+                                    borderRadius: '10px',
+                                    background: location.pathname === '/my-card' ? 'var(--accent-primary-transparent)' : 'transparent',
+                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px'
+                                }}
+                            >
+                                <FaAddressCard size={18} />
+                                <span>Kartım</span>
+                            </Link>
+                        </div>
+                    </div>
+                    <div className="nav-actions">
+                        <div className="theme-toggle-nav">
+                            <ThemeToggle />
+                        </div>
+                        <Link
+                            to="/trash"
+                            className="trash-link-nav"
+                            style={{
+                                color: 'var(--text-secondary)',
+                                padding: '0.5rem',
+                                borderRadius: '8px',
+                                transition: 'all 0.2s ease',
+                                fontSize: '1.2rem',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                                e.currentTarget.style.color = 'var(--text-primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.color = 'var(--text-secondary)';
+                            }}
+                            title="Çöp Kutusu"
+                        >
+                            <FaTrash />
+                        </Link>
+                        {isAuthenticated ? (
+                            <UserMenu />
+                        ) : (
+                            <Link
+                                to="/login"
+                                style={{
+                                    padding: '10px 24px',
+                                    borderRadius: '12px',
+                                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                                    color: 'white',
+                                    fontWeight: '600',
+                                    boxShadow: '0 4px 15px rgba(var(--accent-primary-rgb), 0.3)',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                Giriş Yap
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </nav>
 
