@@ -18,7 +18,8 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Caddy arkasında çalışırken HTTPS/Session sağlıklı çalışması için kritik.
-app.set('trust proxy', false); 
+// Reverse proxy (Caddy/Nginx) arkasında IP limitlerini ve Secure cookie'yi doğru alabilmesi için 1 olmalı.
+app.set('trust proxy', 1);
 
 
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
