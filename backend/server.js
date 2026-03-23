@@ -17,10 +17,8 @@ const { apiLimiter } = require('./middleware/rateLimiter');
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Caddy arkasında çalışırken HTTPS/Session sağlıklı çalışması için kritik.
-// Reverse proxy (Caddy/Nginx) arkasında IP limitlerini ve Secure cookie'yi doğru alabilmesi için 1 olmalı.
-app.set('trust proxy', 1);
-
+// Caddy veya çoklu Reverse proxy (Nginx, LB vb.) arkasında IP limitlerini ve Secure cookie'yi doğru alabilmesi için
+app.set('trust proxy', true);
 
 // HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
@@ -88,9 +86,9 @@ if (process.env.ALLOWED_ORIGINS) {
 app.use(cors({
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
+        // AYRICA: Aynı domainden (same-origin) gelen fetch/xhr de bazen origin göndermez.
         if (!origin) return callback(null, true);
 
-        // Check if origin is whitelisted or starts with a whitelisted pattern
         // Sadece tam eşleşmeye izin ver
         const isAllowed = allowedOrigins.includes(origin);
 
@@ -123,14 +121,13 @@ app.use(session({
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    proxy: false, // Doğrudan erişim için false olmalı
+    proxy: true, // Express trust proxy yetersiz kalırsa diye, force proxy modu. (Secure cookie logiği için kritik)
     name: 'bizcarder.sid', 
     cookie: {
         secure: process.env.SESSION_SECURE === 'true', 
         httpOnly: true,
         maxAge: 24 * 60 * 60 * 1000,
-        // SAML login (IdP'den POST dönmesi) senaryosunda modern tarayıcıların 
-        // cookie'leri düşürmemesi için eğer HTTPS ise 'none' olması kritik!
+        path: '/', // Path garanti altına alınıyor
         sameSite: process.env.SESSION_SECURE === 'true' ? 'none' : 'lax'
     }
 }));
