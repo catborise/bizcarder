@@ -548,7 +548,7 @@ input:focus, textarea:focus {
   }
 
   /* Nav Responsive */
-  .navbar-logo-text, .user-name-text, .theme-toggle-nav, .trash-link-nav {
+  .navbar-logo-text, .user-name-text, .theme-toggle-nav, .hide-on-mobile {
     display: none !important;
   }
 

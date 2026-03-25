@@ -467,7 +467,7 @@ const cardValidationRules = [
 router.post('/', uploadFields, cardValidationRules, validate, async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
+        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags, leadStatus, priority, source } = req.body;
 
         const frontImageUrl = req.files['frontImage'] ? `/uploads/${req.files['frontImage'][0].filename}` : null;
         const backImageUrl = req.files['backImage'] ? `/uploads/${req.files['backImage'][0].filename}` : null;
@@ -501,6 +501,9 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
             visibility,
             isPersonal: req.body.isPersonal === 'true',
             reminderDate: reminderDate || null,
+            leadStatus: leadStatus || 'Cold',
+            priority: priority ? parseInt(priority, 10) : 0,
+            source: source === '' ? null : source,
             ownerId: req.user.id // Kart sahibini kaydet
         };
 
@@ -554,7 +557,7 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
             return res.status(403).json({ error: 'Bu kartviziti güncelleme yetkiniz bulunmuyor.' });
         }
 
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags } = req.body;
+        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags, leadStatus, priority, source } = req.body;
 
         // Resim güncelleme varsa (req.files undefined olabilir - JSON request durumunda)
         const frontImageUrl = (req.files && req.files['frontImage']) ? `/uploads/${req.files['frontImage'][0].filename}` : card.frontImageUrl;
@@ -581,6 +584,9 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
             notes: notes !== undefined ? notes : card.notes,
             visibility: visibility || card.visibility,
             reminderDate: reminderDate !== undefined ? (reminderDate || null) : card.reminderDate,
+            leadStatus: leadStatus || card.leadStatus,
+            priority: priority !== undefined ? parseInt(priority, 10) : card.priority,
+            source: source !== undefined ? source : card.source,
             isPersonal: req.body.isPersonal !== undefined ? (req.body.isPersonal === 'true') : card.isPersonal
         }, { transaction: t });
 

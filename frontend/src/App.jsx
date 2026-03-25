@@ -280,7 +280,7 @@ const AppContent = () => {
                                 }}
                             >
                                 <FaChartPie size={18} />
-                                <span>Dashboard</span>
+                                <span className="hide-on-mobile">Dashboard</span>
                             </Link>
                             <Link
                                 to="/contacts"
@@ -314,7 +314,7 @@ const AppContent = () => {
                                 }}
                             >
                                 <FaAddressCard size={18} />
-                                <span>Kartım</span>
+                                <span className="hide-on-mobile">Kartım</span>
                             </Link>
                         </div>
                     </div>
