@@ -104,6 +104,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     // Kamera Modalı Durumu
     const [showCameraModal, setShowCameraModal] = useState(false);
     const [cameraSide, setCameraSide] = useState(null); // 'front' or 'back'
+    const [cameraReady, setCameraReady] = useState(false);
+    const [cameraError, setCameraError] = useState(null);
     const videoRef = useRef(null);
     const streamRef = useRef(null);
 
@@ -213,89 +215,170 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
 
     // Kamera Başlatma
-    const startCamera = async () => {
+    const startCamera = async (side) => {
+        setCameraReady(false);
+        setCameraError(null);
+
+        // getUserMedia desteği yoksa native file input'a fallback
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            setCameraError('no-support');
+            return;
+        }
+
         try {
-            const constraints = {
-                video: {
-                    facingMode: 'environment', // Mümkünse arka kamera
-                    width: { ideal: 1920 },
-                    height: { ideal: 1080 }
-                }
-            };
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
+            // İlk olarak arka kamerayı dene, başarısız olursa herhangi bir kamerayı dene
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { exact: 'environment' },
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
+            } catch {
+                // exact: environment başarısız olduysa fallback
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: false
+                });
             }
+
             streamRef.current = stream;
+
+            // Video element'inin render edilmesini bekle
+            const waitForVideo = () => {
+                return new Promise((resolve) => {
+                    const check = () => {
+                        if (videoRef.current) {
+                            resolve();
+                        } else {
+                            requestAnimationFrame(check);
+                        }
+                    };
+                    check();
+                });
+            };
+            await waitForVideo();
+
+            videoRef.current.srcObject = stream;
+            await videoRef.current.play();
+            setCameraReady(true);
         } catch (err) {
             console.error('Kamera erişim hatası:', err);
-            showNotification('Kamera başlatılamadı. Lütfen izin verin veya HTTPS kullandığınızdan emin olun.', 'error');
-            // Fallback: Modalı kapat ve dosya diyaloğunu aç
-            setShowCameraModal(false);
-            const inputId = cameraSide === 'front' ? 'frontInput' : 'backInput';
-            document.getElementById(inputId).click();
+
+            // Stream alındıysa temizle
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
+
+            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                setCameraError('permission');
+            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                setCameraError('not-found');
+            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                setCameraError('in-use');
+            } else {
+                setCameraError('unknown');
+            }
         }
     };
 
-    const stopCamera = () => {
+    const stopCameraStream = () => {
         if (streamRef.current) {
             streamRef.current.getTracks().forEach(track => track.stop());
             streamRef.current = null;
         }
+        if (videoRef.current) {
+            videoRef.current.srcObject = null;
+        }
+        setCameraReady(false);
+        setCameraError(null);
+    };
+
+    const closeCamera = () => {
+        stopCameraStream();
         setShowCameraModal(false);
     };
 
+    const fallbackToFileInput = (side) => {
+        closeCamera();
+        // Native kamera capture input'unu kullan (mobilde doğrudan kamera açar)
+        const inputId = side === 'front' ? 'frontCamera' : 'backCamera';
+        const el = document.getElementById(inputId);
+        if (el) {
+            el.click();
+        } else {
+            // Camera input yoksa normal file input'u aç
+            document.getElementById(side === 'front' ? 'frontInput' : 'backInput')?.click();
+        }
+    };
+
     const capturePhoto = () => {
-        if (!videoRef.current) return;
-        
+        if (!videoRef.current || videoRef.current.readyState < 2) {
+            showNotification('Kamera henüz hazır değil, lütfen bekleyin.', 'warning');
+            return;
+        }
+
         const canvas = document.createElement('canvas');
         const video = videoRef.current;
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
+
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0);
-        
+
         canvas.toBlob(async (blob) => {
-            if (blob) {
-                // Sıkıştırma sonrası handle
-                const compressedBlob = await compressImage(blob);
-                const file = new File([compressedBlob], `camera_${cameraSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                
-                // onSelectFile benzeri bir mantık ama File nesnesi ile
-                const reader = new FileReader();
-                reader.onload = () => {
-                    setSrc(reader.result);
-                    setActiveSide(cameraSide);
-                };
-                reader.readAsDataURL(file);
-                
-                if (cameraSide === 'front') {
-                    setFrontBlob(compressedBlob);
-                    setFrontPreview(URL.createObjectURL(compressedBlob));
-                } else {
-                    setBackBlob(compressedBlob);
-                    setBackPreview(URL.createObjectURL(compressedBlob));
-                }
-                
-                stopCamera();
+            if (!blob) return;
+
+            const capturedSide = cameraSide;
+
+            // Kamerayı kapat
+            stopCameraStream();
+            setShowCameraModal(false);
+
+            // onSelectFile ile aynı akışa gir: src → PerspectiveCropper → handleCropComplete
+            const url = URL.createObjectURL(blob);
+            setSrc(url);
+            setActiveSide(capturedSide);
+            setAiDetectedPoints(null);
+            setPreFetchedAiData(null);
+
+            // AI boundary detection (dosya seçimiyle aynı mantık)
+            if (user?.aiOcrEnabled) {
+                const file = new File([blob], `camera_${capturedSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                await detectAiBoundary(file);
             }
-        }, 'image/jpeg', 0.9);
+        }, 'image/jpeg', 0.92);
     };
 
     const openCamera = (side) => {
+        // getUserMedia desteği yoksa direkt native kamera input'una yönlendir
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            fallbackToFileInput(side);
+            return;
+        }
         setCameraSide(side);
         setShowCameraModal(true);
-        // useEffect veya modal açıkken tetiklenecek
     };
 
     useEffect(() => {
-        if (showCameraModal) {
-            startCamera();
-        } else {
-            stopCamera();
+        if (showCameraModal && cameraSide) {
+            startCamera(cameraSide);
         }
-        return () => stopCamera();
+        return () => {
+            // Cleanup: sadece stream'i kapat, state değiştirme
+            if (streamRef.current) {
+                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current = null;
+            }
+        };
     }, [showCameraModal]);
     // Dosya Seçimi Başlat
     const [aiDetectedPoints, setAiDetectedPoints] = useState(null);
@@ -1690,31 +1773,106 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     padding: '20px'
                 }}>
                     <div style={{ position: 'relative', width: '100%', maxWidth: '640px', aspectRatio: '4/3', background: 'black', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--accent-primary)' }}>
-                        <video ref={videoRef} autoPlay playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        
-                        {/* Vizör Çerçevesi */}
-                        <div style={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: '85%',
-                            height: '60%',
-                            border: '2px dashed var(--accent-primary)',
-                            borderRadius: '12px',
-                            pointerEvents: 'none',
-                            boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
-                        }}>
-                             <div style={{ position: 'absolute', top: '-30px', left: 0, right: 0, textAlign: 'center', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: 'bold' }}>
-                                Kartı buraya hizalayın
-                             </div>
-                        </div>
+                        {/* Video element - muted gerekli (iOS autoplay policy) */}
+                        <video
+                            ref={videoRef}
+                            autoPlay
+                            playsInline
+                            muted
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                display: cameraReady ? 'block' : 'none'
+                            }}
+                        />
+
+                        {/* Kamera yüklenirken göster */}
+                        {!cameraReady && !cameraError && (
+                            <div style={{
+                                position: 'absolute',
+                                inset: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white'
+                            }}>
+                                <div className="spinner" style={{ marginBottom: '12px' }}></div>
+                                <p style={{ fontSize: '14px', fontWeight: '500' }}>Kamera başlatılıyor...</p>
+                            </div>
+                        )}
+
+                        {/* Kamera hatası göster */}
+                        {cameraError && (
+                            <div style={{
+                                position: 'absolute',
+                                inset: 0,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                padding: '20px',
+                                textAlign: 'center'
+                            }}>
+                                <p style={{ fontSize: '40px', marginBottom: '10px' }}>
+                                    {cameraError === 'permission' ? '🔒' : cameraError === 'not-found' ? '📷' : '⚠️'}
+                                </p>
+                                <p style={{ fontSize: '15px', fontWeight: '600', marginBottom: '6px' }}>
+                                    {cameraError === 'permission' && 'Kamera izni reddedildi'}
+                                    {cameraError === 'not-found' && 'Kamera bulunamadı'}
+                                    {cameraError === 'in-use' && 'Kamera başka bir uygulama tarafından kullanılıyor'}
+                                    {cameraError === 'no-support' && 'Tarayıcınız kamera erişimini desteklemiyor'}
+                                    {cameraError === 'unknown' && 'Kamera başlatılamadı'}
+                                </p>
+                                <p style={{ fontSize: '13px', color: '#aaa', marginBottom: '16px' }}>
+                                    {cameraError === 'permission'
+                                        ? 'Tarayıcı ayarlarından kamera iznini etkinleştirin.'
+                                        : 'Bunun yerine dosya seçiciyi kullanabilirsiniz.'}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => fallbackToFileInput(cameraSide)}
+                                    style={{
+                                        padding: '10px 24px',
+                                        background: 'var(--accent-primary)',
+                                        color: 'white',
+                                        borderRadius: '10px',
+                                        fontWeight: 'bold',
+                                        border: 'none',
+                                        cursor: 'pointer',
+                                        fontSize: '14px'
+                                    }}
+                                >Dosyadan Seç</button>
+                            </div>
+                        )}
+
+                        {/* Vizör Çerçevesi - sadece kamera hazırken göster */}
+                        {cameraReady && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(-50%, -50%)',
+                                width: '85%',
+                                height: '60%',
+                                border: '2px dashed var(--accent-primary)',
+                                borderRadius: '12px',
+                                pointerEvents: 'none',
+                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
+                            }}>
+                                <div style={{ position: 'absolute', top: '-30px', left: 0, right: 0, textAlign: 'center', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: 'bold' }}>
+                                    Kartı buraya hizalayın
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
                         <button
                             type="button"
-                            onClick={stopCamera}
+                            onClick={closeCamera}
                             style={{
                                 padding: '12px 24px',
                                 background: 'white',
@@ -1728,20 +1886,22 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         <button
                             type="button"
                             onClick={capturePhoto}
+                            disabled={!cameraReady}
                             style={{
                                 padding: '12px 40px',
-                                background: 'var(--accent-primary)',
+                                background: cameraReady ? 'var(--accent-primary)' : '#555',
                                 color: 'white',
                                 borderRadius: '12px',
                                 fontWeight: 'bold',
                                 border: 'none',
-                                cursor: 'pointer',
+                                cursor: cameraReady ? 'pointer' : 'not-allowed',
                                 fontSize: '18px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '10px'
+                                gap: '10px',
+                                opacity: cameraReady ? 1 : 0.5
                             }}
-                        >📸 Fotoğraf Çek</button>
+                        >Fotoğraf Çek</button>
                     </div>
                 </div>
             )}
