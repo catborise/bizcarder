@@ -85,6 +85,19 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         }
     }, [src, handleImageLoad]);
 
+    // Register non-passive touchmove to guarantee preventDefault works on iOS
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const handler = (e) => {
+            if (draggingIdx !== null || draggingEdgeIdx !== null || isDraggingArea) {
+                e.preventDefault();
+            }
+        };
+        el.addEventListener('touchmove', handler, { passive: false });
+        return () => el.removeEventListener('touchmove', handler);
+    }, [draggingIdx, draggingEdgeIdx, isDraggingArea]);
+
     const updateMagnifier = (x, y) => {
         if (!magnifierCanvasRef.current || !imgRef.current) return;
         const ctx = magnifierCanvasRef.current.getContext('2d');
@@ -121,7 +134,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
     };
 
     const handleMouseDown = (idx) => (e) => {
-        if (e.button !== 0) return; // Only left click
+        if (e.button !== undefined && e.button !== 0) return; // Only left click (skip check for touch)
         e.preventDefault();
         setDraggingIdx(idx);
         setShowMagnifier(true);
@@ -131,7 +144,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
 
     const handleContainerMouseDown = (e) => {
         if (points.length !== 4 || draggingIdx !== null) return;
-        if (e.button !== 0) return;
+        if (e.button !== undefined && e.button !== 0) return;
 
         const rect = containerRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -250,13 +263,14 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
             Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y)).toFixed(2) : 0;
 
     return (
-        <div style={{ position: 'relative', userSelect: 'none', display: 'inline-block' }}>
+        <div style={{ position: 'relative', userSelect: 'none', display: 'inline-block', touchAction: 'none' }}>
             <div
                 ref={containerRef}
                 style={{
                     position: 'relative',
                     display: 'inline-block',
                     overflow: 'visible', // Ensure handles are visible at edges
+                    touchAction: 'none', // Prevent browser touch gestures (pull-to-refresh, scroll)
                     cursor: draggingIdx !== null ? 'grabbing' :
                         (draggingEdgeIdx !== null || isDraggingArea ? 'move' :
                             (hoverState === 'edge' ? 'move' :
@@ -278,6 +292,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                             const p1 = points[i];
                             const p2 = points[(i + 1) % 4];
                             if (distToSegment(x, y, p1.x, p1.y, p2.x, p2.y) < 20) {
+                                e.preventDefault();
                                 setDraggingEdgeIdx(i);
                                 setDragStartPos({ x, y });
                                 return;
@@ -285,12 +300,16 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         }
 
                         if (isPointInPolygon(x, y, points)) {
+                            e.preventDefault();
                             setIsDraggingArea(true);
                             setDragStartPos({ x, y });
                         }
                     }
                 }}
                 onTouchMove={(e) => {
+                    if (draggingIdx !== null || draggingEdgeIdx !== null || isDraggingArea) {
+                        e.preventDefault();
+                    }
                     const touch = e.touches[0];
                     handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY });
                 }}

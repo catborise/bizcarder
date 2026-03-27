@@ -18,7 +18,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             backdropFilter: 'blur(8px)',
             animation: 'fadeIn 0.2s ease'
         }}>
-            <div style={{
+            <div className="modal-content" style={{
                 background: 'var(--bg-card)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid var(--glass-border)',
@@ -33,7 +33,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                 animation: 'fadeIn 0.3s ease'
             }} onClick={e => e.stopPropagation()}>
 
-                <div style={{
+                <div className="modal-header" style={{
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',

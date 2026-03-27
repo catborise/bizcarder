@@ -774,10 +774,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '25px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <form onSubmit={handleSubmit} className="addcard-form" style={{ display: 'grid', gap: '25px' }}>
+                <div className="addcard-image-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     {/* Ön Yüz */}
-                    <div style={{
+                    <div className="addcard-image-box" style={{
                         border: '1px dashed var(--glass-border)',
                         padding: '15px',
                         borderRadius: '12px',
@@ -793,7 +793,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         {frontPreview ? (
                             <div style={{ position: 'relative' }}>
                                 <img src={frontPreview} alt="Ön Yüz" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
-                                <div style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
+                                <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
                                     <button
                                         type="button"
                                         onClick={() => setShowLogoCrop(true)}
@@ -878,7 +878,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     </div>
 
                     {/* Arka Yüz */}
-                    <div style={{
+                    <div className="addcard-image-box" style={{
                         border: '1px dashed var(--glass-border)',
                         padding: '15px',
                         borderRadius: '12px',
@@ -893,7 +893,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         {backPreview ? (
                             <div style={{ position: 'relative' }}>
                                 <img src={backPreview} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
-                                <div style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
+                                <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
                                     <button
                                         type="button"
                                         onClick={(e) => document.getElementById('backInput').click()}
@@ -966,7 +966,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
 
                 {/* Progress Indicator */}
-                <div style={{
+                <div className="addcard-steps" style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -976,7 +976,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 }}>
                     {/* Step 1 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
+                        <div className="step-circle" style={{
                             width: '32px', height: '32px', borderRadius: '50%',
                             background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
                             border: currentStep >= 1 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
@@ -984,14 +984,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>1</div>
-                        <span style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Temel</span>
+                        <span className="step-label" style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Temel</span>
                     </div>
 
-                    <div style={{ width: '40px', height: '2px', background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
+                    <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
 
                     {/* Step 2 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
+                        <div className="step-circle" style={{
                             width: '32px', height: '32px', borderRadius: '50%',
                             background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
                             border: currentStep >= 2 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
@@ -999,14 +999,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>2</div>
-                        <span style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Detay</span>
+                        <span className="step-label" style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Detay</span>
                     </div>
 
-                    <div style={{ width: '40px', height: '2px', background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
+                    <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
 
                     {/* Step 3 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div style={{
+                        <div className="step-circle" style={{
                             width: '32px', height: '32px', borderRadius: '50%',
                             background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-bg)',
                             border: currentStep >= 3 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
@@ -1014,7 +1014,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 3 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>3</div>
-                        <span style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Lead</span>
+                        <span className="step-label" style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Lead</span>
                     </div>
                 </div>
 
@@ -1067,18 +1067,18 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             )}
 
                             {/* Temel Bilgiler */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
                                 <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                                 <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
 
                             {/* İletişim Bilgileri */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                 <input type="email" name="email" placeholder="E-Posta *" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                                 <input type="text" name="phone" placeholder="Telefon *" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
@@ -1099,7 +1099,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                                         <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                                         <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                                     </div>
@@ -1107,7 +1107,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </fieldset>
 
                             {/* CRM Extras: Tags & Reminders */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Etiketler</label>
                                     <div style={{
@@ -1241,7 +1241,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     {/* Step 3: Relationship Management (Nurturing) */}
                     {currentStep === 3 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                     <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>İlişki Durumu (Lead Status)</label>
                                     <select 
@@ -1302,7 +1302,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
 
                 {/* Wizard Navigation Buttons */}
-                <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <div className="addcard-nav-buttons" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
                     {currentStep === 1 ? (
                         <>
                             <button
@@ -1439,7 +1439,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         justifyContent: 'center',
                         padding: '20px'
                     }}>
-                        <div style={{
+                        <div className="ocr-confirm-modal" style={{
                             background: 'var(--bg-card)',
                             border: '1px solid var(--glass-border)',
                             borderRadius: '24px',
@@ -1458,7 +1458,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </p>
 
                             <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>AD</label>
                                         <input
@@ -1481,7 +1481,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ŞİRKET</label>
                                         <input
@@ -1502,7 +1502,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     </div>
                                 </div>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                         <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>E-POSTA</label>
                                         <input
@@ -1543,7 +1543,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '15px' }}>
+                            <div className="ocr-confirm-buttons" style={{ display: 'flex', gap: '15px' }}>
                                 <button
                                     type="button"
                                     onClick={() => setShowOcrConfirm(false)}

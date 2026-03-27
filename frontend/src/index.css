@@ -718,3 +718,100 @@ input:checked+.slider:before {
   background-color: white;
   transform: translateX(20px);
 }
+
+/* ====================================
+   MODAL & ADDCARD MOBILE RESPONSIVE
+   ==================================== */
+
+@media (max-width: 600px) {
+  /* Modal */
+  .modal-content {
+    padding: 16px !important;
+    border-radius: 16px !important;
+    width: 95% !important;
+    max-height: 95vh !important;
+  }
+
+  .modal-header {
+    margin-bottom: 14px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .modal-header h3 {
+    font-size: 1.2rem !important;
+  }
+
+  /* AddCard image upload grid */
+  .addcard-image-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* AddCard 2-column form grids */
+  .addcard-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Step progress indicator */
+  .addcard-steps {
+    gap: 10px !important;
+    padding: 12px 0 !important;
+  }
+
+  .addcard-steps .step-label {
+    display: none;
+  }
+
+  .addcard-steps .step-circle {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 12px !important;
+  }
+
+  .addcard-steps .step-line {
+    width: 24px !important;
+  }
+
+  /* Navigation buttons */
+  .addcard-nav-buttons {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  .addcard-nav-buttons button {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 12px 16px !important;
+    font-size: 14px !important;
+  }
+
+  /* OCR confirm modal */
+  .ocr-confirm-modal {
+    padding: 20px !important;
+    border-radius: 16px !important;
+    max-width: 100% !important;
+  }
+
+  .ocr-confirm-buttons {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  /* AddCard form container */
+  .addcard-form {
+    gap: 16px !important;
+  }
+
+  /* Image upload boxes - smaller height on mobile */
+  .addcard-image-box {
+    min-height: 130px !important;
+    padding: 12px !important;
+  }
+
+  .addcard-image-box .image-action-buttons {
+    position: static !important;
+    margin-top: 8px !important;
+    justify-content: center !important;
+  }
+}
