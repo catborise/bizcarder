@@ -840,69 +840,63 @@ const Dashboard = () => {
                         )}
                     </div>
                 </div>
-
-                <div style={{
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '24px',
-                    padding: '25px',
-                    color: 'var(--text-primary)',
-                    boxShadow: 'var(--glass-shadow)',
-                    overflow: 'hidden'
-                }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', letterSpacing: '-0.01em' }}>{t('dashboard:stats.frequentTags')}</h3>
-                        <Link to="/contacts" style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent-primary)', textDecoration: 'none' }}>{t('dashboard:stats.viewAll')}</Link>
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                        {loading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <div key={i} className="skeleton-box" style={{ width: '80px', height: '34px', borderRadius: '12px' }}></div>
-                            ))
-                        ) : (
-                            tagStats.length > 0 ? (
-                                tagStats.map((tag, index) => (
-                                    <Link 
-                                        key={tag.id} 
-                                        to={`/contacts?tagId=${tag.id}`}
-                                        className="stagger-enter"
-                                        style={{ 
-                                            padding: '8px 16px', 
-                                            borderRadius: '12px', 
-                                            background: tag.color + '1A', // %10 alpha for background
-                                            border: `1px solid ${tag.color}40`,
-                                            color: 'var(--text-primary)',
-                                            textDecoration: 'none',
-                                            fontSize: '0.95rem',
-                                            fontWeight: '500',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            transition: 'all 0.2s ease',
-                                            animationDelay: `${index * 0.05}s`
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = tag.color + '33';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = tag.color + '1A';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: tag.color }}></span>
-                                        {tag.name}
-                                        <span style={{ fontSize: '0.8rem', opacity: 0.7, fontWeight: '600' }}>({tag.getDataValue ? tag.getDataValue('cardCount') : tag.cardCount})</span>
-                                    </Link>
-                                ))
-                            ) : (
-                                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem' }}>{t('dashboard:stats.noTags')}</p>
-                            )
-                        )}
-                    </div>
-                </div>
             </div>
+
+            {/* Frequent Tags - compact row below stats */}
+            {!loading && tagStats.length > 0 && (
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 'var(--space-3)',
+                    flexWrap: 'wrap',
+                    marginBottom: 'var(--space-6)',
+                }}>
+                    <span style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: 'var(--text-tertiary)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        whiteSpace: 'nowrap',
+                    }}>
+                        {t('dashboard:stats.frequentTags')}
+                    </span>
+                    {tagStats.slice(0, 8).map((tag) => (
+                        <Link
+                            key={tag.id}
+                            to={`/contacts?tagId=${tag.id}`}
+                            style={{
+                                padding: '4px 12px',
+                                borderRadius: '6px',
+                                background: tag.color + '1A',
+                                border: `1px solid ${tag.color}40`,
+                                color: 'var(--text-primary)',
+                                textDecoration: 'none',
+                                fontSize: '0.8rem',
+                                fontWeight: 500,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                transition: 'all 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = tag.color + '33';
+                                e.currentTarget.style.transform = 'translateY(-1px)';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = tag.color + '1A';
+                                e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                        >
+                            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: tag.color }} />
+                            {tag.name}
+                            <span style={{ fontSize: '0.7rem', opacity: 0.6, fontWeight: 600 }}>
+                                {tag.getDataValue ? tag.getDataValue('cardCount') : tag.cardCount}
+                            </span>
+                        </Link>
+                    ))}
+                </div>
+            )}
 
 
             {/* Core Application Tiles - Always at top, under stats */}
