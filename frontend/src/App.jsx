@@ -14,6 +14,8 @@ import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
+import { AnimatePresence } from 'framer-motion';
+import PageTransition from './components/PageTransition';
 
 
 import Dashboard from './components/Dashboard';
@@ -384,71 +386,73 @@ const AppContent = () => {
             {/* Main Content Area */}
             <main>
 
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route
-                        path="/contacts"
-                        element={
-                            <ProtectedRoute>
-                                <Contacts />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/logs"
-                        element={
-                            <ProtectedRoute>
-                                <ActivityLogs />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/trash"
-                        element={
-                            <ProtectedRoute>
-                                <TrashBin />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/users"
-                        element={
-                            <ProtectedRoute>
-                                <UserManagement />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/settings"
-                        element={
-                            <ProtectedRoute>
-                                <Settings />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/my-card"
-                        element={
-                            <ProtectedRoute>
-                                <MyCard />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/import"
-                        element={
-                            <ProtectedRoute>
-                                <ImportCards />
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/help" element={<Help />} />
-                    <Route path="/access-denied" element={<AccessDenied />} />
-                    {/* Public Route for Business Card Sharing (using token) */}
-                    <Route path="/contact-profile/:token" element={<ContactProfile />} />
-                </Routes>
+                <AnimatePresence mode="wait">
+                    <Routes location={location} key={location.pathname}>
+                        <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
+                        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                        <Route
+                            path="/contacts"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><Contacts /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/logs"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><ActivityLogs /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/trash"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><TrashBin /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/users"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><UserManagement /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/settings"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><Settings /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/my-card"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><MyCard /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/import"
+                            element={
+                                <ProtectedRoute>
+                                    <PageTransition><ImportCards /></PageTransition>
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+                        <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
+                        <Route path="/access-denied" element={<PageTransition><AccessDenied /></PageTransition>} />
+                        {/* Public Route for Business Card Sharing (using token) */}
+                        <Route path="/contact-profile/:token" element={<PageTransition><ContactProfile /></PageTransition>} />
+                    </Routes>
+                </AnimatePresence>
             </main >
 
             {/* Ultra-Compact Footer */}
