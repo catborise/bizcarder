@@ -30,7 +30,7 @@ const Contacts = () => {
         return {
             tagId: params.get('tagId') || '',
             city: '',
-            hasReminder: false,
+            hasReminder: params.get('filter') === 'reminders' ? true : false,
             leadStatus: '',
             source: '',
             dateStart: '',
