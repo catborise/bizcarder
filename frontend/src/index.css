@@ -22,19 +22,21 @@
 }
 
 [data-theme='dark'] {
-  --bg-dark: #020617;
+  --bg-dark: #0f0f1a;
+  --bg-dark-end: #1a1a2e;
   --bg-card: #0f172a;
   --bg-input: rgba(15, 23, 42, 0.6);
 
   --glass-bg: rgba(30, 41, 59, 0.4);
   --glass-bg-hover: rgba(30, 41, 59, 0.6);
+  --glass-bg-solid: #1e293b;
   --glass-border: rgba(255, 255, 255, 0.08);
   --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.4), 0 2px 12px -1px rgba(0, 0, 0, 0.2);
   --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.5);
 
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --text-tertiary: #94a3b8;
+  --text-tertiary: #a1a1aa;
 
   --accent-primary: #3b82f6;
   --accent-primary-rgb: 59, 130, 246;
@@ -47,18 +49,33 @@
   --accent-error: #ef4444;
   --accent-error-rgb: 239, 68, 68;
   --accent-primary-transparent: rgba(59, 130, 246, 0.1);
+  --accent-secondary-transparent: rgba(99, 102, 241, 0.1);
   --accent-error-transparent: rgba(239, 68, 68, 0.1);
+
+  /* Gradient accents for stat cards */
+  --gradient-primary: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(99, 102, 241, 0.04));
+  --gradient-primary-border: rgba(99, 102, 241, 0.15);
+  --gradient-blue: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(59, 130, 246, 0.04));
+  --gradient-blue-border: rgba(59, 130, 246, 0.15);
+  --gradient-success: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0.04));
+  --gradient-success-border: rgba(16, 185, 129, 0.15);
+  --gradient-warning: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.04));
+  --gradient-warning-border: rgba(245, 158, 11, 0.15);
+  --gradient-error: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(239, 68, 68, 0.04));
+  --gradient-error-border: rgba(239, 68, 68, 0.15);
 
   color-scheme: dark;
 }
 
 [data-theme='light'] {
   --bg-dark: #f8fafc;
+  --bg-dark-end: #f1f5f9;
   --bg-card: #ffffff;
   --bg-input: rgba(255, 255, 255, 0.8);
 
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-bg-solid: #ffffff;
   --glass-border: rgba(0, 0, 0, 0.1);
   --glass-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.05), 0 2px 12px -1px rgba(0, 0, 0, 0.02);
   --glass-shadow-hover: 0 10px 40px -4px rgba(0, 0, 0, 0.1);
@@ -78,7 +95,20 @@
   --accent-error: #dc2626;
   --accent-error-rgb: 220, 38, 38;
   --accent-primary-transparent: rgba(37, 99, 235, 0.1);
+  --accent-secondary-transparent: rgba(79, 70, 229, 0.1);
   --accent-error-transparent: rgba(220, 38, 38, 0.1);
+
+  /* Gradient accents for stat cards */
+  --gradient-primary: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(79, 70, 229, 0.02));
+  --gradient-primary-border: rgba(79, 70, 229, 0.15);
+  --gradient-blue: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(37, 99, 235, 0.02));
+  --gradient-blue-border: rgba(37, 99, 235, 0.15);
+  --gradient-success: linear-gradient(135deg, rgba(5, 150, 105, 0.08), rgba(5, 150, 105, 0.02));
+  --gradient-success-border: rgba(5, 150, 105, 0.15);
+  --gradient-warning: linear-gradient(135deg, rgba(217, 119, 6, 0.08), rgba(217, 119, 6, 0.02));
+  --gradient-warning-border: rgba(217, 119, 6, 0.15);
+  --gradient-error: linear-gradient(135deg, rgba(220, 38, 38, 0.08), rgba(220, 38, 38, 0.02));
+  --gradient-error-border: rgba(220, 38, 38, 0.15);
 
   color-scheme: light;
 }
@@ -107,7 +137,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--bg-dark);
+  background: linear-gradient(135deg, var(--bg-dark), var(--bg-dark-end));
+  background-attachment: fixed;
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
