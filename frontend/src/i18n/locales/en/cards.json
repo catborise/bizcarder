@@ -81,7 +81,8 @@
       "country": "Country",
       "tagName": "Tag name...",
       "source": "e.g., Expo 2026, LinkedIn, Referral...",
-      "notes": "Personal notes about the contact, hobbies, interests..."
+      "notes": "Personal notes about the contact, hobbies, interests...",
+      "ocrText": "OCR scanned text..."
     },
     "label": {
       "addressInfo": "Address Information",
@@ -91,7 +92,8 @@
       "leadStatus": "Lead Status",
       "priority": "Priority",
       "source": "Source",
-      "notes": "Notes"
+      "notes": "Notes",
+      "ocrText": "OCR Text"
     },
     "ocrLabel": {
       "firstName": "FIRST NAME",
@@ -130,7 +132,9 @@
     },
     "hint": {
       "contactRequired": "* At least one of email or phone is required"
-    }
+    },
+    "showMore": "Show More Fields",
+    "showLess": "Show Less"
   },
   "contacts": {
     "title": "Business Cards",
@@ -207,6 +211,7 @@
     "empty": "No records found",
     "emptyTitle": "No business cards yet",
     "emptyDescription": "Start building your network by adding your first business card.",
+    "lastInteraction": "Last",
     "modal": {
       "image": "Image",
       "frontSide": "Front Side",

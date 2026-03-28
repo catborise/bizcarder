@@ -81,7 +81,8 @@
       "country": "Ülke",
       "tagName": "Etiket adı...",
       "source": "Örn: Expo 2026, LinkedIn, Referans...",
-      "notes": "Kişi hakkında özel notlar, hobiler, ilgi alanları..."
+      "notes": "Kişi hakkında özel notlar, hobiler, ilgi alanları...",
+      "ocrText": "OCR ile okunan metin..."
     },
     "label": {
       "addressInfo": "Adres Bilgileri",
@@ -91,7 +92,8 @@
       "leadStatus": "İlişki Durumu (Lead Status)",
       "priority": "Önem Derecesi (Priority)",
       "source": "Tanışma Kaynağı (Source)",
-      "notes": "Notlar"
+      "notes": "Notlar",
+      "ocrText": "OCR Metni"
     },
     "ocrLabel": {
       "firstName": "AD",
@@ -130,7 +132,9 @@
     },
     "hint": {
       "contactRequired": "* E-posta veya Telefon alanlarından en az biri doldurulmalıdır"
-    }
+    },
+    "showMore": "Daha Fazla Alan Göster",
+    "showLess": "Daha Az Göster"
   },
   "contacts": {
     "title": "Kartvizitler",
@@ -207,6 +211,7 @@
     "empty": "Kayıt bulunamadı",
     "emptyTitle": "Henüz kartvizit eklemediniz",
     "emptyDescription": "İlk kartvizitinizi ekleyerek ağınızı oluşturmaya başlayın.",
+    "lastInteraction": "Son",
     "modal": {
       "image": "Görsel",
       "frontSide": "Ön Yüz",

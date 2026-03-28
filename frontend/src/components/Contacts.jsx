@@ -598,7 +598,7 @@ const Contacts = () => {
                                         gap: '4px',
                                       }}>
                                         <FaClock size={10} />
-                                        {t('cards:lastInteraction', 'Son')}: {card.lastInteraction.type} — {new Date(card.lastInteraction.date).toLocaleDateString()}
+                                        {t('cards:contacts.lastInteraction')}: {card.lastInteraction.type} — {new Date(card.lastInteraction.date).toLocaleDateString()}
                                       </div>
                                     )}
 

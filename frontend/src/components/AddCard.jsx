@@ -1110,8 +1110,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 }}
                             >
                                 {showMoreFields
-                                    ? t('cards:showLess', 'Daha Az Göster')
-                                    : t('cards:showMore', 'Daha Fazla Alan Göster')
+                                    ? t('cards:addCard.showLess')
+                                    : t('cards:addCard.showMore')
                                 }
                                 <span style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: showMoreFields ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
                             </button>
@@ -1151,11 +1151,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     {/* OCR Metni */}
                                     {formData.ocrText && (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.ocrText', 'OCR Metni')}</label>
+                                            <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('cards:addCard.label.ocrText')}</label>
                                             <textarea
                                                 name="ocrText"
                                                 rows="3"
-                                                placeholder={t('addCard.placeholder.ocrText', 'OCR ile okunan metin...')}
+                                                placeholder={t('cards:addCard.placeholder.ocrText')}
                                                 value={formData.ocrText}
                                                 onChange={handleInputChange}
                                                 style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical', fontSize: '12px' }}
