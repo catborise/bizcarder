@@ -469,7 +469,13 @@ const Contacts = () => {
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map(card => (
-                        <div key={card.id} className="glass-container" style={{ 
+                        <div
+                          key={card.id}
+                          className="card-wrapper"
+                          data-priority={card.priority || ''}
+                          data-lead={card.leadStatus || ''}
+                        >
+                        <div className="glass-container" style={{
                             border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
                             backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)',
                             padding: '20px'
@@ -570,6 +576,32 @@ const Contacts = () => {
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
+                                    {card.tags && card.tags.length > 0 && (
+                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
+                                        {card.tags.slice(0, 3).map(tag => (
+                                          <span key={tag._id || tag} className="tag-chip">
+                                            {tag.name || tag}
+                                          </span>
+                                        ))}
+                                        {card.tags.length > 3 && (
+                                          <span className="tag-chip-more">+{card.tags.length - 3}</span>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {card.lastInteraction && (
+                                      <div style={{
+                                        fontSize: '0.75rem',
+                                        color: 'var(--text-tertiary)',
+                                        marginTop: '4px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '4px',
+                                      }}>
+                                        <FaClock size={10} />
+                                        {t('cards:lastInteraction', 'Son')}: {card.lastInteraction.type} — {new Date(card.lastInteraction.date).toLocaleDateString()}
+                                      </div>
+                                    )}
 
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', fontSize: '0.9em' }}>
                                         {card.reminderDate && (
@@ -650,6 +682,7 @@ const Contacts = () => {
                                     <InteractionLog cardId={card.id} />
                                 </div>
                             )}
+                        </div>
                         </div>
                     ))
                 ) : (
