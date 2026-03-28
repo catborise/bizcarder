@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import * as Icons from 'react-icons/fa';
-import api from '../api/axios';
+import api, { API_URL as BASE_API_URL } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import Modal from './Modal';
 import ReminderModal from './ReminderModal';
@@ -39,6 +40,280 @@ const DynamicIcon = ({ name, size = 36 }) => {
     return <IconComponent size={size} />;
 };
 
+const QuickSearch = ({ isAuthenticated }) => {
+    const { t } = useTranslation('dashboard');
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
+    const debounceRef = useRef(null);
+    const containerRef = useRef(null);
+    const navigate = useNavigate();
+
+    const search = useCallback(async (term) => {
+        if (!term || term.length < 2) {
+            setResults([]);
+            return;
+        }
+        setIsSearching(true);
+        try {
+            const res = await api.get('/api/cards', { params: { search: term, limit: 6 } });
+            setResults(res.data?.cards || res.data || []);
+        } catch {
+            setResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, []);
+
+    const handleChange = (e) => {
+        const val = e.target.value;
+        setQuery(val);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => search(val), 400);
+    };
+
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && query.trim()) {
+            navigate(`/contacts?search=${encodeURIComponent(query.trim())}`);
+            setIsFocused(false);
+        }
+    };
+
+    // Close dropdown on outside click
+    useEffect(() => {
+        const handler = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setIsFocused(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, []);
+
+    if (!isAuthenticated) return null;
+
+    const showDropdown = isFocused && (results.length > 0 || isSearching || query.length >= 2);
+
+    return (
+        <div ref={containerRef} style={{ position: 'relative', marginBottom: '30px' }}>
+            <div style={{
+                display: 'flex',
+                gap: '10px',
+                alignItems: 'center'
+            }}>
+                <div style={{
+                    flex: 1,
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center'
+                }}>
+                    <Icons.FaSearch style={{
+                        position: 'absolute',
+                        left: '16px',
+                        color: isFocused ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+                        transition: 'color 0.2s',
+                        fontSize: '16px',
+                        pointerEvents: 'none'
+                    }} />
+                    <input
+                        type="text"
+                        placeholder={t('search.placeholder')}
+                        value={query}
+                        onChange={handleChange}
+                        onKeyDown={handleKeyDown}
+                        onFocus={() => setIsFocused(true)}
+                        style={{
+                            width: '100%',
+                            padding: '14px 16px 14px 44px',
+                            borderRadius: '14px',
+                            border: isFocused ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
+                            background: 'var(--glass-bg)',
+                            backdropFilter: 'blur(10px)',
+                            color: 'var(--text-primary)',
+                            fontSize: '15px',
+                            outline: 'none',
+                            transition: 'all 0.2s ease',
+                            boxShadow: isFocused ? '0 0 0 3px rgba(var(--accent-primary-rgb), 0.15)' : 'var(--glass-shadow)'
+                        }}
+                    />
+                    {isSearching && (
+                        <div className="spinner" style={{
+                            position: 'absolute',
+                            right: '14px',
+                            width: '18px',
+                            height: '18px',
+                            border: '2px solid var(--glass-border)',
+                            borderTopColor: 'var(--accent-primary)',
+                            borderRadius: '50%',
+                            animation: 'spin 0.6s linear infinite'
+                        }} />
+                    )}
+                </div>
+                <button
+                    onClick={() => navigate('/contacts')}
+                    style={{
+                        padding: '14px',
+                        borderRadius: '14px',
+                        background: 'var(--glass-bg)',
+                        border: '1px solid var(--glass-border)',
+                        color: 'var(--text-primary)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease',
+                        backdropFilter: 'blur(10px)',
+                        flexShrink: 0
+                    }}
+                    title={t('search.allContacts')}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--glass-bg-hover)'; e.currentTarget.style.borderColor = 'var(--accent-primary)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--glass-bg)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+                >
+                    <Icons.FaAddressBook size={18} />
+                </button>
+            </div>
+
+            {/* Dropdown Results */}
+            {showDropdown && (
+                <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    marginTop: '6px',
+                    background: 'var(--bg-card)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '14px',
+                    boxShadow: 'var(--glass-shadow-hover)',
+                    zIndex: 50,
+                    overflow: 'hidden',
+                    backdropFilter: 'blur(20px)'
+                }}>
+                    {isSearching && results.length === 0 ? (
+                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '14px' }}>
+                            {t('search.searching')}
+                        </div>
+                    ) : results.length === 0 ? (
+                        <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: '14px' }}>
+                            {t('search.noResults')}
+                        </div>
+                    ) : (
+                        <>
+                            {results.map((card) => (
+                                <div
+                                    key={card.id}
+                                    onClick={() => {
+                                        navigate(`/contacts?search=${encodeURIComponent(card.firstName + ' ' + card.lastName)}`);
+                                        setIsFocused(false);
+                                        setQuery('');
+                                        setResults([]);
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        padding: '12px 16px',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.15s',
+                                        borderBottom: '1px solid var(--glass-border)'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                    {/* Avatar / Logo */}
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '10px',
+                                        background: 'var(--glass-bg)',
+                                        border: '1px solid var(--glass-border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        flexShrink: 0,
+                                        overflow: 'hidden'
+                                    }}>
+                                        {card.logoUrl ? (
+                                            <img src={`${BASE_API_URL}${card.logoUrl}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                        ) : (
+                                            <Icons.FaUser size={16} style={{ color: 'var(--text-tertiary)' }} />
+                                        )}
+                                    </div>
+                                    {/* Info */}
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{
+                                            fontWeight: '600',
+                                            fontSize: '14px',
+                                            color: 'var(--text-primary)',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {card.firstName} {card.lastName}
+                                        </div>
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: 'var(--text-tertiary)',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {[card.title, card.company].filter(Boolean).join(' - ') || card.email || card.phone || ''}
+                                        </div>
+                                    </div>
+                                    {/* Lead status badge */}
+                                    {card.leadStatus && card.leadStatus !== 'Cold' && (
+                                        <span style={{
+                                            fontSize: '11px',
+                                            padding: '2px 8px',
+                                            borderRadius: '8px',
+                                            fontWeight: '600',
+                                            flexShrink: 0,
+                                            background: card.leadStatus === 'Hot' ? 'rgba(239,68,68,0.15)' :
+                                                card.leadStatus === 'Warm' ? 'rgba(245,158,11,0.15)' :
+                                                card.leadStatus === 'Converted' ? 'rgba(16,185,129,0.15)' :
+                                                'rgba(59,130,246,0.15)',
+                                            color: card.leadStatus === 'Hot' ? 'var(--accent-error)' :
+                                                card.leadStatus === 'Warm' ? 'var(--accent-warning)' :
+                                                card.leadStatus === 'Converted' ? 'var(--accent-success)' :
+                                                'var(--accent-primary)'
+                                        }}>
+                                            {card.leadStatus}
+                                        </span>
+                                    )}
+                                    <Icons.FaChevronRight size={12} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+                                </div>
+                            ))}
+                            {results.length >= 6 && (
+                                <div
+                                    onClick={() => {
+                                        navigate(`/contacts?search=${encodeURIComponent(query)}`);
+                                        setIsFocused(false);
+                                    }}
+                                    style={{
+                                        padding: '12px',
+                                        textAlign: 'center',
+                                        color: 'var(--accent-primary)',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        transition: 'background 0.15s'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                    {t('search.viewAll')}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const tileStyle = {
     display: 'flex',
     flexDirection: 'column',
@@ -59,6 +334,7 @@ const tileStyle = {
 };
 
 const Dashboard = () => {
+    const { t } = useTranslation(['dashboard', 'common']);
     const { theme } = useTheme();
     const [stats, setStats] = useState({ totalCards: 0 });
     const [tagStats, setTagStats] = useState([]);
@@ -144,9 +420,9 @@ const Dashboard = () => {
                 await api.post('/api/db-tiles', formData);
             }
             fetchData();
-            showNotification('Kutucuk başarıyla kaydedildi.', 'success');
+            showNotification(t('dashboard:tile.saved'), 'success');
         } catch (error) {
-            showNotification('Kaydedilirken hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('dashboard:tile.saveError', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -156,9 +432,9 @@ const Dashboard = () => {
             await api.delete(`/api/db-tiles/${deleteConfirmTileId}`);
             setDeleteConfirmTileId(null);
             fetchData();
-            showNotification('Kutucuk silindi.', 'success');
+            showNotification(t('dashboard:tile.deleted'), 'success');
         } catch (error) {
-            showNotification('Silinirken hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('dashboard:tile.deleteError', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -205,8 +481,6 @@ const Dashboard = () => {
         e.currentTarget.style.borderColor = 'var(--glass-border)';
     };
 
-    const API_URL = api.defaults.baseURL || 'http://localhost:5000';
-
     return (
         <div className="fade-in">
             {settings?.appBanner && (
@@ -220,7 +494,7 @@ const Dashboard = () => {
                     backgroundColor: 'var(--bg-card)'
                 }}>
                     <img
-                        src={`${API_URL}${settings.appBanner}`}
+                        src={`${BASE_API_URL}${settings.appBanner}`}
                         alt="Banner"
                         style={{
                             width: '100%',
@@ -250,7 +524,7 @@ const Dashboard = () => {
                             {settings.companyName || 'BizCarder'}
                         </h1>
                         <p style={{ margin: '5px 0 0 0', color: 'var(--text-secondary)', fontSize: '1.1rem' }}>
-                            Kurumsal Kartvizit Yönetim Sistemi
+                            {t('dashboard:banner.subtitle')}
                         </p>
                     </div>
                 </div>
@@ -263,7 +537,7 @@ const Dashboard = () => {
                     color: 'var(--text-primary)',
                     letterSpacing: '-0.02em'
                 }}>
-                    Dashboard
+                    {t('dashboard:title')}
                 </h2>
                 {isAdmin && (
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -288,7 +562,7 @@ const Dashboard = () => {
                                     ? 'var(--glass-shadow-hover)'
                                     : 'var(--glass-shadow)'
                             }}
-                            title={editMode ? 'Düzenlemeyi Kapat' : 'Düzenleme Modu'}
+                            title={editMode ? t('dashboard:editMode.close') : t('dashboard:editMode.open')}
                         >
                             <Icons.FaTools size={16} />
                         </button>
@@ -310,21 +584,71 @@ const Dashboard = () => {
                             }}
                         >
                             <Icons.FaPlus size={16} />
-                            Kutucuk Ekle
+                            {t('dashboard:tile.add')}
                         </button>
                     </div>
                 )}
 
             </div>
 
+            {/* Quick Actions */}
+            {isAuthenticated && (
+                <div style={{
+                    display: 'flex',
+                    gap: 'var(--space-3)',
+                    marginBottom: 'var(--space-6)',
+                    flexWrap: 'wrap',
+                }}>
+                    <button
+                        onClick={() => navigate('/contacts', { state: { openAddCard: true } })}
+                        className="glass-button"
+                        style={{
+                            background: 'var(--gradient-primary)',
+                            border: '1px solid var(--gradient-primary-border)',
+                            color: '#e0e7ff',
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Icons.FaPlus size={14} /> {t('dashboard:quickAddCard', 'Kart Ekle')}
+                    </button>
+                    <button
+                        onClick={() => navigate('/contacts?filter=reminders')}
+                        className="glass-button"
+                        style={{
+                            background: 'var(--gradient-warning)',
+                            border: '1px solid var(--gradient-warning-border)',
+                            color: 'var(--accent-warning)',
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Icons.FaBell size={14} /> {t('dashboard:quickReminders', 'Hatırlatmalar')}
+                    </button>
+                    <button
+                        onClick={() => navigate('/contacts?sort=newest')}
+                        className="glass-button"
+                        style={{
+                            background: 'var(--gradient-blue)',
+                            border: '1px solid var(--gradient-blue-border)',
+                            color: 'var(--accent-primary)',
+                            fontWeight: 600,
+                        }}
+                    >
+                        <Icons.FaClock size={14} /> {t('dashboard:quickRecent', 'Son Eklenenler')}
+                    </button>
+                </div>
+            )}
+
+            {/* Hizli Arama */}
+            <QuickSearch isAuthenticated={isAuthenticated} />
+
             {/* İstatistikler (Glass Container) */}
             <div className="dashboard-stats-grid stagger-enter" style={{ animationDelay: '0.1s' }}>
+                {/* Total Cards */}
                 <div style={{
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '24px',
-                    padding: '30px',
+                    background: 'var(--gradient-primary)',
+                    border: '1px solid var(--gradient-primary-border)',
+                    borderRadius: '12px',
+                    padding: '20px',
                     color: 'var(--text-primary)',
                     display: 'flex',
                     alignItems: 'center',
@@ -335,22 +659,22 @@ const Dashboard = () => {
                 onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
                     <div>
-                        <h3 style={{
-                            margin: 0,
-                            fontSize: '1.4rem',
-                            fontWeight: '700',
-                            marginBottom: '5px',
-                            color: 'var(--text-primary)',
-                            letterSpacing: '-0.02em'
+                        <p style={{
+                            margin: '0 0 6px 0',
+                            color: 'var(--accent-secondary)',
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            fontWeight: 600,
                         }}>
-                            Kayıtlı Kartlar
-                        </h3>
+                            {t('dashboard:stats.registeredCards')}
+                        </p>
                         <p style={{
                             margin: 0,
                             fontSize: '0.95rem',
                             color: 'var(--text-secondary)'
                         }}>
-                            Toplam bağlantı ağınız
+                            {t('dashboard:stats.totalNetwork')}
                         </p>
                     </div>
                     <div style={{
@@ -368,6 +692,155 @@ const Dashboard = () => {
                     </div>
                 </div>
 
+                {/* This Week */}
+                <div style={{
+                    background: 'var(--gradient-blue)',
+                    border: '1px solid var(--gradient-blue-border)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: 'var(--glass-shadow)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                    <div>
+                        <p style={{
+                            margin: '0 0 6px 0',
+                            color: 'var(--accent-primary)',
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            fontWeight: 600,
+                        }}>
+                            {t('dashboard:stats.thisWeek', 'Bu Hafta')}
+                        </p>
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.95rem',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            {t('dashboard:stats.newCards', 'Yeni Kartlar')}
+                        </p>
+                    </div>
+                    <div style={{
+                        fontSize: '4rem',
+                        fontWeight: '800',
+                        color: 'var(--accent-primary)',
+                        lineHeight: '1',
+                        letterSpacing: '-0.03em'
+                    }}>
+                        {loading ? (
+                            <div className="skeleton-box" style={{ width: '60px', height: '64px', borderRadius: '12px' }}></div>
+                        ) : (
+                            stats.thisWeek ?? 0
+                        )}
+                    </div>
+                </div>
+
+                {/* Reminders */}
+                <div style={{
+                    background: 'var(--gradient-warning)',
+                    border: '1px solid var(--gradient-warning-border)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: 'var(--glass-shadow)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    cursor: 'pointer',
+                }}
+                onClick={() => navigate('/contacts?filter=reminders')}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                    <div>
+                        <p style={{
+                            margin: '0 0 6px 0',
+                            color: 'var(--accent-warning)',
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            fontWeight: 600,
+                        }}>
+                            {t('dashboard:stats.reminders', 'Hatırlatmalar')}
+                        </p>
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.95rem',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            {t('dashboard:stats.dueToday', 'Bugün Vadesi Dolan')}
+                        </p>
+                    </div>
+                    <div style={{
+                        fontSize: '4rem',
+                        fontWeight: '800',
+                        color: 'var(--accent-warning)',
+                        lineHeight: '1',
+                        letterSpacing: '-0.03em'
+                    }}>
+                        {loading ? (
+                            <div className="skeleton-box" style={{ width: '50px', height: '64px', borderRadius: '12px' }}></div>
+                        ) : (
+                            dueReminders.length
+                        )}
+                    </div>
+                </div>
+
+                {/* Follow-ups */}
+                <div style={{
+                    background: 'var(--gradient-success)',
+                    border: '1px solid var(--gradient-success-border)',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    color: 'var(--text-primary)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    boxShadow: 'var(--glass-shadow)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                    <div>
+                        <p style={{
+                            margin: '0 0 6px 0',
+                            color: 'var(--accent-success)',
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.08em',
+                            fontWeight: 600,
+                        }}>
+                            {t('dashboard:stats.followUps', 'Takipler')}
+                        </p>
+                        <p style={{
+                            margin: 0,
+                            fontSize: '0.95rem',
+                            color: 'var(--text-secondary)'
+                        }}>
+                            {t('dashboard:stats.activeFollowUps', 'Aktif Takipler')}
+                        </p>
+                    </div>
+                    <div style={{
+                        fontSize: '4rem',
+                        fontWeight: '800',
+                        color: 'var(--accent-success)',
+                        lineHeight: '1',
+                        letterSpacing: '-0.03em'
+                    }}>
+                        {loading ? (
+                            <div className="skeleton-box" style={{ width: '50px', height: '64px', borderRadius: '12px' }}></div>
+                        ) : (
+                            stats.followUps ?? 0
+                        )}
+                    </div>
+                </div>
+
                 <div style={{
                     background: 'var(--glass-bg)',
                     backdropFilter: 'blur(10px)',
@@ -379,8 +852,8 @@ const Dashboard = () => {
                     overflow: 'hidden'
                 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', letterSpacing: '-0.01em' }}>Sık Kullanılan Etiketler</h3>
-                        <Link to="/contacts" style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent-primary)', textDecoration: 'none' }}>Tümünü Gör</Link>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', letterSpacing: '-0.01em' }}>{t('dashboard:stats.frequentTags')}</h3>
+                        <Link to="/contacts" style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--accent-primary)', textDecoration: 'none' }}>{t('dashboard:stats.viewAll')}</Link>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                         {loading ? (
@@ -424,7 +897,7 @@ const Dashboard = () => {
                                     </Link>
                                 ))
                             ) : (
-                                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem' }}>İstatistik oluşturacak etkiet yok.</p>
+                                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.95rem' }}>{t('dashboard:stats.noTags')}</p>
                             )
                         )}
                     </div>
@@ -562,7 +1035,7 @@ const Dashboard = () => {
                                                 transition: 'all 0.2s ease',
                                                 backdropFilter: 'blur(5px)'
                                             }}
-                                            title="Düzenle"
+                                            title={t('dashboard:tile.edit')}
                                         >
                                             <Icons.FaEdit size={14} />
                                         </button>
@@ -582,7 +1055,7 @@ const Dashboard = () => {
                                                 transition: 'all 0.2s ease',
                                                 backdropFilter: 'blur(5px)'
                                             }}
-                                            title="Sil"
+                                            title={t('dashboard:tile.delete')}
                                         >
                                             <Icons.FaTrash size={14} />
                                         </button>
@@ -599,11 +1072,11 @@ const Dashboard = () => {
                 <Modal
                     isOpen={true}
                     onClose={() => setShowModal(false)}
-                    title={currentTile ? "Kutucuk Düzenle" : "Yeni Kutucuk Ekle"}
+                    title={currentTile ? t('dashboard:tile.editTitle') : t('dashboard:tile.addTitle')}
                 >
                     <form onSubmit={handleSaveTile} style={{ color: 'var(--text-primary)' }}>
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Başlık</label>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.title')}</label>
                             <input
                                 type="text"
                                 style={{
@@ -620,7 +1093,7 @@ const Dashboard = () => {
                             />
                         </div>
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Alt Başlık</label>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.subtitle')}</label>
                             <input
                                 type="text"
                                 style={{
@@ -636,7 +1109,7 @@ const Dashboard = () => {
                             />
                         </div>
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Link (URL)</label>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.url')}</label>
                             <input
                                 type="text"
                                 style={{
@@ -649,13 +1122,13 @@ const Dashboard = () => {
                                 }}
                                 value={formData.url}
                                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                                placeholder="/contacts veya https://google.com"
+                                placeholder={t('dashboard:tile.form.urlPlaceholder')}
                                 required
                             />
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>İkon (FaName)</label>
+                                <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.icon')}</label>
                                 <input
                                     type="text"
                                     style={{
@@ -671,7 +1144,7 @@ const Dashboard = () => {
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>Renk Seçimi</label>
+                                <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.color')}</label>
                                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                     <input
                                         type="color"
@@ -709,7 +1182,7 @@ const Dashboard = () => {
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px' }}>Sıralama</label>
+                                <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.order')}</label>
                                 <input
                                     type="number"
                                     style={{
@@ -732,7 +1205,7 @@ const Dashboard = () => {
                                     onChange={(e) => setFormData({ ...formData, isInternal: e.target.checked })}
                                     style={{ marginRight: '10px' }}
                                 />
-                                <label htmlFor="isInternal">Dahili Sayfa mı?</label>
+                                <label htmlFor="isInternal">{t('dashboard:tile.form.isInternal')}</label>
                             </div>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
@@ -748,7 +1221,7 @@ const Dashboard = () => {
                                     cursor: 'pointer'
                                 }}
                             >
-                                İptal
+                                {t('common:cancel')}
                             </button>
                             <button
                                 type="submit"
@@ -762,7 +1235,7 @@ const Dashboard = () => {
                                     fontWeight: '600'
                                 }}
                             >
-                                {currentTile ? 'Güncelle' : 'Ekle'}
+                                {currentTile ? t('common:update') : t('common:add')}
                             </button>
                         </div>
                     </form>
@@ -783,8 +1256,8 @@ const Dashboard = () => {
                 isOpen={!!deleteConfirmTileId}
                 onClose={() => setDeleteConfirmTileId(null)}
                 onConfirm={handleDeleteTile}
-                title="Kutucuğu Sil"
-                message="Bu kutucuğu silmek istediğinize emin misiniz? Bu işlem geri alınamaz."
+                title={t('dashboard:tile.deleteConfirmTitle')}
+                message={t('dashboard:tile.deleteConfirmMessage')}
             />
         </div>
     );
