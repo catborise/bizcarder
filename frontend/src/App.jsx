@@ -12,6 +12,8 @@ import api, { API_URL } from './api/axios';
 import { getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
+import LanguageSwitcher from './components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 
 import Dashboard from './components/Dashboard';
@@ -31,6 +33,7 @@ import Contacts from './components/Contacts';
 const AppContent = () => {
     const { isAuthenticated, user: currentUser } = useAuth();
     const { showNotification } = useNotification();
+    const { t } = useTranslation('pages');
     const location = useLocation();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -39,14 +42,14 @@ const AppContent = () => {
         companyName: 'BizCarder',
         companyLogo: '',
         companyIcon: '',
-        footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
+        footerText: t('app.footer.defaultCopyright')
     });
 
     const syncQueuedCards = async () => {
         const pending = await getPendingSync();
         if (pending.length === 0) return;
 
-        showNotification(`${pending.length} bekleyen kayıt senkronize ediliyor...`, 'info');
+        showNotification(t('app.sync.syncing', { count: pending.length }), 'info');
 
         for (const item of pending) {
             if (item.type === 'CREATE_CARD') {
@@ -78,7 +81,7 @@ const AppContent = () => {
                 }
             }
         }
-        showNotification('Senkronizasyon tamamlandı.', 'success');
+        showNotification(t('app.sync.complete'), 'success');
     };
 
     useEffect(() => {
@@ -172,7 +175,7 @@ const AppContent = () => {
                     justifyContent: 'center',
                     gap: '10px'
                 }}>
-                    <FaPlane /> Çevrimdışı Mod - Bazı özellikler kısıtlanmış olabilir.
+                    <FaPlane /> {t('app.offline.banner')}
                 </div>
             )}
 
@@ -197,8 +200,8 @@ const AppContent = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div style={{ fontSize: '24px' }}>📱</div>
                         <div>
-                            <div style={{ fontWeight: 'bold', fontSize: '15px' }}>Kurumsal CRM Uygulamasını Yükleyin</div>
-                            <div style={{ fontSize: '12px', opacity: 0.9 }}>Daha hızlı erişim ve çevrimdışı kullanım için ana ekranınıza ekleyin.</div>
+                            <div style={{ fontWeight: 'bold', fontSize: '15px' }}>{t('app.pwa.installTitle')}</div>
+                            <div style={{ fontSize: '12px', opacity: 0.9 }}>{t('app.pwa.installDescription')}</div>
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
@@ -216,7 +219,7 @@ const AppContent = () => {
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                             }}
                         >
-                            Hemen Yükle
+                            {t('app.pwa.installButton')}
                         </button>
                         <button
                             onClick={() => setShowInstallBanner(false)}
@@ -248,7 +251,7 @@ const AppContent = () => {
                             {settings.companyLogo ? (
                                 <img
                                     src={`${API_URL}${settings.companyLogo}`}
-                                    alt="Logo"
+                                    alt={t('app.nav.logoAlt')}
                                     style={{
                                         height: '35px',
                                         borderRadius: '6px',
@@ -262,63 +265,73 @@ const AppContent = () => {
                             ) : (
                                 <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>🏢</span>
                             )}
-                            <span className="navbar-logo-text">{settings.companyName || 'CRM'}</span>
+                            <span className="navbar-logo-text">{settings.companyName || t('app.nav.defaultBrand')}</span>
                         </Link>
                         <div className="nav-links">
                             <Link
                                 to="/"
                                 style={{
-                                    color: location.pathname === '/' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                                    fontWeight: location.pathname === '/' ? '600' : '400',
-                                    padding: '0.6rem 1.2rem',
-                                    borderRadius: '10px',
-                                    background: location.pathname === '/' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    color: location.pathname === '/' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    background: location.pathname === '/' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
+                                    border: location.pathname === '/' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                                    borderRadius: '8px',
+                                    padding: '6px 14px',
+                                    fontSize: '0.875rem',
+                                    fontWeight: location.pathname === '/' ? 600 : 400,
+                                    textDecoration: 'none',
+                                    transition: 'all 0.2s ease',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px'
+                                    gap: '6px',
                                 }}
                             >
                                 <FaChartPie size={18} />
-                                <span className="hide-on-mobile">Dashboard</span>
+                                <span className="hide-on-mobile">{t('app.nav.dashboard')}</span>
                             </Link>
                             <Link
                                 to="/contacts"
                                 style={{
-                                    color: location.pathname === '/contacts' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                                    fontWeight: location.pathname === '/contacts' ? '600' : '400',
-                                    padding: '0.6rem 1.2rem',
-                                    borderRadius: '10px',
-                                    background: location.pathname === '/contacts' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    color: location.pathname === '/contacts' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    background: location.pathname === '/contacts' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
+                                    border: location.pathname === '/contacts' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                                    borderRadius: '8px',
+                                    padding: '6px 14px',
+                                    fontSize: '0.875rem',
+                                    fontWeight: location.pathname === '/contacts' ? 600 : 400,
+                                    textDecoration: 'none',
+                                    transition: 'all 0.2s ease',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px'
+                                    gap: '6px',
                                 }}
                             >
                                 <FaUsers size={18} />
-                                <span>Kartvizitler</span>
+                                <span>{t('app.nav.contacts')}</span>
                             </Link>
                             <Link
                                 to="/my-card"
                                 style={{
-                                    color: location.pathname === '/my-card' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-                                    fontWeight: location.pathname === '/my-card' ? '600' : '400',
-                                    padding: '0.6rem 1.2rem',
-                                    borderRadius: '10px',
-                                    background: location.pathname === '/my-card' ? 'var(--accent-primary-transparent)' : 'transparent',
-                                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                    color: location.pathname === '/my-card' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    background: location.pathname === '/my-card' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
+                                    border: location.pathname === '/my-card' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+                                    borderRadius: '8px',
+                                    padding: '6px 14px',
+                                    fontSize: '0.875rem',
+                                    fontWeight: location.pathname === '/my-card' ? 600 : 400,
+                                    textDecoration: 'none',
+                                    transition: 'all 0.2s ease',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px'
+                                    gap: '6px',
                                 }}
                             >
                                 <FaAddressCard size={18} />
-                                <span className="hide-on-mobile">Kartım</span>
+                                <span className="hide-on-mobile">{t('app.nav.myCard')}</span>
                             </Link>
                         </div>
                     </div>
                     <div className="nav-actions">
+                        <LanguageSwitcher />
                         <div className="theme-toggle-nav">
                             <ThemeToggle />
                         </div>
@@ -342,7 +355,7 @@ const AppContent = () => {
                                 e.currentTarget.style.background = 'transparent';
                                 e.currentTarget.style.color = 'var(--text-secondary)';
                             }}
-                            title="Çöp Kutusu"
+                            title={t('app.nav.trashBin')}
                         >
                             <FaTrash />
                         </Link>
@@ -361,7 +374,7 @@ const AppContent = () => {
                                     transition: 'all 0.3s ease'
                                 }}
                             >
-                                Giriş Yap
+                                {t('app.nav.login')}
                             </Link>
                         )}
                     </div>
@@ -450,11 +463,11 @@ const AppContent = () => {
             }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        {settings.footerText || `© ${new Date().getFullYear()} BizCarder.`}
+                        {settings.footerText || t('app.footer.defaultCopyright')}
                     </div>
                     <div style={{ display: 'flex', gap: '20px' }}>
-                        <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>Hakkında</Link>
-                        {isAuthenticated && <Link to="/help" style={{ color: 'inherit', textDecoration: 'none' }}>Yardım</Link>}
+                        <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>{t('app.footer.about')}</Link>
+                        {isAuthenticated && <Link to="/help" style={{ color: 'inherit', textDecoration: 'none' }}>{t('app.footer.help')}</Link>}
                     </div>
                 </div>
             </footer>
