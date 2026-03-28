@@ -1,6 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
+  /* Spacing System (4px base) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
   /* Common Structure */
   --border-radius-sm: 6px;
   --border-radius-md: 10px;
@@ -173,8 +184,8 @@ nav {
 
 .contacts-header h2 {
   margin: 0;
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: var(--text-primary);
 }
 
@@ -424,13 +435,13 @@ a:hover {
 /* Headings */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
-  font-weight: 800;
   letter-spacing: -0.03em;
 }
 
-h1 { font-size: 2.25rem; line-height: 1.2; }
-h2 { font-size: 1.875rem; line-height: 1.2; }
-h3 { font-size: 1.5rem; line-height: 1.2; }
+h1 { font-size: 2rem; line-height: 1.2; font-weight: 800; }
+h2 { font-size: 1.5rem; line-height: 1.2; font-weight: 700; }
+h3 { font-size: 1.25rem; line-height: 1.3; font-weight: 600; }
+h4 { font-size: 1rem; line-height: 1.4; font-weight: 600; }
 
 /* Button Base Styles */
 button {
@@ -675,6 +686,11 @@ input:focus, textarea:focus {
   height: 48px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.05);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .fade-in { animation: fadeIn 0.3s ease; }
