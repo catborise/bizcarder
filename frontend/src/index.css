@@ -350,13 +350,14 @@ nav {
 
 .glass-button:hover {
   background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(var(--accent-secondary-rgb), 0.25);
   transform: translateY(-1px);
   box-shadow: var(--glass-shadow-hover);
 }
 
 .glass-button:active {
-  transform: translateY(0);
+  transform: translateY(0) scale(0.97);
+  transition: transform 0.1s ease;
 }
 
 /* Square icon-only button (WhatsApp, Email, QR, etc.) */
@@ -380,9 +381,14 @@ nav {
 
 .glass-button-square:hover {
   background: var(--glass-bg-hover);
-  border-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(var(--accent-secondary-rgb), 0.25);
   transform: translateY(-1px);
   box-shadow: var(--glass-shadow-hover);
+}
+
+.glass-button-square:active {
+  transform: scale(0.93);
+  transition: transform 0.1s ease;
 }
 
 /* Block/wide button (Aktivite ve Notlar) */
@@ -432,6 +438,11 @@ nav {
   background: var(--glass-bg-hover);
   border-color: rgba(255, 255, 255, 0.15);
   transform: translateY(-1px);
+}
+
+.glass-button-small:active {
+  transform: translateY(0) scale(0.97);
+  transition: transform 0.1s ease;
 }
 
 /* Glass Container Utility */
