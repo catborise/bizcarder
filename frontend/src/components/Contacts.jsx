@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api, { API_URL } from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../utils/offlineStore';
 import { downloadFile } from '../utils/downloadHelper';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode, FaStar, FaWhatsapp } from 'react-icons/fa';
+import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode, FaStar, FaWhatsapp, FaAddressCard } from 'react-icons/fa';
+import EmptyState from './EmptyState';
 import SearchBar from './SearchBar';
 import Modal from './Modal';
 import ConfirmModal from './ConfirmModal';
@@ -17,6 +19,7 @@ import { generateVCardString } from '../utils/vcardHelper';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Contacts = () => {
+    const { t } = useTranslation(['cards', 'common']);
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
 
@@ -106,16 +109,16 @@ const Contacts = () => {
                 }
             } else {
                 setCards([]);
-                setError('API beklenen formatta veri dönmedi.');
+                setError(t('cards:contacts.error.unexpectedFormat'));
             }
         } catch (err) {
             const cachedCards = await getOfflineCards();
             if (cachedCards.length > 0) {
                 setCards(cachedCards);
                 setIsCachedData(true);
-                showNotification('Çevrimdışı mod: Kayıtlı veriler gösteriliyor.', 'info');
+                showNotification(t('cards:contacts.notify.offlineMode'), 'info');
             } else {
-                setError('Veriler yüklenirken bir hata oluştu ve yerel kayıt bulunamadı.');
+                setError(t('cards:contacts.error.loadFailedNoCache'));
             }
         } finally {
             setLoading(false);
@@ -161,11 +164,11 @@ const Contacts = () => {
 
         try {
             await api.delete(`/api/cards/${deleteConfirmCard.id}`);
-            showNotification('Kartvizit silindi.', 'success');
+            showNotification(t('cards:contacts.notify.deleted'), 'success');
             fetchCards(pagination.currentPage);
             setDeleteConfirmCard(null);
         } catch (error) {
-            showNotification('Silme işlemi başarısız: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('cards:contacts.notify.deleteFailed', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -205,23 +208,23 @@ const Contacts = () => {
     const handleBulkDelete = async () => {
         try {
             await api.post('/api/cards/bulk-delete', { ids: selectedIds });
-            showNotification(`${selectedIds.length} kart silindi.`, 'success');
+            showNotification(t('cards:contacts.notify.bulkDeleted', { count: selectedIds.length }), 'success');
             setSelectedIds([]);
             setIsBulkDeleteConfirmOpen(false);
             fetchCards(pagination.currentPage);
         } catch (error) {
-            showNotification('Toplu silme başarısız.', 'error');
+            showNotification(t('cards:contacts.notify.bulkDeleteFailed'), 'error');
         }
     };
 
     const handleBulkVisibility = async (visibility) => {
         try {
             await api.post('/api/cards/bulk-visibility', { ids: selectedIds, visibility });
-            showNotification(`Görünürlük ${visibility === 'public' ? 'Herkese Açık' : 'Özel'} olarak güncellendi.`, 'success');
+            showNotification(t('cards:contacts.notify.visibilityUpdated', { visibility: visibility === 'public' ? t('common:visibility.public') : t('common:visibility.private') }), 'success');
             setSelectedIds([]);
             fetchCards(pagination.currentPage);
         } catch (error) {
-            showNotification('Görünürlük güncellenemedi.', 'error');
+            showNotification(t('cards:contacts.notify.visibilityFailed'), 'error');
         }
     };
 
@@ -232,13 +235,13 @@ const Contacts = () => {
                 tagIds: selectedBulkTags,
                 mode: bulkTagAction
             });
-            showNotification('Etiketler başarıyla güncellendi.', 'success');
+            showNotification(t('cards:contacts.notify.tagsUpdated'), 'success');
             setSelectedIds([]);
             setIsBulkTagModalOpen(false);
             setSelectedBulkTags([]);
             fetchCards(pagination.currentPage);
         } catch (error) {
-            showNotification('Etiketleme işlemi başarısız.', 'error');
+            showNotification(t('cards:contacts.notify.tagsFailed'), 'error');
         }
     };
 
@@ -248,51 +251,51 @@ const Contacts = () => {
             const fileName = `secilen_kartvizitler.${type === 'excel' ? 'xlsx' : 'pdf'}`;
             const mimeType = type === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/pdf';
             
-            showNotification(`${type.toUpperCase()} dosyası hazırlanıyor...`, 'info');
+            showNotification(t('cards:contacts.notify.exportPreparing', { type: type.toUpperCase() }), 'info');
             const response = await api.get(endpoint, {
                 params: { ids: selectedIds.join(',') },
                 responseType: 'blob'
             });
             downloadFile(response.data, fileName, mimeType);
-            showNotification('Dosya indirildi.', 'success');
+            showNotification(t('cards:contacts.notify.fileDownloaded'), 'success');
         } catch (error) {
-            showNotification('İndirme başarısız.', 'error');
+            showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
         }
     };
 
     const handleDownloadVCard = async (card) => {
         try {
-            showNotification('vCard dosyası hazırlanıyor...', 'info');
+            showNotification(t('cards:contacts.notify.vcardPreparing'), 'info');
             const response = await api.get(`/api/cards/${card.id}/vcf`, {
                 responseType: 'blob'
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
-            showNotification('vCard indirildi.', 'success');
+            showNotification(t('cards:contacts.notify.vcardDownloaded'), 'success');
         } catch (error) {
-            showNotification('İndirme başarısız.', 'error');
+            showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
         }
     };
 
     const handleWhatsAppFollowUp = (card) => {
-        const message = `Merhaba ${card.firstName + (card.lastName ? ' ' + card.lastName : '')}, az önce tanıştığımıza çok memnun oldum. İletişim bilgilerimi iletiyorum. Görüşmek dileğiyle.`;
+        const message = t('cards:contacts.followUp.whatsappMessage', { name: card.firstName + (card.lastName ? ' ' + card.lastName : '') });
         const phone = card.phone.replace(/\D/g, '');
         window.open(`https://wa.me/${phone.startsWith('0') ? '9' + phone : phone}?text=${encodeURIComponent(message)}`, '_blank');
     };
 
     const handleEmailFollowUp = (card) => {
-        const subject = "Tanıştığımıza Memnun Oldum";
-        const body = `Sayın ${card.firstName} ${card.lastName},\n\nAz önce tanıştığımıza çok memnun oldum. Kartvizitinizi CRM sistemime kaydettim.\n\nEn kısa sürede tekrar görüşmek dileğiyle.\n\nİyi çalışmalar.`;
+        const subject = t('cards:contacts.followUp.emailSubject');
+        const body = t('cards:contacts.followUp.emailBody', { firstName: card.firstName, lastName: card.lastName });
         window.location.href = `mailto:${card.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     };
 
     const getStatusStyle = (status) => {
         switch(status) {
-            case 'Hot': return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', icon: '🔥', label: 'Sıcak' };
-            case 'Warm': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: '⛅', label: 'Ilık' };
-            case 'Cold': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: '❄️', label: 'Soğuk' };
-            case 'Following-up': return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', icon: '🔄', label: 'Takipte' };
-            case 'Converted': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: '✅', label: 'Dönüştü' };
-            default: return { bg: 'rgba(156, 163, 175, 0.1)', color: '#9ca3af', icon: '👤', label: 'Bilinmiyor' };
+            case 'Hot': return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', icon: '🔥', label: t('common:leadStatusShort.Hot') };
+            case 'Warm': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: '⛅', label: t('common:leadStatusShort.Warm') };
+            case 'Cold': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: '❄️', label: t('common:leadStatusShort.Cold') };
+            case 'Following-up': return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', icon: '🔄', label: t('common:leadStatusShort.Following-up') };
+            case 'Converted': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: '✅', label: t('common:leadStatusShort.Converted') };
+            default: return { bg: 'rgba(156, 163, 175, 0.1)', color: '#9ca3af', icon: '👤', label: t('common:leadStatusShort.unknown') };
         }
     };
 
@@ -326,7 +329,7 @@ const Contacts = () => {
     if (error) {
         return (
             <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--accent-error)' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>Bir Hata Oluştu</h3>
+                <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>{t('cards:contacts.error.title')}</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>{error}</p>
                 <motion.button 
                     whileHover={{ scale: 1.05 }}
@@ -342,7 +345,7 @@ const Contacts = () => {
                         fontWeight: '600'
                     }}
                 >
-                    Tekrar Dene
+                    {t('common:retry')}
                 </motion.button>
             </div>
         );
@@ -351,24 +354,24 @@ const Contacts = () => {
     return (
         <div className="fade-in">
             <div className="contacts-header">
-                <h2>Kartvizitler</h2>
+                <h2>{t('cards:contacts.title')}</h2>
 
                 <div className="contacts-actions">
                     <button
                         onClick={async () => {
                             try {
-                                showNotification('Excel dosyası hazırlanıyor...', 'info');
+                                showNotification(t('cards:contacts.notify.excelPreparing'), 'info');
                                 const response = await api.get('/api/cards/export/excel', {
                                     params: { search: searchTerm },
                                     responseType: 'blob'
                                 });
                                 downloadFile(response.data, 'kartvizitler.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                                showNotification('Excel dosyası indirildi.', 'success');
+                                showNotification(t('cards:contacts.notify.excelDownloaded'), 'success');
                             } catch (error) {
-                                showNotification('İndirme başarısız.', 'error');
+                                showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
                             }
                         }}
-                        title="Excel Olarak İndir"
+                        title={t('cards:contacts.titleAttr.downloadExcel')}
                         style={{
                             width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
@@ -381,18 +384,18 @@ const Contacts = () => {
                     <button
                         onClick={async () => {
                             try {
-                                showNotification('PDF dosyası hazırlanıyor...', 'info');
+                                showNotification(t('cards:contacts.notify.pdfPreparing'), 'info');
                                 const response = await api.get('/api/cards/export/pdf', {
                                     params: { search: searchTerm },
                                     responseType: 'blob'
                                 });
                                 downloadFile(response.data, 'kartvizitler.pdf', 'application/pdf');
-                                showNotification('PDF dosyası indirildi.', 'success');
+                                showNotification(t('cards:contacts.notify.pdfDownloaded'), 'success');
                             } catch (error) {
-                                showNotification('İndirme başarısız.', 'error');
+                                showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
                             }
                         }}
-                        title="PDF Olarak İndir"
+                        title={t('cards:contacts.titleAttr.downloadPdf')}
                         style={{
                             width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
@@ -414,7 +417,7 @@ const Contacts = () => {
                             fontSize: '14px', fontWeight: '700', whiteSpace: 'nowrap'
                         }}
                     >
-                        <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: '800' }}>+</span> Yeni Kart Ekle
+                        <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: '800' }}>+</span> {t('cards:contacts.btn.addNew')}
                     </motion.button>
                 </div>
             </div>
@@ -450,10 +453,19 @@ const Contacts = () => {
                     }} 
                 />
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                    {selectedIds.length > 0 ? `${selectedIds.length} seçili` : 'Tümünü Seç'}
+                    {selectedIds.length > 0 ? t('cards:contacts.selected', { count: selectedIds.length }) : t('cards:contacts.selectAll')}
                 </span>
             </div>
 
+            {!loading && cards.length === 0 ? (
+              <EmptyState
+                icon={FaAddressCard}
+                title={t('cards:emptyTitle', 'Henüz kartvizit eklemediniz')}
+                description={t('cards:emptyDescription', 'İlk kartvizitinizi ekleyerek ağınızı oluşturmaya başlayın.')}
+                actionLabel={t('cards:addCard', 'Kart Ekle')}
+                onAction={() => setIsModalOpen(true)}
+              />
+            ) : (
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map(card => (
@@ -563,11 +575,11 @@ const Contacts = () => {
                                         {card.reminderDate && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--accent-warning)', marginBottom: '5px' }}>
                                                 <FaCalendarCheck color="var(--accent-warning)" />
-                                                <strong style={{ color: 'var(--text-primary)' }}>Hatırlatıcı:</strong>
+                                                <strong style={{ color: 'var(--text-primary)' }}>{t('cards:contacts.field.reminder')}</strong>
                                                 <span style={{ color: 'var(--text-secondary)' }}>
                                                     {(() => {
                                                         const d = new Date(card.reminderDate);
-                                                        return isNaN(d.getTime()) ? 'Tarih Belirtilmedi' : d.toLocaleDateString('tr-TR');
+                                                        return isNaN(d.getTime()) ? t('cards:contacts.field.noDate') : d.toLocaleDateString('tr-TR');
                                                     })()}
                                                 </span>
                                             </div>
@@ -575,22 +587,22 @@ const Contacts = () => {
                                         {card.lastInteractionDate && (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <FaClock color="var(--accent-primary)" size={12} /> 
-                                                <strong style={{ color: 'var(--text-tertiary)' }}>Son Etkileşim:</strong> 
+                                                <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.lastInteraction')}</strong> 
                                                 <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.lastInteractionDate).toLocaleDateString('tr-TR')}</span>
                                             </div>
                                         )}
-                                        {card.email && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>E-Posta:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span></div>}
-                                        {card.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPhone color="var(--accent-success)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Telefon:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.phone}</span></div>}
-                                        {card.website && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaGlobe color="var(--accent-primary)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Web:</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)' }}>{card.website}</a></div>}
-                                        {(card.city || card.country) && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCity color="var(--accent-error)" /> <strong style={{ color: 'var(--text-tertiary)' }}>Konum:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.city}{card.city && card.country && ', '}{card.country}</span></div>}
-                                        {card.address && <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}><FaMapMarkerAlt color="var(--accent-error)" style={{ marginTop: '3px' }} /><strong style={{ color: 'var(--text-tertiary)' }}>Adres:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.address}</span></div>}
-                                        {card.source && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaIdCard color="var(--accent-primary)" size={12} /> <strong style={{ color: 'var(--text-tertiary)' }}>Kaynak:</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.source}</span></div>}
+                                        {card.email && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.email')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span></div>}
+                                        {card.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPhone color="var(--accent-success)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.phone')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.phone}</span></div>}
+                                        {card.website && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaGlobe color="var(--accent-primary)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.web')}</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)' }}>{card.website}</a></div>}
+                                        {(card.city || card.country) && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCity color="var(--accent-error)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.location')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.city}{card.city && card.country && ', '}{card.country}</span></div>}
+                                        {card.address && <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}><FaMapMarkerAlt color="var(--accent-error)" style={{ marginTop: '3px' }} /><strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.address')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.address}</span></div>}
+                                        {card.source && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaIdCard color="var(--accent-primary)" size={12} /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.source')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.source}</span></div>}
                                     </div>
                                 </div>
 
                                 <div className="card-actions">
                                     <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '10px 12px', fontSize: '0.9rem', border: '1px solid var(--accent-warning)', background: expandedCardId === card.id ? 'var(--glass-bg-hover)' : 'transparent' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> Aktivite ve Notlar</span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> {t('cards:contacts.btn.activityNotes')}</span>
                                         {expandedCardId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
                                     </button>
                                     
@@ -600,7 +612,7 @@ const Contacts = () => {
                                             <button 
                                                 onClick={() => handleWhatsAppFollowUp(card)} 
                                                 className="glass-button-square" 
-                                                title="WhatsApp Takip" 
+                                                title={t('cards:contacts.titleAttr.whatsappFollow')} 
                                                 style={{ color: '#25D366', borderColor: 'rgba(37, 211, 102, 0.3)' }}
                                             >
                                                 <FaWhatsapp size={20} />
@@ -610,7 +622,7 @@ const Contacts = () => {
                                             <button 
                                                 onClick={() => handleEmailFollowUp(card)} 
                                                 className="glass-button-square" 
-                                                title="E-Posta Takip" 
+                                                title={t('cards:contacts.titleAttr.emailFollow')} 
                                                 style={{ color: 'var(--accent-warning)', borderColor: 'rgba(255, 193, 7, 0.3)' }}
                                             >
                                                 <FaEnvelope size={18} />
@@ -621,13 +633,13 @@ const Contacts = () => {
                                     <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
 
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => setQrModalCard(card)} className="glass-button-square" title="QR / vCard"><FaQrcode size={18} /></button>
-                                        <button onClick={() => handleDownloadVCard(card)} className="glass-button-square" title="vCard İndir"><FaDownload size={18} /></button>
-                                        <button onClick={() => setHistoryCard(card)} className="glass-button-square" title="Geçmiş"><FaClock size={16} /></button>
+                                        <button onClick={() => setQrModalCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.qrVcard')}><FaQrcode size={18} /></button>
+                                        <button onClick={() => handleDownloadVCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.downloadVcard')}><FaDownload size={18} /></button>
+                                        <button onClick={() => setHistoryCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.history')}><FaClock size={16} /></button>
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => handleEdit(card)} className="glass-button-small" style={{ flex: 1 }}>Düzenle</button>
+                                        <button onClick={() => handleEdit(card)} className="glass-button-small" style={{ flex: 1 }}>{t('cards:contacts.btn.edit')}</button>
                                         <button onClick={() => handleDeleteClick(card)} className="glass-button-small" style={{ color: 'var(--accent-error)', width: '40px' }}><FaTrash size={14} /></button>
                                     </div>
                                 </div>
@@ -641,9 +653,10 @@ const Contacts = () => {
                         </div>
                     ))
                 ) : (
-                    <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>Kayıt bulunamadı</h3></div>
+                    <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>{t('cards:contacts.empty')}</h3></div>
                 )}
             </div>
+            )}
 
             {/* Pagination Controls */}
             {pagination.totalPages > 1 && (
@@ -665,11 +678,11 @@ const Contacts = () => {
                             cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        Önceki
+                        {t('cards:contacts.btn.previous')}
                     </button>
-                    
+
                     <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
-                        Sayfa {pagination.currentPage} / {pagination.totalPages}
+                        {t('cards:contacts.pagination', { current: pagination.currentPage, total: pagination.totalPages })}
                     </span>
 
                     <button
@@ -682,30 +695,30 @@ const Contacts = () => {
                             cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer'
                         }}
                     >
-                        Sonraki
+                        {t('cards:contacts.btn.next')}
                     </button>
                 </div>
             )}
 
-            <Modal title={selectedImageCard ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}` : 'Görsel'} isOpen={!!selectedImageCard} onClose={() => setSelectedImageCard(null)}>
+            <Modal title={selectedImageCard ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}` : t('cards:contacts.modal.image')} isOpen={!!selectedImageCard} onClose={() => setSelectedImageCard(null)}>
                 {selectedImageCard && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div><h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>Ön Yüz</h4><img src={`${API_URL}${selectedImageCard.frontImageUrl}`} alt="Ön Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>
-                        {selectedImageCard.backImageUrl && (<div><h4 style={{ color: 'var(--accent-warning)', textAlign: 'center', marginBottom: '10px' }}>Arka Yüz</h4><img src={`${API_URL}${selectedImageCard.backImageUrl}`} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>)}
+                        <div><h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>{t('cards:contacts.modal.frontSide')}</h4><img src={`${API_URL}${selectedImageCard.frontImageUrl}`} alt={t('cards:contacts.modal.frontSide')} style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>
+                        {selectedImageCard.backImageUrl && (<div><h4 style={{ color: 'var(--accent-warning)', textAlign: 'center', marginBottom: '10px' }}>{t('cards:contacts.modal.backSide')}</h4><img src={`${API_URL}${selectedImageCard.backImageUrl}`} alt={t('cards:contacts.modal.backSide')} style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>)}
                     </div>
                 )}
             </Modal>
 
-            <Modal title="Kartvizit Geçmişi" isOpen={!!historyCard} onClose={() => setHistoryCard(null)}>{historyCard && <HistoryTimeline cardId={historyCard.id} />}</Modal>
+            <Modal title={t('cards:contacts.modal.history')} isOpen={!!historyCard} onClose={() => setHistoryCard(null)}>{historyCard && <HistoryTimeline cardId={historyCard.id} />}</Modal>
 
-            <ConfirmModal isOpen={!!deleteConfirmCard} onClose={() => setDeleteConfirmCard(null)} onConfirm={handleDeleteConfirm} title="Kartviziti Sil" message={deleteConfirmCard ? `${deleteConfirmCard.firstName} ${deleteConfirmCard.lastName} adlı kartvizitini silmek istediğinizden emin misiniz?` : ''} />
+            <ConfirmModal isOpen={!!deleteConfirmCard} onClose={() => setDeleteConfirmCard(null)} onConfirm={handleDeleteConfirm} title={t('cards:contacts.modal.deleteTitle')} message={deleteConfirmCard ? t('cards:contacts.modal.deleteMessage', { firstName: deleteConfirmCard.firstName, lastName: deleteConfirmCard.lastName }) : ''} />
 
             {qrModalCard && (
                 <QRCodeOverlay title={`${qrModalCard.firstName} ${qrModalCard.lastName}`} url={`${window.location.origin}/contact-profile/${qrModalCard.sharingToken}`} vCardData={generateVCardString(qrModalCard)} onClose={() => setQrModalCard(null)} onDownloadVCard={() => handleDownloadVCard(qrModalCard)} />
             )}
 
             <Modal 
-                title={editingCard ? 'Kartviziti Düzenle' : 'Yeni Kartvizit Ekle'} 
+                title={editingCard ? t('cards:contacts.modal.editTitle') : t('cards:contacts.modal.addTitle')} 
                 isOpen={isModalOpen} 
                 onClose={() => {
                     setIsModalOpen(false);
@@ -716,24 +729,24 @@ const Contacts = () => {
             </Modal>
 
             {/* Bulk Tag Modal */}
-            <Modal title="Toplu Etiket Geliştirme" isOpen={isBulkTagModalOpen} onClose={() => setIsBulkTagModalOpen(false)}>
+            <Modal title={t('cards:contacts.modal.bulkTagTitle')} isOpen={isBulkTagModalOpen} onClose={() => setIsBulkTagModalOpen(false)}>
                 <div style={{ padding: '10px' }}>
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>İşlem Tipi</label>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>{t('cards:contacts.modal.actionType')}</label>
                         <div style={{ display: 'flex', gap: '15px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 <input type="radio" name="bulkTagAction" value="add" checked={bulkTagAction === 'add'} onChange={(e) => setBulkTagAction(e.target.value)} />
-                                Mevcutlara Ekle
+                                {t('cards:contacts.bulkTag.addToExisting')}
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                 <input type="radio" name="bulkTagAction" value="replace" checked={bulkTagAction === 'replace'} onChange={(e) => setBulkTagAction(e.target.value)} />
-                                Tümünü Değiştir
+                                {t('cards:contacts.bulkTag.replaceAll')}
                             </label>
                         </div>
                     </div>
 
                     <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>Etiketler</label>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>{t('cards:contacts.modal.tags')}</label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                             {availableTags.map(tag => (
                                 <button
@@ -758,7 +771,7 @@ const Contacts = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <button onClick={() => setIsBulkTagModalOpen(false)} className="glass-button" style={{ padding: '8px 20px' }}>İptal</button>
+                        <button onClick={() => setIsBulkTagModalOpen(false)} className="glass-button" style={{ padding: '8px 20px' }}>{t('common:cancel')}</button>
                         <button 
                             onClick={handleBulkTags} 
                             disabled={selectedBulkTags.length === 0}
@@ -773,7 +786,7 @@ const Contacts = () => {
                                 cursor: selectedBulkTags.length === 0 ? 'not-allowed' : 'pointer'
                             }}
                         >
-                            Uygula
+                            {t('cards:contacts.btn.apply')}
                         </button>
                     </div>
                 </div>
@@ -782,9 +795,9 @@ const Contacts = () => {
             <ConfirmModal 
                 isOpen={isBulkDeleteConfirmOpen} 
                 onClose={() => setIsBulkDeleteConfirmOpen(false)} 
-                onConfirm={handleBulkDelete} 
-                title="Toplu Silme" 
-                message={`${selectedIds.length} adet kartviziti silmek istediğinizden emin misiniz?`} 
+                onConfirm={handleBulkDelete}
+                title={t('cards:contacts.modal.bulkDeleteTitle')}
+                message={t('cards:contacts.modal.bulkDeleteMessage', { count: selectedIds.length })} 
             />
 
             {/* Floating Bulk Action Bar */}
@@ -815,20 +828,20 @@ const Contacts = () => {
                             <div style={{ width: '32px', height: '32px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
                                 {selectedIds.length}
                             </div>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>Seçili</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{t('cards:contacts.selectedLabel')}</span>
                         </div>
 
                         <div style={{ display: 'flex', gap: '8px' }}>
                             <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button" style={{ color: 'var(--accent-warning)', gap: '8px' }}>
-                                <FaStar /> Etiketle
+                                <FaStar /> {t('cards:contacts.btn.tag')}
                             </button>
                             
                             <div style={{ position: 'relative', display: 'flex', gap: '5px' }}>
                                 <button onClick={() => handleBulkVisibility('public')} className="glass-button" style={{ color: 'var(--accent-success)', gap: '8px' }}>
-                                    <FaGlobe /> Herkese Açık
+                                    <FaGlobe /> {t('cards:contacts.btn.makePublic')}
                                 </button>
                                 <button onClick={() => handleBulkVisibility('private')} className="glass-button" style={{ color: 'var(--text-tertiary)', gap: '8px' }}>
-                                    <FaIdCard /> Özel Yap
+                                    <FaIdCard /> {t('cards:contacts.btn.makePrivate')}
                                 </button>
                             </div>
 
@@ -856,14 +869,14 @@ const Contacts = () => {
                                     fontSize: '14px'
                                 }}
                             >
-                                <FaTrash /> Sil
+                                <FaTrash /> {t('common:delete')}
                             </button>
                             
                             <button 
                                 onClick={() => setSelectedIds([])} 
                                 style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', padding: '5px', cursor: 'pointer' }}
                             >
-                                <FaDownload style={{ transform: 'rotate(180deg)' }} /> Vazgeç
+                                <FaDownload style={{ transform: 'rotate(180deg)' }} /> {t('cards:contacts.btn.deselect')}
                             </button>
                         </div>
                     </motion.div>
