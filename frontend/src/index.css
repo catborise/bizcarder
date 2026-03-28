@@ -172,9 +172,9 @@ nav {
 }
 
 @media (max-width: 768px) {
-  .nav-container {
-    padding: 0.5rem 1rem !important;
-    gap: 10px !important;
+  .nav-container.nav-container {
+    padding: 0.5rem 1rem;
+    gap: 10px;
   }
 }
 
@@ -596,48 +596,48 @@ button:focus-visible {
   }
 
   /* Dashboard Responsive Grids */
-  .dashboard-stats-grid, 
-  .dashboard-tiles-grid, 
-  .dashboard-tiles-grid-3col {
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
+  .dashboard-stats-grid.dashboard-stats-grid,
+  .dashboard-tiles-grid.dashboard-tiles-grid,
+  .dashboard-tiles-grid-3col.dashboard-tiles-grid-3col {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   /* Contacts Header Responsive */
-  .contacts-header {
-    flex-direction: column !important;
-    gap: 15px !important;
-    align-items: center !important;
+  .contacts-header.contacts-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
     text-align: center;
-    margin-bottom: 20px !important;
+    margin-bottom: 20px;
   }
 
-  .contacts-actions {
-    justify-content: center !important;
+  .contacts-actions.contacts-actions {
+    justify-content: center;
     width: 100%;
     flex-wrap: wrap;
-    gap: 10px !important;
+    gap: 10px;
   }
 
   /* Card inner layout: stack vertically on mobile */
-  .contact-card {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 16px !important;
-    padding-top: 36px !important;
+  .contact-card.contact-card {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding-top: 36px;
   }
 
-  .checkbox-container {
-    position: absolute !important;
-    top: 12px !important;
-    left: 12px !important;
+  .checkbox-container.checkbox-container {
+    position: absolute;
+    top: 12px;
+    left: 12px;
   }
 
-  .card-image-container {
-    flex: none !important;
-    width: 100% !important;
+  .card-image-container.card-image-container {
+    flex: none;
+    width: 100%;
     max-width: 360px;
-    height: auto !important;
+    height: auto;
     aspect-ratio: 5 / 3;
   }
 
@@ -646,17 +646,17 @@ button:focus-visible {
     text-align: left;
   }
 
-  .card-actions {
-    flex-direction: row !important;
+  .card-actions.card-actions {
+    flex-direction: row;
     flex-wrap: wrap;
-    width: 100% !important;
-    flex: none !important;
-    border-left: none !important;
+    width: 100%;
+    flex: none;
+    border-left: none;
     border-top: 1px solid var(--glass-border);
-    padding-left: 0 !important;
+    padding-left: 0;
     padding-top: 12px;
-    justify-content: flex-start !important;
-    gap: 8px !important;
+    justify-content: flex-start;
+    gap: 8px;
     opacity: 1 !important;
   }
 
@@ -665,30 +665,30 @@ button:focus-visible {
     display: none !important;
   }
 
-  .nav-brand-group {
-    gap: 0.75rem !important;
+  .nav-brand-group.nav-brand-group {
+    gap: 0.75rem;
     min-width: 0;
   }
 
-  .nav-links {
-    gap: 0.25rem !important;
+  .nav-links.nav-links {
+    gap: 0.25rem;
   }
 
-  .nav-links a {
-    padding: 0.4rem 0.6rem !important;
-    font-size: 0.85rem !important;
+  .nav-links.nav-links a {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
   }
 
-  .nav-actions {
-    gap: 8px !important;
+  .nav-actions.nav-actions {
+    gap: 8px;
   }
 
   main { padding: 1rem !important; }
 
-  .dashboard-banner {
-    height: 180px !important;
-    border-radius: 16px !important;
-    margin-bottom: 25px !important;
+  .dashboard-banner.dashboard-banner {
+    height: 180px;
+    border-radius: 16px;
+    margin-bottom: 25px;
   }
 }
 
@@ -843,94 +843,94 @@ input:checked+.slider:before {
 
 @media (max-width: 600px) {
   /* Modal */
-  .modal-content {
-    padding: 16px !important;
-    border-radius: 16px !important;
-    width: 95% !important;
-    max-height: 95vh !important;
+  .modal-content.modal-content {
+    padding: 16px;
+    border-radius: 16px;
+    width: 95%;
+    max-height: 95vh;
   }
 
-  .modal-header {
-    margin-bottom: 14px !important;
-    padding-bottom: 10px !important;
+  .modal-header.modal-header {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
   }
 
-  .modal-header h3 {
-    font-size: 1.2rem !important;
+  .modal-header.modal-header h3 {
+    font-size: 1.2rem;
   }
 
   /* AddCard image upload grid */
-  .addcard-image-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
+  .addcard-image-grid.addcard-image-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   /* AddCard 2-column form grids */
-  .addcard-form-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
+  .addcard-form-grid.addcard-form-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 
   /* Step progress indicator */
-  .addcard-steps {
-    gap: 10px !important;
-    padding: 12px 0 !important;
+  .addcard-steps.addcard-steps {
+    gap: 10px;
+    padding: 12px 0;
   }
 
   .addcard-steps .step-label {
     display: none;
   }
 
-  .addcard-steps .step-circle {
-    width: 28px !important;
-    height: 28px !important;
-    font-size: 12px !important;
+  .addcard-steps.addcard-steps .step-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
   }
 
-  .addcard-steps .step-line {
-    width: 24px !important;
+  .addcard-steps.addcard-steps .step-line {
+    width: 24px;
   }
 
   /* Navigation buttons */
-  .addcard-nav-buttons {
-    flex-direction: column !important;
-    gap: 8px !important;
+  .addcard-nav-buttons.addcard-nav-buttons {
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .addcard-nav-buttons button {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 12px 16px !important;
-    font-size: 14px !important;
+  .addcard-nav-buttons.addcard-nav-buttons button {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 14px;
   }
 
   /* OCR confirm modal */
-  .ocr-confirm-modal {
-    padding: 20px !important;
-    border-radius: 16px !important;
-    max-width: 100% !important;
+  .ocr-confirm-modal.ocr-confirm-modal {
+    padding: 20px;
+    border-radius: 16px;
+    max-width: 100%;
   }
 
-  .ocr-confirm-buttons {
-    flex-direction: column !important;
-    gap: 10px !important;
+  .ocr-confirm-buttons.ocr-confirm-buttons {
+    flex-direction: column;
+    gap: 10px;
   }
 
   /* AddCard form container */
-  .addcard-form {
-    gap: 16px !important;
+  .addcard-form.addcard-form {
+    gap: 16px;
   }
 
   /* Image upload boxes - smaller height on mobile */
-  .addcard-image-box {
-    min-height: 130px !important;
-    padding: 12px !important;
+  .addcard-image-box.addcard-image-box {
+    min-height: 130px;
+    padding: 12px;
   }
 
-  .addcard-image-box .image-action-buttons {
-    position: static !important;
-    margin-top: 8px !important;
-    justify-content: center !important;
+  .addcard-image-box.addcard-image-box .image-action-buttons {
+    position: static;
+    margin-top: 8px;
+    justify-content: center;
   }
 }
 
