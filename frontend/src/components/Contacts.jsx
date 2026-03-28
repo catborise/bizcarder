@@ -468,12 +468,19 @@ const Contacts = () => {
             ) : (
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
-                    filteredCards.map(card => (
-                        <div
+                    filteredCards.map((card, index) => (
+                        <motion.div
                           key={card.id}
                           className="card-wrapper"
                           data-priority={card.priority || ''}
                           data-lead={card.leadStatus || ''}
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: index * 0.04,
+                            ease: 'easeOut',
+                          }}
                         >
                         <div className="glass-container" style={{
                             border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
@@ -683,7 +690,7 @@ const Contacts = () => {
                                 </div>
                             )}
                         </div>
-                        </div>
+                        </motion.div>
                     ))
                 ) : (
                     <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>{t('cards:contacts.empty')}</h3></div>
