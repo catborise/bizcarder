@@ -299,33 +299,6 @@ const Contacts = () => {
         }
     };
 
-    if (loading && cards.length === 0) {
-        return (
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-                    <div className="skeleton skeleton-title" style={{ width: '300px' }}></div>
-                    <div className="skeleton skeleton-btn" style={{ width: '150px' }}></div>
-                </div>
-                <div className="skeleton" style={{ height: '60px', borderRadius: '12px', marginBottom: '30px' }}></div>
-                {[1, 2, 3].map(i => (
-                    <div key={i} className="glass-container" style={{ padding: '20px', borderRadius: '16px', marginBottom: '20px', display: 'flex', gap: '20px' }}>
-                        <div className="skeleton" style={{ width: '240px', height: '140px', borderRadius: '8px' }}></div>
-                        <div style={{ flex: 1 }}>
-                            <div className="skeleton skeleton-text" style={{ width: '40%', height: '24px', marginBottom: '15px' }}></div>
-                            <div className="skeleton skeleton-text" style={{ width: '60%', height: '18px', marginBottom: '20px' }}></div>
-                            <div style={{ display: 'grid', gap: '10px' }}>
-                                <div className="skeleton skeleton-text" style={{ width: '30%' }}></div>
-                                <div className="skeleton skeleton-text" style={{ width: '35%' }}></div>
-                                <div className="skeleton skeleton-text" style={{ width: '25%' }}></div>
-                            </div>
-                        </div>
-                        <div className="skeleton" style={{ width: '160px', height: '110px', borderRadius: '12px' }}></div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
-
     if (error) {
         return (
             <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--accent-error)' }}>
@@ -457,6 +430,25 @@ const Contacts = () => {
                 </span>
             </div>
 
+            {loading && (
+              <div className="my-card-layout">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="card-wrapper">
+                    <div className="glass-container skeleton-box" style={{ padding: '16px' }}>
+                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        <div style={{ width: '200px', height: '120px', borderRadius: '12px', background: 'rgba(var(--accent-secondary-rgb), 0.05)' }} />
+                        <div style={{ flex: 1 }}>
+                          <div className="skeleton-text" style={{ width: '60%', height: '20px', marginBottom: '8px' }} />
+                          <div className="skeleton-text" style={{ width: '40%', height: '16px', marginBottom: '12px' }} />
+                          <div className="skeleton-text" style={{ width: '80%', height: '14px' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {!loading && cards.length === 0 ? (
               <EmptyState
                 icon={FaAddressCard}
@@ -465,7 +457,7 @@ const Contacts = () => {
                 actionLabel={t('cards:addCard', 'Kart Ekle')}
                 onAction={() => setIsModalOpen(true)}
               />
-            ) : (
+            ) : !loading ? (
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
                     filteredCards.map((card, index) => (
@@ -696,7 +688,7 @@ const Contacts = () => {
                     <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>{t('cards:contacts.empty')}</h3></div>
                 )}
             </div>
-            )}
+            ) : null}
 
             {/* Pagination Controls */}
             {pagination.totalPages > 1 && (
