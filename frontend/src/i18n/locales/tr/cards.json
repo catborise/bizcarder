@@ -212,6 +212,8 @@
     "emptyTitle": "Henüz kartvizit eklemediniz",
     "emptyDescription": "İlk kartvizitinizi ekleyerek ağınızı oluşturmaya başlayın.",
     "lastInteraction": "Son",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsDescription": "Filtrelere uygun kartvizit bulunamadı. Filtreleri temizleyip tekrar deneyin.",
     "modal": {
       "image": "Görsel",
       "frontSide": "Ön Yüz",

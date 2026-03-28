@@ -212,6 +212,8 @@
     "emptyTitle": "No business cards yet",
     "emptyDescription": "Start building your network by adding your first business card.",
     "lastInteraction": "Last",
+    "noResults": "No results found",
+    "noResultsDescription": "No business cards match your filters. Try clearing them.",
     "modal": {
       "image": "Image",
       "frontSide": "Front Side",

@@ -1,0 +1,41 @@
+{
+  "cancel": "İptal",
+  "loading": "Yükleniyor...",
+  "processing": "İşleniyor...",
+  "saving": "Kaydediliyor...",
+  "update": "Güncelle",
+  "add": "Ekle",
+  "close": "Kapat",
+  "delete": "Sil",
+  "save": "Kaydet",
+  "edit": "Düzenle",
+  "all": "Tümü",
+  "yes": "Evet",
+  "no": "Hayır",
+  "retry": "Tekrar Dene",
+  "apply": "Uygula",
+  "back": "← Geri",
+  "next": "İleri →",
+  "search": "Ara",
+  "clear": "Temizle",
+  "clearFilters": "Filtreleri Temizle",
+  "leadStatus": {
+    "Cold": "❄️ Soğuk (Cold)",
+    "Warm": "⛅ Ilık (Warm)",
+    "Hot": "🔥 Sıcak (Hot)",
+    "Following-up": "🔄 Takipte (Following-up)",
+    "Converted": "✅ Dönüştü (Converted)"
+  },
+  "leadStatusShort": {
+    "Hot": "Sıcak",
+    "Warm": "Ilık",
+    "Cold": "Soğuk",
+    "Following-up": "Takipte",
+    "Converted": "Dönüştü",
+    "unknown": "Bilinmiyor"
+  },
+  "visibility": {
+    "public": "Herkese Açık",
+    "private": "Özel"
+  }
+}

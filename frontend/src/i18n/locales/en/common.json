@@ -1,0 +1,41 @@
+{
+  "cancel": "Cancel",
+  "loading": "Loading...",
+  "processing": "Processing...",
+  "saving": "Saving...",
+  "update": "Update",
+  "add": "Add",
+  "close": "Close",
+  "delete": "Delete",
+  "save": "Save",
+  "edit": "Edit",
+  "all": "All",
+  "yes": "Yes",
+  "no": "No",
+  "retry": "Retry",
+  "apply": "Apply",
+  "back": "← Back",
+  "next": "Next →",
+  "search": "Search",
+  "clear": "Clear",
+  "clearFilters": "Clear Filters",
+  "leadStatus": {
+    "Cold": "❄️ Cold",
+    "Warm": "⛅ Warm",
+    "Hot": "🔥 Hot",
+    "Following-up": "🔄 Following Up",
+    "Converted": "✅ Converted"
+  },
+  "leadStatusShort": {
+    "Hot": "Hot",
+    "Warm": "Warm",
+    "Cold": "Cold",
+    "Following-up": "Following Up",
+    "Converted": "Converted",
+    "unknown": "Unknown"
+  },
+  "visibility": {
+    "public": "Public",
+    "private": "Private"
+  }
+}

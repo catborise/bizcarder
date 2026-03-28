@@ -450,13 +450,26 @@ const Contacts = () => {
             )}
 
             {!loading && cards.length === 0 ? (
-              <EmptyState
-                icon={FaAddressCard}
-                title={t('cards:contacts.emptyTitle')}
-                description={t('cards:contacts.emptyDescription')}
-                actionLabel={t('cards:contacts.btn.addNew')}
-                onAction={() => setIsModalOpen(true)}
-              />
+              searchTerm || advancedFilters.tagId || advancedFilters.city || advancedFilters.hasReminder || advancedFilters.leadStatus || advancedFilters.source || advancedFilters.dateStart || advancedFilters.dateEnd ? (
+                <EmptyState
+                  icon={FaAddressCard}
+                  title={t('cards:contacts.noResults', 'Sonuç bulunamadı')}
+                  description={t('cards:contacts.noResultsDescription', 'Filtrelere uygun kartvizit bulunamadı. Filtreleri temizleyip tekrar deneyin.')}
+                  actionLabel={t('common:clearFilters', 'Filtreleri Temizle')}
+                  onAction={() => {
+                    setSearchTerm('');
+                    setAdvancedFilters({ tagId: '', city: '', hasReminder: false, leadStatus: '', source: '', dateStart: '', dateEnd: '' });
+                  }}
+                />
+              ) : (
+                <EmptyState
+                  icon={FaAddressCard}
+                  title={t('cards:contacts.emptyTitle')}
+                  description={t('cards:contacts.emptyDescription')}
+                  actionLabel={t('cards:contacts.btn.addNew')}
+                  onAction={() => setIsModalOpen(true)}
+                />
+              )
             ) : !loading ? (
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
                 {filteredCards.length > 0 ? (
