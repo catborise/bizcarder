@@ -336,13 +336,15 @@ const AppContent = () => {
                         </div>
                     </div>
                     <div className="nav-actions">
-                        <LanguageSwitcher />
+                        <div className="hide-on-mobile-nav">
+                            <LanguageSwitcher />
+                        </div>
                         <div className="theme-toggle-nav">
                             <ThemeToggle />
                         </div>
                         <Link
                             to="/trash"
-                            className="trash-link-nav"
+                            className="trash-link-nav hide-on-mobile-nav"
                             style={{
                                 color: 'var(--text-secondary)',
                                 padding: '0.5rem',

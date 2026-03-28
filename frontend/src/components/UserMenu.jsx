@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { FaUser, FaSignOutAlt, FaChevronDown, FaUsers, FaCog, FaClipboardList } from 'react-icons/fa';
+import { useTheme } from '../context/ThemeContext';
+import { FaUser, FaSignOutAlt, FaChevronDown, FaUsers, FaCog, FaClipboardList, FaTrash, FaMoon, FaSun, FaGlobe } from 'react-icons/fa';
 
 const UserMenu = () => {
+    const { t, i18n } = useTranslation('pages');
     const { user, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [showDropdown, setShowDropdown] = useState(false);
     const navigate = useNavigate();
 
@@ -104,7 +108,7 @@ const UserMenu = () => {
                                     textTransform: 'uppercase',
                                     border: `1px solid ${user.role === 'admin' ? 'var(--accent-primary)' : 'var(--glass-border)'}`
                                 }}>
-                                    {user.role === 'admin' ? '👑 Admin' : '👤 Kullanıcı'}
+                                    {user.role === 'admin' ? t('userMenu.roleBadge.admin') : t('userMenu.roleBadge.user')}
                                 </div>
                             )}
 
@@ -135,7 +139,7 @@ const UserMenu = () => {
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
                                 <FaClipboardList size={16} />
-                                <span>İşlem Kayıtları</span>
+                                <span>{t('userMenu.activityLogs')}</span>
                             </button>
 
                             {user.role === 'admin' && (
@@ -163,7 +167,7 @@ const UserMenu = () => {
                                     onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                 >
                                     <FaUsers size={16} />
-                                    <span>Kullanıcı Yönetimi</span>
+                                    <span>{t('userMenu.userManagement')}</span>
                                 </button>
                             )}
 
@@ -191,10 +195,90 @@ const UserMenu = () => {
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
                                 <FaCog size={16} />
-                                <span>Ayarlar</span>
+                                <span>{t('userMenu.settings')}</span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setShowDropdown(false);
+                                    navigate('/trash');
+                                }}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px 12px',
+                                    backgroundColor: 'transparent',
+                                    color: 'var(--text-primary)',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    transition: 'all 0.2s ease',
+                                    borderRadius: '8px',
+                                    textAlign: 'left'
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                                <FaTrash size={16} />
+                                <span>{t('userMenu.trashBin', 'Çöp Kutusu')}</span>
                             </button>
 
                             <div style={{ height: '1px', background: 'var(--glass-border)', margin: '8px 0' }}></div>
+
+                            <div style={{ display: 'flex', gap: '8px', padding: '4px 12px 8px' }}>
+                                <button
+                                    onClick={() => i18n.changeLanguage(i18n.language === 'tr' ? 'en' : 'tr')}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px',
+                                        backgroundColor: 'var(--glass-bg)',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--glass-border)',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        transition: 'all 0.2s ease',
+                                        borderRadius: '8px',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg)'}
+                                >
+                                    <FaGlobe size={14} />
+                                    {i18n.language === 'tr' ? 'EN' : 'TR'}
+                                </button>
+                                <button
+                                    onClick={toggleTheme}
+                                    style={{
+                                        flex: 1,
+                                        padding: '8px',
+                                        backgroundColor: 'var(--glass-bg)',
+                                        color: 'var(--text-primary)',
+                                        border: '1px solid var(--glass-border)',
+                                        cursor: 'pointer',
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '6px',
+                                        transition: 'all 0.2s ease',
+                                        borderRadius: '8px',
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg)'}
+                                >
+                                    {theme === 'dark' ? <FaSun size={14} /> : <FaMoon size={14} />}
+                                    {theme === 'dark' ? 'Light' : 'Dark'}
+                                </button>
+                            </div>
+
+                            <div style={{ height: '1px', background: 'var(--glass-border)', margin: '0 0 8px' }}></div>
 
                             <button
                                 onClick={handleLogout}
@@ -221,7 +305,7 @@ const UserMenu = () => {
                                 }}
                             >
                                 <FaSignOutAlt size={16} />
-                                <span>Oturumu Kapat</span>
+                                <span>{t('userMenu.logout')}</span>
                             </button>
 
                         </div>

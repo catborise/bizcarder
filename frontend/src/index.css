@@ -661,7 +661,7 @@ button:focus-visible {
   }
 
   /* Nav Responsive */
-  .navbar-logo-text, .user-name-text, .theme-toggle-nav, .hide-on-mobile {
+  .navbar-logo-text, .user-name-text, .theme-toggle-nav, .hide-on-mobile, .hide-on-mobile-nav {
     display: none !important;
   }
 
