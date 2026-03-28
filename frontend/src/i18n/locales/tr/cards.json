@@ -1,0 +1,226 @@
+{
+  "addCard": {
+    "validation": {
+      "nameRequired": "Ad ve Soyad alanları zorunludur.",
+      "contactRequired": "E-posta veya Telefon alanlarından en az biri doldurulmalıdır.",
+      "fillNameFields": "Lütfen Ad ve Soyad alanlarını doldurunuz."
+    },
+    "camera": {
+      "notReady": "Kamera henüz hazır değil, lütfen bekleyin.",
+      "starting": "Kamera başlatılıyor...",
+      "alignCard": "Kartı buraya hizalayın"
+    },
+    "cameraError": {
+      "permission": "Kamera izni reddedildi",
+      "notFound": "Kamera bulunamadı",
+      "inUse": "Kamera başka bir uygulama tarafından kullanılıyor",
+      "noSupport": "Tarayıcınız kamera erişimini desteklemiyor",
+      "unknown": "Kamera başlatılamadı",
+      "permissionHint": "Tarayıcı ayarlarından kamera iznini etkinleştirin.",
+      "fallbackHint": "Bunun yerine dosya seçiciyi kullanabilirsiniz."
+    },
+    "ai": {
+      "boundaryDetected": "AI kart sınırlarını tespit etti.",
+      "manualBoundaryHint": "Kart sınırlarını lütfen manuel belirleyin.",
+      "resultsPrefetched": "AI tarama sonuçları kullanıldı.",
+      "scanComplete": "AI ile tarama tamamlandı.",
+      "fallbackToTesseract": "{{message}} Yerel OCR (Tesseract) ile devam ediliyor...",
+      "detecting": "AI Kart Sınırlarını Tespit Ediyor..."
+    },
+    "ocr": {
+      "error": "OCR işlemi sırasında bir hata oluştu.",
+      "reading": "OCR Okunuyor..."
+    },
+    "notify": {
+      "updated": "Kartvizit başarıyla güncellendi!",
+      "created": "Kartvizit başarıyla eklendi!",
+      "saveFailed": "Hata oluştu: {{error}}",
+      "contactImported": "Rehberden bilgiler aktarıldı.",
+      "tagCreated": "Etiket oluşturuldu.",
+      "tagCreateFailed": "Etiket oluşturulamadı.",
+      "ocrApplied": "Bilgiler forma aktarıldı.",
+      "editMode": "Düzenleme moduna geçildi.",
+      "cardDetected": "Kart Algılandı: {{cardType}}",
+      "offlineQueued": "İnternet yok: Kart senkronizasyon için sıraya alındı."
+    },
+    "cardType": {
+      "custom": "Özel Boyut",
+      "euCredit": "Standart (EU/Kredi Kartı)",
+      "us": "Standart (US)",
+      "square": "Kare Kart"
+    },
+    "perspectiveCorrection": "Perspektif Düzeltme ({{side}})",
+    "perspectiveHint": "Lütfen kartvizitin 4 köşesini işaretleyin.",
+    "frontSide": "Ön Yüz",
+    "backSide": "Arka Yüz",
+    "ocrConfirm": {
+      "title": "Tarama Sonuçlarını Onayla",
+      "description": "Kartvizitten okunan bilgiler aşağıdadır. Lütfen doğruluğunu kontrol edin ve gerekiyorsa düzeltin."
+    },
+    "logoCrop": {
+      "title": "Şirket Logosunu Seçin",
+      "hint": "Lütfen logoyu içeren alanı 4 köşe ile işaretleyin."
+    },
+    "duplicate": {
+      "title": "Benzer Kayıt Tespit Edildi!",
+      "description": "<1>{{firstName}} {{lastName}}</1> adına zaten bir kayıt mevcut.",
+      "company": "Şirket:",
+      "email": "E-Posta:",
+      "addedBy": "Ekleyen:"
+    },
+    "placeholder": {
+      "firstName": "Ad *",
+      "lastName": "Soyad *",
+      "company": "Şirket",
+      "title": "Ünvan",
+      "email": "E-Posta *",
+      "phone": "Telefon *",
+      "website": "Web Sitesi",
+      "address": "Açık Adres",
+      "city": "Şehir",
+      "country": "Ülke",
+      "tagName": "Etiket adı...",
+      "source": "Örn: Expo 2026, LinkedIn, Referans...",
+      "notes": "Kişi hakkında özel notlar, hobiler, ilgi alanları..."
+    },
+    "label": {
+      "addressInfo": "Adres Bilgileri",
+      "tags": "Etiketler",
+      "tagsLoading": "Etiketler yükleniyor...",
+      "reminder": "Takip Hatırlatıcısı",
+      "leadStatus": "İlişki Durumu (Lead Status)",
+      "priority": "Önem Derecesi (Priority)",
+      "source": "Tanışma Kaynağı (Source)",
+      "notes": "Notlar"
+    },
+    "ocrLabel": {
+      "firstName": "AD",
+      "lastName": "SOYAD",
+      "company": "ŞİRKET",
+      "title": "ÜNVAN",
+      "email": "E-POSTA",
+      "phone": "TELEFON",
+      "website": "WEB SİTESİ",
+      "address": "ADRES"
+    },
+    "visibility": {
+      "private": "🔒 Sadece Ben (Özel)",
+      "public": "🌍 Herkese Açık (Ortak)"
+    },
+    "btn": {
+      "importFromContacts": "Rehberden İçe Aktar (Hızlı Doldur)",
+      "changeLogo": "Logoyu Değiştir",
+      "selectLogo": "Logo Seç",
+      "select": "Seç",
+      "camera": "Kamera",
+      "selectFile": "Dosya Seç",
+      "captureFromCamera": "📷 Kameradan Çek",
+      "newTag": "+ Yeni",
+      "takePhoto": "Fotoğraf Çek",
+      "selectFromFile": "Dosyadan Seç",
+      "confirmAndApply": "Onayla ve Aktar",
+      "updateExisting": "Mevcut Kaydı Güncelle",
+      "createAnyway": "Yine de Yeni Oluştur",
+      "cancelAction": "İptal Et"
+    },
+    "step": {
+      "basic": "Temel",
+      "detail": "Detay",
+      "lead": "Lead"
+    },
+    "hint": {
+      "contactRequired": "* E-posta veya Telefon alanlarından en az biri doldurulmalıdır"
+    }
+  },
+  "contacts": {
+    "title": "Kartvizitler",
+    "notify": {
+      "deleted": "Kartvizit silindi.",
+      "deleteFailed": "Silme işlemi başarısız: {{error}}",
+      "bulkDeleted": "{{count}} kart silindi.",
+      "bulkDeleteFailed": "Toplu silme başarısız.",
+      "visibilityUpdated": "Görünürlük {{visibility}} olarak güncellendi.",
+      "visibilityFailed": "Görünürlük güncellenemedi.",
+      "tagsUpdated": "Etiketler başarıyla güncellendi.",
+      "tagsFailed": "Etiketleme işlemi başarısız.",
+      "exportPreparing": "{{type}} dosyası hazırlanıyor...",
+      "fileDownloaded": "Dosya indirildi.",
+      "downloadFailed": "İndirme başarısız.",
+      "vcardPreparing": "vCard dosyası hazırlanıyor...",
+      "vcardDownloaded": "vCard indirildi.",
+      "excelPreparing": "Excel dosyası hazırlanıyor...",
+      "excelDownloaded": "Excel dosyası indirildi.",
+      "pdfPreparing": "PDF dosyası hazırlanıyor...",
+      "pdfDownloaded": "PDF dosyası indirildi.",
+      "offlineMode": "Çevrimdışı mod: Kayıtlı veriler gösteriliyor."
+    },
+    "error": {
+      "title": "Bir Hata Oluştu",
+      "unexpectedFormat": "API beklenen formatta veri dönmedi.",
+      "loadFailedNoCache": "Veriler yüklenirken bir hata oluştu ve yerel kayıt bulunamadı."
+    },
+    "followUp": {
+      "whatsappMessage": "Merhaba {{name}}, az önce tanıştığımıza çok memnun oldum. İletişim bilgilerimi iletiyorum. Görüşmek dileğiyle.",
+      "emailSubject": "Tanıştığımıza Memnun Oldum",
+      "emailBody": "Sayın {{firstName}} {{lastName}},\n\nAz önce tanıştığımıza çok memnun oldum. Kartvizitinizi CRM sistemime kaydettim.\n\nEn kısa sürede tekrar görüşmek dileğiyle.\n\nİyi çalışmalar."
+    },
+    "field": {
+      "reminder": "Hatırlatıcı:",
+      "noDate": "Tarih Belirtilmedi",
+      "lastInteraction": "Son Etkileşim:",
+      "email": "E-Posta:",
+      "phone": "Telefon:",
+      "web": "Web:",
+      "location": "Konum:",
+      "address": "Adres:",
+      "source": "Kaynak:"
+    },
+    "btn": {
+      "addNew": "Yeni Kart Ekle",
+      "edit": "Düzenle",
+      "previous": "Önceki",
+      "next": "Sonraki",
+      "activityNotes": "Aktivite ve Notlar",
+      "tag": "Etiketle",
+      "makePublic": "Herkese Açık",
+      "makePrivate": "Özel Yap",
+      "apply": "Uygula",
+      "deselect": "Vazgeç"
+    },
+    "bulkTag": {
+      "addToExisting": "Mevcutlara Ekle",
+      "replaceAll": "Tümünü Değiştir"
+    },
+    "titleAttr": {
+      "downloadExcel": "Excel Olarak İndir",
+      "downloadPdf": "PDF Olarak İndir",
+      "whatsappFollow": "WhatsApp Takip",
+      "emailFollow": "E-Posta Takip",
+      "qrVcard": "QR / vCard",
+      "downloadVcard": "vCard İndir",
+      "history": "Geçmiş"
+    },
+    "pagination": "Sayfa {{current}} / {{total}}",
+    "selected": "{{count}} seçili",
+    "selectAll": "Tümünü Seç",
+    "selectedLabel": "Seçili",
+    "empty": "Kayıt bulunamadı",
+    "emptyTitle": "Henüz kartvizit eklemediniz",
+    "emptyDescription": "İlk kartvizitinizi ekleyerek ağınızı oluşturmaya başlayın.",
+    "modal": {
+      "image": "Görsel",
+      "frontSide": "Ön Yüz",
+      "backSide": "Arka Yüz",
+      "history": "Kartvizit Geçmişi",
+      "deleteTitle": "Kartviziti Sil",
+      "deleteMessage": "{{firstName}} {{lastName}} adlı kartvizitini silmek istediğinizden emin misiniz?",
+      "editTitle": "Kartviziti Düzenle",
+      "addTitle": "Yeni Kartvizit Ekle",
+      "bulkTagTitle": "Toplu Etiket Geliştirme",
+      "actionType": "İşlem Tipi",
+      "tags": "Etiketler",
+      "bulkDeleteTitle": "Toplu Silme",
+      "bulkDeleteMessage": "{{count}} adet kartviziti silmek istediğinizden emin misiniz?"
+    }
+  }
+}

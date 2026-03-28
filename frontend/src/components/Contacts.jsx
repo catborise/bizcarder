@@ -452,9 +452,9 @@ const Contacts = () => {
             {!loading && cards.length === 0 ? (
               <EmptyState
                 icon={FaAddressCard}
-                title={t('cards:emptyTitle', 'Henüz kartvizit eklemediniz')}
-                description={t('cards:emptyDescription', 'İlk kartvizitinizi ekleyerek ağınızı oluşturmaya başlayın.')}
-                actionLabel={t('cards:addCard', 'Kart Ekle')}
+                title={t('cards:contacts.emptyTitle')}
+                description={t('cards:contacts.emptyDescription')}
+                actionLabel={t('cards:contacts.btn.addNew')}
                 onAction={() => setIsModalOpen(true)}
               />
             ) : !loading ? (
