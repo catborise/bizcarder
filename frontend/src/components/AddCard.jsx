@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaStar, FaIdCard, FaBuilding, FaUser, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaTags, FaClock, FaEye } from 'react-icons/fa';
+import { useTranslation } from 'react-i18next';
 import Tesseract from 'tesseract.js';
 import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../utils/perspectiveHelper';
@@ -45,6 +46,7 @@ function canvasPreview(image, canvas, crop) {
 const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
+    const { t } = useTranslation(['cards', 'common']);
 
     // Seçilen Ham Dosyalar
     const [src, setSrc] = useState(null); // Şu an kırpılmakta olan resim kaynağı
@@ -93,6 +95,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [availableTags, setAvailableTags] = useState([]);
     const [tagsLoading, setTagsLoading] = useState(true);
     const [currentStep, setCurrentStep] = useState(1); // Wizard step: 1 or 2
+    const [showMoreFields, setShowMoreFields] = useState(false);
 
     const [ocrResults, setOcrResults] = useState(null); // Geçici OCR sonuçları
     const [showOcrConfirm, setShowOcrConfirm] = useState(false); // Onay ekranı kontrolü
@@ -160,6 +163,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
     }, [formData, activeCard]);
 
+    // Düzenleme modunda ikincil alanları otomatik göster
+    useEffect(() => {
+        if (activeCard) {
+            setShowMoreFields(true);
+        }
+    }, [activeCard]);
+
     const fetchTags = async () => {
         setTagsLoading(true);
         try {
@@ -180,11 +190,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     // Wizard Step Navigation
     const validateStep1 = () => {
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
-            showNotification('Ad ve Soyad alanları zorunludur.', 'error');
+            showNotification(t('addCard.validation.nameRequired'), 'error');
             return false;
         }
         if (!formData.email.trim() && !formData.phone.trim()) {
-            showNotification('E-posta veya Telefon alanlarından en az biri doldurulmalıdır.', 'error');
+            showNotification(t('addCard.validation.contactRequired'), 'error');
             return false;
         }
         return true;
@@ -322,7 +332,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
     const capturePhoto = () => {
         if (!videoRef.current || videoRef.current.readyState < 2) {
-            showNotification('Kamera henüz hazır değil, lütfen bekleyin.', 'warning');
+            showNotification(t('addCard.camera.notReady'), 'warning');
             return;
         }
 
@@ -409,12 +419,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 setAiDetectedPoints(pointsArray);
                 // Sakla ki sonra tekrar AI çağırmayalım
                 setPreFetchedAiData(response.data);
-                showNotification('AI kart sınırlarını tespit etti.', 'success');
+                showNotification(t('addCard.ai.boundaryDetected'), 'success');
             }
         } catch (err) {
             console.error('AI Detection Error:', err);
-            const errorMsg = err.response?.data?.error || 'AI servisi şu an kullanılamıyor.';
-            showNotification(`${errorMsg} Kart sınırlarını lütfen manuel belirleyin.`, 'warning');
+            const errorMsg = err.response?.data?.error || '';
+            showNotification(`${errorMsg} ${t('addCard.ai.manualBoundaryHint')}`, 'warning');
             // Hata olsa bile kullanıcı manuel devam edebilir
         } finally {
             setIsDetecting(false);
@@ -451,17 +461,17 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         // Determine best fit standard dimensions
         let width = 1000;
         let height = Math.round(1000 / ratio);
-        let cardType = "Özel Boyut";
+        let cardType = t('addCard.cardType.custom');
 
         if (Math.abs(ratio - 1.58) < 0.05) {
             height = 633; // 85.6 x 53.98 (CR80)
-            cardType = "Standart (EU/Kredi Kartı)";
+            cardType = t('addCard.cardType.euCredit');
         } else if (Math.abs(ratio - 1.75) < 0.05) {
             height = 571; // 3.5 x 2 (US)
-            cardType = "Standart (US)";
+            cardType = t('addCard.cardType.us');
         } else if (Math.abs(ratio - 1.0) < 0.1) {
             height = 1000;
-            cardType = "Kare Kart";
+            cardType = t('addCard.cardType.square');
         }
 
         const canvas = warpPerspective(image, naturalPoints, width, height);
@@ -476,7 +486,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 setFrontPreview(previewUrl);
                 setLogoTempSrc(previewUrl);
                 performOCR(blob);
-                showNotification(`Kart Algılandı: ${cardType}`, 'info');
+                showNotification(t('addCard.notify.cardDetected', { cardType }), 'info');
             } else {
                 setBackBlob(blob);
                 setBackPreview(previewUrl);
@@ -498,7 +508,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     if (preFetchedAiData) {
                         setOcrResults(preFetchedAiData);
                         setShowOcrConfirm(true);
-                        showNotification('AI tarama sonuçları kullanıldı.', 'success');
+                        showNotification(t('addCard.ai.resultsPrefetched'), 'success');
                         setOcrLoading(false);
                         return;
                     }
@@ -513,13 +523,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
                     setOcrResults(response.data);
                     setShowOcrConfirm(true);
-                    showNotification('AI ile tarama tamamlandı.', 'success');
+                    showNotification(t('addCard.ai.scanComplete'), 'success');
                     setOcrLoading(false);
                     return;
                 } catch (aiErr) {
                     console.error('AI OCR Hatası, Tesseract\'a dönülüyor:', aiErr);
-                    const msg = aiErr.response?.data?.error || 'AI servisi yanıt vermedi.';
-                    showNotification(`${msg} Yerel OCR (Tesseract) ile devam ediliyor...`, 'warning');
+                    const msg = aiErr.response?.data?.error || '';
+                    showNotification(t('addCard.ai.fallbackToTesseract', { message: msg }), 'warning');
                     // Başarısız olursa alt satıra (Tesseract) devam et
                 }
             }
@@ -611,7 +621,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
         } catch (err) {
             console.error('OCR Hatası:', err);
-            const errorMsg = err.response?.data?.error || 'OCR işlemi sırasında bir hata oluştu.';
+            const errorMsg = err.response?.data?.error || t('addCard.ocr.error');
             showNotification(errorMsg, 'error');
         } finally {
             setOcrLoading(false);
@@ -628,7 +638,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
 
         if (!formData.firstName.trim() || !formData.lastName.trim()) {
-            showNotification('Lütfen Ad ve Soyad alanlarını doldurunuz.', 'error');
+            showNotification(t('addCard.validation.fillNameFields'), 'error');
             return;
         }
 
@@ -686,7 +696,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     reminderDate: formData.reminderDate
                 };
                 await queueForSync('CREATE_CARD', offlineData);
-                showNotification('İnternet yok: Kart senkronizasyon için sıraya alındı.', 'info');
+                showNotification(t('addCard.notify.offlineQueued'), 'info');
                 if (onCardAdded) onCardAdded();
                 return;
             }
@@ -696,13 +706,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 await api.put(`/api/cards/${activeCard.id}`, data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                showNotification('Kartvizit başarıyla güncellendi!', 'success');
+                showNotification(t('addCard.notify.updated'), 'success');
             } else {
                 // YENİ EKLEME (POST)
                 await api.post('/api/cards', data, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                showNotification('Kartvizit başarıyla eklendi!', 'success');
+                showNotification(t('addCard.notify.created'), 'success');
             }
 
             // Başarılı işlem sonrası taslağı temizle
@@ -713,7 +723,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             // Form Reset (Eğer modal kapanmıyorsa manuel sıfırlama gerekebilir ama modal kapanacağı için sorun yok)
         } catch (error) {
             console.error('Kaydetme hatası:', error);
-            showNotification('Hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('addCard.notify.saveFailed', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -742,8 +752,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     textAlign: 'center',
                     position: 'relative'
                 }}>
-                    <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>Perspektif Düzeltme ({activeSide === 'front' ? 'Ön Yüz' : 'Arka Yüz'})</h4>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen kartvizitin 4 köşesini işaretleyin.</p>
+                    <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>{t('addCard.perspectiveCorrection', { side: activeSide === 'front' ? t('addCard.frontSide') : t('addCard.backSide') })}</h4>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>{t('addCard.perspectiveHint')}</p>
 
                     {isDetecting && (
                         <div style={{
@@ -761,7 +771,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             borderRadius: '16px'
                         }}>
                             <div className="spinner" style={{ marginBottom: '10px' }}></div>
-                            <p style={{ color: 'white', fontWeight: 'bold' }}>AI Kart Sınırlarını Tespit Ediyor...</p>
+                            <p style={{ color: 'white', fontWeight: 'bold' }}>{t('addCard.ai.detecting')}</p>
                         </div>
                     )}
 
@@ -789,10 +799,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         justifyContent: 'center',
                         transition: 'all 0.2s ease'
                     }}>
-                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>Ön Yüz</h4>
+                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>{t('addCard.frontSide')}</h4>
                         {frontPreview ? (
                             <div style={{ position: 'relative' }}>
-                                <img src={frontPreview} alt="Ön Yüz" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <img src={frontPreview} alt={t('addCard.frontSide')} style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
                                 <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
                                     <button
                                         type="button"
@@ -807,7 +817,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
-                                        }}>{logoPreview ? 'Logoyu Değiştir' : 'Logo Seç'}</button>
+                                        }}>{logoPreview ? t('addCard.btn.changeLogo') : t('addCard.btn.selectLogo')}</button>
                                     <button
                                         type="button"
                                         onClick={(e) => document.getElementById('frontInput').click()}
@@ -821,7 +831,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
-                                        }}>Seç</button>
+                                        }}>{t('addCard.btn.select')}</button>
                                     <button
                                         type="button"
                                         onClick={(e) => openCamera('front')}
@@ -834,7 +844,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: 'none',
                                             borderRadius: '8px',
                                             fontWeight: '600'
-                                        }}>Kamera</button>
+                                        }}>{t('addCard.btn.camera')}</button>
                                 </div>
                             </div>
                         ) : (
@@ -852,7 +862,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     transition: 'all 0.2s ease',
                                     fontSize: '14px'
                                 }}>
-                                    <span>Dosya Seç</span>
+                                    <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
                                 <div onClick={() => openCamera('front')} style={{
                                     cursor: 'pointer',
@@ -868,13 +878,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     fontSize: '14px',
                                     fontWeight: 'bold'
                                 }}>
-                                    <span>📷 Kameradan Çek</span>
+                                    <span>{t('addCard.btn.captureFromCamera')}</span>
                                 </div>
                             </div>
                         )}
                         <input id="frontInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
                         <input id="frontCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
-                        {ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>OCR Okunuyor...</p>}
+                        {ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>{t('addCard.ocr.reading')}</p>}
                     </div>
 
                     {/* Arka Yüz */}
@@ -889,10 +899,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         flexDirection: 'column',
                         justifyContent: 'center'
                     }}>
-                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>Arka Yüz</h4>
+                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>{t('addCard.backSide')}</h4>
                         {backPreview ? (
                             <div style={{ position: 'relative' }}>
-                                <img src={backPreview} alt="Arka Yüz" style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
+                                <img src={backPreview} alt={t('addCard.backSide')} style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
                                 <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
                                     <button
                                         type="button"
@@ -907,7 +917,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
                                             fontWeight: '500'
-                                        }}>Seç</button>
+                                        }}>{t('addCard.btn.select')}</button>
                                      <button
                                         type="button"
                                         onClick={(e) => openCamera('back')}
@@ -920,7 +930,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             border: 'none',
                                             borderRadius: '8px',
                                             fontWeight: '600'
-                                        }}>Kamera</button>
+                                        }}>{t('addCard.btn.camera')}</button>
                                 </div>
                             </div>
                         ) : (
@@ -938,7 +948,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     transition: 'all 0.2s ease',
                                     fontSize: '14px'
                                 }}>
-                                    <span>Dosya Seç</span>
+                                    <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
                                 <div onClick={() => openCamera('back')} style={{
                                     cursor: 'pointer',
@@ -954,7 +964,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     fontSize: '14px',
                                     fontWeight: 'bold'
                                 }}>
-                                    <span>📷 Kameradan Çek</span>
+                                    <span>{t('addCard.btn.captureFromCamera')}</span>
                                 </div>
                             </div>
                         )}
@@ -984,7 +994,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>1</div>
-                        <span className="step-label" style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Temel</span>
+                        <span className="step-label" style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.basic')}</span>
                     </div>
 
                     <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
@@ -999,7 +1009,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>2</div>
-                        <span className="step-label" style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Detay</span>
+                        <span className="step-label" style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.detail')}</span>
                     </div>
 
                     <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
@@ -1014,7 +1024,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             color: currentStep >= 3 ? 'var(--bg-card)' : 'var(--text-secondary)',
                             fontWeight: '700', fontSize: '14px'
                         }}>3</div>
-                        <span className="step-label" style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>Lead</span>
+                        <span className="step-label" style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.lead')}</span>
                     </div>
                 </div>
 
@@ -1042,7 +1052,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                     email: contact.email[0] || '',
                                                     phone: contact.tel[0] || ''
                                                 }));
-                                                showNotification('Rehberden bilgiler aktarıldı.', 'success');
+                                                showNotification(t('addCard.notify.contactImported'), 'success');
                                             }
                                         } catch (err) {
                                             console.error('Contact Picker Error:', err);
@@ -1062,54 +1072,110 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         gap: '8px'
                                     }}
                                 >
-                                    Rehberden İçe Aktar (Hızlı Doldur)
+                                    {t('addCard.btn.importFromContacts')}
                                 </button>
                             )}
 
                             {/* Temel Bilgiler */}
                             <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="firstName" placeholder="Ad *" value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
-                                <input type="text" name="lastName" placeholder="Soyad *" value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
+                                <input type="text" name="firstName" placeholder={t('addCard.placeholder.firstName')} value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
+                                <input type="text" name="lastName" placeholder={t('addCard.placeholder.lastName')} value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
                             </div>
 
                             <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="company" placeholder="Şirket" value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                <input type="text" name="title" placeholder="Ünvan" value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="text" name="company" placeholder={t('addCard.placeholder.company')} value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="text" name="title" placeholder={t('addCard.placeholder.title')} value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
 
                             {/* İletişim Bilgileri */}
                             <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="email" name="email" placeholder="E-Posta *" value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                <input type="text" name="phone" placeholder="Telefon *" value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="email" name="email" placeholder={t('addCard.placeholder.email')} value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                <input type="text" name="phone" placeholder={t('addCard.placeholder.phone')} value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
                             </div>
                             <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', margin: '-10px 0 0 0', fontStyle: 'italic' }}>
-                                * E-posta veya Telefon alanlarından en az biri doldurulmalıdır
+                                {t('addCard.hint.contactRequired')}
                             </p>
+
+                            {/* Toggle for secondary fields */}
+                            <button
+                                type="button"
+                                onClick={() => setShowMoreFields(!showMoreFields)}
+                                className="glass-button"
+                                style={{
+                                    width: '100%',
+                                    justifyContent: 'center',
+                                    marginTop: 'var(--space-2)',
+                                    marginBottom: 'var(--space-2)',
+                                    fontSize: '0.85rem',
+                                }}
+                            >
+                                {showMoreFields
+                                    ? t('cards:showLess', 'Daha Az Göster')
+                                    : t('cards:showMore', 'Daha Fazla Alan Göster')
+                                }
+                                <span style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: showMoreFields ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                            </button>
+
+                            {showMoreFields && (
+                                <div className="addcard-form-grid" style={{ animation: 'fadeIn 0.2s ease', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {/* Web Sitesi */}
+                                    <input type="text" name="website" placeholder={t('addCard.placeholder.website')} value={formData.website} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+
+                                    {/* Adres Bilgileri Grubu */}
+                                    <fieldset style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '15px', margin: 0, background: 'var(--glass-bg)' }}>
+                                        <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>{t('addCard.label.addressInfo')}</legend>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                            <textarea name="address" rows="2" placeholder={t('addCard.placeholder.address')} value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
+                                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                                <input type="text" name="city" placeholder={t('addCard.placeholder.city')} value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                                <input type="text" name="country" placeholder={t('addCard.placeholder.country')} value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {/* Notlar */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.notes')}</label>
+                                        <textarea
+                                            name="notes"
+                                            rows="3"
+                                            placeholder={t('addCard.placeholder.notes')}
+                                            value={formData.notes}
+                                            onChange={handleInputChange}
+                                            style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }}
+                                            onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }}
+                                            onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}
+                                        />
+                                    </div>
+
+                                    {/* OCR Metni */}
+                                    {formData.ocrText && (
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.ocrText', 'OCR Metni')}</label>
+                                            <textarea
+                                                name="ocrText"
+                                                rows="3"
+                                                placeholder={t('addCard.placeholder.ocrText', 'OCR ile okunan metin...')}
+                                                value={formData.ocrText}
+                                                onChange={handleInputChange}
+                                                style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical', fontSize: '12px' }}
+                                                onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }}
+                                                onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </>
                     )}
 
                     {/* Step 2: Detailed Information */}
                     {currentStep === 2 && (
                         <>
-                            {/* Web Sitesi */}
-                            <input type="text" name="website" placeholder="Web Sitesi" value={formData.website} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.15)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'; }} onBlur={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }} />
-
-                            {/* Adres Bilgileri Grubu */}
-                            <fieldset style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '15px', margin: 0, background: 'var(--glass-bg)' }}>
-                                <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>Adres Bilgileri</legend>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                    <textarea name="address" rows="2" placeholder="Açık Adres" value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
-                                    <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                        <input type="text" name="city" placeholder="Şehir" value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                        <input type="text" name="country" placeholder="Ülke" value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                    </div>
-                                </div>
-                            </fieldset>
-
                             {/* CRM Extras: Tags & Reminders */}
                             <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Etiketler</label>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.tags')}</label>
                                     <div style={{
                                         display: 'flex',
                                         flexWrap: 'wrap',
@@ -1120,7 +1186,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         border: '1px solid var(--glass-border)'
                                     }}>
                                         {tagsLoading ? (
-                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>Etiketler yükleniyor...</span>
+                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{t('addCard.label.tagsLoading')}</span>
                                         ) : (
                                             <>
                                                 {availableTags && availableTags.length > 0 && availableTags.map(tag => (
@@ -1166,13 +1232,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                         gap: '4px'
                                                     }}
                                                 >
-                                                    {formData.showNewTagInput ? '×' : '+ Yeni'}
+                                                    {formData.showNewTagInput ? '×' : t('addCard.btn.newTag')}
                                                 </button>
                                                 {formData.showNewTagInput && (
                                                     <div style={{ display: 'flex', gap: '5px', width: '100%', marginTop: '5px' }}>
                                                         <input 
                                                             type="text" 
-                                                            placeholder="Etiket adı..." 
+                                                            placeholder={t('addCard.placeholder.tagName')} 
                                                             value={formData.newTagName}
                                                             onChange={(e) => setFormData(prev => ({ ...prev, newTagName: e.target.value }))}
                                                             style={{ ...inputStyle, flex: 1, padding: '5px 10px', height: '32px', fontSize: '12px' }}
@@ -1193,9 +1259,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                                         newTagName: '',
                                                                         showNewTagInput: false
                                                                     }));
-                                                                    showNotification('Etiket oluşturuldu.', 'success');
+                                                                    showNotification(t('addCard.notify.tagCreated'), 'success');
                                                                 } catch (err) {
-                                                                    showNotification('Etiket oluşturulamadı.', 'error');
+                                                                    showNotification(t('addCard.notify.tagCreateFailed'), 'error');
                                                                 }
                                                             }}
                                                             style={{ 
@@ -1208,7 +1274,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                                 cursor: 'pointer' 
                                                             }}
                                                         >
-                                                            Ekle
+                                                            {t('common:add')}
                                                         </button>
                                                     </div>
                                                 )}
@@ -1218,7 +1284,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>Takip Hatırlatıcısı</label>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>{t('addCard.label.reminder')}</label>
                                     <input
                                         type="date"
                                         name="reminderDate"
@@ -1230,8 +1296,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </div>
 
                             <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
-                                <option value="private" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>🔒 Sadece Ben (Özel)</option>
-                                <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>🌍 Herkese Açık (Ortak)</option>
+                                <option value="private" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('addCard.visibility.private')}</option>
+                                <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('addCard.visibility.public')}</option>
                             </select>
 
 
@@ -1243,22 +1309,22 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>İlişki Durumu (Lead Status)</label>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.leadStatus')}</label>
                                     <select 
                                         name="leadStatus" 
                                         value={formData.leadStatus} 
                                         onChange={handleInputChange} 
                                         style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}
                                     >
-                                        <option value="Cold">❄️ Soğuk (Cold)</option>
-                                        <option value="Warm">⛅ Ilık (Warm)</option>
-                                        <option value="Hot">🔥 Sıcak (Hot)</option>
-                                        <option value="Following-up">🔄 Takipte (Following-up)</option>
-                                        <option value="Converted">✅ Dönüştü (Converted)</option>
+                                        <option value="Cold">{t('common:leadStatus.Cold')}</option>
+                                        <option value="Warm">{t('common:leadStatus.Warm')}</option>
+                                        <option value="Hot">{t('common:leadStatus.Hot')}</option>
+                                        <option value="Following-up">{t('common:leadStatus.Following-up')}</option>
+                                        <option value="Converted">{t('common:leadStatus.Converted')}</option>
                                     </select>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Önem Derecesi (Priority)</label>
+                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.priority')}</label>
                                     <div style={{ display: 'flex', gap: '10px', height: '45px', alignItems: 'center', background: 'var(--bg-card)', borderRadius: '10px', padding: '0 15px', border: '1px solid var(--glass-border)' }}>
                                         {[1, 2, 3, 4, 5].map(star => (
                                             <FaStar 
@@ -1274,28 +1340,17 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Tanışma Kaynağı (Source)</label>
+                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.source')}</label>
                                 <input 
                                     type="text" 
                                     name="source" 
-                                    placeholder="Örn: Expo 2026, LinkedIn, Referans..." 
+                                    placeholder={t('addCard.placeholder.source')} 
                                     value={formData.source} 
                                     onChange={handleInputChange} 
                                     style={inputStyle} 
                                 />
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>Notlar</label>
-                                <textarea 
-                                    name="notes" 
-                                    rows="4" 
-                                    placeholder="Kişi hakkında özel notlar, hobiler, ilgi alanları..." 
-                                    value={formData.notes} 
-                                    onChange={handleInputChange} 
-                                    style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }}
-                                />
-                            </div>
                         </div>
                     )}
                 </div>
@@ -1324,7 +1379,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
                                 onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
-                                Kaydet
+                                {t('common:save')}
                             </button>
                              <button
                                  type="button"
@@ -1348,7 +1403,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                  onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
                                  onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
                              >
-                                 İleri →
+                                 {t('common:next')}
                              </button>
                         </>
                     ) : (
@@ -1374,7 +1429,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
                                 onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
-                                ← Geri
+                                {t('common:back')}
                             </button>
                             {currentStep === 2 ? (
                                 <button
@@ -1393,7 +1448,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
-                                    İleri →
+                                    {t('common:next')}
                                 </button>
                             ) : (
                                 <button
@@ -1414,7 +1469,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
                                     onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
                                 >
-                                    {activeCard ? 'Güncelle' : 'Kaydet'}
+                                    {activeCard ? t('common:update') : t('common:save')}
                                 </button>
                             )}
                         </>
@@ -1451,39 +1506,39 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             boxShadow: 'var(--glass-shadow-hover)'
                         }}>
                             <h3 style={{ color: 'var(--text-primary)', marginTop: 0, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '1.5rem' }}>🔍</span> Tarama Sonuçlarını Onayla
+                                <span style={{ fontSize: '1.5rem' }}>🔍</span> {t('addCard.ocrConfirm.title')}
                             </h3>
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '25px' }}>
-                                Kartvizitten okunan bilgiler aşağıdadır. Lütfen doğruluğunu kontrol edin ve gerekiyorsa düzeltin.
+                                {t('addCard.ocrConfirm.description')}
                             </p>
 
                             <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
                                 <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>AD</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.firstName')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.firstName}
                                             onChange={(e) => setOcrResults({ ...ocrResults, firstName: e.target.value })}
                                             style={inputStyle}
-                                            placeholder="Ad..."
+                                            placeholder={t('addCard.placeholder.firstName')}
                                         />
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>SOYAD</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.lastName')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.lastName}
                                             onChange={(e) => setOcrResults({ ...ocrResults, lastName: e.target.value })}
                                             style={inputStyle}
-                                            placeholder="Soyad..."
+                                            placeholder={t('addCard.placeholder.lastName')}
                                         />
                                     </div>
                                 </div>
 
                                 <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ŞİRKET</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.company')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.company}
@@ -1492,7 +1547,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         />
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ÜNVAN</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.title')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.title}
@@ -1504,7 +1559,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
                                 <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>E-POSTA</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.email')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.email}
@@ -1513,7 +1568,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         />
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>TELEFON</label>
+                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.phone')}</label>
                                         <input
                                             type="text"
                                             value={ocrResults.phone}
@@ -1524,7 +1579,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>WEB SİTESİ</label>
+                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.website')}</label>
                                     <input
                                         type="text"
                                         value={ocrResults.website}
@@ -1534,7 +1589,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>ADRES</label>
+                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.address')}</label>
                                     <textarea
                                         value={ocrResults.address}
                                         onChange={(e) => setOcrResults({ ...ocrResults, address: e.target.value })}
@@ -1558,7 +1613,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         fontWeight: '600'
                                     }}
                                 >
-                                    Vazgeç
+                                    {t('common:cancel')}
                                 </button>
                                 <button
                                     type="button"
@@ -1568,7 +1623,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             ...ocrResults
                                         }));
                                         setShowOcrConfirm(false);
-                                        showNotification('Bilgiler forma aktarıldı.', 'success');
+                                        showNotification(t('addCard.notify.ocrApplied'), 'success');
                                     }}
                                     style={{
                                         flex: 2,
@@ -1582,7 +1637,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
-                                    Onayla ve Aktar
+                                    {t('addCard.btn.confirmAndApply')}
                                 </button>
                             </div>
                         </div>
@@ -1608,8 +1663,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         padding: '20px'
                     }}>
                         <div style={{ background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', border: '1px solid var(--glass-border)', maxWidth: '90%', maxHeight: '90%', overflow: 'auto', boxShadow: 'var(--glass-shadow-hover)' }}>
-                            <h4 style={{ color: 'var(--text-primary)', marginTop: 0 }}>Şirket Logosunu Seçin</h4>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>Lütfen logoyu içeren alanı 4 köşe ile işaretleyin.</p>
+                            <h4 style={{ color: 'var(--text-primary)', marginTop: 0 }}>{t('addCard.logoCrop.title')}</h4>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>{t('addCard.logoCrop.hint')}</p>
                             <PerspectiveCropper
                                 src={logoTempSrc}
                                 onCropComplete={async (points, image) => {
@@ -1625,7 +1680,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 type="button"
                                 onClick={() => setShowLogoCrop(false)}
                                 style={{ marginTop: '15px', padding: '10px 20px', background: 'var(--glass-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '12px', cursor: 'pointer' }}
-                            >Vazgeç</button>
+                            >{t('common:cancel')}</button>
                         </div>
                     </div>
                 )
@@ -1670,10 +1725,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             }}>
                                 ⚠️
                             </div>
-                            <h3 style={{ color: 'var(--accent-warning)', margin: '0 0 10px 0', fontSize: '1.5rem' }}>Benzer Kayıt Tespit Edildi!</h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '25px' }}>
-                                <b>{duplicateCard.firstName} {duplicateCard.lastName}</b> adına zaten bir kayıt mevcut.
-                            </p>
+                            <h3 style={{ color: 'var(--accent-warning)', margin: '0 0 10px 0', fontSize: '1.5rem' }}>{t('addCard.duplicate.title')}</h3>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '25px' }}
+                               dangerouslySetInnerHTML={{ __html: t('addCard.duplicate.description', { firstName: duplicateCard.firstName, lastName: duplicateCard.lastName }).replace('<1>', '<b>').replace('</1>', '</b>') }}
+                            />
 
                             <div style={{
                                 background: 'var(--glass-bg)',
@@ -1684,11 +1739,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 border: '1px solid var(--glass-border)'
                             }}>
                                 <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '0.9rem' }}>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>Şirket:</span>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.company')}</span>
                                     <span>{duplicateCard.company || '-'}</span>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>E-Posta:</span>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.email')}</span>
                                     <span>{duplicateCard.email || '-'}</span>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>Ekleyen:</span>
+                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.addedBy')}</span>
                                     <span style={{ color: 'var(--accent-success)' }}>@{duplicateCard.owner?.displayName || 'Sistem'}</span>
                                 </div>
                             </div>
@@ -1699,7 +1754,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         // Mevcut kartı düzenleme moduna al
                                         if (onCardAdded) onCardAdded(duplicateCard);
                                         setShowDuplicateAlert(false);
-                                        showNotification('Düzenleme moduna geçildi.', 'info');
+                                        showNotification(t('addCard.notify.editMode'), 'info');
                                     }}
                                     style={{
                                         padding: '14px',
@@ -1712,7 +1767,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
-                                    Mevcut Kaydı Güncelle
+                                    {t('addCard.btn.updateExisting')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -1734,7 +1789,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         fontWeight: '600'
                                     }}
                                 >
-                                    Yine de Yeni Oluştur
+                                    {t('addCard.btn.createAnyway')}
                                 </button>
                                 <button
                                     onClick={() => setShowDuplicateAlert(false)}
@@ -1749,7 +1804,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         textDecoration: 'underline'
                                     }}
                                 >
-                                    İptal Et
+                                    {t('addCard.btn.cancelAction')}
                                 </button>
                             </div>
                         </div>
@@ -1799,7 +1854,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 color: 'white'
                             }}>
                                 <div className="spinner" style={{ marginBottom: '12px' }}></div>
-                                <p style={{ fontSize: '14px', fontWeight: '500' }}>Kamera başlatılıyor...</p>
+                                <p style={{ fontSize: '14px', fontWeight: '500' }}>{t('addCard.camera.starting')}</p>
                             </div>
                         )}
 
@@ -1820,16 +1875,16 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     {cameraError === 'permission' ? '🔒' : cameraError === 'not-found' ? '📷' : '⚠️'}
                                 </p>
                                 <p style={{ fontSize: '15px', fontWeight: '600', marginBottom: '6px' }}>
-                                    {cameraError === 'permission' && 'Kamera izni reddedildi'}
-                                    {cameraError === 'not-found' && 'Kamera bulunamadı'}
-                                    {cameraError === 'in-use' && 'Kamera başka bir uygulama tarafından kullanılıyor'}
-                                    {cameraError === 'no-support' && 'Tarayıcınız kamera erişimini desteklemiyor'}
-                                    {cameraError === 'unknown' && 'Kamera başlatılamadı'}
+                                    {cameraError === 'permission' && t('addCard.cameraError.permission')}
+                                    {cameraError === 'not-found' && t('addCard.cameraError.notFound')}
+                                    {cameraError === 'in-use' && t('addCard.cameraError.inUse')}
+                                    {cameraError === 'no-support' && t('addCard.cameraError.noSupport')}
+                                    {cameraError === 'unknown' && t('addCard.cameraError.unknown')}
                                 </p>
                                 <p style={{ fontSize: '13px', color: '#aaa', marginBottom: '16px' }}>
                                     {cameraError === 'permission'
-                                        ? 'Tarayıcı ayarlarından kamera iznini etkinleştirin.'
-                                        : 'Bunun yerine dosya seçiciyi kullanabilirsiniz.'}
+                                        ? t('addCard.cameraError.permissionHint')
+                                        : t('addCard.cameraError.fallbackHint')}
                                 </p>
                                 <button
                                     type="button"
@@ -1844,7 +1899,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         cursor: 'pointer',
                                         fontSize: '14px'
                                     }}
-                                >Dosyadan Seç</button>
+                                >{t('addCard.btn.selectFromFile')}</button>
                             </div>
                         )}
 
@@ -1863,7 +1918,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
                             }}>
                                 <div style={{ position: 'absolute', top: '-30px', left: 0, right: 0, textAlign: 'center', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: 'bold' }}>
-                                    Kartı buraya hizalayın
+                                    {t('addCard.camera.alignCard')}
                                 </div>
                             </div>
                         )}
@@ -1882,7 +1937,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 border: 'none',
                                 cursor: 'pointer'
                             }}
-                        >İptal</button>
+                        >{t('common:cancel')}</button>
                         <button
                             type="button"
                             onClick={capturePhoto}
@@ -1901,7 +1956,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 gap: '10px',
                                 opacity: cameraReady ? 1 : 0.5
                             }}
-                        >Fotoğraf Çek</button>
+                        >{t('addCard.btn.takePhoto')}</button>
                     </div>
                 </div>
             )}
