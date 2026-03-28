@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import ActivityLogs from './components/ActivityLogs';
 import UserManagement from './components/UserManagement';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
@@ -16,6 +16,8 @@ import LanguageSwitcher from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
+import BottomNav from './components/BottomNav';
+import FAB from './components/FAB';
 
 
 import Dashboard from './components/Dashboard';
@@ -37,6 +39,7 @@ const AppContent = () => {
     const { showNotification } = useNotification();
     const { t } = useTranslation('pages');
     const location = useLocation();
+    const navigate = useNavigate();
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [deferredPrompt, setDeferredPrompt] = useState(null);
     const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -454,6 +457,11 @@ const AppContent = () => {
                     </Routes>
                 </AnimatePresence>
             </main >
+
+            {isAuthenticated && <BottomNav />}
+            {isAuthenticated && (
+              <FAB onClick={() => navigate('/contacts', { state: { openAddCard: true } })} />
+            )}
 
             {/* Ultra-Compact Footer */}
             <footer style={{
