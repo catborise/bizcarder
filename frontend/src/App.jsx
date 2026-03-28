@@ -276,7 +276,7 @@ const AppContent = () => {
                             <Link
                                 to="/"
                                 style={{
-                                    color: location.pathname === '/' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    color: location.pathname === '/' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
                                     background: location.pathname === '/' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
                                     border: location.pathname === '/' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                     borderRadius: '8px',
@@ -296,7 +296,7 @@ const AppContent = () => {
                             <Link
                                 to="/contacts"
                                 style={{
-                                    color: location.pathname === '/contacts' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    color: location.pathname === '/contacts' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
                                     background: location.pathname === '/contacts' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
                                     border: location.pathname === '/contacts' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                     borderRadius: '8px',
@@ -316,7 +316,7 @@ const AppContent = () => {
                             <Link
                                 to="/my-card"
                                 style={{
-                                    color: location.pathname === '/my-card' ? '#e0e7ff' : 'var(--text-secondary)',
+                                    color: location.pathname === '/my-card' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
                                     background: location.pathname === '/my-card' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
                                     border: location.pathname === '/my-card' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                     borderRadius: '8px',
