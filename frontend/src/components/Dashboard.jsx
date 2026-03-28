@@ -609,7 +609,7 @@ const Dashboard = () => {
                             fontWeight: 600,
                         }}
                     >
-                        <Icons.FaPlus size={14} /> {t('dashboard:quickAddCard', 'Kart Ekle')}
+                        <Icons.FaPlus size={14} /> {t('dashboard:quickAddCard')}
                     </button>
                     <button
                         onClick={() => navigate('/contacts?filter=reminders')}
@@ -621,7 +621,7 @@ const Dashboard = () => {
                             fontWeight: 600,
                         }}
                     >
-                        <Icons.FaBell size={14} /> {t('dashboard:quickReminders', 'Hatırlatmalar')}
+                        <Icons.FaBell size={14} /> {t('dashboard:quickReminders')}
                     </button>
                     <button
                         onClick={() => navigate('/contacts?sort=newest')}
@@ -633,7 +633,7 @@ const Dashboard = () => {
                             fontWeight: 600,
                         }}
                     >
-                        <Icons.FaClock size={14} /> {t('dashboard:quickRecent', 'Son Eklenenler')}
+                        <Icons.FaClock size={14} /> {t('dashboard:quickRecent')}
                     </button>
                 </div>
             )}
@@ -716,14 +716,14 @@ const Dashboard = () => {
                             letterSpacing: '0.08em',
                             fontWeight: 600,
                         }}>
-                            {t('dashboard:stats.thisWeek', 'Bu Hafta')}
+                            {t('dashboard:stats.thisWeek')}
                         </p>
                         <p style={{
                             margin: 0,
                             fontSize: '0.95rem',
                             color: 'var(--text-secondary)'
                         }}>
-                            {t('dashboard:stats.newCards', 'Yeni Kartlar')}
+                            {t('dashboard:stats.newCards')}
                         </p>
                     </div>
                     <div style={{
@@ -767,14 +767,14 @@ const Dashboard = () => {
                             letterSpacing: '0.08em',
                             fontWeight: 600,
                         }}>
-                            {t('dashboard:stats.reminders', 'Hatırlatmalar')}
+                            {t('dashboard:stats.reminders')}
                         </p>
                         <p style={{
                             margin: 0,
                             fontSize: '0.95rem',
                             color: 'var(--text-secondary)'
                         }}>
-                            {t('dashboard:stats.dueToday', 'Bugün Vadesi Dolan')}
+                            {t('dashboard:stats.dueToday')}
                         </p>
                     </div>
                     <div style={{
@@ -816,14 +816,14 @@ const Dashboard = () => {
                             letterSpacing: '0.08em',
                             fontWeight: 600,
                         }}>
-                            {t('dashboard:stats.followUps', 'Takipler')}
+                            {t('dashboard:stats.followUps')}
                         </p>
                         <p style={{
                             margin: 0,
                             fontSize: '0.95rem',
                             color: 'var(--text-secondary)'
                         }}>
-                            {t('dashboard:stats.activeFollowUps', 'Aktif Takipler')}
+                            {t('dashboard:stats.activeFollowUps')}
                         </p>
                     </div>
                     <div style={{
