@@ -898,56 +898,56 @@ const Dashboard = () => {
             )}
 
 
-            {/* Core Application Tiles - Always at top, under stats */}
-            <div className="dashboard-tiles-grid-3col stagger-enter" style={{
-                marginBottom: '40px',
-                animationDelay: '0.2s'
-            }}>
+            {/* Core Application Tiles - compact nav shortcuts */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: 'var(--space-3)',
+                marginBottom: 'var(--space-6)',
+            }} className="stagger-enter dashboard-core-tiles">
                 {loading ? (
                     Array.from({ length: 3 }).map((_, i) => (
-                        <div key={`skel-c-${i}`} className="skeleton-box" style={{ height: '160px', borderRadius: '16px' }}></div>
+                        <div key={`skel-c-${i}`} className="skeleton-box" style={{ height: '70px', borderRadius: '12px' }}></div>
                     ))
                 ) : (
                     tiles
                         .filter(t => ['/contacts', '/logs', '/import'].includes(t.url))
                         .map((tile, i) => (
-                            <div key={tile.id} className="stagger-enter" style={{ position: 'relative', animationDelay: `${i * 0.1}s` }}>
-                                <Link
-                                    to={tile.url}
-                                    style={{ ...tileStyle, background: tile.backgroundColor }}
-                                    onMouseEnter={handleMouseEnter}
-                                    onMouseLeave={handleMouseLeave}
-                                >
-                                    <div style={{
-                                        display: 'inline-flex',
-                                        padding: '12px',
-                                        background: 'var(--glass-bg)',
-                                        borderRadius: '12px',
-                                        width: 'fit-content',
-                                        border: '1px solid var(--glass-border)'
-                                    }}>
-                                        <DynamicIcon name={tile.icon} />
-                                    </div>
-                                    <div>
-                                        <span style={{
-                                            fontSize: '1.6rem',
-                                            display: 'block',
-                                            fontWeight: '700',
-                                            marginBottom: '6px',
-                                            letterSpacing: '-0.02em'
-                                        }}>
-                                            {tile.title}
-                                        </span>
-                                        <span style={{
-                                            fontSize: '0.95rem',
-                                            color: 'var(--text-secondary)',
-                                            fontWeight: '500'
-                                        }}>
-                                            {tile.subtitle}
-                                        </span>
-                                    </div>
-                                </Link>
-                            </div>
+                            <Link
+                                key={tile.id}
+                                to={tile.url}
+                                className="stagger-enter"
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 'var(--space-3)',
+                                    padding: 'var(--space-4)',
+                                    background: 'var(--glass-bg-solid)',
+                                    border: '1px solid var(--glass-border)',
+                                    borderRadius: '12px',
+                                    textDecoration: 'none',
+                                    color: 'var(--text-primary)',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: 'var(--glass-shadow)',
+                                    animationDelay: `${i * 0.08}s`,
+                                }}
+                                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
+                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}
+                            >
+                                <div style={{
+                                    width: '40px', height: '40px',
+                                    background: tile.backgroundColor || 'var(--gradient-primary)',
+                                    borderRadius: '10px',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    flexShrink: 0, color: '#fff',
+                                }}>
+                                    <DynamicIcon name={tile.icon} size={18} />
+                                </div>
+                                <div style={{ minWidth: 0 }}>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.2 }}>{tile.title}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>{tile.subtitle}</div>
+                                </div>
+                            </Link>
                         ))
                 )}
             </div>

@@ -597,6 +597,10 @@ button:focus-visible {
     gap: 16px;
   }
 
+  .dashboard-core-tiles {
+    grid-template-columns: 1fr !important;
+  }
+
   /* Contacts Header Responsive */
   .contacts-header.contacts-header {
     flex-direction: column;
