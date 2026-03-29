@@ -15,6 +15,9 @@ const ocrController = require('../controllers/ocrController');
 const { ocrLimiter } = require('../middleware/rateLimiter');
 
 // Multer Ayarları (Dosya Yükleme)
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, 'uploads/');
@@ -25,7 +28,15 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files (JPEG, PNG, GIF, WebP) are allowed.'), false);
+    }
+};
+
+const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_FILE_SIZE } });
 
 // stats rotası server.js içinde public olarak tanımlandığı için buradakine gerek yok.
 
@@ -251,8 +262,8 @@ const buildCardsQuery = (req) => {
 
 router.get('/', async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50;
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(Math.max(1, parseInt(req.query.limit) || 50), 100);
         const offset = (page - 1) * limit;
 
         const { whereClause, order } = buildCardsQuery(req);
@@ -303,10 +314,10 @@ router.get('/export/excel', async (req, res) => {
     try {
         const ExcelJS = require('exceljs');
         const { whereClause } = buildCardsQuery(req);
-        
-        // Eğer ID listesi geldiyse sadece onları çek
+
+        // Eğer ID listesi geldiyse sadece onları çek (max 500)
         if (req.query.ids) {
-            const ids = req.query.ids.split(',').map(id => parseInt(id));
+            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
             whereClause.id = { [Op.in]: ids };
         }
 
@@ -378,9 +389,9 @@ router.get('/export/pdf', async (req, res) => {
         const PDFDocument = require('pdfkit-table');
         const { whereClause } = buildCardsQuery(req);
 
-        // Eğer ID listesi geldiyse sadece onları çek
+        // Eğer ID listesi geldiyse sadece onları çek (max 500)
         if (req.query.ids) {
-            const ids = req.query.ids.split(',').map(id => parseInt(id));
+            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
             whereClause.id = { [Op.in]: ids };
         }
 

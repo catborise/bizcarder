@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Interaction, User, BusinessCard } = require('../models');
+const { requireAuth } = require('../middleware/auth');
+
+// All interaction routes require authentication
+router.use(requireAuth);
 
 // Bir karta ait etkileşimleri getir
 router.get('/:cardId', async (req, res) => {

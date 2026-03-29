@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { User, BusinessCard } = require('../models');
 const { logAction } = require('../utils/logger');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
+
+// All user management routes require admin
+router.use(requireAdmin);
 
 // Tüm Kullanıcıları Getir
 router.get('/', async (req, res) => {

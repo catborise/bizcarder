@@ -9,3 +9,4 @@ pgdata/
 .env
 backend/logs/
 backend/uploads/
+.superpowers/

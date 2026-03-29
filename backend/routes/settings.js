@@ -7,6 +7,9 @@ const fs = require('fs');
 const { requireAdmin } = require('../middleware/auth');
 
 // Multer Ayarları (Branding Dosyaları)
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon'];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB for branding assets
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const dir = 'uploads/branding/';
@@ -21,7 +24,15 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage });
+const fileFilter = (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed for branding assets.'), false);
+    }
+};
+
+const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_FILE_SIZE } });
 
 // Ayarları Getir
 router.get('/', async (req, res) => {

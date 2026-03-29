@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { Tag, BusinessCard, sequelize } = require('../models');
+const { requireAuth } = require('../middleware/auth');
+
+// All tag routes require authentication
+router.use(requireAuth);
 
 // Tüm Etiketleri Getir
 router.get('/', async (req, res) => {
