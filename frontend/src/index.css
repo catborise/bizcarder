@@ -723,8 +723,18 @@ button:focus-visible {
   }
 }
 
-/* my-card-layout is now handled in the contacts section above */
-/* No additional overrides needed */
+/* MyCard page grid */
+.mycard-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .mycard-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* Animations */
 @keyframes fadeIn {
