@@ -336,12 +336,6 @@ const AppContent = () => {
                         </div>
                     </div>
                     <div className="nav-actions">
-                        <div className="hide-on-mobile-nav">
-                            <LanguageSwitcher />
-                        </div>
-                        <div className="theme-toggle-nav">
-                            <ThemeToggle />
-                        </div>
                         <Link
                             to="/trash"
                             className="trash-link-nav hide-on-mobile-nav"
