@@ -19,6 +19,9 @@
   "search": "Ara",
   "clear": "Temizle",
   "clearFilters": "Filtreleri Temizle",
+  "dashboard": "Panel",
+  "contacts": "Kişiler",
+  "myCard": "Kartvizitim",
   "leadStatus": {
     "Cold": "❄️ Soğuk (Cold)",
     "Warm": "⛅ Ilık (Warm)",

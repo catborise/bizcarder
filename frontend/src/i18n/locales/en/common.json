@@ -19,6 +19,9 @@
   "search": "Search",
   "clear": "Clear",
   "clearFilters": "Clear Filters",
+  "dashboard": "Dashboard",
+  "contacts": "Contacts",
+  "myCard": "My Card",
   "leadStatus": {
     "Cold": "❄️ Cold",
     "Warm": "⛅ Warm",
