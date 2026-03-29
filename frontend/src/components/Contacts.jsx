@@ -859,76 +859,36 @@ const Contacts = () => {
                         initial={{ y: 100, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: 100, opacity: 0 }}
-                        style={{
-                            position: 'fixed',
-                            bottom: '30px',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--accent-primary)',
-                            borderRadius: '20px',
-                            padding: '12px 25px',
-                            boxShadow: '0 10px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-primary-transparent)',
-                            zIndex: 1000,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '20px',
-                            backdropFilter: 'blur(20px)'
-                        }}
+                        className="bulk-bar"
                     >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', paddingRight: '15px', borderRight: '1px solid var(--glass-border)' }}>
-                            <div style={{ width: '32px', height: '32px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '14px' }}>
+                        <div className="bulk-bar-count">
+                            <div style={{ width: '28px', height: '28px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '12px', flexShrink: 0 }}>
                                 {selectedIds.length}
                             </div>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{t('cards:contacts.selectedLabel')}</span>
+                            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{t('cards:contacts.selectedLabel')}</span>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button" style={{ color: 'var(--accent-warning)', gap: '8px' }}>
-                                <FaStar /> {t('cards:contacts.btn.tag')}
+                        <div className="bulk-bar-actions">
+                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" style={{ color: 'var(--accent-warning)' }}>
+                                <FaStar size={12} /> {t('cards:contacts.btn.tag')}
                             </button>
-                            
-                            <div style={{ position: 'relative', display: 'flex', gap: '5px' }}>
-                                <button onClick={() => handleBulkVisibility('public')} className="glass-button" style={{ color: 'var(--accent-success)', gap: '8px' }}>
-                                    <FaGlobe /> {t('cards:contacts.btn.makePublic')}
-                                </button>
-                                <button onClick={() => handleBulkVisibility('private')} className="glass-button" style={{ color: 'var(--text-tertiary)', gap: '8px' }}>
-                                    <FaIdCard /> {t('cards:contacts.btn.makePrivate')}
-                                </button>
-                            </div>
-
-                            <div style={{ height: '30px', width: '1px', background: 'var(--glass-border)', margin: '0 5px' }}></div>
-
-                            <button onClick={() => handleBulkExport('excel')} className="glass-button" style={{ color: '#27ae60' }}>
-                                <FaFileExcel /> Excel
+                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" style={{ color: 'var(--accent-success)' }}>
+                                <FaGlobe size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('pdf')} className="glass-button" style={{ color: '#e74c3c' }}>
-                                <FaFilePdf /> PDF
+                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" style={{ color: 'var(--text-tertiary)' }}>
+                                <FaIdCard size={12} />
                             </button>
-
-                            <button 
-                                onClick={() => setIsBulkDeleteConfirmOpen(true)} 
-                                style={{ 
-                                    background: 'var(--accent-error)', 
-                                    color: 'white', 
-                                    border: 'none', 
-                                    padding: '8px 16px', 
-                                    borderRadius: '10px', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    gap: '8px', 
-                                    fontWeight: 'bold',
-                                    fontSize: '14px'
-                                }}
-                            >
-                                <FaTrash /> {t('common:delete')}
+                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" style={{ color: '#27ae60' }}>
+                                <FaFileExcel size={12} />
                             </button>
-                            
-                            <button 
-                                onClick={() => setSelectedIds([])} 
-                                style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', padding: '5px', cursor: 'pointer' }}
-                            >
-                                <FaDownload style={{ transform: 'rotate(180deg)' }} /> {t('cards:contacts.btn.deselect')}
+                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" style={{ color: '#e74c3c' }}>
+                                <FaFilePdf size={12} />
+                            </button>
+                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
+                                <FaTrash size={12} />
+                            </button>
+                            <button onClick={() => setSelectedIds([])} className="glass-button-small" style={{ color: 'var(--text-tertiary)' }}>
+                                ✕
                             </button>
                         </div>
                     </motion.div>

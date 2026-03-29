@@ -723,6 +723,69 @@ button:focus-visible {
   }
 }
 
+/* ====================================
+   BULK ACTION BAR
+   ==================================== */
+
+.bulk-bar {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--accent-primary);
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px var(--accent-primary-transparent);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100vw - 32px);
+}
+
+.bulk-bar-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 12px;
+  border-right: 1px solid var(--glass-border);
+  flex-shrink: 0;
+}
+
+.bulk-bar-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .bulk-bar {
+    bottom: calc(66px + env(safe-area-inset-bottom));
+    left: var(--space-3);
+    right: var(--space-3);
+    transform: none;
+    padding: 10px 12px;
+    border-radius: 14px;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .bulk-bar-count {
+    border-right: none;
+    padding-right: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--glass-border);
+    width: 100%;
+    justify-content: center;
+  }
+
+  .bulk-bar-actions {
+    justify-content: center;
+  }
+}
+
 /* MyCard page */
 .mycard-page {
   max-width: 900px;
