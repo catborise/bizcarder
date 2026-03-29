@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
-import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush } from 'react-icons/fa';
+import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush, FaLanguage } from 'react-icons/fa';
 
 const About = () => {
+    const { t } = useTranslation('about');
     const [adminInfo, setAdminInfo] = React.useState({
-        name: "Muhammet Sağ",
+        name: "Muhammet Sag",
         email: "m.sag@catborise.com",
         github: "https://github.com/catborise/bizcarder",
         linkedin: "https://linkedin.com/in/muhammetsag"
@@ -15,7 +17,7 @@ const About = () => {
             try {
                 const res = await api.get('/api/settings');
                 setAdminInfo({
-                    name: res.data.developerName || "Muhammet Sağ",
+                    name: res.data.developerName || "Muhammet Sag",
                     email: res.data.developerEmail || "m.sag@catborise.com",
                     github: res.data.developerGithub || "https://github.com/catborise/bizcarder",
                     linkedin: res.data.developerLinkedin || "https://linkedin.com/in/muhammetsag"
@@ -30,33 +32,38 @@ const About = () => {
     const capabilities = [
         {
             icon: <FaRocket />,
-            title: "Hızlı Kartvizit Tarama",
-            description: "Yapay zeka destekli OCR teknolojisi ile kartvizitleri saniyeler içinde dijital rehberinize ekleyin."
+            title: t('cap.scanning.title'),
+            description: t('cap.scanning.desc')
         },
         {
             icon: <FaDatabase />,
-            title: "Gelişmiş CRM",
-            description: "Müşteri görüşmelerini kaydedin, hatırlatıcılar kurun ve tüm iletişim geçmişini tek noktadan yönetin."
+            title: t('cap.crm.title'),
+            description: t('cap.crm.desc')
         },
         {
             icon: <FaIdCard />,
-            title: "Dijital Kartvizit (vCard)",
-            description: "Kendi dijital kartvizitinizi oluşturun ve QR kod ile anında paylaşın. Rehbere tek tıkla kayıt imkanı."
+            title: t('cap.vcard.title'),
+            description: t('cap.vcard.desc')
         },
         {
             icon: <FaShieldAlt />,
-            title: "Güvenli Veri Yönetimi",
-            description: "Rol tabanlı yetkilendirme sistemi ve çöp kutusu özelliği ile verileriniz her zaman güvende."
+            title: t('cap.security.title'),
+            description: t('cap.security.desc')
         },
         {
             icon: <FaMobileAlt />,
-            title: "PWA Desteği",
-            description: "Uygulamayı telefonunuza yükleyerek bir mobil uygulama gibi kullanın, çevrimdışı senkronizasyonun keyfini çıkarın."
+            title: t('cap.pwa.title'),
+            description: t('cap.pwa.desc')
         },
         {
             icon: <FaPaintBrush />,
-            title: "Modern Tasarım",
-            description: "Glassmorphism estetiği ve dinamik tema (açık/koyu) desteği ile göz yormayan, premium bir kullanıcı deneyimi."
+            title: t('cap.design.title'),
+            description: t('cap.design.desc')
+        },
+        {
+            icon: <FaLanguage />,
+            title: t('cap.i18n.title'),
+            description: t('cap.i18n.desc')
         }
     ];
 
@@ -81,17 +88,17 @@ const About = () => {
                     marginBottom: '10px',
                     letterSpacing: '-0.03em'
                 }}>
-                    Hakkında
+                    {t('title')}
                 </h1>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>
-                    CRM & Akıllı Kartvizit Yönetim Platformu
+                    {t('subtitle')}
                 </p>
             </div>
 
             {/* Uygulama Yetenekleri Grid */}
             <section style={{ marginBottom: '60px' }}>
                 <h2 style={{ color: 'var(--text-primary)', marginBottom: '30px', borderLeft: '4px solid var(--accent-primary)', paddingLeft: '15px' }}>
-                    Sistem Yetenekleri
+                    {t('capabilities')}
                 </h2>
                 <div style={{
                     display: 'grid',
@@ -121,10 +128,10 @@ const About = () => {
                 </div>
             </section>
 
-            {/* Admin & İletişim */}
+            {/* Admin & Iletisim */}
             <section>
                 <h2 style={{ color: 'var(--text-primary)', marginBottom: '30px', borderLeft: '4px solid var(--accent-secondary)', paddingLeft: '15px' }}>
-                    İletişim & Geliştirici
+                    {t('contactDeveloper')}
                 </h2>
                 <div style={{ ...cardStyle, display: 'flex', flexWrap: 'wrap', gap: '40px', alignItems: 'center' }}>
                     <div style={{
@@ -142,7 +149,7 @@ const About = () => {
                     </div>
                     <div style={{ flex: 1, minWidth: '250px' }}>
                         <h3 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', marginBottom: '5px' }}>{adminInfo.name}</h3>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>Full Stack Developer & Sistem Yöneticisi</p>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>{t('devRole')}</p>
 
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
                             <a href={`mailto:${adminInfo.email}`} style={{
@@ -170,7 +177,7 @@ const About = () => {
                                 gap: '8px',
                                 fontWeight: '600'
                             }}>
-                                <FaGithub /> GitHub Hesabı
+                                <FaGithub /> {t('githubAccount')}
                             </a>
                             <a href="/my-card" style={{
                                 textDecoration: 'none',
@@ -184,7 +191,7 @@ const About = () => {
                                 gap: '8px',
                                 fontWeight: '600'
                             }}>
-                                <FaIdCard /> Dijital Kartvizit
+                                <FaIdCard /> {t('digitalCard')}
                             </a>
                         </div>
                     </div>
@@ -192,7 +199,7 @@ const About = () => {
             </section>
 
             <footer style={{ textAlign: 'center', marginTop: '50px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                © {new Date().getFullYear()} BizCarder CRM. Tüm hakları saklıdır.
+                {t('copyright', { year: new Date().getFullYear() })}
             </footer>
         </div>
     );

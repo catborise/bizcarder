@@ -1,50 +1,55 @@
 # Bizcarder - CRM Business Card Management System
 
-Bizcarder is a modern CRM application designed for managing business cards. It features OCR-powered data extraction, secure authentication, and robust export capabilities.
+Bizcarder is a modern CRM application designed for managing business cards. It features OCR-powered data extraction, secure authentication, and robust export capabilities — all wrapped in a Bold Premium design with gradient accents and full mobile responsiveness.
 
-## 🚀 Features
+## Features
 
 -   **OCR Integration**: Automatically extract information from business card images using Tesseract.js.
--   **Secure Authentication**: Session-based authentication with Passport.js.
--   **Dashboard**: Overview of business card statistics and recent activities.
--   **Premium UI**: Sleek, glassmorphism-inspired design with Material UI and custom CSS.
--   **Export Capabilities**: Export your business cards to XLSX or PDF formats.
--   **SAML / Shibboleth Support**: Integrated enterprise Single Sign-On (SSO) support for institutional authentication.
--   **Interactions**: Log meetings and interactions related to each business card.
--   **Admin Panel**: Manage users and system settings (log retention, trash cleanup).
--   **Mobile Friendly**: Responsive design for use on various devices.
--   **Production Ready**: Optimized Docker configurations and environment-based setup.
+-   **Secure Authentication**: Session-based authentication with Passport.js, SAML/Shibboleth SSO support.
+-   **Dashboard**: Statistics overview with gradient stat cards, quick actions, and frequent tags.
+-   **Bold Premium UI**: Gradient color system, color-coded CRM cards, accent-based visual hierarchy, and dark/light theme support.
+-   **Mobile-First Design**: Bottom navigation, floating action button, full-screen modals, responsive grids, and touch-optimized controls.
+-   **Multilingual**: Full Turkish and English language support with real-time switching (i18next).
+-   **Digital Business Card**: Personal vCard with QR code sharing and public profile link.
+-   **Export Capabilities**: Export business cards to XLSX or PDF formats.
+-   **CRM Features**: Lead status tracking, priority levels, tags, interaction logging, reminders, and follow-ups.
+-   **Admin Panel**: User management with role/approval toggles, activity logs, and system settings.
+-   **PWA Support**: Installable as a mobile app with offline capabilities via Service Worker and IndexedDB.
+-   **Trash Management**: Soft delete with configurable retention and restore functionality.
 
-## 🔑 Authentication
+## Authentication
 
 The system supports two methods of authentication:
-1. **Local Authentication**: Standard username and password login.
+1. **Local Authentication**: Standard username and password login with registration and admin approval workflow.
 2. **SAML 2.0 (Shibboleth)**: Enterprise SSO integration.
 
 For details on how to configure SAML for your organization, please refer to the [SAML / Shibboleth Configuration Guide](SAML_GUIDE.md).
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Backend
 -   **Runtime**: Node.js
 -   **Framework**: Express.js
 -   **Database**: PostgreSQL
 -   **ORM**: Sequelize
--   **Authentication**: Passport.js (Local & Session)
+-   **Authentication**: Passport.js (Local & Session), SAML 2.0
 -   **File Storage**: Local filesystem via Multer
 
 ### Frontend
--   **Framework**: React (Vite)
--   **UI Library**: Material UI (MUI) & React Icons
+-   **Framework**: React 18 (Vite)
+-   **UI Library**: Material UI (MUI) v7, React Icons
+-   **Styling**: CSS custom properties (design tokens), gradient color system, responsive breakpoints
+-   **Animations**: Framer Motion (page transitions, staggered lists, micro-interactions)
 -   **OCR**: Tesseract.js
--   **State Management**: Context API
+-   **i18n**: i18next with namespace-based translations (TR/EN)
+-   **State Management**: React Context API (Auth, Theme, Notification)
 -   **HTTP Client**: Axios
+-   **Offline**: Dexie (IndexedDB), Service Worker
+-   **QR**: qrcode.react
 
-## 📦 Installation & Setup
+## Installation & Setup
 
 ### Using Docker (Recommended)
-
-The easiest way to get started is by using Docker Compose:
 
 1.  Clone the repository:
     ```bash
@@ -59,54 +64,40 @@ The easiest way to get started is by using Docker Compose:
     -   Frontend: [http://localhost:5173](http://localhost:5173)
     -   Backend API: [http://localhost:5000](http://localhost:5000)
 
-### 🔐 Default Credentials
+### Default Credentials
 
 After setting up the application, you can log in with the following default administrative account:
 - **Username**: `admin`
 - **Password**: `admin`
 
-> [!IMPORTANT]
-> Please change your password immediately after your first login for security reasons.
+> **Important:** Please change your password immediately after your first login for security reasons.
 
 ### Manual Setup
 
 #### 1. Backend
-1.  Navigate to the `backend` directory:
-    ```bash
-    cd backend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Configure environment variables in a `.env` file (refer to `docker-compose.yml` for required keys).
-4.  Start the server:
-    ```bash
-    npm run dev
-    ```
+```bash
+cd backend
+npm install
+# Configure .env (refer to docker-compose.yml for required keys)
+npm run dev
+```
 
 #### 2. Frontend
-1.  Navigate to the `frontend` directory:
-    ```bash
-    cd frontend
-    ```
-2.  Install dependencies:
-    ```bash
-    npm install
-    ```
-3.  Start the development server:
-    ```bash
-    npm run dev
-    ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 📖 Usage
+## Usage
 
-1.  **Register/Login**: Start by creating an account.
-2.  **Add Card**: Click on "Yeni Kart Ekle" to upload a business card image.
-3.  **OCR Processing**: Use the crop tool to select the card, and the system will attempt to fill in the details automatically.
-4.  **Manage**: View, edit, or delete cards from your dashboard.
-5.  **Export**: Use the export buttons on the cards list page to download your data.
+1.  **Register/Login**: Create an account or use SSO.
+2.  **Add Card**: Use the "Add Card" button or the mobile FAB (+) to upload a business card image.
+3.  **OCR Processing**: Crop the card image, and OCR will auto-fill contact details.
+4.  **Manage**: View, edit, filter, and tag cards. Track lead status, priority, and interactions.
+5.  **Share**: Create your digital business card and share via QR code or link.
+6.  **Export**: Download your contacts as Excel, PDF, or vCard.
 
-## ⚖️ License
+## License
 
-Distributed under the MIT License. See `LICENSE` (if applicable) for more information.
+Distributed under the MIT License. See `LICENSE` for more information.
