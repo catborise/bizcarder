@@ -63,6 +63,13 @@ const Contacts = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    useEffect(() => {
+        if (location.state?.openAddCard) {
+            setIsModalOpen(true);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isCachedData, setIsCachedData] = useState(false);
