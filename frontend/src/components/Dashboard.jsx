@@ -960,7 +960,7 @@ const Dashboard = () => {
                     ))
                 ) : (
                     tiles
-                        .filter(t => !['/contacts', '/logs', '/import'].includes(t.url))
+                        .filter(t => !['/contacts', '/logs', '/import', '/about'].includes(t.url))
                         .map((tile, i) => {
                             const TileWrapper = tile.isInternal ? Link : 'a';
                             const wrapperProps = tile.isInternal ? { to: tile.url } : { href: tile.url, target: tile.url.startsWith('http') ? '_blank' : '_self' };
