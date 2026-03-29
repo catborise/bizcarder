@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTrash, FaUndo, FaTrashRestore, FaClock } from 'react-icons/fa';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
@@ -6,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
 
 const TrashBin = () => {
+    const { t } = useTranslation(['pages', 'common']);
     const [trashedCards, setTrashedCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete'|'empty', card }
@@ -19,7 +21,7 @@ const TrashBin = () => {
             setTrashedCards(res.data);
         } catch (error) {
             console.error('Fetch trash error:', error);
-            showNotification('Çöp kutusu yüklenirken hata oluştu.', 'error');
+            showNotification(t('pages:trash.loadError'), 'error');
         } finally {
             setLoading(false);
         }
@@ -32,20 +34,20 @@ const TrashBin = () => {
     const handleRestore = async (card) => {
         try {
             await api.post(`/api/cards/${card.id}/restore`);
-            showNotification(`${card.firstName} ${card.lastName} geri yüklendi.`, 'success');
+            showNotification(t('pages:trash.restored', { firstName: card.firstName, lastName: card.lastName }), 'success');
             fetchTrashedCards();
         } catch (error) {
-            showNotification('Geri yükleme başarısız: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('pages:trash.restoreError', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
     const handlePermanentDelete = async (card) => {
         try {
             await api.delete(`/api/cards/${card.id}/permanent`);
-            showNotification(`${card.firstName} ${card.lastName} kalıcı olarak silindi.`, 'success');
+            showNotification(t('pages:trash.permanentlyDeleted', { firstName: card.firstName, lastName: card.lastName }), 'success');
             fetchTrashedCards();
         } catch (error) {
-            showNotification('Silme başarısız: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('pages:trash.deleteError', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -55,7 +57,7 @@ const TrashBin = () => {
             showNotification(res.data.message, 'success');
             fetchTrashedCards();
         } catch (error) {
-            showNotification('Çöp kutusu boşaltılamadı: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('pages:trash.emptyError', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -70,165 +72,61 @@ const TrashBin = () => {
         return daysLeft > 0 ? daysLeft : 0;
     };
 
-    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ textAlign: 'center', padding: '50px', color: 'var(--text-secondary)' }}>{t('common:loading')}</div>;
 
 
     return (
-        <div className="fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                <h2 style={{
-                    margin: 0,
-                    fontSize: '2.5rem',
-                    fontWeight: '700',
-                    color: 'var(--text-primary)',
-                    letterSpacing: '-0.02em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '15px'
-                }}>
-                    <FaTrash /> Çöp Kutusu
+        <div className="fade-in trash-page">
+            {/* Header */}
+            <div className="trash-header">
+                <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <FaTrash size={20} /> {t('pages:trash.title')}
                 </h2>
-
                 {trashedCards.length > 0 && (
-                    <button
-                        onClick={() => setConfirmAction({ type: 'empty' })}
-                        style={{
-                            background: 'var(--accent-error)',
-                            color: 'var(--bg-card)',
-                            border: '1px solid var(--glass-border)',
-                            padding: '12px 24px',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            transition: 'all 0.2s ease',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px'
-                        }}
-                        onMouseEnter={(e) => {
-                            e.target.style.opacity = '0.9';
-                            e.target.style.transform = 'translateY(-2px)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.target.style.opacity = '1';
-                            e.target.style.transform = 'translateY(0)';
-                        }}
-                    >
-                        <FaTrashRestore /> Çöp Kutusunu Boşalt
+                    <button onClick={() => setConfirmAction({ type: 'empty' })} className="glass-button"
+                        style={{ background: 'var(--accent-error)', color: '#fff', border: 'none', fontWeight: 600, gap: '8px' }}>
+                        <FaTrashRestore size={14} /> {t('pages:trash.emptyTrash')}
                     </button>
-
                 )}
             </div>
 
             {trashedCards.length === 0 ? (
                 <div style={{
-                    textAlign: 'center',
-                    padding: '60px 20px',
-                    background: 'var(--glass-bg)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--glass-border)'
+                    textAlign: 'center', padding: 'var(--space-12) var(--space-6)',
+                    background: 'var(--glass-bg)', borderRadius: '16px', border: '1px solid var(--glass-border)',
                 }}>
-                    <FaTrash size={64} color="var(--text-tertiary)" />
-                    <p style={{ marginTop: '20px', color: 'var(--text-tertiary)', fontSize: '1.1rem' }}>
-                        Çöp kutusu boş
+                    <FaTrash size={48} color="var(--text-tertiary)" />
+                    <p style={{ marginTop: 'var(--space-4)', color: 'var(--text-tertiary)', fontSize: '0.95rem' }}>
+                        {t('pages:trash.empty')}
                     </p>
                 </div>
-
             ) : (
-                <div style={{ display: 'grid', gap: '20px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
                     {trashedCards.map(card => {
                         const daysLeft = getDaysRemaining(card.deletedAt);
                         return (
-                            <div key={card.id} style={{
-                                background: 'var(--bg-card)',
-                                backdropFilter: 'blur(10px)',
-                                border: '1px solid var(--glass-border)',
-                                padding: '20px',
-                                borderRadius: '16px',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                transition: 'all 0.2s ease'
-                            }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'var(--bg-card)'}
-                            >
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ margin: '0 0 8px 0', color: 'var(--text-primary)', fontSize: '1.3em' }}>
+                            <div key={card.id} className="trash-card">
+                                <div className="trash-card-info">
+                                    <h3 style={{ margin: '0 0 4px 0', fontSize: '1.05rem', fontWeight: 700 }}>
                                         {card.firstName} {card.lastName}
                                     </h3>
-                                    <p style={{ margin: '0 0 8px 0', color: 'var(--text-secondary)' }}>
-                                        {card.company} {card.title && `- ${card.title}`}
+                                    <p style={{ margin: '0 0 6px 0', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                                        {card.company}{card.title && ` — ${card.title}`}
                                     </p>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', fontSize: '0.9em', color: 'var(--text-tertiary)' }}>
-                                        <span>Silinme: {new Date(card.deletedAt).toLocaleDateString('tr-TR')}</span>
-                                        <span style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '5px',
-                                            color: daysLeft < 7 ? 'var(--accent-error)' : 'var(--accent-warning)'
-                                        }}>
-                                            <FaClock /> {daysLeft} gün kaldı
+                                    <div className="trash-card-meta">
+                                        <span>{t('pages:trash.deletedOn')}{new Date(card.deletedAt).toLocaleDateString('tr-TR')}</span>
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: daysLeft < 7 ? 'var(--accent-error)' : 'var(--accent-warning)' }}>
+                                            <FaClock size={11} /> {t('pages:trash.daysRemaining', { days: daysLeft })}
                                         </span>
                                     </div>
                                 </div>
-
-                                <div style={{ display: 'flex', gap: '10px' }}>
-                                    <button
-                                        onClick={() => setConfirmAction({ type: 'restore', card })}
-                                        style={{
-                                            padding: '10px 20px',
-                                            background: 'var(--glass-bg)',
-                                            color: 'var(--accent-success)',
-                                            border: '1px solid var(--glass-border)',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            fontWeight: '600',
-                                            transition: 'all 0.2s ease',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--glass-bg)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <FaUndo /> Geri Yükle
+                                <div className="trash-card-actions">
+                                    <button onClick={() => setConfirmAction({ type: 'restore', card })} className="glass-button-small" style={{ color: 'var(--accent-success)', gap: '6px' }}>
+                                        <FaUndo size={12} /> {t('pages:trash.restore')}
                                     </button>
-
-                                    <button
-                                        onClick={() => setConfirmAction({ type: 'delete', card })}
-                                        style={{
-                                            padding: '10px 20px',
-                                            background: 'var(--glass-bg)',
-                                            color: 'var(--accent-error)',
-                                            border: '1px solid var(--glass-border)',
-                                            borderRadius: '8px',
-                                            cursor: 'pointer',
-                                            fontWeight: '600',
-                                            transition: 'all 0.2s ease',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
-                                            e.currentTarget.style.transform = 'translateY(-2px)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.background = 'var(--glass-bg)';
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                        }}
-                                    >
-                                        <FaTrash /> Kalıcı Sil
+                                    <button onClick={() => setConfirmAction({ type: 'delete', card })} className="glass-button-small" style={{ color: 'var(--accent-error)', gap: '6px' }}>
+                                        <FaTrash size={12} /> {t('pages:trash.permanentDelete')}
                                     </button>
-
                                 </div>
                             </div>
                         );
@@ -244,8 +142,8 @@ const TrashBin = () => {
                     handleRestore(confirmAction.card);
                     setConfirmAction(null);
                 }}
-                title="Kartı Geri Yükle"
-                message={confirmAction?.card ? `${confirmAction.card.firstName} ${confirmAction.card.lastName} adlı kartviziti geri yüklemek istediğinizden emin misiniz?` : ''}
+                title={t('pages:trash.restoreConfirmTitle')}
+                message={confirmAction?.card ? t('pages:trash.restoreConfirmMessage', { firstName: confirmAction.card.firstName, lastName: confirmAction.card.lastName }) : ''}
             />
 
             <ConfirmModal
@@ -255,8 +153,8 @@ const TrashBin = () => {
                     handlePermanentDelete(confirmAction.card);
                     setConfirmAction(null);
                 }}
-                title="Kalıcı Olarak Sil"
-                message={confirmAction?.card ? `${confirmAction.card.firstName} ${confirmAction.card.lastName} adlı kartviziti KALICI OLARAK silmek istediğinizden emin misiniz? Bu işlem GERİ ALINAMAZ!` : ''}
+                title={t('pages:trash.permanentDeleteConfirmTitle')}
+                message={confirmAction?.card ? t('pages:trash.permanentDeleteConfirmMessage', { firstName: confirmAction.card.firstName, lastName: confirmAction.card.lastName }) : ''}
             />
 
             <ConfirmModal
@@ -266,8 +164,8 @@ const TrashBin = () => {
                     handleEmptyTrash();
                     setConfirmAction(null);
                 }}
-                title="Çöp Kutusunu Boşalt"
-                message="Tüm çöp kutusunu boşaltmak istediğinizden emin misiniz? Bu işlem GERİ ALINAMAZ!"
+                title={t('pages:trash.emptyTrash')}
+                message={t('pages:trash.emptyConfirmMessage')}
             />
         </div>
     );

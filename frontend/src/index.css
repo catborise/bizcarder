@@ -787,6 +787,76 @@ button:focus-visible {
 }
 
 /* ====================================
+   TRASH BIN PAGE
+   ==================================== */
+
+.trash-page {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.trash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.trash-card {
+  background: var(--bg-card);
+  border: 1px solid var(--glass-border);
+  padding: var(--space-4);
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-4);
+  transition: background 0.2s ease;
+}
+
+.trash-card:hover {
+  background: var(--glass-bg-hover);
+}
+
+.trash-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.trash-card-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  flex-wrap: wrap;
+}
+
+.trash-card-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .trash-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trash-card-actions {
+    justify-content: stretch;
+  }
+
+  .trash-card-actions button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ====================================
    USER MANAGEMENT PAGE
    ==================================== */
 
