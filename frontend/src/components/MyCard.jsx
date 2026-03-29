@@ -100,7 +100,7 @@ const MyCard = () => {
                     <div className="skeleton-box" style={{ width: '200px', height: '28px', borderRadius: '8px' }} />
                     <div className="skeleton-box" style={{ width: '120px', height: '40px', borderRadius: '10px' }} />
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 'var(--space-6)' }}>
+                <div className="mycard-grid">
                     <div className="skeleton-box" style={{ height: '450px', borderRadius: '20px' }} />
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                         <div className="skeleton-box" style={{ height: '300px', borderRadius: '20px' }} />
@@ -149,12 +149,7 @@ const MyCard = () => {
             style={{ maxWidth: '900px', margin: '0 auto' }}
         >
             {/* Header */}
-            <motion.div variants={itemVariants} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: 'var(--space-6)',
-            }}>
+            <motion.div variants={itemVariants} className="mycard-header">
                 <h2 style={{ margin: 0, fontWeight: 700 }}>
                     {t('pages:myCard.title')}
                 </h2>
@@ -174,7 +169,7 @@ const MyCard = () => {
                 <motion.div variants={itemVariants} style={{
                     background: 'var(--gradient-primary)',
                     border: '1px solid var(--gradient-primary-border)',
-                    padding: '60px 40px',
+                    padding: 'var(--space-12) var(--space-6)',
                     borderRadius: '20px',
                     textAlign: 'center',
                 }}>
@@ -261,7 +256,7 @@ const MyCard = () => {
                         </div>
 
                         {/* Profile Body */}
-                        <div style={{ padding: '0 var(--space-6) var(--space-8)', marginTop: '-50px', position: 'relative' }}>
+                        <div className="mycard-profile-body">
                             {/* Company Logo */}
                             {personalCard.logoUrl && (
                                 <div style={{
@@ -288,9 +283,7 @@ const MyCard = () => {
                             )}
 
                             {/* Avatar */}
-                            <div style={{
-                                width: '96px',
-                                height: '96px',
+                            <div className="mycard-avatar" style={{
                                 background: 'var(--bg-card)',
                                 borderRadius: '18px',
                                 border: '3px solid var(--glass-border)',

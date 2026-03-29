@@ -723,6 +723,15 @@ button:focus-visible {
   }
 }
 
+/* MyCard page */
+.mycard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  gap: var(--space-3);
+}
+
 /* MyCard page grid */
 .mycard-grid {
   display: grid;
@@ -730,9 +739,35 @@ button:focus-visible {
   gap: var(--space-6);
 }
 
+.mycard-profile-body {
+  padding: 0 var(--space-6) var(--space-8);
+  margin-top: -50px;
+  position: relative;
+}
+
+.mycard-avatar {
+  width: 96px;
+  height: 96px;
+}
+
 @media (max-width: 768px) {
   .mycard-grid {
     grid-template-columns: 1fr;
+  }
+
+  .mycard-profile-body {
+    padding: 0 var(--space-4) var(--space-6);
+    margin-top: -40px;
+  }
+
+  .mycard-avatar {
+    width: 72px;
+    height: 72px;
+    font-size: 1.6rem !important;
+  }
+
+  .mycard-header h2 {
+    font-size: 1.25rem;
   }
 }
 
