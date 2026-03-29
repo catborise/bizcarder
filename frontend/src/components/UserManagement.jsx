@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { useTranslation } from 'react-i18next';
 import Modal from './Modal';
 import { FaSearch, FaUsers, FaUserShield, FaUser, FaCheck, FaClock, FaKey, FaFilter, FaTimesCircle, FaLock, FaSave, FaTimes, FaTrash, FaExchangeAlt } from 'react-icons/fa';
 
 const UserManagement = () => {
+    const { t } = useTranslation(['users', 'common']);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user: currentUser } = useAuth();
@@ -51,7 +53,7 @@ const UserManagement = () => {
         } catch (err) {
             console.error('Role update failed:', err);
             setUsers(originalUsers); // Revert on failure
-            showNotification('Rol güncellenirken hata oluştu.', 'error');
+            showNotification(t('users:roleUpdateError'), 'error');
         }
     };
 
@@ -64,20 +66,20 @@ const UserManagement = () => {
     const handlePasswordSave = async (e) => {
         e.preventDefault();
         if (!newPassword || newPassword.length < 6) {
-            showNotification('Şifre en az 6 karakter olmalıdır.', 'warning');
+            showNotification(t('users:passwordMinLength'), 'warning');
             return;
         }
 
         setPasswordLoading(true);
         try {
             await api.put(`/api/users/${selectedUser.id}/password`, { newPassword });
-            showNotification('Şifre başarıyla güncellendi.', 'success');
+            showNotification(t('users:passwordUpdated'), 'success');
             setIsPasswordModalOpen(false);
             setSelectedUser(null);
             setNewPassword('');
         } catch (err) {
             console.error('Password reset failed:', err);
-            showNotification('Şifre sıfırlanırken hata oluştu: ' + (err.response?.data?.error || err.message), 'error');
+            showNotification(t('users:passwordResetError', { error: err.response?.data?.error || err.message }), 'error');
         } finally {
             setPasswordLoading(false);
         }
@@ -93,7 +95,7 @@ const UserManagement = () => {
         } catch (err) {
             console.error('Approval failed:', err);
             setUsers(originalUsers); // Revert
-            showNotification('Onay işlemi sırasında hata oluştu: ' + (err.response?.data?.error || err.message), 'error');
+            showNotification(t('users:approvalError', { error: err.response?.data?.error || err.message }), 'error');
         }
     };
 
@@ -112,13 +114,13 @@ const UserManagement = () => {
                 data: { transferCards } // axios delete body needs 'data' key
             });
 
-            showNotification('Kullanıcı başarıyla silindi.', 'success');
+            showNotification(t('users:userDeleted'), 'success');
             setUsers(users.filter(u => u.id !== userToDelete.id)); // Remove from list
             setIsDeleteModalOpen(false);
             setUserToDelete(null);
         } catch (err) {
             console.error('User deletion failed:', err);
-            showNotification('Kullanıcı silinirken hata oluştu: ' + (err.response?.data?.error || err.message), 'error');
+            showNotification(t('users:userDeleteError', { error: err.response?.data?.error || err.message }), 'error');
         } finally {
             setDeleteLoading(false);
         }
@@ -146,316 +148,146 @@ const UserManagement = () => {
     );
 
     return (
-        <div className="fade-in" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{
-                    fontWeight: '700',
-                    fontSize: '2rem',
-                    color: 'var(--text-primary)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    margin: 0
-                }}>
-                    <FaUsers size={32} color="var(--accent-primary)" /> Kullanıcı Yönetimi
+        <div className="fade-in usermgmt-page">
+            {/* Header */}
+            <div className="usermgmt-header">
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: 0 }}>
+                    <FaUsers size={24} color="var(--accent-primary)" /> {t('users:title')}
                 </h2>
-
-
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <div style={{
-                        background: 'var(--accent-primary-transparent)',
-                        padding: '8px 16px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--accent-primary)',
-                        color: 'var(--accent-primary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px'
-                    }}>
-                        <span style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{filteredUsers.length}</span>
-                        <span style={{ fontSize: '0.9rem', opacity: 0.8 }}>Kullanıcı Listeleniyor</span>
-                    </div>
+                <div style={{
+                    background: 'var(--accent-primary-transparent)', padding: '6px 14px', borderRadius: '8px',
+                    border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)',
+                    display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem',
+                }}>
+                    <span style={{ fontWeight: 'bold' }}>{filteredUsers.length}</span>
+                    <span style={{ opacity: 0.8 }}>{t('users:listing')}</span>
                 </div>
-
             </div>
 
             {/* Filter Bar */}
-            <div className="glass-container" style={{ padding: '1.25rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <div style={{ flex: 1, minWidth: '300px' }}>
-                    <div style={{ position: 'relative' }}>
-                        <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, fontSize: '1rem', color: 'var(--text-primary)' }} />
-                        <input
-                            type="text"
-                            placeholder="İsim, e-posta veya kullanıcı adı ara..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            style={{
-                                width: '100%',
-                                paddingLeft: '40px',
-                                background: 'var(--bg-input)',
-                                border: '1px solid var(--glass-border)',
-                                height: '42px',
-                                fontSize: '0.95rem',
-                                color: 'var(--text-primary)',
-                                borderRadius: '8px'
-                            }}
-                        />
-                    </div>
+            <div className="glass-container usermgmt-filters">
+                <div className="usermgmt-search">
+                    <FaSearch style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, color: 'var(--text-primary)' }} />
+                    <input
+                        type="text"
+                        placeholder={t('users:searchPlaceholder')}
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        style={{
+                            width: '100%', paddingLeft: '36px', background: 'var(--bg-input)',
+                            border: '1px solid var(--glass-border)', height: '40px', fontSize: '0.9rem',
+                            color: 'var(--text-primary)', borderRadius: '8px',
+                        }}
+                    />
                 </div>
-
-
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <div style={{ position: 'relative' }}>
-                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1, color: 'var(--text-primary)' }} />
-                        <select
-                            value={roleFilter}
-                            onChange={(e) => setRoleFilter(e.target.value)}
-                            style={{
-                                background: 'var(--bg-input)',
-                                color: 'var(--text-primary)',
-                                minWidth: '160px',
-                                height: '42px',
-                                paddingLeft: '35px',
-                                cursor: 'pointer',
-                                appearance: 'none',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '8px'
-                            }}
-                        >
-                            <option value="all">Rol: Tümü</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">Kullanıcı</option>
-                        </select>
-                    </div>
-
-
-                    <div style={{ position: 'relative' }}>
-                        <FaFilter style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5, zIndex: 1, color: 'var(--text-primary)' }} />
-                        <select
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            style={{
-                                background: 'var(--bg-input)',
-                                color: 'var(--text-primary)',
-                                minWidth: '160px',
-                                height: '42px',
-                                paddingLeft: '35px',
-                                cursor: 'pointer',
-                                appearance: 'none',
-                                border: '1px solid var(--glass-border)',
-                                borderRadius: '8px'
-                            }}
-                        >
-                            <option value="all">Durum: Tümü</option>
-                            <option value="approved">Onaylı</option>
-                            <option value="pending">Beklemede</option>
-                        </select>
-                    </div>
-
+                <div className="usermgmt-filter-selects">
+                    <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}
+                        style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', height: '40px', cursor: 'pointer', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '0.85rem' }}>
+                        <option value="all">{t('users:filter.roleAll')}</option>
+                        <option value="admin">{t('users:filter.admin')}</option>
+                        <option value="user">{t('users:filter.user')}</option>
+                    </select>
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
+                        style={{ background: 'var(--bg-input)', color: 'var(--text-primary)', height: '40px', cursor: 'pointer', border: '1px solid var(--glass-border)', borderRadius: '8px', padding: '0 10px', fontSize: '0.85rem' }}>
+                        <option value="all">{t('users:filter.statusAll')}</option>
+                        <option value="approved">{t('users:filter.approved')}</option>
+                        <option value="pending">{t('users:filter.pending')}</option>
+                    </select>
                 </div>
             </div>
 
             {/* List Header - Desktop Only */}
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1.5fr 1fr 1fr 1fr 0.5fr',
-                padding: '0 1.5rem 0.8rem 1.5rem',
-                color: 'var(--text-tertiary)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                alignItems: 'center'
-            }} className="desktop-header">
-                <div>Kullanıcı Bilgileri</div>
-                <div>Üyelik Tarihi</div>
-                <div style={{ textAlign: 'center' }}>Hesap Onayı</div>
-                <div style={{ textAlign: 'center' }}>Yönetici Yetkisi</div>
-                <div style={{ textAlign: 'right' }}>İşlemler</div>
+            <div className="usermgmt-list-header">
+                <div>{t('users:table.userInfo')}</div>
+                <div>{t('users:table.memberDate')}</div>
+                <div style={{ textAlign: 'center' }}>{t('users:table.accountApproval')}</div>
+                <div style={{ textAlign: 'center' }}>{t('users:table.adminAuthority')}</div>
+                <div style={{ textAlign: 'right' }}>{t('users:table.actions')}</div>
             </div>
 
             {/* Users List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {filteredUsers.length > 0 ? (
                     filteredUsers.map(u => (
-                        <div key={u.id} className="glass-container" style={{
-                            padding: '1rem 1.5rem',
-                            display: 'grid',
-                            gridTemplateColumns: 'minmax(250px, 1.5fr) 1fr 1fr 1fr 0.5fr',
-                            alignItems: 'center',
-                            gap: '15px',
-                            transition: 'all 0.2s ease',
-                            borderLeft: u.role === 'admin' ? '4px solid var(--accent-warning)' : '4px solid transparent'
+                        <div key={u.id} className="glass-container usermgmt-card" style={{
+                            borderLeft: u.role === 'admin' ? '3px solid var(--accent-warning)' : '3px solid transparent'
                         }}>
                             {/* User Info */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', overflow: 'hidden' }}>
+                            <div className="usermgmt-user-info">
                                 <div style={{
-                                    width: '42px',
-                                    height: '42px',
-                                    borderRadius: '50%',
+                                    width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
                                     background: u.role === 'admin'
-                                        ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.8))'
-                                        : 'linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8))',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    fontWeight: 'bold',
-                                    color: 'var(--bg-card)',
-                                    fontSize: '1.1rem',
-                                    flexShrink: 0,
-                                    boxShadow: 'var(--glass-shadow)'
+                                        ? 'linear-gradient(135deg, rgba(245,158,11,0.8), rgba(217,119,6,0.8))'
+                                        : 'linear-gradient(135deg, rgba(59,130,246,0.8), rgba(37,99,235,0.8))',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontWeight: 'bold', color: 'var(--bg-card)', fontSize: '1rem',
                                 }}>
                                     {u.displayName?.substring(0, 1).toUpperCase() || u.username?.substring(0, 1).toUpperCase()}
                                 </div>
                                 <div style={{ minWidth: 0 }}>
-                                    <div style={{ fontWeight: '600', color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
                                         {u.displayName}
-                                        {u.id === currentUser.id && <span style={{
-                                            fontSize: '0.7rem',
-                                            marginLeft: '8px',
-                                            background: 'var(--glass-bg)',
-                                            padding: '2px 6px',
-                                            borderRadius: '4px',
-                                            color: 'var(--text-tertiary)',
-                                            border: '1px solid var(--glass-border)'
-                                        }}>SİZ</span>}
+                                        {u.id === currentUser.id && <span style={{ fontSize: '0.65rem', marginLeft: '6px', background: 'var(--glass-bg)', padding: '1px 5px', borderRadius: '4px', color: 'var(--text-tertiary)', border: '1px solid var(--glass-border)' }}>{t('users:youBadge')}</span>}
                                     </div>
-                                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {u.email}
                                     </div>
                                 </div>
                             </div>
 
                             {/* Date Info */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>@{u.username}</span>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                                    {new Date(u.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                            <div className="usermgmt-date">
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>@{u.username}</span>
+                                <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
+                                    {new Date(u.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric' })}
                                 </span>
                             </div>
 
-                            {/* Status Switch */}
-                            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                <label className="switch" title={u.isApproved ? 'Hesabı Askıya Al' : 'Hesabı Onayla'}>
-                                    <input
-                                        type="checkbox"
-                                        checked={u.isApproved}
-                                        onChange={() => currentUser.id !== u.id && handleApprove(u.id, u.isApproved)}
-                                        disabled={currentUser.id === u.id}
-                                    />
-                                    <span className="slider"></span>
-                                </label>
-                                <span style={{ fontSize: '0.75rem', color: u.isApproved ? 'var(--accent-success)' : 'var(--accent-error)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    {u.isApproved ? <><FaCheck size={10} /> Onaylı</> : <><FaTimesCircle size={10} /> Beklemede</>}
-                                </span>
+                            {/* Switches Row (mobile: inline) */}
+                            <div className="usermgmt-switches">
+                                <div className="usermgmt-switch-item">
+                                    <label className="switch" title={u.isApproved ? t('users:suspendAccount') : t('users:approveAccount')}>
+                                        <input type="checkbox" checked={u.isApproved} onChange={() => currentUser.id !== u.id && handleApprove(u.id, u.isApproved)} disabled={currentUser.id === u.id} />
+                                        <span className="slider"></span>
+                                    </label>
+                                    <span style={{ fontSize: '0.7rem', color: u.isApproved ? 'var(--accent-success)' : 'var(--accent-error)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        {u.isApproved ? <><FaCheck size={9} /> {t('users:status.approved')}</> : <><FaTimesCircle size={9} /> {t('users:status.pending')}</>}
+                                    </span>
+                                </div>
+                                <div className="usermgmt-switch-item">
+                                    <label className="switch" title={u.role === 'admin' ? t('users:revokeAdmin') : t('users:makeAdmin')}>
+                                        <input type="checkbox" checked={u.role === 'admin'} onChange={() => currentUser.id !== u.id && handleRoleChange(u.id, u.role)} disabled={currentUser.id === u.id} />
+                                        <span className="slider role-switch"></span>
+                                    </label>
+                                    <span style={{ fontSize: '0.7rem', color: u.role === 'admin' ? 'var(--accent-warning)' : 'var(--text-tertiary)', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                        {u.role === 'admin' ? <><FaUserShield size={9} /> {t('users:role.admin')}</> : <><FaUser size={9} /> {t('users:role.user')}</>}
+                                    </span>
+                                </div>
                             </div>
 
-                            {/* Role Switch */}
-                            <div style={{ display: 'flex', justifyContent: 'center', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
-                                <label className="switch" title={u.role === 'admin' ? 'Admin Yetkisini Al' : 'Admin Yap'}>
-                                    <input
-                                        type="checkbox"
-                                        checked={u.role === 'admin'}
-                                        onChange={() => currentUser.id !== u.id && handleRoleChange(u.id, u.role)}
-                                        disabled={currentUser.id === u.id}
-                                    />
-                                    <span className="slider role-switch"></span>
-                                </label>
-                                <span style={{ fontSize: '0.75rem', color: u.role === 'admin' ? 'var(--accent-warning)' : 'var(--text-tertiary)', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    {u.role === 'admin' ? <><FaUserShield size={10} /> Admin</> : <><FaUser size={10} /> Kullanıcı</>}
-                                </span>
-                            </div>
-
-                            {/* Functions */}
-                            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            {/* Actions */}
+                            <div className="usermgmt-actions">
                                 {u.id !== currentUser.id && (
-                                    <button
-                                        onClick={() => openPasswordModal(u)}
-                                        title="Şifre Sıfırla"
-                                        style={{
-                                            background: 'var(--glass-bg)',
-                                            border: '1px solid var(--glass-border)',
-                                            color: 'var(--text-secondary)',
-                                            width: '38px',
-                                            height: '38px',
-                                            borderRadius: '10px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all 0.2s',
-                                            cursor: 'pointer',
-                                            marginRight: '8px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1.05)';
-                                            e.currentTarget.style.background = 'var(--accent-primary-transparent)';
-                                            e.currentTarget.style.color = 'var(--accent-primary)';
-                                            e.currentTarget.style.borderColor = 'var(--accent-primary)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1)';
-                                            e.currentTarget.style.background = 'var(--glass-bg)';
-                                            e.currentTarget.style.color = 'var(--text-secondary)';
-                                            e.currentTarget.style.borderColor = 'var(--glass-border)';
-                                        }}
-                                    >
-                                        <FaKey size={14} />
-                                    </button>
-                                )}
-                                {u.id !== currentUser.id && (
-                                    <button
-                                        onClick={() => openDeleteModal(u)}
-                                        title="Kullanıcıyı Sil"
-                                        style={{
-                                            background: 'var(--glass-bg)',
-                                            border: '1px solid var(--glass-border)',
-                                            color: 'var(--text-secondary)',
-                                            width: '38px',
-                                            height: '38px',
-                                            borderRadius: '10px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            transition: 'all 0.2s',
-                                            cursor: 'pointer'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1.05)';
-                                            e.currentTarget.style.background = 'var(--accent-error-transparent)';
-                                            e.currentTarget.style.color = 'var(--accent-error)';
-                                            e.currentTarget.style.borderColor = 'var(--accent-error)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'scale(1)';
-                                            e.currentTarget.style.background = 'var(--glass-bg)';
-                                            e.currentTarget.style.color = 'var(--text-secondary)';
-                                            e.currentTarget.style.borderColor = 'var(--glass-border)';
-                                        }}
-                                    >
-                                        <FaTrash size={14} />
-                                    </button>
+                                    <>
+                                        <button onClick={() => openPasswordModal(u)} title={t('users:resetPassword')} className="glass-button-square">
+                                            <FaKey size={13} />
+                                        </button>
+                                        <button onClick={() => openDeleteModal(u)} title={t('users:deleteUser')} className="glass-button-square" style={{ color: 'var(--accent-error)' }}>
+                                            <FaTrash size={13} />
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </div>
                     ))
                 ) : (
-                    <div className="glass-container" style={{ textAlign: 'center', padding: '4rem', color: 'var(--text-tertiary)', flexDirection: 'column', display: 'flex', alignItems: 'center' }}>
-                        <FaSearch size={48} style={{ marginBottom: '1rem', opacity: 0.3 }} />
-                        <h3 style={{ marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Sonuç Bulunamadı</h3>
-                        <p>Aradığınız kriterlere uygun kullanıcı yok.</p>
-                        <button
-                            onClick={() => { setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); }}
-                            style={{
-                                marginTop: '1.5rem',
-                                color: 'var(--accent-primary)',
-                                background: 'transparent',
-                                border: 'none',
-                                textDecoration: 'underline',
-                                fontSize: '0.9rem',
-                                cursor: 'pointer'
-                            }}
-                        >
-                            Filtreleri Temizle
+                    <div className="glass-container" style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--text-tertiary)', flexDirection: 'column', display: 'flex', alignItems: 'center' }}>
+                        <FaSearch size={40} style={{ marginBottom: 'var(--space-4)', opacity: 0.3 }} />
+                        <h3 style={{ marginBottom: 'var(--space-2)', color: 'var(--text-secondary)' }}>{t('users:noResults')}</h3>
+                        <p style={{ fontSize: '0.9rem' }}>{t('users:noResultsDescription')}</p>
+                        <button onClick={() => { setSearchTerm(''); setRoleFilter('all'); setStatusFilter('all'); }}
+                            style={{ marginTop: 'var(--space-4)', color: 'var(--accent-primary)', background: 'transparent', border: 'none', textDecoration: 'underline', fontSize: '0.9rem', cursor: 'pointer' }}>
+                            {t('users:clearFilters')}
                         </button>
                     </div>
                 )}
@@ -465,9 +297,9 @@ const UserManagement = () => {
             <Modal
                 isOpen={isPasswordModalOpen}
                 onClose={() => setIsPasswordModalOpen(false)}
-                title="Şifre Sıfırla"
+                title={t('users:resetPassword')}
             >
-                <form onSubmit={handlePasswordSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px', minWidth: '350px' }}>
+                <form onSubmit={handlePasswordSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%' }}>
 
                     <div style={{
                         padding: '15px',
@@ -499,14 +331,14 @@ const UserManagement = () => {
 
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Yeni Şifre</label>
+                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('users:newPasswordLabel')}</label>
                         <div style={{ position: 'relative' }}>
                             <FaLock style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-tertiary)' }} />
                             <input
                                 type="text"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Yeni şifreyi girin..."
+                                placeholder={t('users:newPasswordPlaceholder')}
                                 style={{
                                     width: '100%',
                                     paddingLeft: '36px',
@@ -521,7 +353,7 @@ const UserManagement = () => {
 
                         </div>
                         <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '5px' }}>
-                            En az 6 karakter uzunluğunda olmalıdır.
+                            {t('users:passwordHint')}
                         </p>
                     </div>
 
@@ -544,7 +376,7 @@ const UserManagement = () => {
                             onMouseEnter={(e) => e.target.style.background = 'var(--glass-bg-hover)'}
                             onMouseLeave={(e) => e.target.style.background = 'transparent'}
                         >
-                            <FaTimes /> İptal
+                            <FaTimes /> {t('common:cancel')}
                         </button>
                         <button
                             type="submit"
@@ -578,7 +410,7 @@ const UserManagement = () => {
                             }}
                         >
                             {passwordLoading ? <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div> : <FaSave />}
-                            {passwordLoading ? 'Kaydediliyor...' : 'Şifreyi Güncelle'}
+                            {passwordLoading ? t('common:saving') : t('users:updatePassword')}
                         </button>
                     </div>
                 </form>
@@ -588,9 +420,9 @@ const UserManagement = () => {
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="Kullanıcıyı Sil"
+                title={t('users:deleteUser')}
             >
-                <div style={{ padding: '10px', minWidth: '350px' }}>
+                <div style={{ padding: '10px', width: '100%' }}>
                     <div style={{
                         padding: '15px',
                         background: 'var(--accent-error-transparent)',
@@ -614,9 +446,9 @@ const UserManagement = () => {
                             <FaTrash color="var(--bg-card)" size={18} />
                         </div>
                         <div>
-                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>Bu kullanıcıyı silmek istediğinize emin misiniz?</h4>
+                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--text-primary)' }}>{t('users:deleteConfirmTitle')}</h4>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-                                <strong>{userToDelete?.displayName}</strong> (@{userToDelete?.username}) kullanıcısı kalıcı olarak silinecektir.
+                                {t('users:deleteConfirmMessage', { displayName: userToDelete?.displayName, username: userToDelete?.username })}
                             </p>
                         </div>
                     </div>
@@ -624,7 +456,7 @@ const UserManagement = () => {
 
                     <div style={{ marginBottom: '20px' }}>
                         <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '15px' }}>
-                            Kullanıcının kartvizitleri ile ne yapmak istersiniz?
+                            {t('users:deleteCardQuestion')}
                         </p>
 
                         <div style={{ display: 'grid', gap: '10px' }}>
@@ -664,8 +496,8 @@ const UserManagement = () => {
                                     <FaExchangeAlt size={16} color="var(--accent-primary)" />
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>Kartvizitleri Bana Aktar ve Sil</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Kartvizitler sizin hesabınıza aktarılır.</div>
+                                    <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{t('users:transferAndDelete')}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{t('users:transferDescription')}</div>
                                 </div>
                             </button>
 
@@ -705,8 +537,8 @@ const UserManagement = () => {
                                     <FaTrash size={16} color="var(--accent-error)" />
                                 </div>
                                 <div>
-                                    <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>Kartvizitlerle Birlikte Sil</div>
-                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>Kartvizitler çöp kutusuna taşınır.</div>
+                                    <div style={{ fontWeight: '600', fontSize: '0.95rem' }}>{t('users:deleteWithCards')}</div>
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{t('users:deleteWithCardsDescription')}</div>
                                 </div>
                             </button>
                         </div>
@@ -726,60 +558,13 @@ const UserManagement = () => {
                                 fontSize: '0.9rem'
                             }}
                         >
-                            İptal
+                            {t('common:cancel')}
                         </button>
                     </div>
                 </div>
             </Modal>
 
-            <style>{`
-                @media (max-width: 900px) {
-                    .desktop-header {
-                        display: none !important;
-                    }
-                    /* Card View for Mobile */
-                     .glass-container {
-                        grid-template-columns: 1fr !important;
-                        grid-template-rows: auto;
-                        gap: 15px !important;
-                        text-align: center;
-                    }
-                    
-                    /* Re-arrange items for mobile */
-                    /* User Info */
-                    .glass-container > div:nth-child(1) {
-                         flex-direction: column;
-                         text-align: center;
-                    }
-                    
-                    /* Date */
-                    .glass-container > div:nth-child(2) {
-                        display: none !important; /* Hide date on mobile to save space */
-                    }
-                    
-                    /* Switches */
-                    .glass-container > div:nth-child(3),
-                    .glass-container > div:nth-child(4) {
-                        flex-direction: row !important;
-                        justify-content: space-between !important;
-                        width: 100%;
-                        background: rgba(255,255,255,0.03);
-                        padding: 10px;
-                        border-radius: 8px;
-                    }
-
-                     .glass-container > div:nth-child(5) {
-                        justify-content: center !important;
-                        width: 100%;
-                     }
-                     
-                     .glass-container > div:nth-child(5) button {
-                        width: 100% !important;
-                        justify-content: center;
-                     }
-                }
-            `}</style>
-        </div >
+        </div>
     );
 };
 

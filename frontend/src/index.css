@@ -786,6 +786,154 @@ button:focus-visible {
   }
 }
 
+/* ====================================
+   USER MANAGEMENT PAGE
+   ==================================== */
+
+.usermgmt-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.usermgmt-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.usermgmt-filters {
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.usermgmt-search {
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+
+.usermgmt-filter-selects {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.usermgmt-list-header {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 0.5fr;
+  padding: 0 var(--space-4) var(--space-2);
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.usermgmt-card {
+  padding: var(--space-3) var(--space-4);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 0.5fr;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.usermgmt-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  overflow: hidden;
+}
+
+.usermgmt-date {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.usermgmt-switches {
+  display: contents;
+}
+
+.usermgmt-switch-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.usermgmt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+@media (max-width: 768px) {
+  .usermgmt-list-header {
+    display: none;
+  }
+
+  .usermgmt-card {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .usermgmt-date {
+    flex-direction: row;
+    gap: var(--space-2);
+    font-size: 0.8rem;
+  }
+
+  .usermgmt-switches {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: space-around;
+    padding: var(--space-3);
+    background: rgba(var(--accent-secondary-rgb), 0.04);
+    border-radius: 10px;
+  }
+
+  .usermgmt-switch-item {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .usermgmt-actions {
+    justify-content: center;
+    gap: var(--space-3);
+  }
+
+  .usermgmt-actions .glass-button-square {
+    width: 44px;
+    height: 44px;
+  }
+
+  .usermgmt-filters {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .usermgmt-search {
+    min-width: 100%;
+  }
+
+  .usermgmt-filter-selects {
+    width: 100%;
+  }
+
+  .usermgmt-filter-selects select {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 /* MyCard page */
 .mycard-page {
   max-width: 900px;
