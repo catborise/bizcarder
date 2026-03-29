@@ -724,6 +724,13 @@ button:focus-visible {
 }
 
 /* MyCard page */
+.mycard-page {
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
+}
+
 .mycard-header {
   display: flex;
   justify-content: space-between;
@@ -732,15 +739,23 @@ button:focus-visible {
   gap: var(--space-3);
 }
 
-/* MyCard page grid */
 .mycard-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 300px;
   gap: var(--space-6);
 }
 
+.mycard-profile-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  overflow: hidden;
+  box-shadow: var(--glass-shadow);
+  min-width: 0;
+}
+
 .mycard-profile-body {
-  padding: 0 var(--space-6) var(--space-8);
+  padding: 0 var(--space-6) var(--space-6);
   margin-top: -50px;
   position: relative;
 }
@@ -750,24 +765,79 @@ button:focus-visible {
   height: 96px;
 }
 
+.mycard-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.mycard-qr-card {
+  background: var(--glass-bg-solid);
+  padding: var(--space-6);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  text-align: center;
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+}
+
+.mycard-tip-card {
+  background: var(--gradient-primary);
+  border: 1px solid var(--gradient-primary-border);
+  padding: var(--space-4);
+  border-radius: 16px;
+}
+
+.mycard-actions {
+  margin-top: var(--space-6);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.mycard-share-url {
+  padding: 10px 12px;
+  background: var(--bg-input);
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
 @media (max-width: 768px) {
   .mycard-grid {
     grid-template-columns: 1fr;
   }
 
   .mycard-profile-body {
-    padding: 0 var(--space-4) var(--space-6);
-    margin-top: -40px;
+    padding: 0 var(--space-4) var(--space-4);
+    margin-top: -36px;
   }
 
   .mycard-avatar {
-    width: 72px;
-    height: 72px;
-    font-size: 1.6rem !important;
+    width: 64px;
+    height: 64px;
+    font-size: 1.4rem !important;
+    border-radius: 14px !important;
   }
 
   .mycard-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
+  }
+
+  .mycard-qr-card {
+    padding: var(--space-4);
+  }
+
+  .mycard-actions {
+    flex-direction: column;
+  }
+
+  .mycard-actions button {
+    width: 100%;
+    justify-content: center;
   }
 }
 
