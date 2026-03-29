@@ -326,8 +326,7 @@ const tileStyle = {
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     overflow: 'hidden',
-    background: 'var(--glass-bg)',
-    backdropFilter: 'blur(10px)',
+    background: 'var(--glass-bg-solid)',
     border: '1px solid var(--glass-border)',
     borderRadius: '16px',
     boxShadow: 'var(--glass-shadow)'
@@ -605,7 +604,7 @@ const Dashboard = () => {
                         style={{
                             background: 'var(--gradient-primary)',
                             border: '1px solid var(--gradient-primary-border)',
-                            color: '#e0e7ff',
+                            color: 'var(--accent-secondary)',
                             fontWeight: 600,
                         }}
                     >
@@ -925,7 +924,7 @@ const Dashboard = () => {
                                         background: 'var(--glass-bg)',
                                         borderRadius: '12px',
                                         width: 'fit-content',
-                                        border: '1px solid rgba(255,255,255,0.1)'
+                                        border: '1px solid var(--glass-border)'
                                     }}>
                                         <DynamicIcon name={tile.icon} />
                                     </div>
@@ -983,7 +982,7 @@ const Dashboard = () => {
                                             background: 'var(--glass-bg)',
                                             borderRadius: '12px',
                                             width: 'fit-content',
-                                            border: '1px solid rgba(255,255,255,0.05)'
+                                            border: '1px solid var(--glass-border)'
                                         }}>
                                             <DynamicIcon name={tile.icon} />
                                         </div>
