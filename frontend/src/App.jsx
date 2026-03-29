@@ -236,7 +236,7 @@ const AppContent = () => {
                 </div>
             )}
             {/* Premium Glassmorphism Navbar */}
-            <nav>
+            <nav className="top-nav">
                 <div className="nav-container">
                     <div className="nav-brand-group">
                         <Link
