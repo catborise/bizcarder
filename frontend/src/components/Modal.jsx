@@ -18,20 +18,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
             backdropFilter: 'blur(8px)',
             animation: 'fadeIn 0.2s ease'
         }}>
-            <div className="modal-content" style={{
-                background: 'var(--bg-card)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid var(--glass-border)',
-                padding: '30px',
-                borderRadius: '20px',
-                maxWidth: '850px',
-                width: '90%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                position: 'relative',
-                boxShadow: 'var(--glass-shadow)',
-                animation: 'fadeIn 0.3s ease'
-            }} onClick={e => e.stopPropagation()}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
 
                 <div className="modal-header" style={{
                     display: 'flex',
