@@ -189,8 +189,6 @@ const Contacts = () => {
         setIsModalOpen(true);
     };
 
-    const filteredCards = cards; // Filtered by backend now
-
     const handleCardAddedOrUpdated = () => {
         fetchCards(1);
         setIsModalOpen(false);
@@ -479,8 +477,8 @@ const Contacts = () => {
               )
             ) : !loading ? (
             <div className="my-card-layout" style={{ marginTop: '30px' }}>
-                {filteredCards.length > 0 ? (
-                    filteredCards.map((card, index) => (
+                {cards.length > 0 ? (
+                    cards.map((card, index) => (
                         <motion.div
                           key={card.id}
                           className="card-wrapper"

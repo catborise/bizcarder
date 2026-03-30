@@ -1179,13 +1179,6 @@ button:focus-visible {
   margin-bottom: 10px;
 }
 
-.skeleton-circle {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-}
-
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -1354,6 +1347,16 @@ input:checked+.slider:before {
     position: static;
     margin-top: 8px;
     justify-content: center;
+  }
+}
+
+.hide-on-mobile-nav {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .hide-on-mobile-nav {
+    display: none !important;
   }
 }
 

@@ -23,7 +23,7 @@ import {
 const InteractionLog = ({ cardId }) => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
-    const { t } = useTranslation('pages');
+    const { t, i18n } = useTranslation('pages');
     const [interactions, setInteractions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
@@ -323,7 +323,7 @@ const InteractionLog = ({ cardId }) => {
                                                 onChange={e => setEditForm({ ...editForm, date: e.target.value })}
                                                 style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                             />
-                                        ) : new Date(log.date).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        ) : new Date(log.date).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>

@@ -80,6 +80,12 @@ const QuickSearch = ({ isAuthenticated }) => {
         }
     };
 
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, []);
+
     // Close dropdown on outside click
     useEffect(() => {
         const handler = (e) => {

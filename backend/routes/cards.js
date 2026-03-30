@@ -13,6 +13,8 @@ const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
 const ocrController = require('../controllers/ocrController');
 const { ocrLimiter } = require('../middleware/rateLimiter');
+const ExcelJS = require('exceljs');
+const PDFDocument = require('pdfkit-table');
 
 // Multer Ayarları (Dosya Yükleme)
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -70,10 +72,10 @@ router.get('/due-reminders', async (req, res) => {
                 { model: User, as: 'owner', attributes: ['displayName'] }
             ],
             distinct: true,
-            order: [['reminderDate', 'ASC']]
+            order: [['reminderDate', 'ASC']],
+            limit: 50
         });
 
-        console.log(`[DEBUG] Found ${cards.length} reminders. IDs:`, cards.map(c => c.id));
         res.json(cards);
     } catch (error) {
         console.error("[ERROR] due-reminders error:", error);
@@ -312,7 +314,6 @@ router.get('/', async (req, res) => {
 // Excel Export Endpoint
 router.get('/export/excel', async (req, res) => {
     try {
-        const ExcelJS = require('exceljs');
         const { whereClause } = buildCardsQuery(req);
 
         // Eğer ID listesi geldiyse sadece onları çek (max 500)
@@ -386,7 +387,6 @@ router.get('/export/excel', async (req, res) => {
 // PDF Export Endpoint
 router.get('/export/pdf', async (req, res) => {
     try {
-        const PDFDocument = require('pdfkit-table');
         const { whereClause } = buildCardsQuery(req);
 
         // Eğer ID listesi geldiyse sadece onları çek (max 500)

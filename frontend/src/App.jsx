@@ -11,7 +11,6 @@ import UserMenu from './components/UserMenu';
 import api, { API_URL } from './api/axios';
 import { getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { ThemeProvider } from './context/ThemeContext';
-import ThemeToggle from './components/ThemeToggle';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
@@ -28,7 +27,7 @@ import Help from './components/Help';
 import MyCard from './components/MyCard';
 import ContactProfile from './components/ContactProfile';
 import AccessDenied from './components/AccessDenied';
-import { FaTrash, FaSignInAlt, FaWifi, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
+import { FaTrash, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
 
 import Contacts from './components/Contacts';
 
@@ -152,6 +151,21 @@ const AppContent = () => {
         }
     };
 
+    const navLinkStyle = (isActive) => ({
+        color: isActive ? 'var(--accent-secondary)' : 'var(--text-secondary)',
+        background: isActive ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
+        border: isActive ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
+        borderRadius: '8px',
+        padding: '6px 14px',
+        fontSize: '0.875rem',
+        fontWeight: isActive ? 600 : 400,
+        textDecoration: 'none',
+        transition: 'all 0.2s ease',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+    });
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -274,60 +288,21 @@ const AppContent = () => {
                         <div className="nav-links">
                             <Link
                                 to="/"
-                                style={{
-                                    color: location.pathname === '/' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
-                                    background: location.pathname === '/' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
-                                    border: location.pathname === '/' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
-                                    borderRadius: '8px',
-                                    padding: '6px 14px',
-                                    fontSize: '0.875rem',
-                                    fontWeight: location.pathname === '/' ? 600 : 400,
-                                    textDecoration: 'none',
-                                    transition: 'all 0.2s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                }}
+                                style={navLinkStyle(location.pathname === '/')}
                             >
                                 <FaChartPie size={18} />
                                 <span className="hide-on-mobile">{t('app.nav.dashboard')}</span>
                             </Link>
                             <Link
                                 to="/contacts"
-                                style={{
-                                    color: location.pathname === '/contacts' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
-                                    background: location.pathname === '/contacts' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
-                                    border: location.pathname === '/contacts' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
-                                    borderRadius: '8px',
-                                    padding: '6px 14px',
-                                    fontSize: '0.875rem',
-                                    fontWeight: location.pathname === '/contacts' ? 600 : 400,
-                                    textDecoration: 'none',
-                                    transition: 'all 0.2s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                }}
+                                style={navLinkStyle(location.pathname === '/contacts')}
                             >
                                 <FaUsers size={18} />
                                 <span>{t('app.nav.contacts')}</span>
                             </Link>
                             <Link
                                 to="/my-card"
-                                style={{
-                                    color: location.pathname === '/my-card' ? 'var(--accent-secondary)' : 'var(--text-secondary)',
-                                    background: location.pathname === '/my-card' ? 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(129,140,248,0.1))' : 'transparent',
-                                    border: location.pathname === '/my-card' ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
-                                    borderRadius: '8px',
-                                    padding: '6px 14px',
-                                    fontSize: '0.875rem',
-                                    fontWeight: location.pathname === '/my-card' ? 600 : 400,
-                                    textDecoration: 'none',
-                                    transition: 'all 0.2s ease',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px',
-                                }}
+                                style={navLinkStyle(location.pathname === '/my-card')}
                             >
                                 <FaAddressCard size={18} />
                                 <span className="hide-on-mobile">{t('app.nav.myCard')}</span>
