@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaHistory, FaUser, FaClock, FaPen, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
 import api from '../api/axios';
 
 const HistoryTimeline = ({ cardId }) => {
+    const { t } = useTranslation(['pages', 'common']);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -14,7 +16,7 @@ const HistoryTimeline = ({ cardId }) => {
                 setHistory(res.data);
             } catch (err) {
                 console.error("History fetch error:", err);
-                setError("Geçmiş yüklenirken bir sorun oluştu.");
+                setError(t('pages:history.loadError'));
             } finally {
                 setLoading(false);
             }
@@ -23,9 +25,9 @@ const HistoryTimeline = ({ cardId }) => {
         if (cardId) fetchHistory();
     }, [cardId]);
 
-    if (loading) return <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>{t('common:loading')}</div>;
     if (error) return <div style={{ textAlign: 'center', color: '#ff6b6b', padding: '20px' }}>{error}</div>;
-    if (history.length === 0) return <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>Henüz geçmiş kaydı yok.</div>;
+    if (history.length === 0) return <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>{t('pages:history.noRecords')}</div>;
 
     const getIcon = (type) => {
         switch (type) {
@@ -39,11 +41,11 @@ const HistoryTimeline = ({ cardId }) => {
 
     const getLabel = (type) => {
         switch (type) {
-            case 'CREATE': return 'Oluşturuldu';
-            case 'UPDATE': return 'Güncellendi';
-            case 'SOFT_DELETE': return 'Çöp Kutusuna Gönderildi';
-            case 'RESTORE': return 'Geri Yüklendi';
-            default: return 'İşlem Yapıldı';
+            case 'CREATE': return t('pages:history.action.created');
+            case 'UPDATE': return t('pages:history.action.updated');
+            case 'SOFT_DELETE': return t('pages:history.action.softDeleted');
+            case 'RESTORE': return t('pages:history.action.restored');
+            default: return t('pages:history.action.default');
         }
     };
 
@@ -134,7 +136,7 @@ const HistoryTimeline = ({ cardId }) => {
                                         {getLabel(record.changeType)} <span style={{ fontSize: '0.8em', opacity: 0.6, fontWeight: 'normal' }}>(v{record.version})</span>
                                     </h4>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#ccc', marginTop: '4px' }}>
-                                        <FaUser size={12} /> {record.editor ? (record.editor.displayName || record.editor.username) : 'Sistem'}
+                                        <FaUser size={12} /> {record.editor ? (record.editor.displayName || record.editor.username) : t('pages:history.system')}
                                         <span>•</span>
                                         <FaClock size={12} /> {new Date(record.createdAt).toLocaleString()}
                                     </div>
@@ -147,9 +149,9 @@ const HistoryTimeline = ({ cardId }) => {
                                     {changes.map((change, i) => (
                                         <div key={i} style={{ fontSize: '13px', marginBottom: '4px', color: '#ccc' }}>
                                             <strong style={{ color: '#aaa' }}>{change.field}:</strong>{' '}
-                                            <span style={{ color: '#ff6b6b', textDecoration: 'line-through' }}>{change.from || '(boş)'}</span>
+                                            <span style={{ color: '#ff6b6b', textDecoration: 'line-through' }}>{change.from || t('pages:history.emptyValue')}</span>
                                             {' -> '}
-                                            <span style={{ color: '#28a745' }}>{change.to || '(boş)'}</span>
+                                            <span style={{ color: '#28a745' }}>{change.to || t('pages:history.emptyValue')}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -158,7 +160,7 @@ const HistoryTimeline = ({ cardId }) => {
                             {/* Create Snapshot Özeti (Opsiyonel) */}
                             {record.changeType === 'CREATE' && (
                                 <div style={{ marginTop: '10px', fontSize: '13px', color: '#888', fontStyle: 'italic' }}>
-                                    İlk oluşturulma. {record.snapshot.firstName} {record.snapshot.lastName} - {record.snapshot.company}
+                                    {t('pages:history.initialCreation', { firstName: record.snapshot.firstName, lastName: record.snapshot.lastName, company: record.snapshot.company })}
                                 </div>
                             )}
                         </div>

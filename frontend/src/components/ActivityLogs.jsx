@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 
 const ActivityLogs = () => {
+    const { t } = useTranslation(['pages', 'common']);
     const [allLogs, setAllLogs] = useState([]); // Tüm ham veri
     const [filteredLogs, setFilteredLogs] = useState([]); // Filtrelenmiş veri
     const [loading, setLoading] = useState(true);
@@ -117,7 +119,7 @@ const ActivityLogs = () => {
     };
 
 
-    if (loading) return <div style={{ color: 'var(--text-primary)', padding: '2rem', textAlign: 'center' }}>Yükleniyor...</div>;
+    if (loading) return <div style={{ color: 'var(--text-primary)', padding: '2rem', textAlign: 'center' }}>{t('common:loading')}</div>;
 
 
     return (
@@ -133,7 +135,7 @@ const ActivityLogs = () => {
                 alignItems: 'center',
                 gap: '15px'
             }}>
-                <span style={{ fontSize: '2rem' }}>📜</span> Sistem İşlem Geçmişi
+                <span style={{ fontSize: '2rem' }}>📜</span> {t('pages:activityLogs.title')}
             </h2>
 
 
@@ -154,10 +156,10 @@ const ActivityLogs = () => {
 
                 {/* Arama */}
                 <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Ara (İşlem veya Detay)</label>
+                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>{t('pages:activityLogs.searchLabel')}</label>
                     <input
                         type="text"
-                        placeholder="Örn: Login, Ekle, Hata..."
+                        placeholder={t('pages:activityLogs.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
@@ -176,7 +178,7 @@ const ActivityLogs = () => {
                 {/* Tarih Aralığı */}
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Başlangıç</label>
+                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>{t('pages:activityLogs.startDate')}</label>
                         <input
                             type="date"
                             value={startDate}
@@ -192,7 +194,7 @@ const ActivityLogs = () => {
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Bitiş</label>
+                        <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>{t('pages:activityLogs.endDate')}</label>
                         <input
                             type="date"
                             value={endDate}
@@ -211,7 +213,7 @@ const ActivityLogs = () => {
 
                 {/* Sıralama */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>Sıralama</label>
+                    <label style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>{t('pages:activityLogs.sort')}</label>
                     <div style={{ display: 'flex', background: 'var(--bg-input)', borderRadius: '8px', padding: '2px' }}>
                         <button
                             onClick={() => setSortOrder('desc')}
@@ -225,7 +227,7 @@ const ActivityLogs = () => {
                                 transition: 'all 0.2s'
                             }}
                         >
-                            En Yeni
+                            {t('pages:activityLogs.newest')}
                         </button>
                         <button
                             onClick={() => setSortOrder('asc')}
@@ -239,7 +241,7 @@ const ActivityLogs = () => {
                                 transition: 'all 0.2s'
                             }}
                         >
-                            En Eski
+                            {t('pages:activityLogs.oldest')}
                         </button>
                     </div>
                 </div>
@@ -264,7 +266,7 @@ const ActivityLogs = () => {
                             fontSize: '0.9rem'
                         }}
                     >
-                        Temizle
+                        {t('pages:activityLogs.clearFilters')}
                     </button>
 
                 </div>
@@ -326,7 +328,7 @@ const ActivityLogs = () => {
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis'
                                 }}>
-                                    {log.user ? (log.user.displayName || log.user.username || log.user.email) : 'Anonim'}
+                                    {log.user ? (log.user.displayName || log.user.username || log.user.email) : t('pages:activityLogs.anonymous')}
                                 </div>
 
 
@@ -366,7 +368,7 @@ const ActivityLogs = () => {
                         color: 'var(--text-tertiary)',
                         border: '1px dashed var(--glass-border)'
                     }}>
-                        Kriterlere uygun kayıt bulunamadı.
+                        {t('pages:activityLogs.noResults')}
                     </div>
 
                 )}

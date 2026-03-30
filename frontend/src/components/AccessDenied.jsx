@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation, Trans } from 'react-i18next';
 import { FaShieldAlt, FaHome, FaEnvelope } from 'react-icons/fa';
 
 const AccessDenied = () => {
+    const { t } = useTranslation('pages');
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const message = params.get('message') || 'Bu uygulamaya giriş yetkiniz bulunmamaktadır.';
+    const message = params.get('message') || t('accessDenied.defaultMessage');
 
     return (
         <div style={{
@@ -47,7 +49,7 @@ const AccessDenied = () => {
                     marginBottom: '15px',
                     letterSpacing: '-0.025em'
                 }}>
-                    Erişim Engellendi
+                    {t('accessDenied.title')}
                 </h1>
 
                 <p style={{
@@ -59,7 +61,7 @@ const AccessDenied = () => {
                     {message}
                     <br />
                     <span style={{ fontSize: '0.9rem', marginTop: '10px', display: 'block', opacity: 0.8 }}>
-                        Kurumsal hesabınızın bağlı olduğu organizasyon birimi bu uygulamayı kullanmak için henüz tanımlanmamış olabilir.
+                        {t('accessDenied.orgNotDefined')}
                     </span>
                 </p>
 
@@ -76,7 +78,7 @@ const AccessDenied = () => {
                         fontWeight: '600',
                         fontSize: '0.95rem'
                     }}>
-                        <FaHome /> Ana Sayfaya Dön
+                        <FaHome /> {t('accessDenied.goHome')}
                     </Link>
 
                     <Link to="/about" style={{
@@ -92,13 +94,15 @@ const AccessDenied = () => {
                         fontWeight: '600',
                         fontSize: '0.95rem'
                     }}>
-                        <FaEnvelope /> Destek Al
+                        <FaEnvelope /> {t('accessDenied.getSupport')}
                     </Link>
                 </div>
 
                 <div style={{ marginTop: '40px', paddingTop: '30px', borderTop: '1px solid var(--glass-border)' }}>
                     <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem' }}>
-                        Farklı bir hesapla giriş yapmak istiyorsanız <Link to="/login" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>buraya tıklayarak</Link> giriş sayfasına dönebilirsiniz.
+                        <Trans i18nKey="accessDenied.switchAccountHint" ns="pages">
+                            Farklı bir hesapla giris yapmak istiyorsaniz <Link to="/login" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>buraya tiklayarak</Link> giris sayfasina donebilirsiniz.
+                        </Trans>
                     </p>
                 </div>
             </div>

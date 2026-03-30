@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { FaFileUpload, FaDownload, FaExclamationTriangle, FaCheckCircle, FaSpinner, FaArrowLeft, FaAddressCard } from 'react-icons/fa';
 
 const ImportCards = () => {
+    const { t } = useTranslation(['pages', 'common']);
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -29,13 +31,13 @@ const ImportCards = () => {
             link.click();
             link.remove();
         } catch (error) {
-            showNotification('Şablon indirilemedi.', 'error');
+            showNotification(t('pages:import.templateDownloadError'), 'error');
         }
     };
 
     const handleUpload = async () => {
         if (!file) {
-            showNotification('Lütfen bir dosya seçin.', 'error');
+            showNotification(t('pages:import.noFileSelected'), 'error');
             return;
         }
 
@@ -49,10 +51,10 @@ const ImportCards = () => {
             });
             setResult(res.data);
             if (res.data.importedCount > 0) {
-                showNotification(`${res.data.importedCount} kartvizit başarıyla eklendi.`, 'success');
+                showNotification(t('pages:import.importSuccess', { count: res.data.importedCount }), 'success');
             }
         } catch (error) {
-            showNotification('Yükleme sırasında hata oluştu.', 'error');
+            showNotification(t('pages:import.uploadError'), 'error');
         } finally {
             setLoading(false);
         }
@@ -74,23 +76,23 @@ const ImportCards = () => {
                     <FaArrowLeft />
                 </button>
                 <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: '700' }}>
-                    Toplu İçe Aktarma (Bulk Import)
+                    {t('pages:import.title')}
                 </h2>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px' }}>
                 {/* Step 1: Template */}
                 <div style={cardStyle}>
-                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>1. Şablonu İndirin</h4>
+                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>{t('pages:import.step1Title')}</h4>
                     <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', marginBottom: '20px' }}>
-                        Verilerinizi doğru formatta yüklemek için şablonu kullanın. (*) işaretli alanlar zorunludur.
+                        {t('pages:import.step1Description')}
                     </p>
                     <div style={{ display: 'flex', gap: '15px' }}>
                         <button onClick={() => handleDownloadTemplate('xlsx')} style={btnSecondary}>
-                            <FaDownload /> XLSX Şablonu
+                            <FaDownload /> {t('pages:import.xlsxTemplate')}
                         </button>
                         <button onClick={() => handleDownloadTemplate('csv')} style={btnSecondary}>
-                            <FaDownload /> CSV Şablonu
+                            <FaDownload /> {t('pages:import.csvTemplate')}
                         </button>
                         <div style={{
                             marginLeft: 'auto',
@@ -104,14 +106,14 @@ const ImportCards = () => {
                             borderRadius: '8px',
                             border: '1px solid var(--glass-border)'
                         }}>
-                            <FaAddressCard /> vCard (.vcf) Doğrudan Desteklenir
+                            <FaAddressCard /> {t('pages:import.vcfSupported')}
                         </div>
                     </div>
                 </div>
 
                 {/* Step 2: Upload */}
                 <div style={cardStyle}>
-                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>2. Dosyayı Yükleyin</h4>
+                    <h4 style={{ margin: '0 0 10px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>{t('pages:import.step2Title')}</h4>
                     <input
                         type="file"
                         accept=".xlsx,.csv,.vcf"
@@ -136,10 +138,10 @@ const ImportCards = () => {
                         <FaFileUpload size={48} />
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>
-                                {file ? file.name : 'Dosyayı Sürükleyin veya Seçin'}
+                                {file ? file.name : t('pages:import.dragOrSelect')}
                             </div>
                             <div style={{ fontSize: '0.9rem', opacity: 0.6, marginTop: '5px' }}>
-                                Desteklenen formatlar: .xlsx, .csv, .vcf
+                                {t('pages:import.supportedFormats')}
                             </div>
                         </div>
                     </label>
@@ -150,7 +152,7 @@ const ImportCards = () => {
                             disabled={loading}
                             style={{ ...btnPrimary, marginTop: '20px', width: '100%', padding: '15px' }}
                         >
-                            {loading ? <><FaSpinner className="spin" /> İşleniyor...</> : 'İşlemi Başlat'}
+                            {loading ? <><FaSpinner className="spin" /> {t('common:processing')}</> : t('pages:import.startImport')}
                         </button>
                     )}
                 </div>
@@ -158,13 +160,13 @@ const ImportCards = () => {
                 {/* Step 3: Result Summary */}
                 {result && (
                     <div style={cardStyle}>
-                        <h4 style={{ margin: '0 0 20px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>İşlem Özeti</h4>
+                        <h4 style={{ margin: '0 0 20px 0', color: 'var(--accent-primary)', fontSize: '1.2rem' }}>{t('pages:import.resultSummary')}</h4>
                         <div style={{ display: 'flex', gap: '30px', marginBottom: '20px', padding: '15px', background: 'var(--bg-input)', borderRadius: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-success)', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                <FaCheckCircle /> {result.importedCount} Başarılı
+                                <FaCheckCircle /> {result.importedCount} {t('pages:import.successful')}
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--accent-error)', fontSize: '1.2rem', fontWeight: 'bold' }}>
-                                <FaExclamationTriangle /> {result.errorCount} Hata
+                                <FaExclamationTriangle /> {result.errorCount} {t('pages:import.errors')}
                             </div>
                         </div>
 
@@ -179,17 +181,17 @@ const ImportCards = () => {
                                 borderRadius: '12px',
                                 border: '1px solid var(--glass-border)'
                             }}>
-                                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Hata Detayları:</div>
+                                <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>{t('pages:import.errorDetails')}</div>
                                 {result.errors.map((err, i) => <div key={i} style={{ marginBottom: '5px' }}>• {err}</div>)}
                             </div>
                         )}
 
                         <div style={{ display: 'flex', gap: '15px', marginTop: '20px' }}>
                             <button onClick={() => navigate('/contacts')} style={{ ...btnPrimary, flex: 1 }}>
-                                Kartvizitlere Git
+                                {t('pages:import.goToContacts')}
                             </button>
                             <button onClick={() => { setFile(null); setResult(null); }} style={{ ...btnSecondary, flex: 1, justifyContent: 'center' }}>
-                                Yeni Yükleme Yap
+                                {t('pages:import.newUpload')}
                             </button>
                         </div>
                     </div>

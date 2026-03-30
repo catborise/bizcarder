@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    FaSearch, FaQuestionCircle, FaIdCard, FaQrcode, FaBell, 
+import {
+    FaSearch, FaQuestionCircle, FaIdCard, FaQrcode, FaBell,
     FaMobileAlt, FaShieldAlt, FaChevronRight, FaChevronDown,
     FaLightbulb, FaSync, FaTrashAlt
 } from 'react-icons/fa';
 
 const Help = () => {
+    const { t } = useTranslation('help');
     const [searchTerm, setSearchTerm] = useState('');
     const [activeSection, setActiveSection] = useState('getting-started');
     const [expandedFaq, setExpandedFaq] = useState(null);
@@ -14,133 +16,133 @@ const Help = () => {
     const helpSections = [
         {
             id: 'getting-started',
-            title: 'Başlangıç',
+            title: t('sections.gettingStarted'),
             icon: <FaLightbulb />,
             items: [
                 {
-                    q: 'BizCarder nedir?',
-                    a: 'BizCarder, fiziksel kartvizitlerinizi dijital ortama aktarmanıza, müşterilerinizle olan etkileşimlerinizi yönetmenize (CRM) ve kendi dijital kartvizitinizi paylaşmanıza olanak tanıyan kapsamlı bir platformdur.'
+                    q: t('faq.whatIsBizcarder.q'),
+                    a: t('faq.whatIsBizcarder.a')
                 },
                 {
-                    q: 'Uygulamayı nasıl yüklerim? (PWA)',
-                    a: 'BizCarder bir Progresif Web Uygulamasıdır (PWA). Tarayıcınızın adres çubuğundaki "Yükle" ikonuna veya mobil cihazınızda "Ana Ekrana Ekle" seçeneğine tıklayarak uygulamayı telefonunuza veya bilgisayarınıza bir yerel uygulama gibi kurabilirsiniz.'
+                    q: t('faq.howToInstall.q'),
+                    a: t('faq.howToInstall.a')
                 }
             ]
         },
         {
             id: 'card-management',
-            title: 'Kartvizit Yönetimi',
+            title: t('sections.cardManagement'),
             icon: <FaIdCard />,
             items: [
                 {
-                    q: 'Yeni bir kartvizit nasıl eklenir?',
-                    a: 'Kontaklar sayfasındaki "Yeni Kart Ekle" butonuna tıklayarak kartvizit bilgilerini manuel girebilir veya kartın ön/arka yüz fotoğrafını yükleyerek bilgilerin otomatik taranmasını sağlayabilirsiniz.'
+                    q: t('faq.howToAddCard.q'),
+                    a: t('faq.howToAddCard.a')
                 },
                 {
-                    q: 'Kartvizitleri nasıl dışa aktarırım?',
-                    a: 'Kartvizitler sayfasının sağ üstünde bulunan Excel veya PDF ikonlarına tıklayarak tüm listenizi veya filtrelediğiniz kontakları bilgisayarınıza indirebilirsiniz.'
+                    q: t('faq.howToExport.q'),
+                    a: t('faq.howToExport.a')
                 }
             ]
         },
         {
             id: 'digital-card',
-            title: 'Dijital Kartvizitim',
+            title: t('sections.digitalCard'),
             icon: <FaQrcode />,
             items: [
                 {
-                    q: 'Kendi dijital kartvizitimi nasıl paylaşırım?',
-                    a: '"Kartım" sekmesine giderek size özel oluşturulan QR kodu başkalarına taratabilir veya size özel profil linkini paylaşarak iletişim bilgilerinizin tek tıkla telefon rehberine kaydedilmesini sağlayabilirsiniz.'
+                    q: t('faq.howToShare.q'),
+                    a: t('faq.howToShare.a')
                 },
                 {
-                    q: 'vCard nedir?',
-                    a: 'vCard, iletişim bilgilerini içeren standart bir dosya formatıdır (.vcf). Bu dosyayı indiren bir kullanıcı, bilgilerinizi manuel yazmadan doğrudan rehberine kaydedebilir.'
+                    q: t('faq.whatIsVcard.q'),
+                    a: t('faq.whatIsVcard.a')
                 }
             ]
         },
         {
             id: 'crm-features',
-            title: 'CRM Özellikleri',
+            title: t('sections.crmFeatures'),
             icon: <FaBell />,
             items: [
                 {
-                    q: 'Hatırlatıcılar nasıl çalışır?',
-                    a: 'Bir kartı düzenlerken "Hatırlatıcı Tarihi" seçebilirsiniz. Bu tarih geldiğinde sistem size Dashboard üzerinde ve bildirimlerle bu kişiyle iletişime geçmeniz gerektiğini hatırlatır.'
+                    q: t('faq.howReminders.q'),
+                    a: t('faq.howReminders.a')
                 },
                 {
-                    q: 'Görüşme notlarını nasıl kaydederim?',
-                    a: 'He bir kartın detayında "Görüşmeler" butonuna tıklayarak, o kişiyle yaptığınız toplantı, telefon görüşmesi veya mailleşme detaylarını tarih sırasına göre kaydedebilirsiniz.'
+                    q: t('faq.howToLogNotes.q'),
+                    a: t('faq.howToLogNotes.a')
                 }
             ]
         },
         {
             id: 'offline-mode',
-            title: 'Çevrimdışı Kullanım',
+            title: t('sections.offlineMode'),
             icon: <FaSync />,
             items: [
                 {
-                    q: 'İnternetim olmadığında ne olur?',
-                    a: 'Uygulama çevrimdışı çalışabilme özelliğine sahiptir. İnternetiniz yokken de mevcut kartlarınıza erişebilir ve yeni kart ekleyebilirsiniz. Bağlantınız geri geldiğinde yaptığınız değişiklikler otomatik olarak sunucuyla senkronize edilir.'
+                    q: t('faq.offlineUsage.q'),
+                    a: t('faq.offlineUsage.a')
                 }
             ]
         },
         {
             id: 'security',
-            title: 'Güvenlik & Gizlilik',
+            title: t('sections.security'),
             icon: <FaShieldAlt />,
             items: [
                 {
-                    q: 'Verilerim ne kadar güvende?',
-                    a: 'Tüm verileriniz modern şifreleme yöntemleri ile korunmaktadır. Ayrıca sistemdeki çöp kutusu özelliği sayesinde yanlışlıkla sildiğiniz kartları 30 gün boyunca geri getirebilirsiniz.'
+                    q: t('faq.dataSecurity.q'),
+                    a: t('faq.dataSecurity.a')
                 }
             ]
         }
     ];
 
-    const filteredSections = searchTerm 
+    const filteredSections = searchTerm
         ? helpSections.map(s => ({
             ...s,
-            items: s.items.filter(i => 
-                i.q.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            items: s.items.filter(i =>
+                i.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 i.a.toLowerCase().includes(searchTerm.toLowerCase())
             )
         })).filter(s => s.items.length > 0)
         : helpSections;
 
     return (
-        <motion.div 
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="fade-in" 
+            className="fade-in"
             style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}
         >
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                <h1 style={{ 
-                    fontSize: 'clamp(2rem, 5vw, 3.5rem)', 
-                    fontWeight: '900', 
+                <h1 style={{
+                    fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                    fontWeight: '900',
                     color: 'var(--text-primary)',
                     marginBottom: '20px',
                     letterSpacing: '-0.04em'
                 }}>
-                    Size nasıl <span style={{ color: 'var(--accent-primary)' }}>yardımcı</span> olabiliriz?
+                    {t('heading')}
                 </h1>
-                
+
                 {/* Search Bar */}
-                <div style={{ 
-                    maxWidth: '600px', 
-                    margin: '0 auto', 
+                <div style={{
+                    maxWidth: '600px',
+                    margin: '0 auto',
                     position: 'relative',
                     transform: 'translateY(10px)'
                 }}>
-                    <FaSearch style={{ 
-                        position: 'absolute', 
-                        left: '20px', 
-                        top: '50%', 
+                    <FaSearch style={{
+                        position: 'absolute',
+                        left: '20px',
+                        top: '50%',
                         transform: 'translateY(-50%)',
                         color: 'var(--text-tertiary)'
                     }} />
-                    <input 
-                        type="text" 
-                        placeholder="Bir soru veya konu arayın..." 
+                    <input
+                        type="text"
+                        placeholder={t('searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
@@ -160,9 +162,9 @@ const Help = () => {
                 </div>
             </div>
 
-            <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'minmax(250px, 300px) 1fr', 
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(250px, 300px) 1fr',
                 gap: '40px',
                 alignItems: 'start'
             }}>
@@ -203,8 +205,8 @@ const Help = () => {
                 </aside>
 
                 {/* Content Area */}
-                <main style={{ 
-                    background: 'var(--glass-bg)', 
+                <main style={{
+                    background: 'var(--glass-bg)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid var(--glass-border)',
                     borderRadius: '24px',
@@ -223,9 +225,9 @@ const Help = () => {
                                     transition={{ duration: 0.3 }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                                        <div style={{ 
-                                            padding: '12px', 
-                                            background: 'rgba(var(--accent-primary-rgb), 0.1)', 
+                                        <div style={{
+                                            padding: '12px',
+                                            background: 'rgba(var(--accent-primary-rgb), 0.1)',
                                             borderRadius: '12px',
                                             color: 'var(--accent-primary)',
                                             fontSize: '1.5rem'
@@ -241,7 +243,7 @@ const Help = () => {
                                             const isExpanded = expandedFaq === itemKey;
 
                                             return (
-                                                <div 
+                                                <div
                                                     key={idx}
                                                     style={{
                                                         background: 'rgba(var(--bg-card-rgb), 0.3)',
@@ -271,7 +273,7 @@ const Help = () => {
                                                         {item.q}
                                                         {isExpanded ? <FaChevronDown color="var(--accent-primary)" /> : <FaChevronRight color="var(--text-tertiary)" />}
                                                     </button>
-                                                    
+
                                                     <AnimatePresence>
                                                         {isExpanded && (
                                                             <motion.div
@@ -280,15 +282,15 @@ const Help = () => {
                                                                 exit={{ height: 0, opacity: 0 }}
                                                                 transition={{ duration: 0.3 }}
                                                             >
-                                                                <div style={{ 
-                                                                    padding: '0 20px 20px 20px', 
+                                                                <div style={{
+                                                                    padding: '0 20px 20px 20px',
                                                                     color: 'var(--text-secondary)',
                                                                     lineHeight: '1.7',
                                                                     fontSize: '1rem'
                                                                 }}>
-                                                                    <div style={{ 
-                                                                        padding: '20px', 
-                                                                        background: 'var(--bg-input)', 
+                                                                    <div style={{
+                                                                        padding: '20px',
+                                                                        background: 'var(--bg-input)',
                                                                         borderRadius: '12px',
                                                                         borderLeft: '4px solid var(--accent-primary)'
                                                                     }}>
@@ -310,24 +312,24 @@ const Help = () => {
                     {filteredSections.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '100px 0', opacity: 0.5 }}>
                             <FaQuestionCircle size={64} style={{ marginBottom: '20px' }} />
-                            <h3>Aradığınız konu bulunamadı.</h3>
-                            <p>Lütfen farklı anahtar kelimelerle tekrar deneyin.</p>
+                            <h3>{t('notFound')}</h3>
+                            <p>{t('notFoundHint')}</p>
                         </div>
                     )}
                 </main>
             </div>
 
             {/* Quick Contact Footer */}
-            <div style={{ 
-                marginTop: '60px', 
-                padding: '40px', 
+            <div style={{
+                marginTop: '60px',
+                padding: '40px',
                 background: 'linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.1), rgba(var(--accent-secondary-rgb), 0.1))',
                 borderRadius: '24px',
                 border: '1px solid var(--glass-border)',
                 textAlign: 'center'
             }}>
-                <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Aradığınızı bulamadınız mı?</h3>
-                <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>Bize doğrudan ulaşarak her konuda destek alabilirsiniz.</p>
+                <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>{t('contactTitle')}</h3>
+                <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>{t('contactDescription')}</p>
                 <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
                     <a href="mailto:destek@bizcarder.com" style={{
                         padding: '12px 25px',
@@ -337,7 +339,7 @@ const Help = () => {
                         textDecoration: 'none',
                         fontWeight: '600',
                         boxShadow: '0 8px 20px rgba(var(--accent-primary-rgb), 0.2)'
-                    }}>E-Posta Gönder</a>
+                    }}>{t('sendEmail')}</a>
                     <a href="/about" style={{
                         padding: '12px 25px',
                         background: 'var(--glass-bg)',
@@ -346,7 +348,7 @@ const Help = () => {
                         textDecoration: 'none',
                         border: '1px solid var(--glass-border)',
                         fontWeight: '600'
-                    }}>Geliştirici Ekibi</a>
+                    }}>{t('devTeam')}</a>
                 </div>
             </div>
         </motion.div>

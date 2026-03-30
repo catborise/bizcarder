@@ -1,10 +1,12 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaCalendarCheck, FaTimes, FaExternalLinkAlt, FaTrashAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 
 const ReminderModal = ({ reminders, onClose, onRefresh }) => {
+    const { t } = useTranslation(['pages', 'common']);
     const navigate = useNavigate();
     const { showNotification } = useNotification();
 
@@ -14,10 +16,10 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
         e.stopPropagation();
         try {
             await api.put(`/api/cards/${id}`, { reminderDate: null });
-            showNotification('Hatırlatıcı temizlendi.', 'success');
+            showNotification(t('pages:reminder.dismissed'), 'success');
             onRefresh();
         } catch (error) {
-            showNotification('Hata oluştu: ' + (error.response?.data?.error || error.message), 'error');
+            showNotification(t('pages:reminder.error', { error: error.response?.data?.error || error.message }), 'error');
         }
     };
 
@@ -75,7 +77,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                         }}>
                             <FaCalendarCheck size={24} />
                         </div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>Hatırlatıcılar</h2>
+                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>{t('pages:reminder.title')}</h2>
                     </div>
                     <button
                         onClick={onClose}
@@ -152,7 +154,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                         }}>
                                             {(() => {
                                                 const d = new Date(card.reminderDate);
-                                                return isNaN(d.getTime()) ? 'Geçersiz Tarih' : d.toLocaleDateString('tr-TR');
+                                                return isNaN(d.getTime()) ? t('pages:reminder.invalidDate') : d.toLocaleDateString('tr-TR');
                                             })()}
                                         </span>
                                     </div>
@@ -160,7 +162,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                     <button
                                         onClick={(e) => handleDismiss(card.id, e)}
-                                        title="Hatırlatıcıyı Temizle"
+                                        title={t('pages:reminder.dismissTooltip')}
                                         style={{
                                             padding: '8px',
                                             background: 'var(--accent-error-transparent)',
@@ -219,7 +221,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                         onMouseEnter={(e) => e.currentTarget.style.background = 'var(--glass-bg-hover)'}
                         onMouseLeave={(e) => e.currentTarget.style.background = 'var(--glass-bg)'}
                     >
-                        Kapat
+                        {t('common:close')}
                     </button>
                 </div>
             </div>

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import api, { API_URL } from '../api/axios';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
 const Login = () => {
+    const { t } = useTranslation('auth');
     const [showLocalForm, setShowLocalForm] = useState(false);
     const [isRegisterMode, setIsRegisterMode] = useState(false);
 
@@ -75,7 +77,7 @@ const Login = () => {
                 result = await registerLocal(username, email, password, displayName);
 
                 if (result.success && result.pendingApproval) {
-                    setError('Kayıt başarılı. Hesabınız yönetici onayı bekliyor.');
+                    setError(t('login.registrationPendingApproval'));
                     setIsRegisterMode(false);
                     setLoading(false);
                     return;
@@ -87,10 +89,10 @@ const Login = () => {
             if (result.success) {
                 navigate(from, { replace: true });
             } else {
-                setError(result.error || 'İşlem başarısız.');
+                setError(result.error || t('login.operationFailed'));
             }
         } catch (err) {
-            setError('Bir hata oluştu. Lütfen tekrar deneyin.');
+            setError(t('login.genericError'));
         } finally {
             setLoading(false);
         }
@@ -150,7 +152,7 @@ const Login = () => {
                         {branding.companyLogo ? (
                             <img
                                 src={`${API_URL}${branding.companyLogo}`}
-                                alt="Logo"
+                                alt={t('login.logoAlt')}
                                 style={{ maxHeight: '60px', maxWidth: '180px', objectFit: 'contain' }}
                             />
                         ) : (
@@ -172,8 +174,8 @@ const Login = () => {
                         fontSize: '0.925rem'
                     }}>
                         {showLocalForm
-                            ? (samlEnabled ? 'Yerel hesap ile oturum açın' : 'Kurumsal giriş devre dışı, yerel hesap kullanın')
-                            : 'Devam etmek için kurumsal hesabınızı kullanın'}
+                            ? (samlEnabled ? t('login.localLoginSubtitle') : t('login.samlDisabledSubtitle'))
+                            : t('login.corporateLoginSubtitle')}
                     </p>
                 </div>
 
@@ -200,7 +202,7 @@ const Login = () => {
                         <form onSubmit={handleLocalSubmit}>
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
-                                    Kullanıcı Adı {isRegisterMode && 'veya E-posta'}
+                                    {t('login.usernameLabel')} {isRegisterMode && t('login.orEmail')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
                                     <FaUser style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
@@ -223,7 +225,7 @@ const Login = () => {
                                         }}
                                         onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
                                         onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
-                                        placeholder={isRegisterMode ? "kullaniciadi" : "kullaniciadi veya email"}
+                                        placeholder={isRegisterMode ? t('login.usernamePlaceholder') : t('login.usernameOrEmailPlaceholder')}
                                     />
                                 </div>
                             </div>
@@ -232,7 +234,7 @@ const Login = () => {
                                 <>
                                     <div style={{ marginBottom: '20px' }}>
                                         <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
-                                            E-posta
+                                            {t('login.emailLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <FaEnvelope style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
@@ -252,14 +254,14 @@ const Login = () => {
                                                     outline: 'none',
                                                     boxSizing: 'border-box'
                                                 }}
-                                                placeholder="ornek@email.com"
+                                                placeholder={t('login.emailPlaceholder')}
                                             />
                                         </div>
                                     </div>
 
                                     <div style={{ marginBottom: '20px' }}>
                                         <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
-                                            Görünen Ad (Opsiyonel)
+                                            {t('login.displayNameLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <FaIdCard style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
@@ -278,7 +280,7 @@ const Login = () => {
                                                     outline: 'none',
                                                     boxSizing: 'border-box'
                                                 }}
-                                                placeholder="Adınız Soyadınız"
+                                                placeholder={t('login.displayNamePlaceholder')}
                                             />
                                         </div>
                                     </div>
@@ -287,7 +289,7 @@ const Login = () => {
 
                             <div style={{ marginBottom: '24px' }}>
                                 <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
-                                    Şifre
+                                    {t('login.passwordLabel')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
                                     <FaKey style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
@@ -330,7 +332,7 @@ const Login = () => {
                                     opacity: loading ? 0.7 : 1
                                 }}
                             >
-                                {loading ? 'İşleniyor...' : (isRegisterMode ? 'Hesap Oluştur' : 'Giriş Yap')}
+                                {loading ? t('login.processing') : (isRegisterMode ? t('login.createAccount') : t('login.loginButton'))}
                             </button>
 
                             <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -349,7 +351,7 @@ const Login = () => {
                                             cursor: 'pointer'
                                         }}
                                     >
-                                        {isRegisterMode ? 'Zaten hesabınız var mı? Giriş yapın' : 'Yeni yönetici hesabı oluştur'}
+                                        {isRegisterMode ? t('login.alreadyHaveAccount') : t('login.createAdminAccount')}
                                     </button>
                                 )}
                                 {samlEnabled && (
@@ -369,7 +371,7 @@ const Login = () => {
                                             marginTop: '10px'
                                         }}
                                     >
-                                        ← Kurumsal Girişe Dön
+                                        {t('login.backToCorporateLogin')}
                                     </button>
                                 )}
                             </div>
@@ -384,10 +386,10 @@ const Login = () => {
                                 marginBottom: '30px'
                             }}>
                                 <p style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1rem', fontWeight: '500' }}>
-                                    Güvenli Kurumsal Giriş
+                                    {t('login.secureCorporateLogin')}
                                 </p>
                                 <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '0.875rem', lineHeight: '1.6' }}>
-                                    Şirket e-posta ve şifrenizle oturum açmak için aşağıdaki butona tıklayın.
+                                    {t('login.corporateLoginDescription')}
                                 </p>
                                 <button
                                     onClick={handleShibbolethLogin}
@@ -409,7 +411,7 @@ const Login = () => {
                                         boxShadow: 'var(--glass-shadow)'
                                     }}
                                 >
-                                    Kurumsal Giriş (SAML/SSO)
+                                    {t('login.samlSsoButton')}
                                 </button>
                             </div>
 
@@ -424,7 +426,7 @@ const Login = () => {
                                     textDecoration: 'underline'
                                 }}
                             >
-                                Yönetici misiniz? Yerel hesapla giriş yapın
+                                {t('login.adminLocalLogin')}
                             </button>
                         </div>
                     )}

@@ -1,0 +1,28 @@
+{
+  "sort": {
+    "newest": "Newest First",
+    "oldest": "Oldest First",
+    "nameAsc": "Name (A-Z)",
+    "nameDesc": "Name (Z-A)",
+    "companyAsc": "Company (A-Z)",
+    "priorityDesc": "Priority (5-1)",
+    "lastInteraction": "Last Interaction"
+  },
+  "advancedFilter": "Advanced Filter",
+  "clear": "Clear",
+  "saveCurrentFilter": "+ Save Current Filter",
+  "filterLabel": {
+    "tag": "TAG",
+    "city": "CITY",
+    "leadStatus": "LEAD STATUS",
+    "source": "SOURCE",
+    "dateStart": "START DATE",
+    "dateEnd": "END DATE",
+    "savedFilters": "SAVED FILTERS"
+  },
+  "searchPlaceholder": "Search cards... (Name, Company, Email)",
+  "sourcePlaceholder": "Source (e.g., LinkedIn)",
+  "onlyReminders": "Reminders Only",
+  "noSavedFilters": "No saved filters yet.",
+  "filterNamePrompt": "Enter a name for the filter:"
+}

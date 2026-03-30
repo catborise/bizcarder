@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import api from '../api/axios';
+import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -48,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.error || 'Giriş başarısız.'
+                error: error.response?.data?.error || i18n.t('auth:loginFailed')
             };
         }
     };
@@ -83,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.error || 'Kayıt başarısız.'
+                error: error.response?.data?.error || i18n.t('auth:registrationFailed')
             };
         }
     };

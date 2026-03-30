@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import ConfirmModal from './ConfirmModal';
 import {
     FaPhone,
@@ -22,6 +23,7 @@ import {
 const InteractionLog = ({ cardId }) => {
     const { showNotification } = useNotification();
     const { user } = useAuth();
+    const { t } = useTranslation('pages');
     const [interactions, setInteractions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
@@ -76,10 +78,10 @@ const InteractionLog = ({ cardId }) => {
         try {
             await api.post(`/api/interactions/${cardId}`, formData);
             setFormData(prev => ({ ...prev, notes: '' }));
-            showNotification('Görüşme kaydedildi.', 'success');
+            showNotification(t('interaction.saved'), 'success');
             fetchInteractions();
         } catch (err) {
-            showNotification('Hata oluştu.', 'error');
+            showNotification(t('interaction.error'), 'error');
         }
     };
 
@@ -88,10 +90,10 @@ const InteractionLog = ({ cardId }) => {
         try {
             await api.delete(`/api/interactions/${deleteConfirmId}`);
             setDeleteConfirmId(null);
-            showNotification('Kayıt silindi.', 'success');
+            showNotification(t('interaction.deleted'), 'success');
             fetchInteractions();
         } catch (err) {
-            showNotification('Silme işlemi başarısız.', 'error');
+            showNotification(t('interaction.deleteFailed'), 'error');
         }
     };
 
@@ -108,10 +110,10 @@ const InteractionLog = ({ cardId }) => {
         try {
             await api.put(`/api/interactions/${id}`, editForm);
             setEditingId(null);
-            showNotification('Kayıt güncellendi.', 'success');
+            showNotification(t('interaction.updated'), 'success');
             fetchInteractions();
         } catch (err) {
-            showNotification('Güncelleme başarısız.', 'error');
+            showNotification(t('interaction.updateFailed'), 'error');
         }
     };
 
@@ -120,7 +122,7 @@ const InteractionLog = ({ cardId }) => {
             await api.put(`/api/interactions/${id}/pin`);
             fetchInteractions();
         } catch (err) {
-            showNotification('İşlem başarısız.', 'error');
+            showNotification(t('interaction.operationFailed'), 'error');
         }
     };
 
@@ -186,9 +188,9 @@ const InteractionLog = ({ cardId }) => {
         <div style={cardContainerStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                 <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} /> Aktivite ve Not Akışı
+                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} /> {t('interaction.title')}
                 </h3>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{interactions.length} Kayıt</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{t('interaction.recordCount', { count: interactions.length })}</span>
             </div>
 
             {/* Yeni Kayıt Formu */}
@@ -209,11 +211,11 @@ const InteractionLog = ({ cardId }) => {
                         onChange={e => setFormData({ ...formData, type: e.target.value })}
                         style={{ ...formInputStyle, width: '130px', cursor: 'pointer' }}
                     >
-                        <option value="Toplantı">Toplantı</option>
-                        <option value="Arama">Arama</option>
-                        <option value="E-posta">E-posta</option>
-                        <option value="Sipariş">Sipariş</option>
-                        <option value="Not">Not / Bilgi</option>
+                        <option value="Toplantı">{t('interaction.type.meeting')}</option>
+                        <option value="Arama">{t('interaction.type.call')}</option>
+                        <option value="E-posta">{t('interaction.type.email')}</option>
+                        <option value="Sipariş">{t('interaction.type.order')}</option>
+                        <option value="Not">{t('interaction.type.noteInfo')}</option>
                     </select>
                     <input
                         type="date"
@@ -224,7 +226,7 @@ const InteractionLog = ({ cardId }) => {
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <textarea
-                        placeholder="Not veya görüşme detayı girin..."
+                        placeholder={t('interaction.notesPlaceholder')}
                         value={formData.notes}
                         onChange={e => setFormData({ ...formData, notes: e.target.value })}
                         required
@@ -244,7 +246,7 @@ const InteractionLog = ({ cardId }) => {
                         transition: '0.2s',
                         height: 'fit-content'
                     }}>
-                        <FaPlus /> Ekle
+                        <FaPlus /> {t('interaction.addButton')}
                     </button>
                 </div>
             </form>
@@ -253,7 +255,7 @@ const InteractionLog = ({ cardId }) => {
                 {interactions.length === 0 && !isLoading && (
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-tertiary)' }}>
                         <FaComment style={{ fontSize: '2rem', marginBottom: '10px', opacity: 0.5 }} />
-                        <p>Henüz bir kayıt bulunmuyor.</p>
+                        <p>{t('interaction.noRecords')}</p>
                     </div>
                 )}
 
@@ -294,11 +296,11 @@ const InteractionLog = ({ cardId }) => {
                                             onChange={e => setEditForm({ ...editForm, type: e.target.value })}
                                             style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                         >
-                                            <option value="Toplantı">Toplantı</option>
-                                            <option value="Arama">Arama</option>
-                                            <option value="E-posta">E-posta</option>
-                                            <option value="Sipariş">Sipariş</option>
-                                            <option value="Not">Not</option>
+                                            <option value="Toplantı">{t('interaction.type.meeting')}</option>
+                                            <option value="Arama">{t('interaction.type.call')}</option>
+                                            <option value="E-posta">{t('interaction.type.email')}</option>
+                                            <option value="Sipariş">{t('interaction.type.order')}</option>
+                                            <option value="Not">{t('interaction.type.note')}</option>
                                         </select>
                                     ) : (
                                         <span style={{
@@ -337,7 +339,7 @@ const InteractionLog = ({ cardId }) => {
                                                     <button 
                                                         onClick={() => handleTogglePin(log.id)} 
                                                         style={{ background: 'transparent', border: 'none', color: log.isPinned ? 'var(--accent-warning)' : 'var(--text-tertiary)', cursor: 'pointer' }}
-                                                        title={log.isPinned ? "Sabitlemeyi Kaldır" : "Sabitle"}
+                                                        title={log.isPinned ? t('interaction.unpin') : t('interaction.pin')}
                                                     >
                                                         <FaThumbtack />
                                                     </button>
@@ -364,7 +366,7 @@ const InteractionLog = ({ cardId }) => {
 
                             <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '5px' }}>
                                 <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-                                    {log.author?.displayName || 'Sistem'} tarafından kaydedildi
+                                    {t('interaction.recordedBy', { author: log.author?.displayName || t('interaction.system') })}
                                 </span>
                             </div>
                         </div>
@@ -376,8 +378,8 @@ const InteractionLog = ({ cardId }) => {
                 isOpen={!!deleteConfirmId}
                 onClose={() => setDeleteConfirmId(null)}
                 onConfirm={handleDelete}
-                title="Kaydı Sil"
-                message="Bu görüşme kaydını silmek istediğinize emin misiniz?"
+                title={t('interaction.deleteConfirmTitle')}
+                message={t('interaction.deleteConfirmMessage')}
             />
         </div>
     );

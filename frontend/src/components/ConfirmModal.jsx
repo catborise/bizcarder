@@ -1,6 +1,8 @@
+import { useTranslation } from 'react-i18next';
 import { FaExclamationTriangle } from 'react-icons/fa';
 
 const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+    const { t } = useTranslation('pages');
     if (!isOpen) return null;
 
     return (
@@ -67,7 +69,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                         textAlign: 'center',
                         letterSpacing: '-0.02em'
                     }}>
-                        {title || 'Emin misiniz?'}
+                        {title || t('confirmModal.defaultTitle')}
                     </h3>
 
                     {/* Message */}
@@ -78,7 +80,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                         textAlign: 'center',
                         lineHeight: '1.5'
                     }}>
-                        {message || 'Bu işlem geri alınamaz.'}
+                        {message || t('confirmModal.defaultMessage')}
                     </p>
 
                     {/* Buttons */}
@@ -111,7 +113,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                                 e.currentTarget.style.transform = 'translateY(0)';
                             }}
                         >
-                            İptal
+                            {t('common:cancel')}
                         </button>
                         <button
                             onClick={() => {
@@ -142,7 +144,7 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message }) => {
                                 e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
                             }}
                         >
-                            Evet, Sil
+                            {t('confirmModal.confirmDelete')}
                         </button>
                     </div>
                 </div>

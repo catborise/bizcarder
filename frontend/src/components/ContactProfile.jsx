@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import api, { API_URL } from '../api/axios';
 import { downloadFile } from '../utils/downloadHelper';
@@ -8,6 +9,7 @@ import QRCodeOverlay from './QRCodeOverlay';
 import { generateVCardString } from '../utils/vcardHelper';
 
 const ContactProfile = () => {
+    const { t } = useTranslation(['pages', 'common']);
     const { token } = useParams();
     const [card, setCard] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -23,7 +25,7 @@ const ContactProfile = () => {
                 setCard(res.data);
             } catch (err) {
                 console.error('Error fetching public card:', err);
-                setError(err.response?.data?.error || 'Kartvizit yüklenemedi.');
+                setError(err.response?.data?.error || t('pages:contactProfile.loadError'));
             } finally {
                 setLoading(false);
             }
@@ -35,22 +37,22 @@ const ContactProfile = () => {
     const handleDownloadVCard = async () => {
         if (!card) return;
         try {
-            showNotification('vCard dosyası hazırlanıyor...', 'info');
+            showNotification(t('pages:contactProfile.vcardPreparing'), 'info');
             // Public vCF endpoint'ini kullan (sharingToken ile)
             const response = await api.get(`/api/cards/public/${card.sharingToken}/vcf`, {
                 responseType: 'blob'
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
-            showNotification('vCard indirildi.', 'success');
+            showNotification(t('pages:contactProfile.vcardDownloaded'), 'success');
         } catch (err) {
-            showNotification('İndirme başarısız.', 'error');
+            showNotification(t('pages:contactProfile.downloadFailed'), 'error');
         }
     };
 
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', color: 'var(--text-primary)' }}>
-                <div className="loader">Yükleniyor...</div>
+                <div className="loader">{t('common:loading')}</div>
             </div>
         );
     }
@@ -58,7 +60,7 @@ const ContactProfile = () => {
     if (error) {
         return (
             <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--text-primary)' }}>
-                <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>Olamaz! 😕</h2>
+                <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>{t('pages:contactProfile.errorTitle')}</h2>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '1.2rem' }}>{error}</p>
             </div>
         );
@@ -191,7 +193,7 @@ const ContactProfile = () => {
                                 boxShadow: 'var(--glass-shadow)'
                             }}
                         >
-                            <FaDownload /> Rehbere Ekle (vCard)
+                            <FaDownload /> {t('pages:contactProfile.addToContacts')}
                         </button>
                         <button
                             onClick={() => setIsQrModalOpen(true)}
@@ -207,7 +209,7 @@ const ContactProfile = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center'
                             }}
-                            title="QR Kod Göster"
+                            title={t('pages:contactProfile.showQrCode')}
                         >
                             <FaQrcode size={24} />
                         </button>
@@ -216,7 +218,7 @@ const ContactProfile = () => {
             </div>
 
             <p style={{ textAlign: 'center', marginTop: '40px', color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
-                CRM Bizcard App ile oluşturuldu
+                {t('pages:contactProfile.createdWith')}
             </p>
 
             {isQrModalOpen && (

@@ -1,0 +1,60 @@
+{
+  "heading": "Size nasıl yardımcı olabiliriz?",
+  "searchPlaceholder": "Bir soru veya konu arayın...",
+  "notFound": "Aradığınız konu bulunamadı.",
+  "notFoundHint": "Lütfen farklı anahtar kelimelerle tekrar deneyin.",
+  "contactTitle": "Aradığınızı bulamadınız mı?",
+  "contactDescription": "Bize doğrudan ulaşarak her konuda destek alabilirsiniz.",
+  "sendEmail": "E-Posta Gönder",
+  "devTeam": "Geliştirici Ekibi",
+  "sections": {
+    "gettingStarted": "Başlangıç",
+    "cardManagement": "Kartvizit Yönetimi",
+    "digitalCard": "Dijital Kartvizitim",
+    "crmFeatures": "CRM Özellikleri",
+    "offlineMode": "Çevrimdışı Kullanım",
+    "security": "Güvenlik & Gizlilik"
+  },
+  "faq": {
+    "whatIsBizcarder": {
+      "q": "BizCarder nedir?",
+      "a": "BizCarder, fiziksel kartvizitlerinizi dijital ortama aktarmanıza, kişi ağınızı yönetmenize ve profesyonel ilişkilerinizi takip etmenize yardımcı olan modern bir CRM platformudur."
+    },
+    "howToInstall": {
+      "q": "Uygulamayı nasıl yüklerim? (PWA)",
+      "a": "BizCarder bir Progresif Web Uygulamasıdır (PWA). Tarayıcınızın adres çubuğundaki 'Yükle' simgesine tıklayarak veya mobilde 'Ana Ekrana Ekle' seçeneğini kullanarak yükleyebilirsiniz."
+    },
+    "howToAddCard": {
+      "q": "Yeni bir kartvizit nasıl eklenir?",
+      "a": "Kontaklar sayfasındaki 'Yeni Kart Ekle' butonuna tıklayın. Kameranızla kartviziti tarayabilir veya bilgileri elle girebilirsiniz. AI destekli OCR, kartvizitteki bilgileri otomatik olarak algılar."
+    },
+    "howToExport": {
+      "q": "Kartvizitleri nasıl dışa aktarırım?",
+      "a": "Kartvizitler sayfasının sağ üstünde Excel, PDF ve vCard formatlarında dışa aktarma seçenekleri bulunur. Toplu seçim yaparak birden fazla kartı aynı anda dışa aktarabilirsiniz."
+    },
+    "howToShare": {
+      "q": "Kendi dijital kartvizitimi nasıl paylaşırım?",
+      "a": "'Kartım' sekmesine giderek kişisel dijital kartvizitinizi oluşturabilir veya düzenleyebilirsiniz. QR kod, link paylaşımı veya vCard indirme yöntemleriyle paylaşabilirsiniz."
+    },
+    "whatIsVcard": {
+      "q": "vCard nedir?",
+      "a": "vCard, iletişim bilgilerini içeren standart bir dosya formatıdır (.vcf). Telefonların rehberine doğrudan eklenebilir ve tüm platformlarda çalışır."
+    },
+    "howReminders": {
+      "q": "Hatırlatıcılar nasıl çalışır?",
+      "a": "Bir kartı düzenlerken 'Takip Hatırlatıcısı' alanına tarih girebilirsiniz. Belirlenen tarih geldiğinde dashboard'da hatırlatıcı bildirimi gösterilir."
+    },
+    "howToLogNotes": {
+      "q": "Görüşme notlarını nasıl kaydederim?",
+      "a": "Her bir kartın detayında 'Aktivite ve Notlar' bölümü bulunur. Buradan arama, toplantı, e-posta veya genel not ekleyebilir ve geçmişi takip edebilirsiniz."
+    },
+    "offlineUsage": {
+      "q": "İnternetim olmadığında ne olur?",
+      "a": "Uygulama çevrimdışı çalışabilme özelliğine sahiptir. Daha önce yüklenen veriler gösterilir ve yeni eklenen kartlar internet bağlantısı geldiğinde otomatik senkronize edilir."
+    },
+    "dataSecurity": {
+      "q": "Verilerim ne kadar güvende?",
+      "a": "Tüm verileriniz modern şifreleme standartlarıyla korunur. Kurumsal SSO/SAML desteği, rol tabanlı erişim kontrolü ve güvenli oturum yönetimi ile maksimum güvenlik sağlanır."
+    }
+  }
+}

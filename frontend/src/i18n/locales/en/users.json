@@ -1,0 +1,60 @@
+{
+  "title": "User Management",
+  "listing": "Listing Users",
+  "searchPlaceholder": "Search name, email or username...",
+  "roleUpdateError": "Failed to update role.",
+  "passwordMinLength": "Password must be at least 6 characters.",
+  "passwordUpdated": "Password updated successfully.",
+  "passwordResetError": "Password reset failed: {{error}}",
+  "approvalError": "Approval failed: {{error}}",
+  "userDeleted": "User deleted successfully.",
+  "userDeleteError": "Failed to delete user: {{error}}",
+  "filter": {
+    "roleAll": "Role: All",
+    "admin": "Admin",
+    "user": "User",
+    "statusAll": "Status: All",
+    "approved": "Approved",
+    "pending": "Pending"
+  },
+  "table": {
+    "userInfo": "User Info",
+    "memberDate": "Member Since",
+    "accountApproval": "Account Approval",
+    "adminAuthority": "Admin Authority",
+    "actions": "Actions"
+  },
+  "youBadge": "YOU",
+  "suspendAccount": "Suspend Account",
+  "approveAccount": "Approve Account",
+  "status": {
+    "approved": "Approved",
+    "pending": "Pending"
+  },
+  "revokeAdmin": "Revoke Admin",
+  "makeAdmin": "Make Admin",
+  "role": {
+    "admin": "Admin",
+    "user": "User"
+  },
+  "roleBadge": {
+    "admin": "👑 Admin",
+    "user": "👤 User"
+  },
+  "resetPassword": "Reset Password",
+  "deleteUser": "Delete User",
+  "noResults": "No Results Found",
+  "noResultsDescription": "No users match your search criteria.",
+  "clearFilters": "Clear Filters",
+  "newPasswordLabel": "New Password",
+  "newPasswordPlaceholder": "Enter new password...",
+  "passwordHint": "Must be at least 6 characters long.",
+  "updatePassword": "Update Password",
+  "deleteConfirmTitle": "Are you sure you want to delete this user?",
+  "deleteConfirmMessage": "{{displayName}} (@{{username}}) will be permanently deleted.",
+  "deleteCardQuestion": "What would you like to do with the user's business cards?",
+  "transferAndDelete": "Transfer Cards to Me & Delete",
+  "transferDescription": "Cards will be transferred to your account.",
+  "deleteWithCards": "Delete with Cards",
+  "deleteWithCardsDescription": "Cards will be moved to trash."
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const SearchBar = ({
     searchTerm,
@@ -10,6 +11,7 @@ const SearchBar = ({
     allTags = [],
     allCities = []
 }) => {
+    const { t } = useTranslation(['filters', 'common']);
     const [isAdvancedOpen, setIsAdvancedOpen] = React.useState(false);
 
     const hasActiveAdvancedFilters =
@@ -52,7 +54,7 @@ const SearchBar = ({
                 <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
                     <input
                         type="text"
-                        placeholder="Kartvizitlerde ara... (Ad, Şirket, E-posta)"
+                        placeholder={t('filters:searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
                         style={{
@@ -88,13 +90,13 @@ const SearchBar = ({
                         transition: 'all 0.2s ease'
                     }}
                 >
-                    <option value="newest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>En Yeni Eklenen</option>
-                    <option value="oldest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>En Eski Eklenen</option>
-                    <option value="nameAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>İsim (A-Z)</option>
-                    <option value="nameDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>İsim (Z-A)</option>
-                    <option value="companyAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Şirket (A-Z)</option>
-                    <option value="priorityDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Önem Sırası (5-1)</option>
-                    <option value="lastInteraction" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>Son Etkileşim</option>
+                    <option value="newest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.newest')}</option>
+                    <option value="oldest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.oldest')}</option>
+                    <option value="nameAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.nameAsc')}</option>
+                    <option value="nameDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.nameDesc')}</option>
+                    <option value="companyAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.companyAsc')}</option>
+                    <option value="priorityDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.priorityDesc')}</option>
+                    <option value="lastInteraction" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.lastInteraction')}</option>
                 </select>
 
                 <button
@@ -114,7 +116,7 @@ const SearchBar = ({
                         gap: '8px'
                     }}
                 >
-                    Gelişmiş Filtrele {hasActiveAdvancedFilters && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isAdvancedOpen ? 'white' : 'var(--accent-primary)' }}></span>}
+                    {t('filters:advancedFilter')} {hasActiveAdvancedFilters && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isAdvancedOpen ? 'white' : 'var(--accent-primary)' }}></span>}
                 </button>
 
 
@@ -134,7 +136,7 @@ const SearchBar = ({
                         onMouseEnter={(e) => e.target.style.color = 'var(--accent-error)'}
                         onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
                     >
-                        Temizle
+                        {t('filters:clear')}
                     </button>
                 )}
             </div>
@@ -156,7 +158,7 @@ const SearchBar = ({
                 }}>
                     {/* Tag Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>ETİKET</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.tag')}</label>
                         <select
                             value={advancedFilters.tagId}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, tagId: e.target.value })}
@@ -169,7 +171,7 @@ const SearchBar = ({
                                 outline: 'none'
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>Tümü</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
                             {allTags.map(tag => (
                                 <option key={tag.id} value={tag.id} style={{ background: 'var(--bg-card)' }}>{tag.name}</option>
                             ))}
@@ -178,7 +180,7 @@ const SearchBar = ({
 
                     {/* City Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>ŞEHİR</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.city')}</label>
                         <select
                             value={advancedFilters.city}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, city: e.target.value })}
@@ -191,7 +193,7 @@ const SearchBar = ({
                                 outline: 'none'
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>Tümü</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
                             {allCities.map(city => (
                                 <option key={city} value={city} style={{ background: 'var(--bg-card)' }}>{city}</option>
                             ))}
@@ -200,7 +202,7 @@ const SearchBar = ({
 
                     {/* Lead Status Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>SÜREÇ DURUMU</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.leadStatus')}</label>
                         <select
                             value={advancedFilters.leadStatus}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, leadStatus: e.target.value })}
@@ -213,21 +215,21 @@ const SearchBar = ({
                                 outline: 'none'
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>Tümü</option>
-                            <option value="Cold" style={{ background: 'var(--bg-card)' }}>❄️ Soğuk (Cold)</option>
-                            <option value="Warm" style={{ background: 'var(--bg-card)' }}>⛅ Ilık (Warm)</option>
-                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>🔥 Sıcak (Hot)</option>
-                            <option value="Following-up" style={{ background: 'var(--bg-card)' }}>🔄 Takipte (Following-up)</option>
-                            <option value="Converted" style={{ background: 'var(--bg-card)' }}>✅ Dönüştü (Converted)</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
+                            <option value="Cold" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Cold')}</option>
+                            <option value="Warm" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Warm')}</option>
+                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Hot')}</option>
+                            <option value="Following-up" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Following-up')}</option>
+                            <option value="Converted" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Converted')}</option>
                         </select>
                     </div>
 
                     {/* Source Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>KAYNAK</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.source')}</label>
                         <input
                             type="text"
-                            placeholder="Kaynak (Örn: LinkedIn)"
+                            placeholder={t('filters:sourcePlaceholder')}
                             value={advancedFilters.source}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, source: e.target.value })}
                             style={{
@@ -244,7 +246,7 @@ const SearchBar = ({
 
                     {/* Date Range Start */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>BAŞLANGIÇ TARİHİ</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.dateStart')}</label>
                         <input
                             type="date"
                             value={advancedFilters.dateStart}
@@ -263,7 +265,7 @@ const SearchBar = ({
 
                     {/* Date Range End */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>BİTİŞ TARİHİ</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.dateEnd')}</label>
                         <input
                             type="date"
                             value={advancedFilters.dateEnd}
@@ -301,7 +303,7 @@ const SearchBar = ({
                                     accentColor: 'var(--accent-primary)'
                                 }}
                             />
-                            Sadece Hatırlatıcılar
+                            {t('filters:onlyReminders')}
                         </label>
                     </div>
 
@@ -316,10 +318,10 @@ const SearchBar = ({
                         gap: '12px'
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>KAYITLI FİLTRELER</label>
+                            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.savedFilters')}</label>
                             <button 
                                 onClick={() => {
-                                    const filterName = prompt('Filtre için bir isim girin:');
+                                    const filterName = prompt(t('filters:filterNamePrompt'));
                                     if (filterName) {
                                         const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
                                         saved.push({ name: filterName, filters: { ...advancedFilters }, id: Date.now() });
@@ -338,7 +340,7 @@ const SearchBar = ({
                                     fontWeight: '600'
                                 }}
                             >
-                                + Mevcut Filtreyi Kaydet
+                                {t('filters:saveCurrentFilter')}
                             </button>
                         </div>
                         
@@ -372,7 +374,7 @@ const SearchBar = ({
                                 </div>
                             ))}
                             {JSON.parse(localStorage.getItem('savedFilters') || '[]').length === 0 && (
-                                <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>Henüz kayıtlı filtre yok.</span>
+                                <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{t('filters:noSavedFilters')}</span>
                             )}
                         </div>
                     </div>
