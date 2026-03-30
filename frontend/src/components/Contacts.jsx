@@ -19,7 +19,7 @@ import { generateVCardString } from '../utils/vcardHelper';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Contacts = () => {
-    const { t } = useTranslation(['cards', 'common']);
+    const { t, i18n } = useTranslation(['cards', 'common']);
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
 
@@ -630,7 +630,7 @@ const Contacts = () => {
                                                 <span style={{ color: 'var(--text-secondary)' }}>
                                                     {(() => {
                                                         const d = new Date(card.reminderDate);
-                                                        return isNaN(d.getTime()) ? t('cards:contacts.field.noDate') : d.toLocaleDateString('tr-TR');
+                                                        return isNaN(d.getTime()) ? t('cards:contacts.field.noDate') : d.toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US');
                                                     })()}
                                                 </span>
                                             </div>
@@ -639,7 +639,7 @@ const Contacts = () => {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <FaClock color="var(--accent-primary)" size={12} /> 
                                                 <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.lastInteraction')}</strong> 
-                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.lastInteractionDate).toLocaleDateString('tr-TR')}</span>
+                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.lastInteractionDate).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}</span>
                                             </div>
                                         )}
                                         {card.email && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.email')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span></div>}

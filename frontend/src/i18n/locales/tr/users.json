@@ -37,10 +37,6 @@
     "admin": "Admin",
     "user": "Kullanıcı"
   },
-  "roleBadge": {
-    "admin": "👑 Admin",
-    "user": "👤 Kullanıcı"
-  },
   "resetPassword": "Şifre Sıfırla",
   "deleteUser": "Kullanıcıyı Sil",
   "noResults": "Sonuç Bulunamadı",

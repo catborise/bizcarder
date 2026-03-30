@@ -37,10 +37,6 @@
     "admin": "Admin",
     "user": "User"
   },
-  "roleBadge": {
-    "admin": "👑 Admin",
-    "user": "👤 User"
-  },
   "resetPassword": "Reset Password",
   "deleteUser": "Delete User",
   "noResults": "No Results Found",

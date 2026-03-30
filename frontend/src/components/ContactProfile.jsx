@@ -32,7 +32,7 @@ const ContactProfile = () => {
         };
 
         fetchPublicCard();
-    }, [id]);
+    }, [token]);
 
     const handleDownloadVCard = async () => {
         if (!card) return;

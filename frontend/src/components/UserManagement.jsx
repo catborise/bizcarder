@@ -7,7 +7,7 @@ import Modal from './Modal';
 import { FaSearch, FaUsers, FaUserShield, FaUser, FaCheck, FaClock, FaKey, FaFilter, FaTimesCircle, FaLock, FaSave, FaTimes, FaTrash, FaExchangeAlt } from 'react-icons/fa';
 
 const UserManagement = () => {
-    const { t } = useTranslation(['users', 'common']);
+    const { t, i18n } = useTranslation(['users', 'common']);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user: currentUser } = useAuth();
@@ -239,7 +239,7 @@ const UserManagement = () => {
                             <div className="usermgmt-date">
                                 <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>@{u.username}</span>
                                 <span style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
-                                    {new Date(u.createdAt).toLocaleDateString('tr-TR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                    {new Date(u.createdAt).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                                 </span>
                             </div>
 

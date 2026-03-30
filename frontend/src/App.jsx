@@ -12,7 +12,6 @@ import api, { API_URL } from './api/axios';
 import { getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { ThemeProvider } from './context/ThemeContext';
 import ThemeToggle from './components/ThemeToggle';
-import LanguageSwitcher from './components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/PageTransition';
@@ -47,7 +46,7 @@ const AppContent = () => {
         companyName: 'BizCarder',
         companyLogo: '',
         companyIcon: '',
-        footerText: t('app.footer.defaultCopyright')
+        footerText: ''
     });
 
     const syncQueuedCards = async () => {

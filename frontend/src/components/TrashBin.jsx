@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import ConfirmModal from './ConfirmModal';
 
 const TrashBin = () => {
-    const { t } = useTranslation(['pages', 'common']);
+    const { t, i18n } = useTranslation(['pages', 'common']);
     const [trashedCards, setTrashedCards] = useState([]);
     const [loading, setLoading] = useState(true);
     const [confirmAction, setConfirmAction] = useState(null); // { type: 'restore'|'delete'|'empty', card }
@@ -114,7 +114,7 @@ const TrashBin = () => {
                                         {card.company}{card.title && ` — ${card.title}`}
                                     </p>
                                     <div className="trash-card-meta">
-                                        <span>{t('pages:trash.deletedOn')}{new Date(card.deletedAt).toLocaleDateString('tr-TR')}</span>
+                                        <span>{t('pages:trash.deletedOn')}{new Date(card.deletedAt).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}</span>
                                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: daysLeft < 7 ? 'var(--accent-error)' : 'var(--accent-warning)' }}>
                                             <FaClock size={11} /> {t('pages:trash.daysRemaining', { days: daysLeft })}
                                         </span>

@@ -222,7 +222,7 @@ const UserMenu = () => {
                                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
                                 <FaTrash size={16} />
-                                <span>{t('userMenu.trashBin', 'Çöp Kutusu')}</span>
+                                <span>{t('pages:app.nav.trashBin')}</span>
                             </button>
 
                             <div style={{ height: '1px', background: 'var(--glass-border)', margin: '8px 0' }}></div>

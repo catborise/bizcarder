@@ -6,7 +6,7 @@ import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 
 const ReminderModal = ({ reminders, onClose, onRefresh }) => {
-    const { t } = useTranslation(['pages', 'common']);
+    const { t, i18n } = useTranslation(['pages', 'common']);
     const navigate = useNavigate();
     const { showNotification } = useNotification();
 
@@ -154,7 +154,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                                         }}>
                                             {(() => {
                                                 const d = new Date(card.reminderDate);
-                                                return isNaN(d.getTime()) ? t('pages:reminder.invalidDate') : d.toLocaleDateString('tr-TR');
+                                                return isNaN(d.getTime()) ? t('pages:reminder.invalidDate') : d.toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US');
                                             })()}
                                         </span>
                                     </div>
