@@ -71,4 +71,14 @@ frontend/
 - Pagination `limit` capped at 100 server-side, export IDs capped at 500
 - `glass-container` uses `var(--glass-bg-solid)` (no backdrop-filter) for performance
 - Modal uses CSS class `.modal-content` for styles (not inline) — mobile goes full-screen at 768px
-- `LanguageSwitcher.jsx` exists as standalone component but is currently only used inside `UserMenu` dropdown
+- Language switching logic lives inline in `UserMenu.jsx` dropdown
+
+## Multi-Instance / Horizontal Scaling
+
+Sessions are stored in PostgreSQL (SequelizeStore) — no instance affinity needed.
+File uploads use a shared Docker volume (`crm_uploads`).
+
+- **Rate limiting**: Set `REDIS_URL` env var to enable distributed rate limiting. Without Redis, each instance has its own in-memory counters (limits are bypassable).
+- **Trash cleanup**: Uses `pg_advisory_lock` — only one instance runs cleanup at a time.
+- **DB pool**: Configurable via `DB_POOL_MIN` (default 2) and `DB_POOL_MAX` (default 10). With N instances, total connections = N × max.
+- **All write routes** use Sequelize transactions with `LOCK.UPDATE` to prevent race conditions.

@@ -1,56 +1,67 @@
-const { BusinessCard, User } = require('../models');
+const { BusinessCard } = require('../models');
+const sequelize = require('../config/database');
 
-// Otomatik çöp kutusu temizleme fonksiyonu
+// Advisory lock ID for trash cleanup (arbitrary unique integer)
+const CLEANUP_LOCK_ID = 294713;
+
 async function cleanupOldTrashItems() {
     try {
         const { Op } = require('sequelize');
 
-        // Global ayarı kontrol et
-        const { SystemSetting } = require('../models');
-        const setting = await SystemSetting.findByPk('trashRetentionDays');
-        const retentionDays = setting ? parseInt(setting.value, 10) : 30; // Varsayılan 30 gün
-
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
-
-        // Tüm eski silinmiş kartları bul ve sil (Kullanıcı ayrımı yapmaksızın)
-        // Eğer kullanıcı bazlı gerekirse eski döngü kullanılabilir ama global ayar istendi.
-        const deletedCount = await BusinessCard.destroy({
-            where: {
-                deletedAt: {
-                    [Op.ne]: null, // Zaten destroy sadece deletedAt dolu olanları (paranoid) silmeli ama force:true lazım
-                    [Op.lt]: cutoffDate
-                }
-            },
-            force: true // Soft-delete'i tamamen silmek için
+        // Try to acquire advisory lock — only one instance wins
+        const [lockResult] = await sequelize.query('SELECT pg_try_advisory_lock(:lockId) AS acquired', {
+            replacements: { lockId: CLEANUP_LOCK_ID },
+            type: sequelize.QueryTypes.SELECT,
         });
 
-        // Not: BusinessCard paranoid model ise normal destroy sadece deletedAt günceller.
-        // force: true ile veritabanından tamamen silinir.
-
-        if (deletedCount > 0) {
-            console.log(`[AUTO-CLEANUP] ${deletedCount} kart (Retention: ${retentionDays} gün) kalıcı silindi.`);
+        if (!lockResult.acquired) {
+            // Another instance is already running cleanup
+            return;
         }
 
+        try {
+            const { SystemSetting } = require('../models');
+            const setting = await SystemSetting.findByPk('trashRetentionDays');
+            const retentionDays = setting ? parseInt(setting.value, 10) : 30;
 
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+
+            const deletedCount = await BusinessCard.destroy({
+                where: {
+                    deletedAt: {
+                        [Op.ne]: null,
+                        [Op.lt]: cutoffDate
+                    }
+                },
+                force: true
+            });
+
+            if (deletedCount > 0) {
+                console.log(`[AUTO-CLEANUP] ${deletedCount} cards permanently deleted (retention: ${retentionDays} days).`);
+            }
+        } finally {
+            // Always release the lock
+            await sequelize.query('SELECT pg_advisory_unlock(:lockId)', {
+                replacements: { lockId: CLEANUP_LOCK_ID },
+            });
+        }
     } catch (error) {
-        console.error('[AUTO-CLEANUP] Hata:', error);
+        console.error('[AUTO-CLEANUP] Error:', error.message);
     }
 }
 
-// Scheduler - Her gün 02:00'de çalış
 function startAutoCleanup() {
-    // İlk çalıştırma
-    cleanupOldTrashItems();
+    // Delay first run by 30s to let DB connections settle
+    setTimeout(() => cleanupOldTrashItems(), 30000);
 
-    // Her 24 saatte bir çalıştır (86400000 ms)
+    // Check every hour, run only at 2 AM
     setInterval(() => {
         const now = new Date();
-        // Sadece 02:00-03:00 arasında çalıştır
         if (now.getHours() === 2) {
             cleanupOldTrashItems();
         }
-    }, 60 * 60 * 1000); // Her saat kontrol et
+    }, 60 * 60 * 1000);
 }
 
 module.exports = { startAutoCleanup, cleanupOldTrashItems };

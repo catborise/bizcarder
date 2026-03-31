@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { User, BusinessCard } = require('../models');
+const sequelize = require('../config/database');
 const { logAction } = require('../utils/logger');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
@@ -22,21 +23,24 @@ router.get('/', async (req, res) => {
 
 // Kullanıcı Rolünü Güncelle
 router.put('/:id/role', async (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    if (!['user', 'admin'].includes(role)) {
+        return res.status(400).json({ error: 'Geçersiz rol.' });
+    }
+
+    const t = await sequelize.transaction();
     try {
-        const { id } = req.params;
-        const { role } = req.body;
-
-        if (!['user', 'admin'].includes(role)) {
-            return res.status(400).json({ error: 'Geçersiz rol.' });
-        }
-
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
         }
 
         const oldRole = user.role;
-        await user.update({ role });
+        await user.update({ role }, { transaction: t });
+        await t.commit();
 
         // LOG: Role değişimi
         await logAction({
@@ -47,6 +51,7 @@ router.put('/:id/role', async (req, res) => {
 
         res.json({ message: 'Kullanıcı rolü güncellendi.', user });
     } catch (error) {
+        await t.rollback();
         await logAction({
             action: 'USER_ROLE_UPDATE_ERROR',
             details: error.message,
@@ -58,27 +63,30 @@ router.put('/:id/role', async (req, res) => {
 
 // Admin Tarafından Kullanıcı Şifresi Sıfırlama
 router.put('/:id/password', async (req, res) => {
+    // Sadece admin yapabilir (Middleware olmadığı için manuel kontrol - normalde middleware kullanılmalı)
+    if (!req.isAuthenticated() || req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+    }
+
+    const { id } = req.params;
+    const { newPassword } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ error: 'Yeni şifre gereklidir.' });
+    }
+
+    const t = await sequelize.transaction();
     try {
-        // Sadece admin yapabilir (Middleware olmadığı için manuel kontrol - normalde middleware kullanılmalı)
-        if (!req.isAuthenticated() || req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
-        }
-
-        const { id } = req.params;
-        const { newPassword } = req.body;
-
-        if (!newPassword) {
-            return res.status(400).json({ error: 'Yeni şifre gereklidir.' });
-        }
-
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
         }
 
         // Şifreyi güncelle (Model hook'u hashleyecek)
         user.password = newPassword;
-        await user.save();
+        await user.save({ transaction: t });
+        await t.commit();
 
         // LOG: Şifre sıfırlama
         await logAction({
@@ -89,6 +97,7 @@ router.put('/:id/password', async (req, res) => {
 
         res.json({ message: 'Kullanıcı şifresi başarıyla güncellendi.' });
     } catch (error) {
+        await t.rollback();
         console.error('Admin password reset error:', error);
         res.status(500).json({ error: 'Şifre sıfırlanırken hata oluştu.' });
     }
@@ -96,26 +105,29 @@ router.put('/:id/password', async (req, res) => {
 
 // Admin Tarafından Kullanıcı Onaylama
 router.put('/:id/approve', async (req, res) => {
+    // Sadece admin yapabilir
+    if (!req.isAuthenticated() || req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+    }
+
+    const { id } = req.params;
+    const { isApproved } = req.body;
+
+    if (typeof isApproved !== 'boolean') {
+        return res.status(400).json({ error: 'isApproved boolean değeri olmalıdır.' });
+    }
+
+    const t = await sequelize.transaction();
     try {
-        // Sadece admin yapabilir
-        if (!req.isAuthenticated() || req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
-        }
-
-        const { id } = req.params;
-        const { isApproved } = req.body;
-
-        if (typeof isApproved !== 'boolean') {
-            return res.status(400).json({ error: 'isApproved boolean değeri olmalıdır.' });
-        }
-
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
         }
 
         // Onay durumunu güncelle
-        await user.update({ isApproved });
+        await user.update({ isApproved }, { transaction: t });
+        await t.commit();
 
         // LOG: Kullanıcı onaylama
         await logAction({
@@ -133,6 +145,7 @@ router.put('/:id/approve', async (req, res) => {
             }
         });
     } catch (error) {
+        await t.rollback();
         console.error('User approval error:', error);
         res.status(500).json({ error: 'Onay işlemi sırasında hata oluştu.' });
     }
@@ -140,32 +153,34 @@ router.put('/:id/approve', async (req, res) => {
 
 // Kullanıcıyı Sil (Kartvizitleri Sil veya Aktar)
 router.delete('/:id', async (req, res) => {
+    // Sadece admin yapabilir
+    if (!req.isAuthenticated() || req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+    }
+
+    const { id } = req.params;
+    const { transferCards } = req.body; // true: aktar, false: kartları da sil (soft delete)
+
+    // Kendini silmeyi engelle
+    if (parseInt(id) === req.user.id) {
+        return res.status(400).json({ error: 'Kendinizi silemezsiniz.' });
+    }
+
+    const t = await sequelize.transaction();
     try {
-        // Sadece admin yapabilir
-        if (!req.isAuthenticated() || req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
-        }
-
-        const { id } = req.params;
-        const { transferCards } = req.body; // true: aktar, false: kartları da sil (soft delete)
-
-        // Kendini silmeyi engelle
-        if (parseInt(id) === req.user.id) {
-            return res.status(400).json({ error: 'Kendinizi silemezsiniz.' });
-        }
-
-        const userToDelete = await User.findByPk(id);
+        const userToDelete = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!userToDelete) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
         }
 
-        const cardCount = await BusinessCard.count({ where: { ownerId: id } });
+        const cardCount = await BusinessCard.count({ where: { ownerId: id }, transaction: t });
 
         if (transferCards === true) {
             // Kartları admin'e aktar
             await BusinessCard.update(
                 { ownerId: req.user.id },
-                { where: { ownerId: id } }
+                { where: { ownerId: id }, transaction: t }
             );
             await logAction({
                 action: 'USER_DELETE_TRANSFER',
@@ -180,7 +195,7 @@ router.delete('/:id', async (req, res) => {
                     deletedAt: new Date(),
                     deletedBy: req.user.id
                 },
-                { where: { ownerId: id } }
+                { where: { ownerId: id }, transaction: t }
             );
             await logAction({
                 action: 'USER_DELETE_WITH_CARDS',
@@ -190,11 +205,13 @@ router.delete('/:id', async (req, res) => {
         }
 
         // Kullanıcıyı sil
-        await userToDelete.destroy();
+        await userToDelete.destroy({ transaction: t });
+        await t.commit();
 
         res.json({ message: 'Kullanıcı başarıyla silindi.' });
 
     } catch (error) {
+        await t.rollback();
         console.error('User delete error:', error);
         res.status(500).json({ error: 'Kullanıcı silinirken hata oluştu.' });
     }

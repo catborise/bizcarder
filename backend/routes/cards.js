@@ -557,14 +557,16 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
     const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const card = await BusinessCard.findByPk(id);
+        const card = await BusinessCard.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
 
         if (!card) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
         }
 
         // Yetki kontrolü: Sadece sahibi veya admin güncelleyebilir
         if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
+            await t.rollback();
             return res.status(403).json({ error: 'Bu kartviziti güncelleme yetkiniz bulunmuyor.' });
         }
 
@@ -698,21 +700,25 @@ router.get('/:id/vcf', async (req, res) => {
 
 // Kart Sil (Soft Delete)
 router.delete('/:id', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
 
-        const card = await BusinessCard.findByPk(id);
+        const card = await BusinessCard.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
 
         if (!card) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
         }
 
         // Yetki kontrolü: Sadece sahibi veya admin silebilir
         if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
+            await t.rollback();
             return res.status(403).json({ error: 'Bu kartviziti silme yetkiniz bulunmuyor.' });
         }
 
         if (card.deletedAt) {
+            await t.rollback();
             return res.status(400).json({ error: 'Bu kartvizit zaten silinmiş.' });
         }
 
@@ -720,7 +726,7 @@ router.delete('/:id', async (req, res) => {
         await card.update({
             deletedAt: new Date(),
             deletedBy: req.user.id
-        });
+        }, { transaction: t });
 
         await logAction({
             action: 'CARD_SOFT_DELETE',
@@ -728,8 +734,10 @@ router.delete('/:id', async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json({ message: 'Kartvizit çöp kutusuna taşındı.' });
     } catch (error) {
+        await t.rollback();
         console.error('Soft delete error:', error);
         await logAction({
             action: 'CARD_DELETE_ERROR',
@@ -744,14 +752,16 @@ router.delete('/:id', async (req, res) => {
 
 // Toplu Silme (Soft Delete)
 router.post('/bulk-delete', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { ids } = req.body;
         if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            await t.rollback();
             return res.status(400).json({ error: 'ID listesi eksik.' });
         }
 
         const whereClause = { id: { [Op.in]: ids } };
-        
+
         // Yetki kontrolü (Normal kullanıcı sadece kendi kartlarını silebilir)
         if (req.user.role !== 'admin') {
             whereClause.ownerId = req.user.id;
@@ -760,7 +770,7 @@ router.post('/bulk-delete', async (req, res) => {
         const [updatedCount] = await BusinessCard.update({
             deletedAt: new Date(),
             deletedBy: req.user.id
-        }, { where: whereClause });
+        }, { where: whereClause, transaction: t });
 
         await logAction({
             action: 'CARD_BULK_DELETE',
@@ -768,8 +778,10 @@ router.post('/bulk-delete', async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json({ message: `${updatedCount} adet kart vizit başarıyla silindi.`, count: updatedCount });
     } catch (error) {
+        await t.rollback();
         console.error('Bulk delete error:', error);
         res.status(500).json({ error: 'Toplu silme sırasında bir hata oluştu.' });
     }
@@ -777,9 +789,11 @@ router.post('/bulk-delete', async (req, res) => {
 
 // Toplu Görünürlük Güncelleme
 router.post('/bulk-visibility', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { ids, visibility } = req.body;
         if (!ids || !Array.isArray(ids) || !['public', 'private'].includes(visibility)) {
+            await t.rollback();
             return res.status(400).json({ error: 'Geçersiz parametreler.' });
         }
 
@@ -788,7 +802,7 @@ router.post('/bulk-visibility', async (req, res) => {
             whereClause.ownerId = req.user.id;
         }
 
-        const [updatedCount] = await BusinessCard.update({ visibility }, { where: whereClause });
+        const [updatedCount] = await BusinessCard.update({ visibility }, { where: whereClause, transaction: t });
 
         await logAction({
             action: 'CARD_BULK_VISIBILITY',
@@ -796,8 +810,10 @@ router.post('/bulk-visibility', async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json({ message: 'Görünürlük başarıyla güncellendi.', count: updatedCount });
     } catch (error) {
+        await t.rollback();
         console.error('Bulk visibility error:', error);
         res.status(500).json({ error: 'Toplu güncelleme sırasında bir hata oluştu.' });
     }
@@ -877,27 +893,31 @@ router.get('/trash', async (req, res) => {
 
 // Kartı Geri Yükle
 router.post('/:id/restore', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const card = await BusinessCard.findByPk(id);
+        const card = await BusinessCard.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
 
         if (!card) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
         }
 
         if (!card.deletedAt) {
+            await t.rollback();
             return res.status(400).json({ error: 'Bu kartvizit silinmemiş.' });
         }
 
         // Yetki kontrolü: Sadece admin veya silme işlemini yapan kullanıcı geri yükleyebilir
         if (req.user.role !== 'admin' && card.deletedBy !== req.user.id) {
+            await t.rollback();
             return res.status(403).json({ error: 'Bu kartı geri yükleme yetkiniz yok.' });
         }
 
         await card.update({
             deletedAt: null,
             deletedBy: null
-        });
+        }, { transaction: t });
 
         await logAction({
             action: 'CARD_RESTORE',
@@ -905,8 +925,10 @@ router.post('/:id/restore', async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json({ message: 'Kartvizit geri yüklendi.', card });
     } catch (error) {
+        await t.rollback();
         console.error('Restore error:', error);
         res.status(500).json({ error: 'Kart geri yüklenirken bir hata oluştu.' });
     }
@@ -914,21 +936,24 @@ router.post('/:id/restore', async (req, res) => {
 
 // Kartı Kalıcı Olarak Sil
 router.delete('/:id/permanent', async (req, res) => {
+    const t = await sequelize.transaction();
     try {
         const { id } = req.params;
-        const card = await BusinessCard.findByPk(id);
+        const card = await BusinessCard.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
 
         if (!card) {
+            await t.rollback();
             return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
         }
 
         // Yetki kontrolü: Sadece admin veya silme işlemini yapan kullanıcı kalıcı silebilir
         if (req.user.role !== 'admin' && card.deletedBy !== req.user.id) {
+            await t.rollback();
             return res.status(403).json({ error: 'Bu kartı kalıcı olarak silme yetkiniz yok.' });
         }
 
         const cardInfo = `${card.firstName} ${card.lastName}`;
-        await card.destroy(); // Hard delete
+        await card.destroy({ transaction: t }); // Hard delete
 
         await logAction({
             action: 'CARD_PERMANENT_DELETE',
@@ -936,8 +961,10 @@ router.delete('/:id/permanent', async (req, res) => {
             req
         });
 
+        await t.commit();
         res.json({ message: 'Kartvizit kalıcı olarak silindi.' });
     } catch (error) {
+        await t.rollback();
         console.error('Permanent delete error:', error);
         res.status(500).json({ error: 'Kart kalıcı olarak silinemedi.' });
     }
