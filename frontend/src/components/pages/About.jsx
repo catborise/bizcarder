@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../api/axios';
+import api from '../../api/axios';
 import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush, FaLanguage } from 'react-icons/fa';
 
 const About = () => {

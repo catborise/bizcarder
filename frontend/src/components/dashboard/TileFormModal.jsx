@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import Modal from './Modal';
-import { hexToRgba, rgbaToHex } from '../utils/helpers';
+import Modal from '../shared/Modal';
+import { hexToRgba, rgbaToHex } from '../../utils/helpers';
 
 const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, onSave }) => {
     const { t } = useTranslation(['dashboard', 'common']);

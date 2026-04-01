@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
-import ConfirmModal from '../ConfirmModal';
+import ConfirmModal from '../shared/ConfirmModal';
 
 const inputStyle = {
     width: '100%',

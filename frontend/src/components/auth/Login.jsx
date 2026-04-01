@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
-import api, { API_URL } from '../api/axios';
+import { useAuth } from '../../context/AuthContext';
+import api, { API_URL } from '../../api/axios';
 import { FaUserLock, FaKey, FaEnvelope, FaUser, FaIdCard } from 'react-icons/fa';
 
 const Login = () => {

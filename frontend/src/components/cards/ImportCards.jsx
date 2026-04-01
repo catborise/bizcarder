@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
+import api from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
 import { FaFileUpload, FaDownload, FaExclamationTriangle, FaCheckCircle, FaSpinner, FaArrowLeft, FaAddressCard } from 'react-icons/fa';
 
 const ImportCards = () => {

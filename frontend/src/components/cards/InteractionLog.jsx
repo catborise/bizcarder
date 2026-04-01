@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
-import { useAuth } from '../context/AuthContext';
+import api from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
-import ConfirmModal from './ConfirmModal';
+import ConfirmModal from '../shared/ConfirmModal';
 import {
     FaPhone,
     FaHandshake,

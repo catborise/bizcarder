@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as Icons from 'react-icons/fa';
-import api, { API_URL as BASE_API_URL } from '../api/axios';
+import api, { API_URL as BASE_API_URL } from '../../api/axios';
 
 const QuickSearch = ({ isAuthenticated }) => {
     const { t } = useTranslation('dashboard');

@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
-import api, { API_URL } from '../api/axios';
-import { downloadFile } from '../utils/downloadHelper';
-import { useNotification } from '../context/NotificationContext';
+import api, { API_URL } from '../../api/axios';
+import { downloadFile } from '../../utils/downloadHelper';
+import { useNotification } from '../../context/NotificationContext';
 import { FaDownload, FaShareAlt, FaEdit, FaIdCard, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaCircle, FaCopy } from 'react-icons/fa';
-import AddCard from './AddCard';
-import Modal from './Modal';
-import QRCodeOverlay from './QRCodeOverlay';
-import { generateVCardString } from '../utils/vcardHelper';
+import AddCard from '../cards/AddCard';
+import Modal from '../shared/Modal';
+import QRCodeOverlay from '../shared/QRCodeOverlay';
+import { generateVCardString } from '../../utils/vcardHelper';
 
 const ContactRow = ({ icon: Icon, color, value, isLink }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>

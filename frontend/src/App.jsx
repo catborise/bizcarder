@@ -1,35 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import ActivityLogs from './components/ActivityLogs';
-import UserManagement from './components/UserManagement';
+import ActivityLogs from './components/admin/ActivityLogs';
+import UserManagement from './components/admin/UserManagement';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import NotificationBanner from './components/NotificationBanner';
-import ProtectedRoute from './components/ProtectedRoute';
-import Login from './components/Login';
-import UserMenu from './components/UserMenu';
+import NotificationBanner from './components/layout/NotificationBanner';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import Login from './components/auth/Login';
+import UserMenu from './components/layout/UserMenu';
 import api, { API_URL } from './api/axios';
 import { getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { ThemeProvider } from './context/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { AnimatePresence } from 'framer-motion';
-import PageTransition from './components/PageTransition';
-import BottomNav from './components/BottomNav';
-import FAB from './components/FAB';
+import PageTransition from './components/layout/PageTransition';
+import BottomNav from './components/layout/BottomNav';
+import FAB from './components/layout/FAB';
 
 
-import Dashboard from './components/Dashboard';
-import Settings from './components/Settings';
-import TrashBin from './components/TrashBin';
-import ImportCards from './components/ImportCards';
-import About from './components/About';
-import Help from './components/Help';
-import MyCard from './components/MyCard';
-import ContactProfile from './components/ContactProfile';
-import AccessDenied from './components/AccessDenied';
+import Dashboard from './components/dashboard/Dashboard';
+import Settings from './components/settings/Settings';
+import TrashBin from './components/admin/TrashBin';
+import ImportCards from './components/cards/ImportCards';
+import About from './components/pages/About';
+import Help from './components/pages/Help';
+import MyCard from './components/mycard/MyCard';
+import ContactProfile from './components/cards/ContactProfile';
+import AccessDenied from './components/auth/AccessDenied';
 import { FaTrash, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
 
-import Contacts from './components/Contacts';
+import Contacts from './components/cards/Contacts';
 
 // AppContent bileşeni - useAuth hook'unu kullanmak için AuthProvider içinde olması gerek
 const AppContent = () => {

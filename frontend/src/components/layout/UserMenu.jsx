@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { FaUser, FaSignOutAlt, FaChevronDown, FaUsers, FaCog, FaClipboardList, FaTrash, FaMoon, FaSun, FaGlobe } from 'react-icons/fa';
 
 const UserMenu = () => {

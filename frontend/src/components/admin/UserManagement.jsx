@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axios';
-import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
+import api from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
-import Modal from './Modal';
+import Modal from '../shared/Modal';
 import { FaSearch, FaUsers, FaUserShield, FaUser, FaCheck, FaClock, FaKey, FaFilter, FaTimesCircle, FaLock, FaSave, FaTimes, FaTrash, FaExchangeAlt } from 'react-icons/fa';
 
 const UserManagement = () => {

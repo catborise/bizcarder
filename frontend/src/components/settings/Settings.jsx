@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
-import { useAuth } from '../context/AuthContext';
-import PasswordChangeForm from './settings/PasswordChangeForm';
-import AISection from './settings/AISection';
-import SystemSection from './settings/SystemSection';
-import TagManagement from './settings/TagManagement';
+import api from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
+import PasswordChangeForm from './PasswordChangeForm';
+import AISection from './AISection';
+import SystemSection from './SystemSection';
+import TagManagement from './TagManagement';
 
 const Settings = () => {
     const { t } = useTranslation(['settings', 'common']);

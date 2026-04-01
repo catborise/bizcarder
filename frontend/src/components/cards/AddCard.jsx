@@ -3,11 +3,11 @@ import { FaStar, FaIdCard, FaBuilding, FaUser, FaEnvelope, FaPhone, FaGlobe, FaM
 import { useTranslation } from 'react-i18next';
 import Tesseract from 'tesseract.js';
 import PerspectiveCropper from './PerspectiveCropper';
-import { warpPerspective } from '../utils/perspectiveHelper';
-import api, { API_URL } from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
-import { queueForSync } from '../utils/offlineStore';
-import { useAuth } from '../context/AuthContext';
+import { warpPerspective } from '../../utils/perspectiveHelper';
+import api, { API_URL } from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
+import { queueForSync } from '../../utils/offlineStore';
+import { useAuth } from '../../context/AuthContext';
 
 // Helper: Canvas kullanarak resmi kırpma
 function canvasPreview(image, canvas, crop) {

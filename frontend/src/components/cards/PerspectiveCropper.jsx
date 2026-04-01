@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { detectCard } from '../utils/rectDetector';
+import { detectCard } from '../../utils/rectDetector';
 
 const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
     const containerRef = useRef(null);

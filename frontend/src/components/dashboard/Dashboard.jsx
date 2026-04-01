@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import * as Icons from 'react-icons/fa';
-import api, { API_URL as BASE_API_URL } from '../api/axios';
-import { useAuth } from '../context/AuthContext';
-import ReminderModal from './ReminderModal';
-import ConfirmModal from './ConfirmModal';
-import { useTheme } from '../context/ThemeContext';
+import api, { API_URL as BASE_API_URL } from '../../api/axios';
+import { useAuth } from '../../context/AuthContext';
+import ReminderModal from '../shared/ReminderModal';
+import ConfirmModal from '../shared/ConfirmModal';
+import { useTheme } from '../../context/ThemeContext';
 import QuickSearch from './QuickSearch';
 import TileFormModal from './TileFormModal';
-import useTiles from '../hooks/useTiles';
+import useTiles from '../../hooks/useTiles';
 
 const DynamicIcon = ({ name, size = 36 }) => {
     const IconComponent = Icons[name] || Icons.FaLink;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaHistory, FaUser, FaClock, FaPen, FaPlus, FaTrash, FaUndo } from 'react-icons/fa';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 const HistoryTimeline = ({ cardId }) => {
     const { t } = useTranslation(['pages', 'common']);

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaTrash, FaUndo, FaTrashRestore, FaClock } from 'react-icons/fa';
-import api from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
-import { useAuth } from '../context/AuthContext';
-import ConfirmModal from './ConfirmModal';
+import api from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
+import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../shared/ConfirmModal';
 
 const TrashBin = () => {
     const { t, i18n } = useTranslation(['pages', 'common']);

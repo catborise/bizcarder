@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 const ActivityLogs = () => {
     const { t } = useTranslation(['pages', 'common']);

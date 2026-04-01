@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import api, { API_URL } from '../api/axios';
-import { useNotification } from '../context/NotificationContext';
-import { saveCardsToOffline, getOfflineCards } from '../utils/offlineStore';
-import { downloadFile } from '../utils/downloadHelper';
+import api, { API_URL } from '../../api/axios';
+import { useNotification } from '../../context/NotificationContext';
+import { saveCardsToOffline, getOfflineCards } from '../../utils/offlineStore';
+import { downloadFile } from '../../utils/downloadHelper';
 import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode, FaStar, FaWhatsapp, FaAddressCard } from 'react-icons/fa';
-import EmptyState from './EmptyState';
+import EmptyState from '../shared/EmptyState';
 import SearchBar from './SearchBar';
-import Modal from './Modal';
-import ConfirmModal from './ConfirmModal';
-import QRCodeOverlay from './QRCodeOverlay';
+import Modal from '../shared/Modal';
+import ConfirmModal from '../shared/ConfirmModal';
+import QRCodeOverlay from '../shared/QRCodeOverlay';
 import HistoryTimeline from './HistoryTimeline';
 import AddCard from './AddCard';
 import InteractionLog from './InteractionLog';
-import { generateVCardString } from '../utils/vcardHelper';
+import { generateVCardString } from '../../utils/vcardHelper';
 
 import { motion, AnimatePresence } from 'framer-motion';
 

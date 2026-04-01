@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import api, { API_URL } from '../api/axios';
-import { downloadFile } from '../utils/downloadHelper';
-import { useNotification } from '../context/NotificationContext';
+import api, { API_URL } from '../../api/axios';
+import { downloadFile } from '../../utils/downloadHelper';
+import { useNotification } from '../../context/NotificationContext';
 import { FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaDownload, FaBuilding, FaUserCircle, FaQrcode } from 'react-icons/fa';
-import QRCodeOverlay from './QRCodeOverlay';
-import { generateVCardString } from '../utils/vcardHelper';
+import QRCodeOverlay from '../shared/QRCodeOverlay';
+import { generateVCardString } from '../../utils/vcardHelper';
 
 const ContactProfile = () => {
     const { t } = useTranslation(['pages', 'common']);
