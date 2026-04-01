@@ -5,10 +5,14 @@ const { cleanDatabase, createTestUser, createTestAdmin, createTestCard, getAuthA
 describe('Users Routes', () => {
     let admin, adminAgent;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         await cleanDatabase();
         admin = await createTestAdmin();
         adminAgent = await getAuthAgent(admin);
+    });
+
+    afterAll(async () => {
+        await cleanDatabase();
     });
 
     // ─── GET /api/users ────────────────────────────────────────────────────────
@@ -33,7 +37,7 @@ describe('Users Routes', () => {
         });
 
         test('non-admin gets 403', async () => {
-            const user = await createTestUser({ username: 'regular', email: 'reg@test.com' });
+            const user = await createTestUser({ username: 'regular_listtest', email: 'regular_listtest@test.com' });
             const userAgent = await getAuthAgent(user);
             const res = await userAgent.get('/api/users');
             expect(res.status).toBe(403);

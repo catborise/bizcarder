@@ -3,38 +3,42 @@ const app = require('../../server');
 const { cleanDatabase, createTestUser, createTestAdmin } = require('../helpers');
 
 describe('Auth Routes', () => {
-    beforeEach(async () => {
+    beforeAll(async () => {
+        await cleanDatabase();
+    });
+
+    afterAll(async () => {
         await cleanDatabase();
     });
 
     // ============== POST /auth/local/login ==============
     describe('POST /auth/local/login', () => {
         test('admin login with valid credentials returns 200 and user object', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'loginadmin', email: 'loginadmin@example.com' });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' });
+                .send({ username: 'loginadmin', password: 'Test1234!' });
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
             expect(res.body.user).toBeDefined();
-            expect(res.body.user.username).toBe('adminuser');
+            expect(res.body.user.username).toBe('loginadmin');
             expect(res.body.user.role).toBe('admin');
         });
 
         test('non-admin user login returns 403', async () => {
-            await createTestUser(); // role: 'user'
+            await createTestUser({ username: 'loginuser', email: 'loginuser@example.com' }); // role: 'user'
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'testuser', password: 'Test1234!' });
+                .send({ username: 'loginuser', password: 'Test1234!' });
             expect(res.status).toBe(403);
             expect(res.body.error).toBeDefined();
         });
 
         test('login with wrong password returns 401', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'wrongpwadmin', email: 'wrongpwadmin@example.com' });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'WrongPass' });
+                .send({ username: 'wrongpwadmin', password: 'WrongPass' });
             expect(res.status).toBe(401);
         });
 
@@ -46,10 +50,10 @@ describe('Auth Routes', () => {
         });
 
         test('unapproved admin login returns 403', async () => {
-            await createTestAdmin({ isApproved: false });
+            await createTestAdmin({ username: 'unapprovedadmin', email: 'unapprovedadmin@example.com', isApproved: false });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' });
+                .send({ username: 'unapprovedadmin', password: 'Test1234!' });
             expect(res.status).toBe(403);
             expect(res.body.error).toBeDefined();
         });
@@ -72,11 +76,11 @@ describe('Auth Routes', () => {
         });
 
         test('register with duplicate username returns 400', async () => {
-            await createTestUser();
+            await createTestUser({ username: 'dupeuser', email: 'dupeuser@example.com' });
             const res = await supertest(app)
                 .post('/auth/local/register')
                 .send({
-                    username: 'testuser',
+                    username: 'dupeuser',
                     email: 'other@test.com',
                     password: 'NewPass123!',
                     displayName: 'Dup'
@@ -86,12 +90,12 @@ describe('Auth Routes', () => {
         });
 
         test('register with duplicate email returns 400', async () => {
-            await createTestUser();
+            await createTestUser({ username: 'dupeemail', email: 'dupeemail@example.com' });
             const res = await supertest(app)
                 .post('/auth/local/register')
                 .send({
                     username: 'differentuser',
-                    email: 'test@example.com', // same as createTestUser default
+                    email: 'dupeemail@example.com',
                     password: 'NewPass123!'
                 });
             expect(res.status).toBe(400);
@@ -123,17 +127,17 @@ describe('Auth Routes', () => {
     // ============== GET /auth/me ==============
     describe('GET /auth/me', () => {
         test('authenticated admin gets profile with isAuthenticated: true', async () => {
-            const admin = await createTestAdmin();
+            await createTestAdmin({ username: 'meadmin', email: 'meadmin@example.com' });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' })
+                .send({ username: 'meadmin', password: 'Test1234!' })
                 .expect(200);
             const res = await agent.get('/auth/me');
             expect(res.status).toBe(200);
             expect(res.body.isAuthenticated).toBe(true);
             expect(res.body.user).toBeDefined();
-            expect(res.body.user.username).toBe('adminuser');
+            expect(res.body.user.username).toBe('meadmin');
             expect(res.body.user.role).toBe('admin');
         });
 
@@ -147,11 +151,11 @@ describe('Auth Routes', () => {
     // ============== POST /auth/logout ==============
     describe('POST /auth/logout', () => {
         test('authenticated admin can logout and receives success', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'logoutadmin', email: 'logoutadmin@example.com' });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' })
+                .send({ username: 'logoutadmin', password: 'Test1234!' })
                 .expect(200);
             const res = await agent.post('/auth/logout');
             expect(res.status).toBe(200);
@@ -159,11 +163,11 @@ describe('Auth Routes', () => {
         });
 
         test('after logout, /auth/me returns 401', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'afterlogoutadmin', email: 'afterlogoutadmin@example.com' });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' })
+                .send({ username: 'afterlogoutadmin', password: 'Test1234!' })
                 .expect(200);
             await agent.post('/auth/logout').expect(200);
             const res = await agent.get('/auth/me');
@@ -186,11 +190,11 @@ describe('Auth Routes', () => {
         });
 
         test('authenticated admin can change password with correct current password', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'changepwadmin', email: 'changepwadmin@example.com' });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' })
+                .send({ username: 'changepwadmin', password: 'Test1234!' })
                 .expect(200);
             const res = await agent
                 .put('/auth/change-password')
@@ -200,11 +204,11 @@ describe('Auth Routes', () => {
         });
 
         test('wrong current password returns 400', async () => {
-            await createTestAdmin();
+            await createTestAdmin({ username: 'wrongcurrentpw', email: 'wrongcurrentpw@example.com' });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'adminuser', password: 'Test1234!' })
+                .send({ username: 'wrongcurrentpw', password: 'Test1234!' })
                 .expect(200);
             const res = await agent
                 .put('/auth/change-password')

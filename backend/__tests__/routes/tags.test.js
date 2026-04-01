@@ -5,17 +5,21 @@ const { cleanDatabase, createTestUser, createTestTag, getAuthAgent } = require('
 describe('Tags Routes', () => {
     let user, agent;
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         await cleanDatabase();
         user = await createTestUser();
         agent = await getAuthAgent(user);
+    });
+
+    afterAll(async () => {
+        await cleanDatabase();
     });
 
     // ─── GET /api/tags ─────────────────────────────────────────────────────────
 
     describe('GET /api/tags', () => {
         test('returns all tags for authenticated user', async () => {
-            await createTestTag(user.id);
+            await createTestTag(user.id, { name: 'GetTagsTest' });
             const res = await agent.get('/api/tags');
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
@@ -42,14 +46,14 @@ describe('Tags Routes', () => {
 
     describe('GET /api/tags/stats', () => {
         test('returns tag usage statistics', async () => {
-            await createTestTag(user.id);
+            await createTestTag(user.id, { name: 'StatsTag' });
             const res = await agent.get('/api/tags/stats');
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
         });
 
         test('stats entries include id, name, color, and cardCount', async () => {
-            await createTestTag(user.id);
+            await createTestTag(user.id, { name: 'StatsFieldsTag' });
             const res = await agent.get('/api/tags/stats');
             expect(res.status).toBe(200);
             if (res.body.length > 0) {
@@ -107,7 +111,7 @@ describe('Tags Routes', () => {
 
     describe('PUT /api/tags/:id', () => {
         test('owner can update their own tag', async () => {
-            const tag = await createTestTag(user.id);
+            const tag = await createTestTag(user.id, { name: 'TagToUpdate' });
             const res = await agent
                 .put(`/api/tags/${tag.id}`)
                 .send({ name: 'Updated', color: '#0000ff' });
@@ -124,8 +128,8 @@ describe('Tags Routes', () => {
         });
 
         test('rejects update of another users tag with 403', async () => {
-            const other = await createTestUser({ username: 'other', email: 'other@test.com' });
-            const tag = await createTestTag(other.id);
+            const other = await createTestUser({ username: 'otherupdatetag', email: 'otherupdatetag@test.com' });
+            const tag = await createTestTag(other.id, { name: 'OtherTag' });
             const res = await agent
                 .put(`/api/tags/${tag.id}`)
                 .send({ name: 'Hacked' });
@@ -133,7 +137,7 @@ describe('Tags Routes', () => {
         });
 
         test('unauthenticated returns 401', async () => {
-            const tag = await createTestTag(user.id);
+            const tag = await createTestTag(user.id, { name: 'UnauthUpdateTag' });
             const res = await supertest(app)
                 .put(`/api/tags/${tag.id}`)
                 .send({ name: 'Ghost' });
@@ -145,7 +149,7 @@ describe('Tags Routes', () => {
 
     describe('DELETE /api/tags/:id', () => {
         test('owner can delete their own tag', async () => {
-            const tag = await createTestTag(user.id);
+            const tag = await createTestTag(user.id, { name: 'TagToDelete' });
             const res = await agent.delete(`/api/tags/${tag.id}`);
             expect(res.status).toBe(200);
             expect(res.body.message).toBeDefined();
@@ -158,13 +162,13 @@ describe('Tags Routes', () => {
 
         test('rejects deletion of another users tag with 403', async () => {
             const other = await createTestUser({ username: 'tagowner', email: 'to@test.com' });
-            const tag = await createTestTag(other.id);
+            const tag = await createTestTag(other.id, { name: 'OtherOwnerTag' });
             const res = await agent.delete(`/api/tags/${tag.id}`);
             expect(res.status).toBe(403);
         });
 
         test('unauthenticated returns 401', async () => {
-            const tag = await createTestTag(user.id);
+            const tag = await createTestTag(user.id, { name: 'UnauthDeleteTag' });
             const res = await supertest(app).delete(`/api/tags/${tag.id}`);
             expect(res.status).toBe(401);
         });

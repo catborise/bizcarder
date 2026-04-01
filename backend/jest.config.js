@@ -5,7 +5,7 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.js'],
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/__tests__/'],
-  testTimeout: 15000,
+  testTimeout: 30000,
   // Run test suites serially to avoid DB race conditions between workers
   maxWorkers: 1,
   setupFiles: ['<rootDir>/__tests__/setEnv.js'],

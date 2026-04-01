@@ -68,19 +68,12 @@ async function getAuthAgent(user) {
 
 async function cleanDatabase() {
     const sequelize = require('../config/database');
-    // Truncate all tables in correct order (respecting FK constraints)
-    const tables = ['BusinessCardTags', 'BusinessCardHistories', 'Interactions', 'BusinessCards', 'Tags', 'AuditLogs', 'DashboardTiles', 'SystemSettings', 'Users'];
-    for (const table of tables) {
-        try {
-            await sequelize.query(`TRUNCATE TABLE "${table}" RESTART IDENTITY CASCADE`);
-        } catch (e) {
-            // Table might not exist yet, skip
-        }
-    }
-    // Also truncate Sessions if it exists
-    try {
-        await sequelize.query('TRUNCATE TABLE "Sessions" RESTART IDENTITY CASCADE');
-    } catch (e) {}
+    await sequelize.query(`
+        TRUNCATE TABLE "BusinessCardTags", "BusinessCardHistories", "Interactions",
+        "BusinessCards", "Tags", "AuditLogs", "DashboardTiles", "SystemSettings", "Users"
+        RESTART IDENTITY CASCADE
+    `).catch(() => {});
+    try { await sequelize.query('TRUNCATE TABLE "Sessions" RESTART IDENTITY CASCADE'); } catch(e) {}
 }
 
 module.exports = { createTestUser, createTestAdmin, createTestCard, createTestTag, getAuthAgent, cleanDatabase };
