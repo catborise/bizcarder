@@ -44,10 +44,25 @@ async function createTestTag(ownerId, overrides = {}) {
 
 async function getAuthAgent(user) {
     const agent = supertest.agent(app);
+
+    // Local login only allows admin users. For test users with role='user',
+    // temporarily promote to admin to authenticate, then revert the role.
+    // Passport serializes only the user ID; on subsequent requests it
+    // deserializes from the DB, so the reverted role takes effect immediately.
+    const originalRole = user.role;
+    if (user.role !== 'admin') {
+        await user.update({ role: 'admin' });
+    }
+
     await agent
         .post('/auth/local/login')
         .send({ username: user.username, password: 'Test1234!' })
         .expect(200);
+
+    if (originalRole !== 'admin') {
+        await user.update({ role: originalRole });
+    }
+
     return agent;
 }
 
