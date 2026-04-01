@@ -6,6 +6,53 @@ const fs = require('fs');
 const path = require('path');
 
 /**
+ * RFC 4180 compliant CSV parser — handles quoted fields with commas and newlines
+ */
+function parseCSV(text) {
+    const rows = [];
+    let current = [];
+    let field = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+            if (ch === '"' && next === '"') {
+                field += '"';
+                i++; // skip escaped quote
+            } else if (ch === '"') {
+                inQuotes = false;
+            } else {
+                field += ch;
+            }
+        } else {
+            if (ch === '"') {
+                inQuotes = true;
+            } else if (ch === ',') {
+                current.push(field);
+                field = '';
+            } else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+                current.push(field);
+                rows.push(current);
+                current = [];
+                field = '';
+                if (ch === '\r') i++; // skip \n after \r
+            } else {
+                field += ch;
+            }
+        }
+    }
+    // Last field/row
+    if (field || current.length > 0) {
+        current.push(field);
+        rows.push(current);
+    }
+    return rows;
+}
+
+/**
  * Downloads a template for bulk importing cards.
  */
 exports.downloadTemplate = async (req, res) => {
@@ -110,12 +157,11 @@ exports.importCards = async (req, res) => {
             });
         } else if (extension === '.csv') {
             const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
-            const lines = content.split(/\r?\n/);
-            const headers = lines[0].split(',');
+            const rows = parseCSV(content);
 
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                const values = lines[i].split(',');
+            for (let i = 1; i < rows.length; i++) {
+                const values = rows[i];
+                if (!values || values.length === 0 || (values.length === 1 && !values[0].trim())) continue;
                 const cardData = {
                     firstName: (values[0] || '').trim(),
                     lastName: (values[1] || '').trim(),

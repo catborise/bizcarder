@@ -158,9 +158,6 @@ const Contacts = () => {
         setExpandedCardId(expandedCardId === id ? null : id);
     };
 
-    const toggleNotes = (id) => {
-        setExpandedNotesId(expandedNotesId === id ? null : id);
-    };
 
     const handleDeleteClick = (card) => {
         setDeleteConfirmCard(card);

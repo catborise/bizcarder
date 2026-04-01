@@ -27,9 +27,30 @@ JSON formatı şu şekilde olmalıdır:
 
 NOTLAR:
 1. "corners" alanında, kartın gerçek köşelerini (kırpılacak alan) resmin genişlik ve yüksekliğine oranla %0-100 arasında tahmin et.
-2. Eğer bilgi bulunamazsa boş string bırak. 
+2. Eğer bilgi bulunamazsa boş string bırak.
 3. Dil Türkçe'dir.
 4. Yanıt SADECE geçerli bir JSON objesi olmalıdır.`;
+
+/**
+ * Safely parse AI response text that may contain markdown wrappers or preamble
+ */
+function safeParseAIResponse(text) {
+    if (!text) throw new Error('Empty AI response');
+
+    // Strip markdown code fences (```json ... ``` or ``` ... ```)
+    let cleaned = text.replace(/```(?:json)?\s*\n?/gi, '').replace(/\n?\s*```/g, '').trim();
+
+    // If response starts with non-JSON preamble, try to find the JSON object
+    if (!cleaned.startsWith('{')) {
+        const jsonStart = cleaned.indexOf('{');
+        if (jsonStart === -1) throw new Error('No JSON object found in AI response');
+        const jsonEnd = cleaned.lastIndexOf('}');
+        if (jsonEnd === -1) throw new Error('Incomplete JSON object in AI response');
+        cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+    }
+
+    return JSON.parse(cleaned);
+}
 
 const analyzeWithAI = async (req, res) => {
     try {
@@ -62,7 +83,7 @@ const analyzeWithAI = async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        console.error('AI OCR Error Details:', error.response?.data || error.message);
+        console.error('AI OCR Error:', error.response?.data || error.message);
 
         let errorMessage = 'AI analizi sırasında bir hata oluştu.';
         const apiError = error.response?.data?.error;
@@ -71,17 +92,16 @@ const analyzeWithAI = async (req, res) => {
             errorMessage = 'AI Sağlayıcı Kotası Dolu: Lütfen API kredilerinizi kontrol edin veya farklı bir sağlayıcı deneyin.';
         } else if (error.response?.status === 401 || error.response?.status === 403) {
             errorMessage = 'API Anahtarı Geçersiz: Lütfen ayarlar sayfasından API anahtarınızı kontrol edin.';
+        } else if (error instanceof SyntaxError) {
+            errorMessage = 'AI yanıtı geçerli JSON değildi. Lütfen tekrar deneyin.';
         } else if (apiError?.message) {
             errorMessage = `AI Sağlayıcı Hatası: ${apiError.message}`;
         } else {
             errorMessage = `Sistem Hatası: ${error.message}`;
         }
 
-        res.status(error.response?.status || 500).json({
-            error: errorMessage
-        });
+        res.status(error.response?.status || 500).json({ error: errorMessage });
     } finally {
-        // Geçici dosyayı sil (isteğe bağlı, multer diskStorage kullanıyorsa)
         if (req.file && req.file.path) {
             try { fs.unlinkSync(req.file.path); } catch (e) { }
         }
@@ -91,27 +111,19 @@ const analyzeWithAI = async (req, res) => {
 async function analyzeWithOpenAI(base64, apiKey) {
     const response = await axios.post('https://api.openai.com/v1/chat/completions', {
         model: "gpt-4o-mini",
-        messages: [
-            {
-                role: "user",
-                content: [
-                    { type: "text", text: PROMPT },
-                    {
-                        type: "image_url",
-                        image_url: { url: `data:image/jpeg;base64,${base64}` }
-                    }
-                ]
-            }
-        ],
+        messages: [{
+            role: "user",
+            content: [
+                { type: "text", text: PROMPT },
+                { type: "image_url", image_url: { url: `data:image/jpeg;base64,${base64}` } }
+            ]
+        }],
         response_format: { type: "json_object" }
     }, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' }
     });
 
-    return JSON.parse(response.data.choices[0].message.content);
+    return safeParseAIResponse(response.data.choices[0].message.content);
 }
 
 async function analyzeWithGemini(base64, apiKey) {
@@ -119,50 +131,30 @@ async function analyzeWithGemini(base64, apiKey) {
         contents: [{
             parts: [
                 { text: PROMPT + " Yanıt sadece temiz bir JSON olmalı, markdown backtickleri içermemeli." },
-                {
-                    inline_data: {
-                        mime_type: "image/jpeg",
-                        data: base64
-                    }
-                }
+                { inline_data: { mime_type: "image/jpeg", data: base64 } }
             ]
         }]
     });
 
-    let text = response.data.candidates[0].content.parts[0].text;
-    // Markdown temizliği (eğer gelirse)
-    text = text.replace(/```json\n?|\n?```/g, '').trim();
-    return JSON.parse(text);
+    return safeParseAIResponse(response.data.candidates[0].content.parts[0].text);
 }
 
 async function analyzeWithClaude(base64, apiKey) {
     const response = await axios.post('https://api.anthropic.com/v1/messages', {
-        model: "claude-3-haiku-20240307",
+        model: "claude-sonnet-4-20250514",
         max_tokens: 1024,
         messages: [{
             role: "user",
             content: [
-                {
-                    type: "image",
-                    source: {
-                        type: "base64",
-                        media_type: "image/jpeg",
-                        data: base64
-                    }
-                },
+                { type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } },
                 { type: "text", text: PROMPT + " Yanıt sadece JSON formatında olsun." }
             ]
         }]
     }, {
-        headers: {
-            'x-api-key': apiKey,
-            'anthropic-version': '2023-06-01',
-            'Content-Type': 'application/json'
-        }
+        headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' }
     });
 
-    const text = response.data.content[0].text;
-    return JSON.parse(text);
+    return safeParseAIResponse(response.data.content[0].text);
 }
 
 module.exports = { analyzeWithAI };
