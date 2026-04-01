@@ -148,74 +148,11 @@ app.use('/uploads', express.static('uploads'));
 // Rotalar
 app.use('/auth', authRoutes);
 
-// Public Dashboard Stats
-app.get('/api/cards/stats', async (req, res) => {
-    try {
-        const { BusinessCard } = require('./models');
-        const count = await BusinessCard.count({ where: { deletedAt: null } });
-        res.json({ totalCards: count });
-    } catch (error) {
-        console.error("Stats fetch error:", error);
-        res.status(500).json({ error: 'İstatistikler alınamadı.' });
-    }
-});
+// Public routes (no auth required)
+app.use(require('./routes/public'));
 
 // Public Dashboard Tiles
 app.use('/api/db-tiles', require('./routes/dashboardTiles'));
-
-// Public Card View (sharingToken üzerinden)
-app.get('/api/cards/public/:token', async (req, res) => {
-    try {
-        const { BusinessCard, Tag, User } = require('./models');
-        const card = await BusinessCard.findOne({
-            where: {
-                sharingToken: req.params.token,
-                deletedAt: null,
-                visibility: 'public'
-            },
-            include: [
-                { model: Tag, as: 'tags', through: { attributes: [] } },
-                { model: User, as: 'owner', attributes: ['displayName'] }
-            ]
-        });
-
-        if (!card) {
-            return res.status(404).json({ error: 'Kartvizit bulunamadı veya paylaşım gizli.' });
-        }
-
-        res.json(card);
-    } catch (error) {
-        console.error("Public card error:", error);
-        res.status(500).json({ error: 'Kartvizit bilgileri alınamadı.' });
-    }
-});
-
-// vCard (Public Download via Token)
-app.get('/api/cards/public/:token/vcf', async (req, res) => {
-    try {
-        const { BusinessCard } = require('./models');
-        const { generateVCard } = require('./utils/vcard');
-        const card = await BusinessCard.findOne({
-            where: {
-                sharingToken: req.params.token,
-                deletedAt: null,
-                visibility: 'public'
-            }
-        });
-
-        if (!card) return res.status(404).json({ error: 'vCard bulunamadı.' });
-
-        const vCardContent = generateVCard(card);
-        const fileName = `${card.firstName}_${card.lastName}.vcf`.replace(/\s+/g, '_');
-
-        res.setHeader('Content-Type', 'text/vcard');
-        res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(fileName)}"`);
-        res.send(vCardContent);
-    } catch (error) {
-        console.error("Public vcf error:", error);
-        res.status(500).json({ error: 'vCard dosyası oluşturulamadı.' });
-    }
-});
 
 // Korumalı rotalar - Oturum açmış kullanıcılar gereklidir
 app.use('/api/cards', requireAuth, require('./routes/cards'));
@@ -247,9 +184,12 @@ app.use((err, req, res, next) => {
 });
 
 // Sunucuyu Başlat ve DB'ye Bağlan
-app.listen(port, () => {
-    logger.info(`Sunucu ${port} portunda çalışıyor...`);
-    connectDatabase();
-    startAutoCleanup();
-    console.log('Otomatik çöp kutusu temizleme aktif.');
-});
+const startServer = async () => {
+    await connectDatabase();
+    app.listen(port, () => {
+        logger.info(`Sunucu ${port} portunda çalışıyor...`);
+        startAutoCleanup();
+        console.log('Otomatik çöp kutusu temizleme aktif.');
+    });
+};
+startServer();

@@ -9,30 +9,7 @@ import ReminderModal from './ReminderModal';
 import ConfirmModal from './ConfirmModal';
 import { useTheme } from '../context/ThemeContext';
 import { useNotification } from '../context/NotificationContext';
-
-const hexToRgba = (hex, alpha = 0.3) => {
-    let r = 0, g = 0, b = 0;
-    if (hex.length === 4) {
-        r = parseInt(hex[1] + hex[1], 16);
-        g = parseInt(hex[2] + hex[2], 16);
-        b = parseInt(hex[3] + hex[3], 16);
-    } else if (hex.length === 7) {
-        r = parseInt(hex[1] + hex[2], 16);
-        g = parseInt(hex[3] + hex[4], 16);
-        b = parseInt(hex[5] + hex[6], 16);
-    }
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-};
-
-const rgbaToHex = (rgba) => {
-    if (!rgba || !rgba.startsWith('rgba')) return 'var(--accent-primary)';
-    const parts = rgba.match(/(\d+)/g);
-    if (!parts || parts.length < 3) return 'var(--accent-primary)';
-    const r = parseInt(parts[0]).toString(16).padStart(2, '0');
-    const g = parseInt(parts[1]).toString(16).padStart(2, '0');
-    const b = parseInt(parts[2]).toString(16).padStart(2, '0');
-    return `#${r}${g}${b}`;
-};
+import { hexToRgba, rgbaToHex } from '../utils/helpers';
 
 
 const DynamicIcon = ({ name, size = 36 }) => {
@@ -471,21 +448,6 @@ const Dashboard = () => {
     };
 
 
-    const handleMouseEnter = (e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)';
-        e.currentTarget.style.background = 'var(--glass-bg-hover)';
-        e.currentTarget.style.borderColor = 'var(--accent-primary)';
-    };
-
-
-    const handleMouseLeave = (e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'var(--glass-shadow)';
-        e.currentTarget.style.background = 'var(--glass-bg)';
-        e.currentTarget.style.borderColor = 'var(--glass-border)';
-    };
-
     return (
         <div className="fade-in">
             {settings?.appBanner && (
@@ -649,7 +611,7 @@ const Dashboard = () => {
             {/* İstatistikler (Glass Container) */}
             <div className="dashboard-stats-grid stagger-enter" style={{ animationDelay: '0.1s' }}>
                 {/* Total Cards */}
-                <div style={{
+                <div className="hover-lift" style={{
                     background: 'var(--gradient-primary)',
                     border: '1px solid var(--gradient-primary-border)',
                     borderRadius: '12px',
@@ -659,10 +621,7 @@ const Dashboard = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     boxShadow: 'var(--glass-shadow)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                }}>
                     <div>
                         <p style={{
                             margin: '0 0 6px 0',
@@ -698,7 +657,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* This Week */}
-                <div style={{
+                <div className="hover-lift" style={{
                     background: 'var(--gradient-blue)',
                     border: '1px solid var(--gradient-blue-border)',
                     borderRadius: '12px',
@@ -708,10 +667,7 @@ const Dashboard = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     boxShadow: 'var(--glass-shadow)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                }}>
                     <div>
                         <p style={{
                             margin: '0 0 6px 0',
@@ -747,7 +703,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Reminders */}
-                <div style={{
+                <div className="hover-lift" style={{
                     background: 'var(--gradient-warning)',
                     border: '1px solid var(--gradient-warning-border)',
                     borderRadius: '12px',
@@ -757,12 +713,9 @@ const Dashboard = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     boxShadow: 'var(--glass-shadow)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
                     cursor: 'pointer',
                 }}
-                onClick={() => navigate('/contacts?filter=reminders')}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                onClick={() => navigate('/contacts?filter=reminders')}>
                     <div>
                         <p style={{
                             margin: '0 0 6px 0',
@@ -798,7 +751,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Follow-ups */}
-                <div style={{
+                <div className="hover-lift" style={{
                     background: 'var(--gradient-success)',
                     border: '1px solid var(--gradient-success-border)',
                     borderRadius: '12px',
@@ -808,10 +761,7 @@ const Dashboard = () => {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     boxShadow: 'var(--glass-shadow)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}>
+                }}>
                     <div>
                         <p style={{
                             margin: '0 0 6px 0',
@@ -870,6 +820,7 @@ const Dashboard = () => {
                         <Link
                             key={tag.id}
                             to={`/contacts?tagId=${tag.id}`}
+                            className="hover-lift"
                             style={{
                                 padding: '4px 12px',
                                 borderRadius: '6px',
@@ -882,16 +833,9 @@ const Dashboard = () => {
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '6px',
-                                transition: 'all 0.2s ease',
                             }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = tag.color + '33';
-                                e.currentTarget.style.transform = 'translateY(-1px)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = tag.color + '1A';
-                                e.currentTarget.style.transform = 'translateY(0)';
-                            }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = tag.color + '33'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = tag.color + '1A'; }}
                         >
                             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: tag.color }} />
                             {tag.name}
@@ -922,7 +866,7 @@ const Dashboard = () => {
                             <Link
                                 key={tile.id}
                                 to={tile.url}
-                                className="stagger-enter"
+                                className="stagger-enter hover-lift"
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
@@ -933,12 +877,9 @@ const Dashboard = () => {
                                     borderRadius: '12px',
                                     textDecoration: 'none',
                                     color: 'var(--text-primary)',
-                                    transition: 'all 0.2s ease',
                                     boxShadow: 'var(--glass-shadow)',
                                     animationDelay: `${i * 0.08}s`,
                                 }}
-                                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--glass-shadow)'; }}
                             >
                                 <div style={{
                                     width: '40px', height: '40px',
@@ -975,9 +916,8 @@ const Dashboard = () => {
                                 <div key={tile.id} className="stagger-enter" style={{ position: 'relative', animationDelay: `${i * 0.08}s` }}>
                                     <TileWrapper
                                         {...wrapperProps}
+                                        className="hover-lift"
                                         style={{ ...tileStyle, background: tile.backgroundColor }}
-                                        onMouseEnter={handleMouseEnter}
-                                        onMouseLeave={handleMouseLeave}
                                         onClick={(e) => {
                                             if (tile.url === '#') e.preventDefault();
                                         }}

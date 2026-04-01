@@ -114,12 +114,12 @@ exports.downloadTemplate = async (req, res) => {
  * Processes the uploaded import file.
  */
 exports.importCards = async (req, res) => {
+    const filePath = req.file?.path;
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Dosya yüklenmedi.' });
         }
 
-        const filePath = req.file.path;
         const extension = path.extname(req.file.originalname).toLowerCase();
         let cardsToCreate = [];
         let errors = [];
@@ -241,9 +241,6 @@ exports.importCards = async (req, res) => {
             });
         }
 
-        // Clean up temp file
-        fs.unlinkSync(filePath);
-
         if (cardsToCreate.length > 0) {
             await BusinessCard.bulkCreate(cardsToCreate);
             await logAction({
@@ -263,6 +260,11 @@ exports.importCards = async (req, res) => {
     } catch (error) {
         console.error('Import processing error:', error);
         res.status(500).json({ error: 'Dosya işlenirken teknik bir hata oluştu.' });
+    } finally {
+        // Always clean up the temp file, even if an exception occurred during parsing
+        if (filePath) {
+            try { fs.unlinkSync(filePath); } catch (e) { }
+        }
     }
 };
 
