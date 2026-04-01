@@ -1,47 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaStar, FaIdCard, FaBuilding, FaUser, FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaTags, FaClock, FaEye } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaStar } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
-import Tesseract from 'tesseract.js';
 import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../../utils/perspectiveHelper';
 import api, { API_URL } from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { queueForSync } from '../../utils/offlineStore';
 import { useAuth } from '../../context/AuthContext';
-
-// Helper: Canvas kullanarak resmi kırpma
-function canvasPreview(image, canvas, crop) {
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-        return;
-    }
-
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
-    const pixelRatio = window.devicePixelRatio;
-
-    canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
-    canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
-
-    ctx.scale(pixelRatio, pixelRatio);
-    ctx.imageSmoothingQuality = 'high';
-
-    const cropX = crop.x * scaleX;
-    const cropY = crop.y * scaleY;
-
-    ctx.translate(-cropX, -cropY);
-    ctx.drawImage(
-        image,
-        0,
-        0,
-        image.naturalWidth,
-        image.naturalHeight,
-        0,
-        0,
-        image.naturalWidth,
-        image.naturalHeight,
-    );
-}
+import useCardCamera from '../../hooks/useCardCamera';
+import useCardOcr from '../../hooks/useCardOcr';
+import { loadDraft, clearDraft, useCardDraft } from '../../hooks/useCardDraft';
+import CameraModal from './CameraModal';
+import OcrConfirmModal from './OcrConfirmModal';
+import DuplicateAlertModal from './DuplicateAlertModal';
 
 const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const { showNotification } = useNotification();
@@ -64,10 +35,6 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [logoBlob, setLogoBlob] = useState(null);
     const [logoTempSrc, setLogoTempSrc] = useState(null); // Logo kırpmak için kullanılan kaynak resim
     const [showLogoCrop, setShowLogoCrop] = useState(false);
-
-    const imgRef = useRef(null);
-
-    const [ocrLoading, setOcrLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         firstName: '',
@@ -97,20 +64,27 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [currentStep, setCurrentStep] = useState(1); // Wizard step: 1 or 2
     const [showMoreFields, setShowMoreFields] = useState(false);
 
-    const [ocrResults, setOcrResults] = useState(null); // Geçici OCR sonuçları
-    const [showOcrConfirm, setShowOcrConfirm] = useState(false); // Onay ekranı kontrolü
-
     const [duplicateCard, setDuplicateCard] = useState(null);
     const [showDuplicateAlert, setShowDuplicateAlert] = useState(false);
     const [ignoreDuplicate, setIgnoreDuplicate] = useState(false);
 
-    // Kamera Modalı Durumu
-    const [showCameraModal, setShowCameraModal] = useState(false);
-    const [cameraSide, setCameraSide] = useState(null); // 'front' or 'back'
-    const [cameraReady, setCameraReady] = useState(false);
-    const [cameraError, setCameraError] = useState(null);
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
+    // OCR — state ve mantık useCardOcr hook'unda
+    const ocr = useCardOcr({ user, showNotification, t });
+
+    // Kamera — tüm durum ve mantık useCardCamera hook'unda
+    const camera = useCardCamera({
+        onCapture: async (file, side) => {
+            const url = URL.createObjectURL(file);
+            setSrc(url);
+            setActiveSide(side);
+            ocr.setAiDetectedPoints(null);
+            ocr.setPreFetchedAiData(null);
+
+            if (user?.aiOcrEnabled) {
+                await ocr.detectAiBoundary(file);
+            }
+        }
+    });
 
     // Düzenleme Modu: Verileri Yükle
     useEffect(() => {
@@ -141,27 +115,17 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             if (activeCard.logoUrl) setLogoPreview(`${API_URL}${activeCard.logoUrl}`);
         } else {
             // Yeni kart ekleme modundaysak taslağı yükle
-            const savedDraft = localStorage.getItem('bizcard_draft');
-            if (savedDraft) {
-                try {
-                    const draftData = JSON.parse(savedDraft);
-                    setFormData(prev => ({ ...prev, ...draftData }));
-                } catch (e) {
-                    console.error('Taslak yüklenirken hata:', e);
-                }
+            const draftData = loadDraft();
+            if (draftData) {
+                setFormData(prev => ({ ...prev, ...draftData }));
             }
         }
 
         fetchTags();
     }, [activeCard]);
 
-    // Taslağı Kaydet
-    useEffect(() => {
-        // Sadece yeni kart eklerken kaydet (düzenleme modunda taslağı bozmayalım)
-        if (!activeCard) {
-            localStorage.setItem('bizcard_draft', JSON.stringify(formData));
-        }
-    }, [formData, activeCard]);
+    // Auto-save draft via hook
+    useCardDraft(formData, activeCard);
 
     // Düzenleme modunda ikincil alanları otomatik göster
     useEffect(() => {
@@ -224,224 +188,17 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     };
 
 
-    // Kamera Başlatma
-    const startCamera = async (side) => {
-        setCameraReady(false);
-        setCameraError(null);
-
-        // getUserMedia desteği yoksa native file input'a fallback
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            setCameraError('no-support');
-            return;
-        }
-
-        try {
-            // İlk olarak arka kamerayı dene, başarısız olursa herhangi bir kamerayı dene
-            let stream;
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: { exact: 'environment' },
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
-                    audio: false
-                });
-            } catch {
-                // exact: environment başarısız olduysa fallback
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 }
-                    },
-                    audio: false
-                });
-            }
-
-            streamRef.current = stream;
-
-            // Video element'inin render edilmesini bekle
-            const waitForVideo = () => {
-                return new Promise((resolve) => {
-                    const check = () => {
-                        if (videoRef.current) {
-                            resolve();
-                        } else {
-                            requestAnimationFrame(check);
-                        }
-                    };
-                    check();
-                });
-            };
-            await waitForVideo();
-
-            videoRef.current.srcObject = stream;
-            await videoRef.current.play();
-            setCameraReady(true);
-        } catch (err) {
-            console.error('Kamera erişim hatası:', err);
-
-            // Stream alındıysa temizle
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-                streamRef.current = null;
-            }
-
-            if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                setCameraError('permission');
-            } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                setCameraError('not-found');
-            } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
-                setCameraError('in-use');
-            } else {
-                setCameraError('unknown');
-            }
-        }
-    };
-
-    const stopCameraStream = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-        setCameraReady(false);
-        setCameraError(null);
-    };
-
-    const closeCamera = () => {
-        stopCameraStream();
-        setShowCameraModal(false);
-    };
-
-    const fallbackToFileInput = (side) => {
-        closeCamera();
-        // Native kamera capture input'unu kullan (mobilde doğrudan kamera açar)
-        const inputId = side === 'front' ? 'frontCamera' : 'backCamera';
-        const el = document.getElementById(inputId);
-        if (el) {
-            el.click();
-        } else {
-            // Camera input yoksa normal file input'u aç
-            document.getElementById(side === 'front' ? 'frontInput' : 'backInput')?.click();
-        }
-    };
-
-    const capturePhoto = () => {
-        if (!videoRef.current || videoRef.current.readyState < 2) {
-            showNotification(t('addCard.camera.notReady'), 'warning');
-            return;
-        }
-
-        const canvas = document.createElement('canvas');
-        const video = videoRef.current;
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0);
-
-        canvas.toBlob(async (blob) => {
-            if (!blob) return;
-
-            const capturedSide = cameraSide;
-
-            // Kamerayı kapat
-            stopCameraStream();
-            setShowCameraModal(false);
-
-            // onSelectFile ile aynı akışa gir: src → PerspectiveCropper → handleCropComplete
-            const url = URL.createObjectURL(blob);
-            setSrc(url);
-            setActiveSide(capturedSide);
-            setAiDetectedPoints(null);
-            setPreFetchedAiData(null);
-
-            // AI boundary detection (dosya seçimiyle aynı mantık)
-            if (user?.aiOcrEnabled) {
-                const file = new File([blob], `camera_${capturedSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-                await detectAiBoundary(file);
-            }
-        }, 'image/jpeg', 0.92);
-    };
-
-    const openCamera = (side) => {
-        // getUserMedia desteği yoksa direkt native kamera input'una yönlendir
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            fallbackToFileInput(side);
-            return;
-        }
-        setCameraSide(side);
-        setShowCameraModal(true);
-    };
-
-    useEffect(() => {
-        if (showCameraModal && cameraSide) {
-            startCamera(cameraSide);
-        }
-        return () => {
-            // Cleanup: sadece stream'i kapat, state değiştirme
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
-                streamRef.current = null;
-            }
-        };
-    }, [showCameraModal]);
-    // Dosya Seçimi Başlat
-    const [aiDetectedPoints, setAiDetectedPoints] = useState(null);
-    const [isDetecting, setIsDetecting] = useState(false);
-    const [preFetchedAiData, setPreFetchedAiData] = useState(null);
-
-    const detectAiBoundary = async (file) => {
-        if (!user?.aiOcrEnabled) return;
-
-        setIsDetecting(true);
-        try {
-            const formDataAi = new FormData();
-            formDataAi.append('image', file, 'card.jpg');
-
-            const response = await api.post('/api/cards/analyze-ai', formDataAi, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-
-            if (response.data && response.data.corners) {
-                const c = response.data.corners;
-                // Convert {topLeft: {x,y}, ...} to array [tl, tr, br, bl] for PerspectiveCropper
-                const pointsArray = [
-                    c.topLeft,
-                    c.topRight,
-                    c.bottomRight,
-                    c.bottomLeft
-                ];
-                setAiDetectedPoints(pointsArray);
-                // Sakla ki sonra tekrar AI çağırmayalım
-                setPreFetchedAiData(response.data);
-                showNotification(t('addCard.ai.boundaryDetected'), 'success');
-            }
-        } catch (err) {
-            console.error('AI Detection Error:', err);
-            const errorMsg = err.response?.data?.error || '';
-            showNotification(`${errorMsg} ${t('addCard.ai.manualBoundaryHint')}`, 'warning');
-            // Hata olsa bile kullanıcı manuel devam edebilir
-        } finally {
-            setIsDetecting(false);
-        }
-    };
-
     const onSelectFile = async (e, side) => {
         const file = e.target.files[0];
         if (file) {
             const url = URL.createObjectURL(file);
             setSrc(url);
             setActiveSide(side);
-            setAiDetectedPoints(null);
-            setPreFetchedAiData(null);
+            ocr.setAiDetectedPoints(null);
+            ocr.setPreFetchedAiData(null);
 
             if (user?.aiOcrEnabled) {
-                await detectAiBoundary(file);
+                await ocr.detectAiBoundary(file);
             }
             e.target.value = null; // Clear the input so the same file can be selected again
         }
@@ -485,7 +242,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 setFrontBlob(blob);
                 setFrontPreview(previewUrl);
                 setLogoTempSrc(previewUrl);
-                performOCR(blob);
+                ocr.performOCR(blob);
                 showNotification(t('addCard.notify.cardDetected', { cardType }), 'info');
             } else {
                 setBackBlob(blob);
@@ -496,136 +253,6 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             setActiveSide(null);
 
         }, 'image/jpeg', 0.7); // Client-side sıkıştırma eklendi (0.7 kalite)
-    };
-
-    const performOCR = async (fileBlob) => {
-        setOcrLoading(true);
-        try {
-            // Eğer AI OCR aktifse
-            if (user?.aiOcrEnabled) {
-                try {
-                    // Eğer veriler önceden başarıyla çekildiyse onları kullan
-                    if (preFetchedAiData) {
-                        setOcrResults(preFetchedAiData);
-                        setShowOcrConfirm(true);
-                        showNotification(t('addCard.ai.resultsPrefetched'), 'success');
-                        setOcrLoading(false);
-                        return;
-                    }
-
-                    // Yoksa backend'e tekrar gönder (fallback)
-                    const formDataAi = new FormData();
-                    formDataAi.append('image', fileBlob, 'card.jpg');
-
-                    const response = await api.post('/api/cards/analyze-ai', formDataAi, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-
-                    setOcrResults(response.data);
-                    setShowOcrConfirm(true);
-                    showNotification(t('addCard.ai.scanComplete'), 'success');
-                    setOcrLoading(false);
-                    return;
-                } catch (aiErr) {
-                    console.error('AI OCR Hatası, Tesseract\'a dönülüyor:', aiErr);
-                    const msg = aiErr.response?.data?.error || '';
-                    showNotification(t('addCard.ai.fallbackToTesseract', { message: msg }), 'warning');
-                    // Başarısız olursa alt satıra (Tesseract) devam et
-                }
-            }
-
-            const blobUrl = URL.createObjectURL(fileBlob);
-            const result = await Tesseract.recognize(blobUrl, 'tur');
-            const text = result.data.text;
-
-            // REGEX ve Kelime Bazlı Ayıklama
-            let emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
-
-            // Eğer @ bulunamadıysa, OCR hatası ihtimaline karşı (O veya 0) kontrol et
-            if (!emailMatch) {
-                const brokenEmailMatch = text.match(/([a-zA-Z0-9._-]+[O0][a-zA-Z0-9._-]+\.(com|net|org|edu|gov|tr|info|biz))/gi);
-                if (brokenEmailMatch) {
-                    // O veya 0'ı @ ile değiştir
-                    emailMatch = brokenEmailMatch.map(e => e.replace(/[O0](?=[^.O0]+\.)/, '@'));
-                }
-            }
-
-            const phoneMatch = text.match(/((\+90|0)?\s*\(?\d{3}\)?\s*\d{3}\s*\d{2}\s*\d{2})/);
-
-            // Website regexini daha spesifik yap ve emailleri hariç tut
-            let websiteMatches = text.match(/(https?:\/\/|www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi);
-            let finalWebsite = '';
-
-            if (websiteMatches) {
-                // Email olanları veya email gibi duranları filtrele
-                const filteredWebsites = websiteMatches.filter(w => {
-                    const isEmail = w.includes('@') || (emailMatch && emailMatch.some(e => e.includes(w)));
-                    // Eğer başında www veya http varsa büyük ihtimalle websitedir
-                    const hasWebPrefix = w.toLowerCase().startsWith('www') || w.toLowerCase().startsWith('http');
-                    return !isEmail || hasWebPrefix;
-                });
-                if (filteredWebsites.length > 0) {
-                    finalWebsite = filteredWebsites[0];
-                }
-            }
-
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
-
-            let extractedAddress = '';
-            let extractedCompany = '';
-            let extractedTitle = '';
-            let extractedFirstName = '';
-            let extractedLastName = '';
-
-            const addressKeywords = ['mah', 'cad', 'sok', 'no:', 'kat:', 'daire:', 'bulvar', 'plaza', 'blok', 'yol', 'meydan'];
-            const companyKeywords = ['ltd', 'şti', 'a.ş', 'anonim', 'holding', 'sanayi', 'ticaret', 'as', 'inc', 'corp'];
-            const titleKeywords = ['müdür', 'manager', 'director', 'başkan', 'ceo', 'cto', 'engineer', 'mühendis', 'uzman', 'analist', 'koordinatör'];
-
-            lines.forEach((line, index) => {
-                const lower = line.toLowerCase();
-
-                // Adres Kontrolü
-                if (addressKeywords.some(kw => lower.includes(kw))) {
-                    extractedAddress += (extractedAddress ? ' ' : '') + line;
-                }
-                // Şirket Kontrolü
-                else if (companyKeywords.some(kw => lower.includes(kw))) {
-                    extractedCompany = line;
-                }
-                // Ünvan Kontrolü
-                else if (titleKeywords.some(kw => lower.includes(kw))) {
-                    extractedTitle = line;
-                }
-                // Muhtemel İsim Satırı (Genellikle ilk satırlardan biridir ve çok kısadır)
-                else if (index < 3 && !extractedFirstName && line.split(' ').length <= 3) {
-                    const parts = line.split(' ');
-                    if (parts.length >= 2) {
-                        extractedFirstName = parts.slice(0, -1).join(' ');
-                        extractedLastName = parts[parts.length - 1];
-                    }
-                }
-            });
-
-            setOcrResults({
-                email: emailMatch ? emailMatch[0] : '',
-                phone: phoneMatch ? phoneMatch[0] : '',
-                website: finalWebsite,
-                company: extractedCompany,
-                title: extractedTitle,
-                address: extractedAddress,
-                ocrText: text,
-                firstName: extractedFirstName,
-                lastName: extractedLastName
-            });
-            setShowOcrConfirm(true);
-
-        } catch (err) {
-            console.error('OCR Hatası:', err);
-            const errorMsg = err.response?.data?.error || t('addCard.ocr.error');
-            showNotification(errorMsg, 'error');
-        } finally {
-            setOcrLoading(false);
-        }
     };
 
     const handleSubmit = async (e, forceAdd = false, isQuickSave = false) => {
@@ -716,7 +343,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             }
 
             // Başarılı işlem sonrası taslağı temizle
-            localStorage.removeItem('bizcard_draft');
+            clearDraft();
 
             if (onCardAdded) onCardAdded();
 
@@ -755,7 +382,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>{t('addCard.perspectiveCorrection', { side: activeSide === 'front' ? t('addCard.frontSide') : t('addCard.backSide') })}</h4>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>{t('addCard.perspectiveHint')}</p>
 
-                    {isDetecting && (
+                    {ocr.isDetecting && (
                         <div style={{
                             position: 'absolute',
                             top: '60px',
@@ -779,7 +406,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         key={src}
                         src={src}
                         onCropComplete={handleCropComplete}
-                        initialPoints={aiDetectedPoints}
+                        initialPoints={ocr.aiDetectedPoints}
                     />
                 </div>
             )}
@@ -834,7 +461,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         }}>{t('addCard.btn.select')}</button>
                                     <button
                                         type="button"
-                                        onClick={(e) => openCamera('front')}
+                                        onClick={(e) => camera.openCamera('front')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -864,7 +491,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 }}>
                                     <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
-                                <div onClick={() => openCamera('front')} style={{
+                                <div onClick={() => camera.openCamera('front')} style={{
                                     cursor: 'pointer',
                                     height: '80px',
                                     display: 'flex',
@@ -884,7 +511,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         )}
                         <input id="frontInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
                         <input id="frontCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
-                        {ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>{t('addCard.ocr.reading')}</p>}
+                        {ocr.ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>{t('addCard.ocr.reading')}</p>}
                     </div>
 
                     {/* Arka Yüz */}
@@ -920,7 +547,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         }}>{t('addCard.btn.select')}</button>
                                      <button
                                         type="button"
-                                        onClick={(e) => openCamera('back')}
+                                        onClick={(e) => camera.openCamera('back')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -950,7 +577,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 }}>
                                     <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
-                                <div onClick={() => openCamera('back')} style={{
+                                <div onClick={() => camera.openCamera('back')} style={{
                                     cursor: 'pointer',
                                     height: '80px',
                                     display: 'flex',
@@ -1363,7 +990,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             <button
                                 type="button"
                                 onClick={handleQuickSave}
-                                disabled={ocrLoading}
+                                disabled={ocr.ocrLoading}
                                 style={{
                                     padding: '14px 24px',
                                     background: 'var(--glass-bg)',
@@ -1384,7 +1011,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                              <button
                                  type="button"
                                  onClick={handleNextStep}
-                                 disabled={ocrLoading}
+                                 disabled={ocr.ocrLoading}
                                  style={{
                                      padding: '14px 24px',
                                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -1453,7 +1080,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             ) : (
                                 <button
                                     type="submit"
-                                    disabled={ocrLoading}
+                                    disabled={ocr.ocrLoading}
                                     style={{
                                         padding: '14px 24px',
                                         background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
@@ -1477,173 +1104,19 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 </div>
             </form >
 
-            {/* OCR Onay Modalı / Overlay */}
-            {
-                showOcrConfirm && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.85)',
-                        backdropFilter: 'blur(10px)',
-                        zIndex: 2000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '20px'
-                    }}>
-                        <div className="ocr-confirm-modal" style={{
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '24px',
-                            width: '100%',
-                            maxWidth: '600px',
-                            maxHeight: '90vh',
-                            overflowY: 'auto',
-                            padding: '30px',
-                            boxShadow: 'var(--glass-shadow-hover)'
-                        }}>
-                            <h3 style={{ color: 'var(--text-primary)', marginTop: 0, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <span style={{ fontSize: '1.5rem' }}>🔍</span> {t('addCard.ocrConfirm.title')}
-                            </h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '25px' }}>
-                                {t('addCard.ocrConfirm.description')}
-                            </p>
+            {/* OCR Onay Modalı */}
+            <OcrConfirmModal
+                isOpen={ocr.showOcrConfirm}
+                onClose={() => ocr.setShowOcrConfirm(false)}
+                ocrResults={ocr.ocrResults}
+                onConfirm={(fields) => {
+                    setFormData(prev => ({ ...prev, ...fields }));
+                    ocr.setShowOcrConfirm(false);
+                    showNotification(t('addCard.notify.ocrApplied'), 'success');
+                }}
+                t={t}
+            />
 
-                            <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
-                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.firstName')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.firstName}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, firstName: e.target.value })}
-                                            style={inputStyle}
-                                            placeholder={t('addCard.placeholder.firstName')}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.lastName')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.lastName}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, lastName: e.target.value })}
-                                            style={inputStyle}
-                                            placeholder={t('addCard.placeholder.lastName')}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.company')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.company}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, company: e.target.value })}
-                                            style={inputStyle}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.title')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.title}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, title: e.target.value })}
-                                            style={inputStyle}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.email')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.email}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, email: e.target.value })}
-                                            style={inputStyle}
-                                        />
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                        <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.phone')}</label>
-                                        <input
-                                            type="text"
-                                            value={ocrResults.phone}
-                                            onChange={(e) => setOcrResults({ ...ocrResults, phone: e.target.value })}
-                                            style={inputStyle}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.website')}</label>
-                                    <input
-                                        type="text"
-                                        value={ocrResults.website}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, website: e.target.value })}
-                                        style={inputStyle}
-                                    />
-                                </div>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                                    <label style={{ color: 'var(--accent-warning)', fontSize: '0.8rem', fontWeight: 'bold' }}>{t('addCard.ocrLabel.address')}</label>
-                                    <textarea
-                                        value={ocrResults.address}
-                                        onChange={(e) => setOcrResults({ ...ocrResults, address: e.target.value })}
-                                        style={{ ...inputStyle, minHeight: '80px' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="ocr-confirm-buttons" style={{ display: 'flex', gap: '15px' }}>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowOcrConfirm(false)}
-                                    style={{
-                                        flex: 1,
-                                        padding: '12px',
-                                        background: 'var(--glass-bg)',
-                                        color: 'var(--text-secondary)',
-                                        border: '1px solid var(--glass-border)',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    {t('common:cancel')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            ...ocrResults
-                                        }));
-                                        setShowOcrConfirm(false);
-                                        showNotification(t('addCard.notify.ocrApplied'), 'success');
-                                    }}
-                                    style={{
-                                        flex: 2,
-                                        padding: '12px',
-                                        background: 'linear-gradient(135deg, var(--accent-success) 0%, #22c55e 100%)',
-                                        color: 'var(--bg-card)',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        fontWeight: '700',
-                                        boxShadow: 'var(--glass-shadow)'
-                                    }}
-                                >
-                                    {t('addCard.btn.confirmAndApply')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
             {/* Logo Kırpma Modalı */}
             {
                 showLogoCrop && (
@@ -1686,280 +1159,36 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 )
             }
             {/* Mükerrer Kayıt Uyarısı */}
-            {
-                showDuplicateAlert && duplicateCard && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.85)',
-                        backdropFilter: 'blur(15px)',
-                        zIndex: 4000,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        padding: '20px'
-                    }}>
-                        <div style={{
-                            background: 'var(--bg-card)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '24px',
-                            width: '100%',
-                            maxWidth: '500px',
-                            padding: '30px',
-                            boxShadow: 'var(--glass-shadow-hover)',
-                            textAlign: 'center'
-                        }}>
-                            <div style={{
-                                width: '70px',
-                                height: '70px',
-                                background: 'rgba(255, 193, 7, 0.15)',
-                                borderRadius: '50%',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                margin: '0 auto 20px',
-                                fontSize: '2rem'
-                            }}>
-                                ⚠️
-                            </div>
-                            <h3 style={{ color: 'var(--accent-warning)', margin: '0 0 10px 0', fontSize: '1.5rem' }}>{t('addCard.duplicate.title')}</h3>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '25px' }}
-                               dangerouslySetInnerHTML={{ __html: t('addCard.duplicate.description', { firstName: duplicateCard.firstName, lastName: duplicateCard.lastName }).replace('<1>', '<b>').replace('</1>', '</b>') }}
-                            />
-
-                            <div style={{
-                                background: 'var(--glass-bg)',
-                                borderRadius: '16px',
-                                padding: '20px',
-                                marginBottom: '30px',
-                                textAlign: 'left',
-                                border: '1px solid var(--glass-border)'
-                            }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '8px', fontSize: '0.9rem' }}>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.company')}</span>
-                                    <span>{duplicateCard.company || '-'}</span>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.email')}</span>
-                                    <span>{duplicateCard.email || '-'}</span>
-                                    <span style={{ color: 'var(--text-tertiary)' }}>{t('addCard.duplicate.addedBy')}</span>
-                                    <span style={{ color: 'var(--accent-success)' }}>@{duplicateCard.owner?.displayName || 'Sistem'}</span>
-                                </div>
-                            </div>
-
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <button
-                                    onClick={() => {
-                                        // Mevcut kartı düzenleme moduna al
-                                        if (onCardAdded) onCardAdded(duplicateCard);
-                                        setShowDuplicateAlert(false);
-                                        showNotification(t('addCard.notify.editMode'), 'info');
-                                    }}
-                                    style={{
-                                        padding: '14px',
-                                        background: 'linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%)',
-                                        color: 'var(--bg-card)',
-                                        border: 'none',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        fontWeight: '700',
-                                        boxShadow: 'var(--glass-shadow)'
-                                    }}
-                                >
-                                    {t('addCard.btn.updateExisting')}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setIgnoreDuplicate(true);
-                                        setShowDuplicateAlert(false);
-                                        // If on Step 1, proceed to Step 2
-                                        if (currentStep === 1) {
-                                            setCurrentStep(2);
-                                        }
-                                        // If on Step 2 or during Quick Save, the form will submit normally
-                                    }}
-                                    style={{
-                                        padding: '12px',
-                                        background: 'var(--glass-bg)',
-                                        color: 'var(--text-primary)',
-                                        border: '1px solid var(--glass-border)',
-                                        borderRadius: '12px',
-                                        cursor: 'pointer',
-                                        fontWeight: '600'
-                                    }}
-                                >
-                                    {t('addCard.btn.createAnyway')}
-                                </button>
-                                <button
-                                    onClick={() => setShowDuplicateAlert(false)}
-                                    style={{
-                                        background: 'transparent',
-                                        color: 'var(--text-tertiary)',
-                                        border: 'none',
-                                        padding: '5px',
-                                        cursor: 'pointer',
-                                        fontSize: '0.85rem',
-                                        marginTop: '5px',
-                                        textDecoration: 'underline'
-                                    }}
-                                >
-                                    {t('addCard.btn.cancelAction')}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+            <DuplicateAlertModal
+                isOpen={showDuplicateAlert}
+                onClose={() => setShowDuplicateAlert(false)}
+                duplicateCard={duplicateCard}
+                onUpdateExisting={() => {
+                    if (onCardAdded) onCardAdded(duplicateCard);
+                    setShowDuplicateAlert(false);
+                    showNotification(t('addCard.notify.editMode'), 'info');
+                }}
+                onCreateAnyway={() => {
+                    setIgnoreDuplicate(true);
+                    setShowDuplicateAlert(false);
+                    if (currentStep === 1) {
+                        setCurrentStep(2);
+                    }
+                }}
+                t={t}
+            />
             {/* Kamera Yakalama Modalı */}
-            {showCameraModal && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: 'rgba(0,0,0,0.95)',
-                    zIndex: 5000,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: '20px'
-                }}>
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '640px', aspectRatio: '4/3', background: 'black', borderRadius: '16px', overflow: 'hidden', border: '2px solid var(--accent-primary)' }}>
-                        {/* Video element - muted gerekli (iOS autoplay policy) */}
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                display: cameraReady ? 'block' : 'none'
-                            }}
-                        />
-
-                        {/* Kamera yüklenirken göster */}
-                        {!cameraReady && !cameraError && (
-                            <div style={{
-                                position: 'absolute',
-                                inset: 0,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white'
-                            }}>
-                                <div className="spinner" style={{ marginBottom: '12px' }}></div>
-                                <p style={{ fontSize: '14px', fontWeight: '500' }}>{t('addCard.camera.starting')}</p>
-                            </div>
-                        )}
-
-                        {/* Kamera hatası göster */}
-                        {cameraError && (
-                            <div style={{
-                                position: 'absolute',
-                                inset: 0,
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                color: 'white',
-                                padding: '20px',
-                                textAlign: 'center'
-                            }}>
-                                <p style={{ fontSize: '40px', marginBottom: '10px' }}>
-                                    {cameraError === 'permission' ? '🔒' : cameraError === 'not-found' ? '📷' : '⚠️'}
-                                </p>
-                                <p style={{ fontSize: '15px', fontWeight: '600', marginBottom: '6px' }}>
-                                    {cameraError === 'permission' && t('addCard.cameraError.permission')}
-                                    {cameraError === 'not-found' && t('addCard.cameraError.notFound')}
-                                    {cameraError === 'in-use' && t('addCard.cameraError.inUse')}
-                                    {cameraError === 'no-support' && t('addCard.cameraError.noSupport')}
-                                    {cameraError === 'unknown' && t('addCard.cameraError.unknown')}
-                                </p>
-                                <p style={{ fontSize: '13px', color: '#aaa', marginBottom: '16px' }}>
-                                    {cameraError === 'permission'
-                                        ? t('addCard.cameraError.permissionHint')
-                                        : t('addCard.cameraError.fallbackHint')}
-                                </p>
-                                <button
-                                    type="button"
-                                    onClick={() => fallbackToFileInput(cameraSide)}
-                                    style={{
-                                        padding: '10px 24px',
-                                        background: 'var(--accent-primary)',
-                                        color: 'white',
-                                        borderRadius: '10px',
-                                        fontWeight: 'bold',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        fontSize: '14px'
-                                    }}
-                                >{t('addCard.btn.selectFromFile')}</button>
-                            </div>
-                        )}
-
-                        {/* Vizör Çerçevesi - sadece kamera hazırken göster */}
-                        {cameraReady && (
-                            <div style={{
-                                position: 'absolute',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(-50%, -50%)',
-                                width: '85%',
-                                height: '60%',
-                                border: '2px dashed var(--accent-primary)',
-                                borderRadius: '12px',
-                                pointerEvents: 'none',
-                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
-                            }}>
-                                <div style={{ position: 'absolute', top: '-30px', left: 0, right: 0, textAlign: 'center', color: 'var(--accent-primary)', fontSize: '14px', fontWeight: 'bold' }}>
-                                    {t('addCard.camera.alignCard')}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '20px', marginTop: '30px' }}>
-                        <button
-                            type="button"
-                            onClick={closeCamera}
-                            style={{
-                                padding: '12px 24px',
-                                background: 'white',
-                                color: 'black',
-                                borderRadius: '12px',
-                                fontWeight: 'bold',
-                                border: 'none',
-                                cursor: 'pointer'
-                            }}
-                        >{t('common:cancel')}</button>
-                        <button
-                            type="button"
-                            onClick={capturePhoto}
-                            disabled={!cameraReady}
-                            style={{
-                                padding: '12px 40px',
-                                background: cameraReady ? 'var(--accent-primary)' : '#555',
-                                color: 'white',
-                                borderRadius: '12px',
-                                fontWeight: 'bold',
-                                border: 'none',
-                                cursor: cameraReady ? 'pointer' : 'not-allowed',
-                                fontSize: '18px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                opacity: cameraReady ? 1 : 0.5
-                            }}
-                        >{t('addCard.btn.takePhoto')}</button>
-                    </div>
-                </div>
-            )}
+            <CameraModal
+                isOpen={camera.showCameraModal}
+                onClose={camera.closeCamera}
+                videoRef={camera.videoRef}
+                cameraReady={camera.cameraReady}
+                cameraError={camera.cameraError}
+                onCapture={camera.capturePhoto}
+                cameraSide={camera.cameraSide}
+                fallbackToFileInput={camera.fallbackToFileInput}
+                t={t}
+            />
         </div >
     );
 };
