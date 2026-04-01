@@ -16,10 +16,14 @@ if (process.env.REDIS_URL) {
     }
 }
 
+// In test environment, use a passthrough middleware to avoid rate limiting interference
+const isTest = process.env.NODE_ENV === 'test';
+const passThrough = (_req, _res, next) => next();
+
 /**
  * General API limiter — 100 requests per minute
  */
-const apiLimiter = rateLimit({
+const apiLimiter = isTest ? passThrough : rateLimit({
     windowMs: 1 * 60 * 1000,
     limit: 100,
     standardHeaders: 'draft-7',
@@ -31,7 +35,7 @@ const apiLimiter = rateLimit({
 /**
  * Auth limiter (brute-force protection) — 5 attempts per 15 minutes
  */
-const authLimiter = rateLimit({
+const authLimiter = isTest ? passThrough : rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 5,
     standardHeaders: 'draft-7',
@@ -43,7 +47,7 @@ const authLimiter = rateLimit({
 /**
  * AI OCR limiter (cost/abuse control) — 20 per hour
  */
-const ocrLimiter = rateLimit({
+const ocrLimiter = isTest ? passThrough : rateLimit({
     windowMs: 60 * 60 * 1000,
     limit: 20,
     standardHeaders: 'draft-7',

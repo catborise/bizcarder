@@ -45,7 +45,7 @@ async function createTestTag(ownerId, overrides = {}) {
 async function getAuthAgent(user) {
     const agent = supertest.agent(app);
     await agent
-        .post('/auth/login/local')
+        .post('/auth/local/login')
         .send({ username: user.username, password: 'Test1234!' })
         .expect(200);
     return agent;
