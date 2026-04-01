@@ -3,139 +3,15 @@ import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
-import ConfirmModal from './ConfirmModal';
-
-const PasswordChangeForm = ({ showNotification }) => {
-    const { t } = useTranslation('settings');
-    const [formData, setFormData] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-    });
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (formData.newPassword !== formData.confirmPassword) {
-            showNotification(t('password.mismatch'), 'error');
-            return;
-        }
-        if (formData.newPassword.length < 6) {
-            showNotification(t('password.tooShort'), 'error');
-            return;
-        }
-
-        try {
-            const res = await api.put('/auth/change-password', {
-                currentPassword: formData.currentPassword,
-                newPassword: formData.newPassword
-            });
-            if (res.data.success) {
-                showNotification(res.data.message, 'success');
-                setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            }
-        } catch (error) {
-            showNotification(error.response?.data?.error || t('password.changeFailed'), 'error');
-        }
-    };
-
-    const inputStyle = {
-        width: '100%',
-        padding: '12px',
-        background: 'var(--bg-input)',
-        border: '1px solid var(--glass-border)',
-        borderRadius: '8px',
-        color: 'var(--text-primary)',
-        fontSize: '1rem',
-        marginTop: '8px'
-    };
-
-
-    return (
-        <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('password.currentLabel')}</label>
-
-                <input
-                    type="password"
-                    name="currentPassword"
-                    value={formData.currentPassword}
-                    onChange={handleChange}
-                    style={inputStyle}
-                    required
-                />
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('password.newLabel')}</label>
-
-                <input
-                    type="password"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleChange}
-                    style={inputStyle}
-                    required
-                />
-            </div>
-            <div style={{ marginBottom: '30px' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('password.confirmLabel')}</label>
-
-                <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    style={inputStyle}
-                    required
-                />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button type="submit" style={{
-                    background: 'var(--accent-primary)',
-                    color: 'var(--bg-card)',
-                    border: 'none',
-                    padding: '12px 25px',
-                    borderRadius: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    boxShadow: 'var(--glass-shadow)',
-                    transition: 'all 0.2s ease'
-                }}>{t('password.updateBtn')}</button>
-            </div>
-
-        </form>
-    );
-};
+import PasswordChangeForm from './settings/PasswordChangeForm';
+import AISection from './settings/AISection';
+import SystemSection from './settings/SystemSection';
+import TagManagement from './settings/TagManagement';
 
 const Settings = () => {
     const { t } = useTranslation(['settings', 'common']);
     const { user, checkAuth } = useAuth();
     const { showNotification } = useNotification();
-
-    const [systemSettings, setSystemSettings] = useState({
-        logRetentionLimit: 1000,
-        trashRetentionDays: 30,
-        allowPublicRegistration: true,
-        developerName: 'Muhammet Sağ',
-        developerEmail: 'm.sag@catborise.com',
-        developerGithub: 'https://github.com/catborise/bizcarder',
-        developerLinkedin: '',
-        companyName: 'BizCarder',
-        companyLogo: '',
-        companyIcon: '',
-        appBanner: '',
-        footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
-    });
-    const [aiSettings, setAiSettings] = useState({
-        aiOcrEnabled: false,
-        aiOcrProvider: 'openai',
-        aiOcrApiKey: ''
-    });
-    const [tags, setTags] = useState([]);
-    const [tagForm, setTagForm] = useState({ name: '', color: 'var(--accent-primary)' });
 
     const [profileData, setProfileData] = useState({
         displayName: '',
@@ -143,64 +19,15 @@ const Settings = () => {
         trashRetentionDays: 30
     });
 
-    const [editingTag, setEditingTag] = useState(null);
-    const [deleteTagConfirmId, setDeleteTagConfirmId] = useState(null);
-    const [loading, setLoading] = useState(true);
-
     useEffect(() => {
-        const fetchSystemSettings = async () => {
-            if (user?.role !== 'admin') {
-                setLoading(false);
-                return;
-            }
-            try {
-                const res = await api.get('/api/settings');
-                setSystemSettings(res.data);
-            } catch (error) {
-                console.error('Settings fetch error:', error);
-                if (error.response && error.response.status === 403) {
-                    // Sadece logla
-                } else {
-                    showNotification(t('settings:notify.systemLoadFailed'), 'error');
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const fetchTags = async () => {
-            try {
-                const res = await api.get('/api/tags');
-                setTags(res.data);
-            } catch (error) {
-                console.error('Tags fetch error:', error);
-            }
-        };
-
         if (user) {
             setProfileData({
                 displayName: user.displayName || '',
                 email: user.email || '',
                 trashRetentionDays: user.trashRetentionDays || 30
             });
-            setAiSettings({
-                aiOcrEnabled: user.aiOcrEnabled || false,
-                aiOcrProvider: user.aiOcrProvider || 'openai',
-                aiOcrApiKey: ''
-            });
-            fetchSystemSettings();
-            fetchTags();
         }
-    }, [user, showNotification]);
-
-    const refreshTags = async () => {
-        try {
-            const res = await api.get('/api/tags');
-            setTags(res.data);
-        } catch (error) {
-            console.error('Tags fetch error:', error);
-        }
-    };
+    }, [user]);
 
     const handleSaveProfile = async () => {
         try {
@@ -215,85 +42,6 @@ const Settings = () => {
         }
     };
 
-    const handleSaveSystem = async () => {
-        try {
-            await api.put('/api/settings', systemSettings);
-            showNotification(t('settings:notify.systemUpdated'), 'success');
-        } catch (error) {
-            console.error('Settings save error:', error);
-            showNotification(t('settings:notify.saveFailed', { error: error.response?.data?.error || error.message }), 'error');
-        }
-    };
-
-    const handleSaveAI = async () => {
-        try {
-            const res = await api.put('/auth/profile', aiSettings);
-            if (res.data.success) {
-                showNotification(t('settings:notify.aiUpdated'), 'success');
-                await checkAuth();
-            }
-        } catch (error) {
-            console.error('AI Settings save error:', error);
-            showNotification(t('settings:notify.aiSaveFailed', { error: error.response?.data?.error || error.message }), 'error');
-        }
-    };
-
-    const handleTagSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (editingTag) {
-                await api.put(`/api/tags/${editingTag.id}`, tagForm);
-                showNotification(t('settings:notify.tagUpdated'), 'success');
-            } else {
-                await api.post('/api/tags', tagForm);
-                showNotification(t('settings:notify.tagAdded'), 'success');
-            }
-            setTagForm({ name: '', color: 'var(--accent-primary)' });
-
-            setEditingTag(null);
-            refreshTags();
-        } catch (error) {
-            showNotification(t('settings:notify.tagFailed', { error: error.response?.data?.error || error.message }), 'error');
-        }
-    };
-
-    const API_URL = api.defaults.baseURL || 'http://localhost:5000';
-
-    const handleBrandingUpload = async (e, field) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            showNotification(t('settings:notify.uploading'), 'info');
-            const res = await api.post('/api/settings/upload-branding', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            setSystemSettings({ ...systemSettings, [field]: res.data.url });
-            showNotification(t('settings:notify.uploaded'), 'success');
-        } catch (error) {
-            console.error('Upload error:', error);
-            showNotification(t('settings:notify.uploadFailed'), 'error');
-        }
-    };
-
-    const handleDeleteTag = async () => {
-        if (!deleteTagConfirmId) return;
-        try {
-            await api.delete(`/api/tags/${deleteTagConfirmId}`);
-            setDeleteTagConfirmId(null);
-            showNotification(t('settings:notify.tagDeleted'), 'success');
-            refreshTags();
-        } catch (error) {
-            showNotification(t('settings:notify.deleteFailed'), 'error');
-        }
-    };
-
-    if (loading && user?.role === 'admin') return <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '50px' }}>{t('common:loading')}</div>;
-
-
     const cardStyle = {
         background: 'var(--bg-card)',
         backdropFilter: 'blur(10px)',
@@ -304,7 +52,6 @@ const Settings = () => {
         maxWidth: '700px',
         marginBottom: '30px'
     };
-
 
     const inputStyle = {
         width: '100%',
@@ -317,7 +64,6 @@ const Settings = () => {
         marginTop: '8px'
     };
 
-
     const sectionTitleStyle = {
         marginBottom: '20px',
         fontWeight: '700',
@@ -327,7 +73,6 @@ const Settings = () => {
         alignItems: 'center',
         gap: '12px'
     };
-
 
     return (
         <div className="fade-in" style={{ paddingBottom: '50px' }}>
@@ -339,8 +84,7 @@ const Settings = () => {
                 <span style={{ fontSize: '2rem' }}>⚙️</span> {t('settings:title')}
             </h2>
 
-
-            {/* PROFIL BILGILERI */}
+            {/* PROFILE */}
             <div style={cardStyle}>
                 <h3 style={sectionTitleStyle}>
                     <span style={{ fontSize: '1.5rem' }}>👤</span> {t('settings:section.profile')}
@@ -366,6 +110,7 @@ const Settings = () => {
                         placeholder={t('settings:profile.displayNamePlaceholder')}
                     />
                 </div>
+
                 <div style={{ marginBottom: '20px' }}>
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:profile.email')}</label>
                     <input
@@ -391,22 +136,26 @@ const Settings = () => {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button onClick={handleSaveProfile} style={{
-                        background: 'var(--accent-primary)',
-                        color: 'var(--bg-card)',
-                        border: 'none',
-                        borderRadius: '12px',
-                        padding: '12px 24px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        boxShadow: 'var(--glass-shadow)',
-                        transition: 'all 0.2s ease',
-                    }}>{t('settings:profile.updateBtn')}</button>
+                    <button
+                        onClick={handleSaveProfile}
+                        style={{
+                            background: 'var(--accent-primary)',
+                            color: 'var(--bg-card)',
+                            border: 'none',
+                            borderRadius: '12px',
+                            padding: '12px 24px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            boxShadow: 'var(--glass-shadow)',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        {t('settings:profile.updateBtn')}
+                    </button>
                 </div>
-
             </div>
 
-            {/* HESAP AYARLARI (Şifre Değiştirme) */}
+            {/* PASSWORD CHANGE */}
             <div style={cardStyle}>
                 <h3 style={sectionTitleStyle}>
                     <span style={{ fontSize: '1.5rem' }}>🔐</span> {t('settings:section.account')}
@@ -416,336 +165,36 @@ const Settings = () => {
                         <p style={{ margin: 0 }}>{t('settings:account.ssoMessage')}</p>
                     </div>
                 ) : (
-
-                    <PasswordChangeForm showNotification={showNotification} />
+                    <PasswordChangeForm />
                 )}
             </div>
 
-            {/* KIŞISEL AI AYARLARI */}
+            {/* AI OCR SETTINGS */}
             <div style={cardStyle}>
                 <h3 style={sectionTitleStyle}>
                     <span style={{ fontSize: '1.5rem' }}>🤖</span> {t('settings:section.ai')}
                 </h3>
-                <div style={{ marginBottom: '25px', padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--accent-primary)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                            <label style={{ display: 'block', color: 'var(--accent-primary)', marginBottom: '5px', fontWeight: '600' }}>{t('settings:ai.ocrLabel')}</label>
-                            <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', margin: 0 }}>{t('settings:ai.ocrDescription')}</p>
-                        </div>
-
-                        <div style={{ position: 'relative', width: '50px', height: '26px' }}>
-                            <input
-                                type="checkbox"
-                                checked={aiSettings.aiOcrEnabled}
-                                onChange={(e) => setAiSettings({ ...aiSettings, aiOcrEnabled: e.target.checked })}
-                                style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
-                                id="ai-toggle"
-                            />
-                            <label htmlFor="ai-toggle" style={{
-                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                                backgroundColor: aiSettings.aiOcrEnabled ? 'var(--accent-primary)' : 'var(--bg-input)',
-                                transition: '0.4s', borderRadius: '34px',
-                            }}>
-
-                                <span style={{
-                                    position: 'absolute', height: '20px', width: '20px', left: '3px', bottom: '3px',
-                                    backgroundColor: 'white', transition: '0.4s', borderRadius: '50%',
-                                    transform: aiSettings.aiOcrEnabled ? 'translateX(24px)' : 'translateX(0)'
-                                }}></span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                {aiSettings.aiOcrEnabled && (
-                    <div className="fade-in">
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:ai.providerLabel')}</label>
-
-                            <select
-                                value={aiSettings.aiOcrProvider}
-                                onChange={(e) => setAiSettings({ ...aiSettings, aiOcrProvider: e.target.value })}
-                                style={inputStyle}
-                            >
-                                <option value="openai">OpenAI</option>
-                                <option value="gemini">Google Gemini</option>
-                                <option value="anthropic">Anthropic Claude</option>
-                            </select>
-                        </div>
-                        <div style={{ marginBottom: '30px' }}>
-                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:ai.apiKeyLabel')}</label>
-                            <input
-                                type="password"
-                                placeholder={user?.hasAiApiKey ? "••••••••••••••••" : t('settings:ai.apiKeyPlaceholder')}
-                                value={aiSettings.aiOcrApiKey}
-                                onChange={(e) => setAiSettings({ ...aiSettings, aiOcrApiKey: e.target.value })}
-                                style={inputStyle}
-                            />
-                        </div>
-                    </div>
-                )}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <button onClick={handleSaveAI} style={{
-                        background: 'var(--accent-primary)',
-                        color: 'var(--bg-card)',
-                        border: '1px solid var(--glass-border)',
-                        padding: '12px 24px',
-                        borderRadius: '12px',
-                        fontSize: '1rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        boxShadow: 'var(--glass-shadow)',
-                        transition: 'all 0.2s ease',
-                    }}>{t('settings:ai.saveBtn')}</button>
-                </div>
+                <AISection />
             </div>
 
-
-
-            {/* SISTEM AYARLARI (Admin) */}
-            {
-                user?.role === 'admin' && (
-                    <div style={cardStyle}>
-                        <h3 style={sectionTitleStyle}>
-                            <span style={{ fontSize: '1.5rem' }}>🏢</span> {t('settings:section.system')}
-                        </h3>
-                        <div style={{ marginBottom: '25px' }}>
-                            <label style={{ display: 'block', color: 'var(--accent-warning)', marginBottom: '5px', fontWeight: '600' }}>📜 {t('settings:system.logLimit')}</label>
-
-                            <input
-                                type="number"
-                                value={systemSettings.logRetentionLimit}
-                                onChange={(e) => setSystemSettings({ ...systemSettings, logRetentionLimit: parseInt(e.target.value) || 0 })}
-                                style={inputStyle}
-                            />
-                        </div>
-                        <div style={{ marginBottom: '30px' }}>
-                            <label style={{ display: 'block', color: 'var(--accent-error)', marginBottom: '5px', fontWeight: '600' }}>🗑️ {t('settings:system.trashRetention')}</label>
-
-                            <input
-                                type="number"
-                                value={systemSettings.trashRetentionDays}
-                                onChange={(e) => setSystemSettings({ ...systemSettings, trashRetentionDays: parseInt(e.target.value) || 0 })}
-                                style={inputStyle}
-                            />
-                        </div>
-
-                        <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
-                            <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                👨‍💻 {t('settings:section.aboutDeveloper')}
-                            </h4>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.developerName')}</label>
-                                <input
-                                    type="text"
-                                    value={systemSettings.developerName}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerName: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder={t('settings:system.devNamePlaceholder')}
-                                />
-                            </div>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.developerEmail')}</label>
-                                <input
-                                    type="email"
-                                    value={systemSettings.developerEmail}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerEmail: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder={t('settings:system.devEmailPlaceholder')}
-                                />
-                            </div>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.githubUrl')}</label>
-                                <input
-                                    type="text"
-                                    value={systemSettings.developerGithub}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerGithub: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder="https://github.com/..."
-                                />
-                            </div>
-
-                            <div style={{ marginBottom: '15px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.linkedinUrl')}</label>
-                                <input
-                                    type="text"
-                                    value={systemSettings.developerLinkedin}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, developerLinkedin: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder="https://linkedin.com/in/..."
-                                />
-                            </div>
-                        </div>
-
-                        {/* Kurumsal Markalama */}
-                        <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
-                            <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                🎨 {t('settings:section.branding')}
-                            </h4>
-
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.companyName')}</label>
-                                <input
-                                    type="text"
-                                    value={systemSettings.companyName}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, companyName: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder="BizCarder"
-                                />
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
-                                {/* Logo Yükleme */}
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.companyLogo')}</label>
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
-                                        {systemSettings.companyLogo && (
-                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <img src={`${API_URL}${systemSettings.companyLogo}`} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                            </div>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => handleBrandingUpload(e, 'companyLogo')}
-                                            style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Icon / Favicon Yükleme */}
-                                <div>
-                                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.companyIcon')}</label>
-                                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
-                                        {systemSettings.companyIcon && (
-                                            <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <img src={`${API_URL}${systemSettings.companyIcon}`} alt="Icon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                            </div>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => handleBrandingUpload(e, 'companyIcon')}
-                                            style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.appBanner')}</label>
-                                <div style={{ marginTop: '8px' }}>
-                                    {systemSettings.appBanner && (
-                                        <div style={{ width: '100%', height: '100px', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px', border: '1px solid var(--glass-border)' }}>
-                                            <img src={`${API_URL}${systemSettings.appBanner}`} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        </div>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleBrandingUpload(e, 'appBanner')}
-                                        style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}
-                                    />
-                                </div>
-                            </div>
-
-                            <div style={{ marginBottom: '20px' }}>
-                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:system.footerText')}</label>
-                                <input
-                                    type="text"
-                                    value={systemSettings.footerText}
-                                    onChange={(e) => setSystemSettings({ ...systemSettings, footerText: e.target.value })}
-                                    style={inputStyle}
-                                    placeholder={t('settings:system.footerPlaceholder')}
-                                />
-                                <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>{t('settings:system.footerHint')}</small>
-                            </div>
-                        </div>
-
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                            <button onClick={handleSaveSystem} style={{
-                                background: 'var(--accent-primary)',
-                                color: 'var(--bg-card)',
-                                border: 'none',
-                                borderRadius: '12px',
-                                padding: '12px 24px',
-                                fontWeight: '600',
-                                cursor: 'pointer',
-                                boxShadow: 'var(--glass-shadow)',
-                                transition: 'all 0.2s ease',
-                            }}>{t('settings:system.saveBtn')}</button>
-                        </div>
-
-                    </div>
-                )
-            }
-
-            {/* ETIKET YÖNETIMI */}
+            {/* TAG MANAGEMENT */}
             <div style={cardStyle}>
                 <h3 style={sectionTitleStyle}>
                     <span style={{ fontSize: '1.5rem' }}>🏷️</span> {t('settings:section.tags')}
                 </h3>
-                <form onSubmit={handleTagSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '25px', alignItems: 'flex-end' }}>
-                    <div style={{ flex: 1 }}>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('settings:tags.nameLabel')}</label>
-
-                        <input
-                            type="text"
-                            value={tagForm.name}
-                            onChange={(e) => setTagForm({ ...tagForm, name: e.target.value })}
-                            style={inputStyle}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('settings:tags.colorLabel')}</label>
-
-                        <input
-                            type="color"
-                            value={tagForm.color}
-                            onChange={(e) => setTagForm({ ...tagForm, color: e.target.value })}
-                            style={{ ...inputStyle, padding: '5px', height: '45px', width: '60px' }}
-                        />
-                    </div>
-                    <button type="submit" style={{
-                        background: editingTag ? 'var(--accent-warning)' : 'var(--accent-primary)',
-                        color: 'var(--bg-card)', border: 'none', padding: '12px 20px', borderRadius: '8px', fontWeight: '600'
-                    }}>{editingTag ? t('settings:tags.updateBtn') : t('settings:tags.addBtn')}</button>
-
-                </form>
-
-                <div style={{ display: 'grid', gap: '10px' }}>
-                    {tags.map(tag => (
-                        <div key={tag.id} style={{
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '12px 15px', background: 'var(--bg-input)', borderRadius: '10px',
-                            border: '1px solid var(--glass-border)'
-                        }}>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: tag.color }}></div>
-                                <span>{tag.name}</span>
-                            </div>
-                            <div style={{ display: 'flex', gap: '8px' }}>
-                                <button onClick={() => { setEditingTag(tag); setTagForm({ name: tag.name, color: tag.color }); }} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>✏️</button>
-                                <button onClick={() => setDeleteTagConfirmId(tag.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer' }}>🗑️</button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                <TagManagement />
             </div>
 
-            <ConfirmModal 
-                isOpen={!!deleteTagConfirmId}
-                onClose={() => setDeleteTagConfirmId(null)}
-                onConfirm={handleDeleteTag}
-                title={t('settings:tags.deleteTitle')}
-                message={t('settings:tags.deleteMessage')}
-            />
-        </div >
+            {/* SYSTEM SETTINGS (admin only) */}
+            {user?.role === 'admin' && (
+                <div style={cardStyle}>
+                    <h3 style={sectionTitleStyle}>
+                        <span style={{ fontSize: '1.5rem' }}>🏢</span> {t('settings:section.system')}
+                    </h3>
+                    <SystemSection />
+                </div>
+            )}
+        </div>
     );
 };
 
