@@ -309,6 +309,8 @@ function validateCard(data, rowNumber) {
     return { isValid: true };
 }
 
+exports.parseCSV = parseCSV;
+
 /**
  * Formatting helper (TitleCase etc)
  */
