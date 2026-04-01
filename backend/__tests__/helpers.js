@@ -76,4 +76,26 @@ async function cleanDatabase() {
     try { await sequelize.query('TRUNCATE TABLE "Sessions" RESTART IDENTITY CASCADE'); } catch(e) {}
 }
 
-module.exports = { createTestUser, createTestAdmin, createTestCard, createTestTag, getAuthAgent, cleanDatabase };
+/**
+ * Create a self-contained suite context with a unique admin + authenticated agent.
+ * Each test file calls this once in beforeAll with a unique prefix so that
+ * suites never collide on usernames/emails regardless of execution order.
+ */
+async function setupSuite(prefix) {
+    const admin = await User.create({
+        username: `${prefix}_admin`,
+        email: `${prefix}_admin@test.com`,
+        password: 'Test1234!',
+        displayName: `${prefix} Admin`,
+        role: 'admin',
+        isApproved: true,
+    });
+    const agent = supertest.agent(app);
+    await agent
+        .post('/auth/local/login')
+        .send({ username: admin.username, password: 'Test1234!' })
+        .expect(200);
+    return { admin, agent };
+}
+
+module.exports = { createTestUser, createTestAdmin, createTestCard, createTestTag, getAuthAgent, cleanDatabase, setupSuite };

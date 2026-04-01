@@ -1,59 +1,56 @@
 const supertest = require('supertest');
 const app = require('../../server');
-const { cleanDatabase, createTestUser, createTestAdmin } = require('../helpers');
+const { createTestUser, createTestAdmin } = require('../helpers');
+
+const P = 'auth'; // unique prefix for this suite
 
 describe('Auth Routes', () => {
-    beforeAll(async () => {
-        await cleanDatabase();
-    });
-
-    afterAll(async () => {
-        await cleanDatabase();
-    });
+    // No beforeAll cleanDatabase — suite is self-contained with unique usernames
+    // No afterAll cleanDatabase — test DB is disposable
 
     // ============== POST /auth/local/login ==============
     describe('POST /auth/local/login', () => {
         test('admin login with valid credentials returns 200 and user object', async () => {
-            await createTestAdmin({ username: 'loginadmin', email: 'loginadmin@example.com' });
+            await createTestAdmin({ username: `${P}_loginadmin`, email: `${P}_loginadmin@example.com` });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'loginadmin', password: 'Test1234!' });
+                .send({ username: `${P}_loginadmin`, password: 'Test1234!' });
             expect(res.status).toBe(200);
             expect(res.body.success).toBe(true);
             expect(res.body.user).toBeDefined();
-            expect(res.body.user.username).toBe('loginadmin');
+            expect(res.body.user.username).toBe(`${P}_loginadmin`);
             expect(res.body.user.role).toBe('admin');
         });
 
         test('non-admin user login returns 403', async () => {
-            await createTestUser({ username: 'loginuser', email: 'loginuser@example.com' }); // role: 'user'
+            await createTestUser({ username: `${P}_loginuser`, email: `${P}_loginuser@example.com` }); // role: 'user'
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'loginuser', password: 'Test1234!' });
+                .send({ username: `${P}_loginuser`, password: 'Test1234!' });
             expect(res.status).toBe(403);
             expect(res.body.error).toBeDefined();
         });
 
         test('login with wrong password returns 401', async () => {
-            await createTestAdmin({ username: 'wrongpwadmin', email: 'wrongpwadmin@example.com' });
+            await createTestAdmin({ username: `${P}_wrongpwadmin`, email: `${P}_wrongpwadmin@example.com` });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'wrongpwadmin', password: 'WrongPass' });
+                .send({ username: `${P}_wrongpwadmin`, password: 'WrongPass' });
             expect(res.status).toBe(401);
         });
 
         test('login with non-existent user returns 401', async () => {
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'nonexistent', password: 'Test1234!' });
+                .send({ username: `${P}_nonexistent`, password: 'Test1234!' });
             expect(res.status).toBe(401);
         });
 
         test('unapproved admin login returns 403', async () => {
-            await createTestAdmin({ username: 'unapprovedadmin', email: 'unapprovedadmin@example.com', isApproved: false });
+            await createTestAdmin({ username: `${P}_unapprovedadmin`, email: `${P}_unapprovedadmin@example.com`, isApproved: false });
             const res = await supertest(app)
                 .post('/auth/local/login')
-                .send({ username: 'unapprovedadmin', password: 'Test1234!' });
+                .send({ username: `${P}_unapprovedadmin`, password: 'Test1234!' });
             expect(res.status).toBe(403);
             expect(res.body.error).toBeDefined();
         });
@@ -65,8 +62,8 @@ describe('Auth Routes', () => {
             const res = await supertest(app)
                 .post('/auth/local/register')
                 .send({
-                    username: 'newuser',
-                    email: 'new@test.com',
+                    username: `${P}_newuser`,
+                    email: `${P}_new@test.com`,
                     password: 'NewPass123!',
                     displayName: 'New User'
                 });
@@ -76,12 +73,12 @@ describe('Auth Routes', () => {
         });
 
         test('register with duplicate username returns 400', async () => {
-            await createTestUser({ username: 'dupeuser', email: 'dupeuser@example.com' });
+            await createTestUser({ username: `${P}_dupeuser`, email: `${P}_dupeuser@example.com` });
             const res = await supertest(app)
                 .post('/auth/local/register')
                 .send({
-                    username: 'dupeuser',
-                    email: 'other@test.com',
+                    username: `${P}_dupeuser`,
+                    email: `${P}_other@test.com`,
                     password: 'NewPass123!',
                     displayName: 'Dup'
                 });
@@ -90,12 +87,12 @@ describe('Auth Routes', () => {
         });
 
         test('register with duplicate email returns 400', async () => {
-            await createTestUser({ username: 'dupeemail', email: 'dupeemail@example.com' });
+            await createTestUser({ username: `${P}_dupeemail`, email: `${P}_dupeemail@example.com` });
             const res = await supertest(app)
                 .post('/auth/local/register')
                 .send({
-                    username: 'differentuser',
-                    email: 'dupeemail@example.com',
+                    username: `${P}_differentuser`,
+                    email: `${P}_dupeemail@example.com`,
                     password: 'NewPass123!'
                 });
             expect(res.status).toBe(400);
@@ -105,21 +102,21 @@ describe('Auth Routes', () => {
         test('register with missing password returns 400 (validation)', async () => {
             const res = await supertest(app)
                 .post('/auth/local/register')
-                .send({ username: 'incomplete', email: 'inc@test.com' });
+                .send({ username: `${P}_incomplete`, email: `${P}_inc@test.com` });
             expect(res.status).toBe(400);
         });
 
         test('register with username shorter than 3 chars returns 400', async () => {
             const res = await supertest(app)
                 .post('/auth/local/register')
-                .send({ username: 'ab', email: 'short@test.com', password: 'NewPass123!' });
+                .send({ username: 'ab', email: `${P}_short@test.com`, password: 'NewPass123!' });
             expect(res.status).toBe(400);
         });
 
         test('register with invalid email returns 400', async () => {
             const res = await supertest(app)
                 .post('/auth/local/register')
-                .send({ username: 'validuser', email: 'not-an-email', password: 'NewPass123!' });
+                .send({ username: `${P}_validuser`, email: 'not-an-email', password: 'NewPass123!' });
             expect(res.status).toBe(400);
         });
     });
@@ -127,17 +124,17 @@ describe('Auth Routes', () => {
     // ============== GET /auth/me ==============
     describe('GET /auth/me', () => {
         test('authenticated admin gets profile with isAuthenticated: true', async () => {
-            await createTestAdmin({ username: 'meadmin', email: 'meadmin@example.com' });
+            await createTestAdmin({ username: `${P}_meadmin`, email: `${P}_meadmin@example.com` });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'meadmin', password: 'Test1234!' })
+                .send({ username: `${P}_meadmin`, password: 'Test1234!' })
                 .expect(200);
             const res = await agent.get('/auth/me');
             expect(res.status).toBe(200);
             expect(res.body.isAuthenticated).toBe(true);
             expect(res.body.user).toBeDefined();
-            expect(res.body.user.username).toBe('meadmin');
+            expect(res.body.user.username).toBe(`${P}_meadmin`);
             expect(res.body.user.role).toBe('admin');
         });
 
@@ -151,11 +148,11 @@ describe('Auth Routes', () => {
     // ============== POST /auth/logout ==============
     describe('POST /auth/logout', () => {
         test('authenticated admin can logout and receives success', async () => {
-            await createTestAdmin({ username: 'logoutadmin', email: 'logoutadmin@example.com' });
+            await createTestAdmin({ username: `${P}_logoutadmin`, email: `${P}_logoutadmin@example.com` });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'logoutadmin', password: 'Test1234!' })
+                .send({ username: `${P}_logoutadmin`, password: 'Test1234!' })
                 .expect(200);
             const res = await agent.post('/auth/logout');
             expect(res.status).toBe(200);
@@ -163,11 +160,11 @@ describe('Auth Routes', () => {
         });
 
         test('after logout, /auth/me returns 401', async () => {
-            await createTestAdmin({ username: 'afterlogoutadmin', email: 'afterlogoutadmin@example.com' });
+            await createTestAdmin({ username: `${P}_afterlogoutadmin`, email: `${P}_afterlogoutadmin@example.com` });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'afterlogoutadmin', password: 'Test1234!' })
+                .send({ username: `${P}_afterlogoutadmin`, password: 'Test1234!' })
                 .expect(200);
             await agent.post('/auth/logout').expect(200);
             const res = await agent.get('/auth/me');
@@ -190,11 +187,11 @@ describe('Auth Routes', () => {
         });
 
         test('authenticated admin can change password with correct current password', async () => {
-            await createTestAdmin({ username: 'changepwadmin', email: 'changepwadmin@example.com' });
+            await createTestAdmin({ username: `${P}_changepwadmin`, email: `${P}_changepwadmin@example.com` });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'changepwadmin', password: 'Test1234!' })
+                .send({ username: `${P}_changepwadmin`, password: 'Test1234!' })
                 .expect(200);
             const res = await agent
                 .put('/auth/change-password')
@@ -204,11 +201,11 @@ describe('Auth Routes', () => {
         });
 
         test('wrong current password returns 400', async () => {
-            await createTestAdmin({ username: 'wrongcurrentpw', email: 'wrongcurrentpw@example.com' });
+            await createTestAdmin({ username: `${P}_wrongcurrentpw`, email: `${P}_wrongcurrentpw@example.com` });
             const agent = supertest.agent(app);
             await agent
                 .post('/auth/local/login')
-                .send({ username: 'wrongcurrentpw', password: 'Test1234!' })
+                .send({ username: `${P}_wrongcurrentpw`, password: 'Test1234!' })
                 .expect(200);
             const res = await agent
                 .put('/auth/change-password')
