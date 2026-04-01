@@ -183,13 +183,15 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500).json(response);
 });
 
-// Sunucuyu Başlat ve DB'ye Bağlan
-const startServer = async () => {
-    await connectDatabase();
-    app.listen(port, () => {
-        logger.info(`Sunucu ${port} portunda çalışıyor...`);
-        startAutoCleanup();
-        console.log('Otomatik çöp kutusu temizleme aktif.');
-    });
-};
-startServer();
+if (require.main === module) {
+    const startServer = async () => {
+        await connectDatabase();
+        app.listen(port, () => {
+            logger.info(`Server running on port ${port}`);
+            startAutoCleanup();
+        });
+    };
+    startServer();
+}
+
+module.exports = app;
