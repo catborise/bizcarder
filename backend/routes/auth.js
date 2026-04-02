@@ -107,6 +107,26 @@ router.post('/local/login',
             });
         }
 
+        // 2FA kontrolü
+        if (req.user.twoFactorEnabled) {
+            const { token: totpToken } = req.body;
+            if (!totpToken) {
+                // Don't complete login yet — tell client to ask for TOTP
+                req.logout((err) => {});
+                return res.status(206).json({
+                    requires2FA: true,
+                    message: 'Two-factor authentication required.'
+                });
+            }
+
+            const secret = decrypt(req.user.twoFactorSecret);
+            const isValid = authenticator.verify({ token: totpToken, secret });
+            if (!isValid) {
+                req.logout((err) => {});
+                return res.status(401).json({ error: 'Invalid 2FA token.' });
+            }
+        }
+
         // Başarılı giriş
         res.json({
             success: true,
@@ -251,6 +271,7 @@ router.put('/change-password', async (req, res) => {
 });
 
 const { encrypt, decrypt } = require('../utils/encryption');
+const { authenticator } = require('otplib');
 
 // Kullanıcı Bilgisi (Frontend'in oturum kontrolü için)
 router.get('/me', (req, res) => {
@@ -268,7 +289,8 @@ router.get('/me', (req, res) => {
                 aiOcrProvider: req.user.aiOcrProvider,
                 hasAiApiKey: !!req.user.aiOcrApiKey,
                 isApproved: req.user.isApproved,
-                trashRetentionDays: req.user.trashRetentionDays
+                trashRetentionDays: req.user.trashRetentionDays,
+                twoFactorEnabled: req.user.twoFactorEnabled || false
             }
         });
     } else {

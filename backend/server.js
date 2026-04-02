@@ -167,6 +167,7 @@ app.use('/api/logs', requireAuth, require('./routes/logs'));
 app.use('/api/tags', requireAuth, require('./routes/tags'));
 app.use('/api/users', requireAuth, requireAdmin, require('./routes/users'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/2fa', require('./routes/twoFactor'));
 
 app.get('/', (req, res) => {
     res.json({ message: 'CRM Backend API Çalışıyor!' });

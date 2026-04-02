@@ -63,7 +63,16 @@ const User = sequelize.define('User', {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
         allowNull: false
-    }
+    },
+    twoFactorSecret: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
+    twoFactorEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+        allowNull: false,
+    },
 }, {
     hooks: {
         // Kullanıcı oluşturulmadan önce şifreyi hashle
