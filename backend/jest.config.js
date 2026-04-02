@@ -6,7 +6,10 @@ module.exports = {
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: ['/node_modules/', '/__tests__/'],
   testTimeout: 30000,
-  // Run test suites serially to avoid DB race conditions between workers
   maxWorkers: 1,
   setupFiles: ['<rootDir>/__tests__/setEnv.js'],
+  // Transform ESM-only dependencies (otplib → @scure/base)
+  transformIgnorePatterns: [
+    'node_modules/(?!(@scure|@noble|otplib)/)',
+  ],
 };
