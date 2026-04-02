@@ -21,6 +21,19 @@ const isTest = process.env.NODE_ENV === 'test';
 const passThrough = (_req, _res, next) => next();
 
 /**
+ * Shared violation handler — logs the event to AuditLog then returns 429.
+ */
+const violationHandler = (req, res, next, options) => {
+    const { logAction } = require('../utils/logger');
+    logAction({
+        action: 'RATE_LIMIT_EXCEEDED',
+        details: `Rate limit exceeded: ${options.message?.error || 'Unknown limiter'}. IP: ${req.ip}, Path: ${req.originalUrl}`,
+        req
+    }).catch(() => {});
+    res.status(options.statusCode).json(options.message);
+};
+
+/**
  * General API limiter — 100 requests per minute
  */
 const apiLimiter = isTest ? passThrough : rateLimit({
@@ -29,7 +42,8 @@ const apiLimiter = isTest ? passThrough : rateLimit({
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     store,
-    message: { error: 'Too many requests. Please try again in a minute.' }
+    message: { error: 'Too many requests. Please try again in a minute.' },
+    handler: violationHandler,
 });
 
 /**
@@ -41,7 +55,8 @@ const authLimiter = isTest ? passThrough : rateLimit({
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     store,
-    message: { error: 'Login attempts limited for security. Please try again in 15 minutes.' }
+    message: { error: 'Login attempts limited for security. Please try again in 15 minutes.' },
+    handler: violationHandler,
 });
 
 /**
@@ -53,7 +68,8 @@ const ocrLimiter = isTest ? passThrough : rateLimit({
     standardHeaders: 'draft-7',
     legacyHeaders: false,
     store,
-    message: { error: 'Hourly AI analysis limit reached. Please try again later.' }
+    message: { error: 'Hourly AI analysis limit reached. Please try again later.' },
+    handler: violationHandler,
 });
 
 module.exports = {

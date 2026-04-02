@@ -29,4 +29,48 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/logs/rate-limits — admin only
+router.get('/rate-limits', async (req, res) => {
+    try {
+        // Enforce admin-only access
+        if (!req.user || req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Admin access required.' });
+        }
+
+        const { AuditLog } = require('../models');
+        const { Op } = require('sequelize');
+
+        const since = req.query.since || new Date(Date.now() - 24 * 60 * 60 * 1000); // last 24h
+
+        const violations = await AuditLog.findAll({
+            where: {
+                action: 'RATE_LIMIT_EXCEEDED',
+                createdAt: { [Op.gte]: since }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 100,
+        });
+
+        // Summary stats
+        const summary = {
+            total: violations.length,
+            byIP: {},
+            byPath: {},
+        };
+
+        violations.forEach(v => {
+            const ipMatch = v.details?.match(/IP: ([^,]+)/);
+            const pathMatch = v.details?.match(/Path: (.+)/);
+            const ip = ipMatch?.[1] || 'unknown';
+            const path = pathMatch?.[1] || 'unknown';
+            summary.byIP[ip] = (summary.byIP[ip] || 0) + 1;
+            summary.byPath[path] = (summary.byPath[path] || 0) + 1;
+        });
+
+        res.json({ summary, violations });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
