@@ -13,5 +13,11 @@ export default defineConfig({
         hmr: {
             clientPort: 5173
         }
-    }
+    },
+    test: {
+        globals: true,
+        environment: 'jsdom',
+        setupFiles: './src/__tests__/setup.js',
+        css: false,
+    },
 })
