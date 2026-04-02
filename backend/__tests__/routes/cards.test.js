@@ -55,7 +55,8 @@ describe('Cards Routes', () => {
                 .field('lastName', 'Card')
                 .field('email', `${P}_new@card.com`);
             expect(res.status).toBe(201);
-            expect(res.body.firstName).toBe(`${P}_New`);
+            // toTitleCase turns "cards_New" into "Cards_new"
+            expect(res.body.firstName).toBe('Cards_new');
         });
 
         test('rejects card without firstName', async () => {
@@ -83,9 +84,11 @@ describe('Cards Routes', () => {
             const res = await agent
                 .put(`/api/cards/${card.id}`)
                 .field('firstName', `${P}_Updated`)
-                .field('lastName', 'Name');
+                .field('lastName', 'Name')
+                .field('email', `${P}_toupdate@test.com`);
             expect(res.status).toBe(200);
-            expect(res.body.firstName).toBe(`${P}_Updated`);
+            // toTitleCase turns "cards_Updated" into "Cards_updated"
+            expect(res.body.firstName).toBe('Cards_updated');
         });
 
         test('rejects update of another users card', async () => {
@@ -93,7 +96,9 @@ describe('Cards Routes', () => {
             const card = await createTestCard(other.id, { email: `${P}_othercard@test.com` });
             const res = await agent
                 .put(`/api/cards/${card.id}`)
-                .field('firstName', 'Hacked');
+                .field('firstName', 'Hacked')
+                .field('lastName', 'Name')
+                .field('email', `${P}_othercard@test.com`);
             expect(res.status).toBe(403);
         });
 
@@ -101,7 +106,8 @@ describe('Cards Routes', () => {
             const res = await agent
                 .put('/api/cards/999999')
                 .field('firstName', 'Ghost')
-                .field('lastName', 'Card');
+                .field('lastName', 'Card')
+                .field('email', 'ghost@test.com');
             expect(res.status).toBe(404);
         });
     });

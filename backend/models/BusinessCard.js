@@ -159,13 +159,18 @@ const createHistory = async (card, options, type, snapshotData = null) => {
         // Snapshot verisi: options üzerinden geliyorsa onu kullan, yoksa kartın kendi verisini kullan
         const data = snapshotData || card.toJSON();
 
+        const historyOptions = {};
+        if (options && options.transaction) {
+            historyOptions.transaction = options.transaction;
+        }
+
         await BusinessCardHistory.create({
             cardId: card.id,
             changedBy: changedBy,
             changeType: type,
             version: card.version,
             snapshot: data
-        });
+        }, historyOptions);
     } catch (error) {
         console.error('History creation failed:', error);
     }
