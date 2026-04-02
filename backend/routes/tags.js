@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Tag, BusinessCard, sequelize } = require('../models');
 const { requireAuth } = require('../middleware/auth');
+const { logAction } = require('../utils/logger');
 
 // All tag routes require authentication
 router.use(requireAuth);
@@ -62,6 +63,13 @@ router.post('/', async (req, res) => {
             color: color || '#3b82f6',
             ownerId: req.user.id
         });
+
+        await logAction({
+            action: 'TAG_CREATE',
+            details: `Tag created: "${name}" (color: ${color || '#3b82f6'})`,
+            req
+        });
+
         res.status(201).json(newTag);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -86,8 +94,17 @@ router.put('/:id', async (req, res) => {
             return res.status(403).json({ error: 'Bu etiketi düzenleme yetkiniz yok.' });
         }
 
+        const oldName = tag.name;
+        const oldColor = tag.color;
         await tag.update({ name, color }, { transaction: t });
         await t.commit();
+
+        await logAction({
+            action: 'TAG_UPDATE',
+            details: `Tag updated: "${oldName}" -> "${name || oldName}" (color: ${oldColor} -> ${color || oldColor})`,
+            req
+        });
+
         res.json(tag);
     } catch (error) {
         await t.rollback();
@@ -111,8 +128,16 @@ router.delete('/:id', async (req, res) => {
             return res.status(403).json({ error: 'Bu etiketi silme yetkiniz yok.' });
         }
 
+        const tagName = tag.name;
         await tag.destroy({ transaction: t });
         await t.commit();
+
+        await logAction({
+            action: 'TAG_DELETE',
+            details: `Tag deleted: "${tagName}" (id: ${req.params.id})`,
+            req
+        });
+
         res.json({ message: 'Etiket başarıyla silindi.' });
     } catch (error) {
         await t.rollback();

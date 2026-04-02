@@ -10,3 +10,4 @@ pgdata/
 backend/logs/
 backend/uploads/
 .superpowers/
+backups/

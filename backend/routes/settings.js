@@ -5,6 +5,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { requireAdmin } = require('../middleware/auth');
+const { logAction } = require('../utils/logger');
 
 // Multer Ayarları (Branding Dosyaları)
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon'];
@@ -217,6 +218,14 @@ router.put('/', requireAdmin, async (req, res) => {
             });
         }
 
+        // Collect which fields were actually changed for the audit log
+        const changedFields = Object.keys(req.body).filter(k => req.body[k] !== undefined);
+        await logAction({
+            action: 'SETTINGS_UPDATE',
+            details: `Admin updated system settings: ${changedFields.join(', ')}`,
+            req
+        });
+
         res.json({ message: 'Ayarlar güncellendi.', settings: req.body });
     } catch (error) {
         console.error('Settings update error:', error);
@@ -225,12 +234,19 @@ router.put('/', requireAdmin, async (req, res) => {
 });
 
 // Branding Dosyası Yükle
-router.post('/upload-branding', requireAdmin, upload.single('file'), (req, res) => {
+router.post('/upload-branding', requireAdmin, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'Dosya yüklenemedi.' });
         }
         const fileUrl = `/uploads/branding/${req.file.filename}`;
+
+        await logAction({
+            action: 'BRANDING_UPLOAD',
+            details: `Admin uploaded branding asset: ${req.file.originalname} -> ${fileUrl}`,
+            req
+        });
+
         res.json({ url: fileUrl });
     } catch (error) {
         res.status(500).json({ error: error.message });

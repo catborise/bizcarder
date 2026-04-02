@@ -98,6 +98,21 @@ npm run dev
 5.  **Share**: Create your digital business card and share via QR code or link.
 6.  **Export**: Download your contacts as Excel, PDF, or vCard.
 
+## Backup & Restore
+
+```bash
+# Create backup (database + uploads)
+./backend/scripts/backup.sh
+
+# List available backups
+./backend/scripts/restore.sh
+
+# Restore from backup
+./backend/scripts/restore.sh 20260401_120000
+```
+
+Backups are stored in `./backups/` (last 7 retained automatically).
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
