@@ -4,6 +4,7 @@ const { User, BusinessCard } = require('../models');
 const sequelize = require('../config/database');
 const { logAction } = require('../utils/logger');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { sendApprovalEmail } = require('../utils/mailer');
 
 // All user management routes require admin
 router.use(requireAdmin);
@@ -135,6 +136,11 @@ router.put('/:id/approve', async (req, res) => {
             details: `Admin ${req.user.username}, ${user.username} kullanıcısının onay durumunu güncelledi: ${isApproved}`,
             req
         });
+
+        // Send approval email when account is approved (non-blocking)
+        if (isApproved) {
+            sendApprovalEmail(user).catch(() => {});
+        }
 
         res.json({
             message: isApproved ? 'Kullanıcı onaylandı.' : 'Kullanıcı onayı kaldırıldı.',

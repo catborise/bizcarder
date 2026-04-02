@@ -4,6 +4,7 @@ const { User, SystemSetting } = require('../models');
 const { authLimiter } = require('../middleware/rateLimiter');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
+const { sendWelcomeEmail } = require('../utils/mailer');
 const router = express.Router();
 
 // ============== SHIBBOLETH (SAML) AUTHENTICATION ==============
@@ -198,6 +199,9 @@ router.post('/local/register',
             role: 'user',
             isApproved: false
         });
+
+        // Send welcome email (non-blocking)
+        sendWelcomeEmail(user).catch(() => {});
 
         // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
         res.status(201).json({

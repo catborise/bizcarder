@@ -67,6 +67,11 @@ services:
       - SAML_ISSUER=${SAML_ISSUER}
       - SAML_CALLBACK_URL=${SAML_CALLBACK_URL}
       - SAML_CERT=${SAML_CERT}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
     depends_on:
       db:
         condition: service_healthy

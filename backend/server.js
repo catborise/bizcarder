@@ -13,6 +13,7 @@ const { sequelize, connectDatabase } = require('./models');
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const { startAutoCleanup } = require('./utils/trashCleanup');
+const { startReminderNotifier } = require('./utils/reminderNotifier');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const csrfProtection = require('./middleware/csrf');
 
@@ -196,6 +197,7 @@ if (require.main === module) {
         app.listen(port, () => {
             logger.info(`Server running on port ${port}`);
             startAutoCleanup();
+            startReminderNotifier();
         });
     };
     startServer();
