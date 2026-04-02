@@ -8,4 +8,13 @@ const api = axios.create({
     withCredentials: true // Cookie'leri (Session ID) gönder
 });
 
+// Read CSRF token from cookie and send it as a header on every state-changing request
+api.interceptors.request.use((config) => {
+    const match = document.cookie.match(/csrf-token=([^;]+)/);
+    if (match) {
+        config.headers['X-CSRF-Token'] = match[1];
+    }
+    return config;
+});
+
 export default api;

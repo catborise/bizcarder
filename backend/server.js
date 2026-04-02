@@ -4,6 +4,7 @@ const cors = require('cors');
 const session = require('express-session');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const { logger } = require('./utils/logger');
 const passport = require('./config/passport');
 const flash = require('connect-flash');
@@ -13,6 +14,7 @@ const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
 const { startAutoCleanup } = require('./utils/trashCleanup');
 const { apiLimiter } = require('./middleware/rateLimiter');
+const csrfProtection = require('./middleware/csrf');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -105,6 +107,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
 // Rate Limiting (Tüm API rotalarına uygula)
 app.use('/api/', apiLimiter);
@@ -141,6 +144,9 @@ app.use(flash());
 // Passport Başlatma
 app.use(passport.initialize());
 app.use(passport.session());
+
+// CSRF Protection (double-submit cookie pattern)
+app.use(csrfProtection);
 
 // Statik Dosyalar (Yüklenen Resimler)
 app.use('/uploads', express.static('uploads'));
