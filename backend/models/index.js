@@ -25,8 +25,11 @@ const connectDatabase = async (retries = 5, interval = 5000) => {
         try {
             await sequelize.authenticate();
             console.log('Veritabanı bağlantısı başarılı.');
-            // Auto-sync new columns (safe for production — only adds, never drops)
-            await sequelize.sync({ alter: true });
+            // Sync schema — create missing tables/columns without dropping data
+            // In production, use migrations instead: npx sequelize-cli db:migrate
+            if (process.env.NODE_ENV !== 'production') {
+                await sequelize.sync({ alter: true });
+            }
             return;
         } catch (error) {
             console.error(`Veritabanı bağlantı hatası (Deneme ${i + 1}/${retries}):`, error.message);
