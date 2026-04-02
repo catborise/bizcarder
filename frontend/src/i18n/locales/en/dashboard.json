@@ -27,6 +27,9 @@
     "followUps": "Follow-ups",
     "activeFollowUps": "Active Follow-ups"
   },
+  "customizeWidgets": "Customize Dashboard",
+  "widgetSettings": "Widget Settings",
+  "reset": "Reset",
   "quickAddCard": "Add Card",
   "quickReminders": "Reminders",
   "quickRecent": "Recent",

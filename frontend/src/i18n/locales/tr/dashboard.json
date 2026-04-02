@@ -27,6 +27,9 @@
     "followUps": "Takipler",
     "activeFollowUps": "Aktif Takipler"
   },
+  "customizeWidgets": "Dashboard'u Özelleştir",
+  "widgetSettings": "Widget Ayarları",
+  "reset": "Sıfırla",
   "quickAddCard": "Kart Ekle",
   "quickReminders": "Hatırlatmalar",
   "quickRecent": "Son Eklenenler",

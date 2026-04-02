@@ -10,6 +10,8 @@ import { useTheme } from '../../context/ThemeContext';
 import QuickSearch from './QuickSearch';
 import TileFormModal from './TileFormModal';
 import useTiles from '../../hooks/useTiles';
+import useDashboardPrefs from '../../hooks/useDashboardPrefs';
+import WidgetCustomizer from './WidgetCustomizer';
 
 const DynamicIcon = ({ name, size = 36 }) => {
     const IconComponent = Icons[name] || Icons.FaLink;
@@ -48,6 +50,8 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const isAdmin = user?.role === 'admin';
+
+    const { widgets, toggleWidget, moveWidget, resetPrefs, isVisible } = useDashboardPrefs();
 
     const {
         tiles,
@@ -115,7 +119,7 @@ const Dashboard = () => {
 
     return (
         <div className="fade-in">
-            {settings?.appBanner && (
+            {isVisible('banner') && settings?.appBanner && (
                 <div className="dashboard-banner" style={{
                     borderRadius: '24px',
                     overflow: 'hidden',
@@ -172,59 +176,67 @@ const Dashboard = () => {
                 }}>
                     {t('dashboard:title')}
                 </h2>
-                {isAdmin && (
-                    <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                        <button
-                            onClick={() => setEditMode(!editMode)}
-                            style={{
-                                padding: '10px 20px',
-                                background: editMode
-                                    ? 'var(--accent-primary)'
-                                    : 'var(--glass-bg)',
-                                color: editMode ? 'var(--bg-card)' : 'var(--text-primary)',
-                                border: editMode ? 'none' : '1px solid var(--glass-border)',
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                fontWeight: '600',
-                                transition: 'all 0.3s ease',
-                                backdropFilter: 'blur(10px)',
-                                boxShadow: editMode
-                                    ? 'var(--glass-shadow-hover)'
-                                    : 'var(--glass-shadow)'
-                            }}
-                            title={editMode ? t('dashboard:editMode.close') : t('dashboard:editMode.open')}
-                        >
-                            <Icons.FaTools size={16} />
-                        </button>
-                        <button
-                            onClick={() => openModal()}
-                            style={{
-                                padding: '10px 20px',
-                                background: 'var(--accent-primary)',
-                                color: 'var(--bg-card)',
-                                border: 'none',
-                                borderRadius: '12px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                fontWeight: '600',
-                                boxShadow: 'var(--glass-shadow)',
-                                transition: 'all 0.3s ease'
-                            }}
-                        >
-                            <Icons.FaPlus size={16} />
-                            {t('dashboard:tile.add')}
-                        </button>
-                    </div>
-                )}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <WidgetCustomizer
+                        widgets={widgets}
+                        onToggle={toggleWidget}
+                        onMove={moveWidget}
+                        onReset={resetPrefs}
+                    />
+                    {isAdmin && (
+                        <>
+                            <button
+                                onClick={() => setEditMode(!editMode)}
+                                style={{
+                                    padding: '10px 20px',
+                                    background: editMode
+                                        ? 'var(--accent-primary)'
+                                        : 'var(--glass-bg)',
+                                    color: editMode ? 'var(--bg-card)' : 'var(--text-primary)',
+                                    border: editMode ? 'none' : '1px solid var(--glass-border)',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontWeight: '600',
+                                    transition: 'all 0.3s ease',
+                                    backdropFilter: 'blur(10px)',
+                                    boxShadow: editMode
+                                        ? 'var(--glass-shadow-hover)'
+                                        : 'var(--glass-shadow)'
+                                }}
+                                title={editMode ? t('dashboard:editMode.close') : t('dashboard:editMode.open')}
+                            >
+                                <Icons.FaTools size={16} />
+                            </button>
+                            <button
+                                onClick={() => openModal()}
+                                style={{
+                                    padding: '10px 20px',
+                                    background: 'var(--accent-primary)',
+                                    color: 'var(--bg-card)',
+                                    border: 'none',
+                                    borderRadius: '12px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    fontWeight: '600',
+                                    boxShadow: 'var(--glass-shadow)',
+                                    transition: 'all 0.3s ease'
+                                }}
+                            >
+                                <Icons.FaPlus size={16} />
+                                {t('dashboard:tile.add')}
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             {/* Quick Actions */}
-            {isAuthenticated && (
+            {isVisible('quickActions') && isAuthenticated && (
                 <div style={{
                     display: 'flex',
                     gap: 'var(--space-3)',
@@ -271,10 +283,10 @@ const Dashboard = () => {
             )}
 
             {/* Quick Search */}
-            <QuickSearch isAuthenticated={isAuthenticated} />
+            {isVisible('search') && <QuickSearch isAuthenticated={isAuthenticated} />}
 
             {/* Stats Grid */}
-            <div className="dashboard-stats-grid stagger-enter" style={{ animationDelay: '0.1s' }}>
+            {isVisible('stats') && <div className="dashboard-stats-grid stagger-enter" style={{ animationDelay: '0.1s' }}>
                 {/* Total Cards */}
                 <div className="hover-lift" style={{
                     background: 'var(--gradient-primary)',
@@ -460,10 +472,10 @@ const Dashboard = () => {
                         )}
                     </div>
                 </div>
-            </div>
+            </div>}
 
             {/* Frequent Tags - compact row below stats */}
-            {!loading && tagStats.length > 0 && (
+            {isVisible('tags') && !loading && tagStats.length > 0 && (
                 <div style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -513,7 +525,7 @@ const Dashboard = () => {
             )}
 
             {/* Core Application Tiles - compact nav shortcuts */}
-            <div style={{
+            {isVisible('coreTiles') && <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
                 gap: 'var(--space-3)',
@@ -561,10 +573,10 @@ const Dashboard = () => {
                             </Link>
                         ))
                 )}
-            </div>
+            </div>}
 
             {/* Custom/Other Tiles Grid */}
-            <div className="dashboard-tiles-grid stagger-enter" style={{ animationDelay: '0.3s' }}>
+            {isVisible('customTiles') && <div className="dashboard-tiles-grid stagger-enter" style={{ animationDelay: '0.3s' }}>
                 {loading ? (
                     Array.from({ length: 4 }).map((_, i) => (
                         <div key={`skel-o-${i}`} className="skeleton-box" style={{ height: '160px', borderRadius: '16px' }}></div>
@@ -668,7 +680,7 @@ const Dashboard = () => {
                             );
                         })
                 )}
-            </div>
+            </div>}
 
             {/* Tile Form Modal */}
             <TileFormModal
