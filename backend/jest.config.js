@@ -8,8 +8,4 @@ module.exports = {
   testTimeout: 30000,
   maxWorkers: 1,
   setupFiles: ['<rootDir>/__tests__/setEnv.js'],
-  // Transform ESM-only dependencies (otplib → @scure/base)
-  transformIgnorePatterns: [
-    'node_modules/(?!(@scure|@noble|otplib)/)',
-  ],
 };

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticator } = require('otplib');
+const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const { User } = require('../models');
 const { requireAuth } = require('../middleware/auth');
@@ -16,14 +16,16 @@ router.post('/setup', async (req, res) => {
             return res.status(400).json({ error: '2FA is already enabled.' });
         }
 
-        const secret = authenticator.generateSecret();
-        const otpauth = authenticator.keyuri(user.email || user.username, 'Bizcarder', secret);
-        const qrCodeUrl = await QRCode.toDataURL(otpauth);
+        const secretObj = speakeasy.generateSecret({
+            name: `Bizcarder (${user.email || user.username})`,
+            issuer: 'Bizcarder',
+        });
+        const qrCodeUrl = await QRCode.toDataURL(secretObj.otpauth_url);
 
         // Store encrypted secret (not yet enabled)
-        await user.update({ twoFactorSecret: encrypt(secret) });
+        await user.update({ twoFactorSecret: encrypt(secretObj.base32) });
 
-        res.json({ qrCodeUrl, secret }); // secret shown for manual entry
+        res.json({ qrCodeUrl, secret: secretObj.base32 });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -39,7 +41,7 @@ router.post('/verify', async (req, res) => {
         const secret = decrypt(user.twoFactorSecret);
         if (!secret) return res.status(400).json({ error: '2FA setup not initiated.' });
 
-        const isValid = authenticator.verify({ token, secret });
+        const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token, window: 1 });
         if (!isValid) return res.status(400).json({ error: 'Invalid token.' });
 
         await user.update({ twoFactorEnabled: true });
@@ -58,7 +60,7 @@ router.post('/disable', async (req, res) => {
         const user = await User.findByPk(req.user.id);
         const secret = decrypt(user.twoFactorSecret);
 
-        const isValid = authenticator.verify({ token, secret });
+        const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token, window: 1 });
         if (!isValid) return res.status(400).json({ error: 'Invalid token.' });
 
         await user.update({ twoFactorEnabled: false, twoFactorSecret: null });

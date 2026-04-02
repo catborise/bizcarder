@@ -121,7 +121,7 @@ router.post('/local/login',
             }
 
             const secret = decrypt(req.user.twoFactorSecret);
-            const isValid = authenticator.verify({ token: totpToken, secret });
+            const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token: totpToken, window: 1 });
             if (!isValid) {
                 req.logout((err) => {});
                 return res.status(401).json({ error: 'Invalid 2FA token.' });
@@ -275,7 +275,7 @@ router.put('/change-password', async (req, res) => {
 });
 
 const { encrypt, decrypt } = require('../utils/encryption');
-const { authenticator } = require('otplib');
+const speakeasy = require('speakeasy');
 
 // Kullanıcı Bilgisi (Frontend'in oturum kontrolü için)
 router.get('/me', (req, res) => {
