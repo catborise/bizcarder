@@ -1446,3 +1446,22 @@ input:checked+.slider:before {
     display: none;
   }
 }
+
+/* ====================================
+   ACCESSIBILITY
+   ==================================== */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent-primary);
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 9999;
+  font-size: 0.9rem;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}

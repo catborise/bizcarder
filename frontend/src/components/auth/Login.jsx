@@ -201,12 +201,13 @@ const Login = () => {
                     {showLocalForm ? (
                         <form onSubmit={handleLocalSubmit}>
                             <div style={{ marginBottom: '20px' }}>
-                                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                <label htmlFor="login-username" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
                                     {t('login.usernameLabel')} {isRegisterMode && t('login.orEmail')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
                                     <FaUser style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                     <input
+                                        id="login-username"
                                         type="text"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
@@ -233,12 +234,13 @@ const Login = () => {
                             {isRegisterMode && (
                                 <>
                                     <div style={{ marginBottom: '20px' }}>
-                                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                        <label htmlFor="login-email" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
                                             {t('login.emailLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <FaEnvelope style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                             <input
+                                                id="login-email"
                                                 type="email"
                                                 value={email}
                                                 onChange={(e) => setEmail(e.target.value)}
@@ -260,12 +262,13 @@ const Login = () => {
                                     </div>
 
                                     <div style={{ marginBottom: '20px' }}>
-                                        <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                        <label htmlFor="login-displayname" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
                                             {t('login.displayNameLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <FaIdCard style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                             <input
+                                                id="login-displayname"
                                                 type="text"
                                                 value={displayName}
                                                 onChange={(e) => setDisplayName(e.target.value)}
@@ -288,12 +291,13 @@ const Login = () => {
                             )}
 
                             <div style={{ marginBottom: '24px' }}>
-                                <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                <label htmlFor="login-password" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
                                     {t('login.passwordLabel')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
                                     <FaKey style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
                                     <input
+                                        id="login-password"
                                         type="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}

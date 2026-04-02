@@ -175,6 +175,7 @@ const AppContent = () => {
             display: 'flex',
             flexDirection: 'column'
         }}>
+            <a href="#main-content" className="skip-link">Skip to main content</a>
             {/* Offline Banner */}
             {!isOnline && (
                 <div style={{
@@ -242,6 +243,7 @@ const AppContent = () => {
                         </button>
                         <button
                             onClick={() => setShowInstallBanner(false)}
+                            aria-label="Dismiss install banner"
                             style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
                             <FaTimes />
@@ -332,6 +334,7 @@ const AppContent = () => {
                                 e.currentTarget.style.color = 'var(--text-secondary)';
                             }}
                             title={t('app.nav.trashBin')}
+                            aria-label={t('app.nav.trashBin')}
                         >
                             <FaTrash />
                         </Link>
@@ -358,7 +361,7 @@ const AppContent = () => {
             </nav>
 
             {/* Main Content Area */}
-            <main>
+            <main id="main-content">
 
                 <AnimatePresence mode="wait">
                     <Routes location={location} key={location.pathname}>

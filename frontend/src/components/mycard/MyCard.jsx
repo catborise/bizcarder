@@ -192,7 +192,7 @@ const MyCard = () => {
                                 marginBottom: 'var(--space-3)', overflow: 'hidden', boxShadow: 'var(--glass-shadow)',
                             }}>
                                 {personalCard.frontImageUrl ? (
-                                    <img src={`${API_URL}${personalCard.frontImageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <img src={`${API_URL}${personalCard.frontImageUrl}`} alt={t('pages:myCard.cardFrontAlt')} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     personalCard.firstName[0] + personalCard.lastName[0]
                                 )}

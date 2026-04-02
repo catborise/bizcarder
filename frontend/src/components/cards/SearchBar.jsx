@@ -54,6 +54,7 @@ const SearchBar = ({
                 <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
                     <input
                         type="text"
+                        aria-label={t('filters:searchPlaceholder')}
                         placeholder={t('filters:searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => onSearchChange(e.target.value)}
@@ -362,11 +363,12 @@ const SearchBar = ({
                                     >
                                         {sf.name}
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
                                             localStorage.setItem('savedFilters', JSON.stringify(saved.filter(f => f.id !== sf.id)));
                                         }}
+                                        aria-label={`Remove saved filter: ${sf.name}`}
                                         style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer', fontSize: '12px' }}
                                     >
                                         ×

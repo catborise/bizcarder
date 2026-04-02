@@ -37,6 +37,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                     }}>{title}</h3>
                     <button
                         onClick={onClose}
+                        aria-label="Close"
                         style={{
                             background: 'var(--glass-bg)',
                             backdropFilter: 'blur(5px)',

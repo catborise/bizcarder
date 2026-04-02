@@ -586,7 +586,7 @@ const Contacts = () => {
                                 <div className="card-info">
                                     <h3>{card.firstName} {card.lastName}</h3>
                                     <p className="company-line">
-                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
+                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt={card.company ? `${card.company} logo` : 'Company logo'} style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
                                         {card.company} {card.title && `- ${card.title}`}
                                     </p>
 
@@ -679,14 +679,14 @@ const Contacts = () => {
                                     <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
 
                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => setQrModalCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.qrVcard')}><FaQrcode size={18} /></button>
-                                        <button onClick={() => handleDownloadVCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.downloadVcard')}><FaDownload size={18} /></button>
-                                        <button onClick={() => setHistoryCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.history')}><FaClock size={16} /></button>
+                                        <button onClick={() => setQrModalCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.qrVcard')} aria-label={t('cards:contacts.titleAttr.qrVcard')}><FaQrcode size={18} /></button>
+                                        <button onClick={() => handleDownloadVCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.downloadVcard')} aria-label={t('cards:contacts.titleAttr.downloadVcard')}><FaDownload size={18} /></button>
+                                        <button onClick={() => setHistoryCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.history')} aria-label={t('cards:contacts.titleAttr.history')}><FaClock size={16} /></button>
                                     </div>
 
                                     <div style={{ display: 'flex', gap: '8px' }}>
                                         <button onClick={() => handleEdit(card)} className="glass-button-small" style={{ flex: 1 }}>{t('cards:contacts.btn.edit')}</button>
-                                        <button onClick={() => handleDeleteClick(card)} className="glass-button-small" style={{ color: 'var(--accent-error)', width: '40px' }}><FaTrash size={14} /></button>
+                                        <button onClick={() => handleDeleteClick(card)} className="glass-button-small" aria-label={t('cards:contacts.deleteTitle', { firstName: card.firstName, lastName: card.lastName })} style={{ color: 'var(--accent-error)', width: '40px' }}><FaTrash size={14} /></button>
                                     </div>
                                 </div>
                             </div>
