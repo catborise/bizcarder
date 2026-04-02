@@ -16,6 +16,12 @@ const { ocrLimiter } = require('../middleware/rateLimiter');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit-table');
 
+function sanitizeForExcel(value) {
+    if (typeof value !== 'string') return value;
+    if (/^[=+\-@\t\r]/.test(value)) return "'" + value;
+    return value;
+}
+
 // Multer Ayarları (Dosya Yükleme)
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -349,18 +355,18 @@ router.get('/export/excel', async (req, res) => {
 
         cards.forEach(card => {
             worksheet.addRow({
-                firstName: card.firstName,
-                lastName: card.lastName,
-                company: card.company,
-                title: card.title,
-                email: card.email,
-                phone: card.phone,
-                address: card.address,
-                city: card.city,
-                country: card.country,
-                website: card.website,
+                firstName: sanitizeForExcel(card.firstName),
+                lastName: sanitizeForExcel(card.lastName),
+                company: sanitizeForExcel(card.company),
+                title: sanitizeForExcel(card.title),
+                email: sanitizeForExcel(card.email),
+                phone: sanitizeForExcel(card.phone),
+                address: sanitizeForExcel(card.address),
+                city: sanitizeForExcel(card.city),
+                country: sanitizeForExcel(card.country),
+                website: sanitizeForExcel(card.website),
                 visibility: card.visibility === 'public' ? 'Herkese Açık' : 'Özel',
-                ownerName: card.owner ? card.owner.displayName : '-',
+                ownerName: sanitizeForExcel(card.owner ? card.owner.displayName : '-'),
                 createdAt: card.createdAt.toLocaleString('tr-TR')
             });
         });

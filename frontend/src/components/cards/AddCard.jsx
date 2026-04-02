@@ -32,6 +32,19 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const [backPreview, setBackPreview] = useState(null);
     const [logoPreview, setLogoPreview] = useState(null);
 
+    const revokePreview = (url) => {
+        if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+    };
+
+    // Cleanup blob URLs on unmount
+    useEffect(() => {
+        return () => {
+            [frontPreview, backPreview, logoPreview].forEach(url => {
+                if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
+            });
+        };
+    }, []);
+
     const [logoBlob, setLogoBlob] = useState(null);
     const [logoTempSrc, setLogoTempSrc] = useState(null); // Logo kırpmak için kullanılan kaynak resim
     const [showLogoCrop, setShowLogoCrop] = useState(false);
@@ -240,12 +253,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
             if (activeSide === 'front') {
                 setFrontBlob(blob);
+                revokePreview(frontPreview);
                 setFrontPreview(previewUrl);
                 setLogoTempSrc(previewUrl);
                 ocr.performOCR(blob);
                 showNotification(t('addCard.notify.cardDetected', { cardType }), 'info');
             } else {
                 setBackBlob(blob);
+                revokePreview(backPreview);
                 setBackPreview(previewUrl);
             }
 
@@ -1144,6 +1159,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     const canvas = warpPerspective(image, points, 400, 400); // Logo için 400x400
                                     canvas.toBlob((blob) => {
                                         setLogoBlob(blob);
+                                        revokePreview(logoPreview);
                                         setLogoPreview(URL.createObjectURL(blob));
                                         setShowLogoCrop(false);
                                     }, 'image/png');

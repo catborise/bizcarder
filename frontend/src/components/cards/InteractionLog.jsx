@@ -31,7 +31,7 @@ const InteractionLog = ({ cardId }) => {
     const [editForm, setEditForm] = useState({ type: '', notes: '', date: '' });
 
     const [formData, setFormData] = useState({
-        type: 'Toplantı',
+        type: 'meeting',
         notes: '',
         date: new Date().toISOString().split('T')[0]
     });
@@ -53,22 +53,22 @@ const InteractionLog = ({ cardId }) => {
 
     const getIcon = (type) => {
         switch (type) {
-            case 'Arama': return <FaPhone style={{ color: 'var(--accent-success)' }} />;
-            case 'Toplantı': return <FaHandshake style={{ color: 'var(--accent-primary)' }} />;
-            case 'E-posta': return <FaEnvelope style={{ color: 'var(--accent-primary)' }} />;
-            case 'Sipariş': return <FaShoppingCart style={{ color: 'var(--accent-warning)' }} />;
-            case 'Not': return <FaStickyNote style={{ color: 'var(--accent-warning)' }} />;
+            case 'call': case 'Arama': return <FaPhone style={{ color: 'var(--accent-success)' }} />;
+            case 'meeting': case 'Toplantı': return <FaHandshake style={{ color: 'var(--accent-primary)' }} />;
+            case 'email': case 'E-posta': return <FaEnvelope style={{ color: 'var(--accent-primary)' }} />;
+            case 'order': case 'Sipariş': return <FaShoppingCart style={{ color: 'var(--accent-warning)' }} />;
+            case 'note': case 'Not': return <FaStickyNote style={{ color: 'var(--accent-warning)' }} />;
             default: return <FaComment style={{ color: 'var(--text-tertiary)' }} />;
         }
     };
 
     const getTypeColor = (type) => {
         switch (type) {
-            case 'Arama': return 'var(--accent-success)';
-            case 'Toplantı': return 'var(--accent-primary)';
-            case 'E-posta': return 'var(--accent-primary)';
-            case 'Sipariş': return 'var(--accent-warning)';
-            case 'Not': return 'var(--accent-warning)';
+            case 'call': case 'Arama': return 'var(--accent-success)';
+            case 'meeting': case 'Toplantı': return 'var(--accent-primary)';
+            case 'email': case 'E-posta': return 'var(--accent-primary)';
+            case 'order': case 'Sipariş': return 'var(--accent-warning)';
+            case 'note': case 'Not': return 'var(--accent-warning)';
             default: return 'var(--text-tertiary)';
         }
     };
@@ -211,11 +211,11 @@ const InteractionLog = ({ cardId }) => {
                         onChange={e => setFormData({ ...formData, type: e.target.value })}
                         style={{ ...formInputStyle, width: '130px', cursor: 'pointer' }}
                     >
-                        <option value="Toplantı">{t('interaction.type.meeting')}</option>
-                        <option value="Arama">{t('interaction.type.call')}</option>
-                        <option value="E-posta">{t('interaction.type.email')}</option>
-                        <option value="Sipariş">{t('interaction.type.order')}</option>
-                        <option value="Not">{t('interaction.type.noteInfo')}</option>
+                        <option value="meeting">{t('interaction.type.meeting')}</option>
+                        <option value="call">{t('interaction.type.call')}</option>
+                        <option value="email">{t('interaction.type.email')}</option>
+                        <option value="order">{t('interaction.type.order')}</option>
+                        <option value="note">{t('interaction.type.note')}</option>
                     </select>
                     <input
                         type="date"
@@ -296,11 +296,11 @@ const InteractionLog = ({ cardId }) => {
                                             onChange={e => setEditForm({ ...editForm, type: e.target.value })}
                                             style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                         >
-                                            <option value="Toplantı">{t('interaction.type.meeting')}</option>
-                                            <option value="Arama">{t('interaction.type.call')}</option>
-                                            <option value="E-posta">{t('interaction.type.email')}</option>
-                                            <option value="Sipariş">{t('interaction.type.order')}</option>
-                                            <option value="Not">{t('interaction.type.note')}</option>
+                                            <option value="meeting">{t('interaction.type.meeting')}</option>
+                                            <option value="call">{t('interaction.type.call')}</option>
+                                            <option value="email">{t('interaction.type.email')}</option>
+                                            <option value="order">{t('interaction.type.order')}</option>
+                                            <option value="note">{t('interaction.type.note')}</option>
                                         </select>
                                     ) : (
                                         <span style={{
@@ -312,7 +312,7 @@ const InteractionLog = ({ cardId }) => {
                                             fontWeight: '700',
                                             textTransform: 'uppercase',
                                             border: `1px solid ${getTypeColor(log.type)}`
-                                        }}>{log.type}</span>
+                                        }}>{t(`interaction.type.${log.type}`, { defaultValue: log.type })}</span>
                                     )}
 
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>

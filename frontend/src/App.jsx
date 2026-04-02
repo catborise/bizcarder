@@ -12,6 +12,7 @@ import api, { API_URL } from './api/axios';
 import { getPendingSync, clearSyncItem } from './utils/offlineStore';
 import { ThemeProvider } from './context/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import ErrorBoundary from './components/shared/ErrorBoundary';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from './components/layout/PageTransition';
 import BottomNav from './components/layout/BottomNav';
@@ -465,7 +466,9 @@ function App() {
             <AuthProvider>
                 <NotificationProvider>
                     <Router>
-                        <AppContent />
+                        <ErrorBoundary>
+                            <AppContent />
+                        </ErrorBoundary>
                     </Router>
                 </NotificationProvider>
             </AuthProvider>
