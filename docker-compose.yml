@@ -31,7 +31,9 @@ services:
       resources:
         limits:
           memory: ${REDIS_MEMORY_LIMIT:-128M}
-    command: redis-server --maxmemory ${REDIS_MEMORY_LIMIT:-128M} --maxmemory-policy allkeys-lru
+    command: redis-server --maxmemory ${REDIS_MEMORY_LIMIT:-128M} --maxmemory-policy allkeys-lru --save ""
+    sysctls:
+      - net.core.somaxconn=511
     volumes:
       - redis_data:/data
     healthcheck:
