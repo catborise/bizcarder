@@ -1,0 +1,60 @@
+{
+  "heading": "How can we help you?",
+  "searchPlaceholder": "Search for a topic or question...",
+  "notFound": "No results found for your search.",
+  "notFoundHint": "Please try different keywords.",
+  "contactTitle": "Didn't find what you're looking for?",
+  "contactDescription": "Contact us directly for support on any topic.",
+  "sendEmail": "Send Email",
+  "devTeam": "Developer Team",
+  "sections": {
+    "gettingStarted": "Getting Started",
+    "cardManagement": "Card Management",
+    "digitalCard": "My Digital Card",
+    "crmFeatures": "CRM Features",
+    "offlineMode": "Offline Usage",
+    "security": "Security & Privacy"
+  },
+  "faq": {
+    "whatIsBizcarder": {
+      "q": "What is BizCarder?",
+      "a": "BizCarder is a modern CRM platform that helps you digitize physical business cards, manage your contact network, and track professional relationships."
+    },
+    "howToInstall": {
+      "q": "How do I install the app? (PWA)",
+      "a": "BizCarder is a Progressive Web App (PWA). You can install it by clicking the 'Install' icon in your browser's address bar or using the 'Add to Home Screen' option on mobile."
+    },
+    "howToAddCard": {
+      "q": "How do I add a new business card?",
+      "a": "Click the 'Add New Card' button on the Contacts page. You can scan the card with your camera or enter information manually. AI-powered OCR automatically detects information on the card."
+    },
+    "howToExport": {
+      "q": "How do I export business cards?",
+      "a": "Export options in Excel, PDF, and vCard formats are available at the top right of the Cards page. You can select multiple cards for bulk export."
+    },
+    "howToShare": {
+      "q": "How do I share my digital business card?",
+      "a": "Go to the 'My Card' tab to create or edit your personal digital business card. Share via QR code, link sharing, or vCard download."
+    },
+    "whatIsVcard": {
+      "q": "What is a vCard?",
+      "a": "vCard is a standard file format (.vcf) containing contact information. It can be directly added to phone contacts and works across all platforms."
+    },
+    "howReminders": {
+      "q": "How do reminders work?",
+      "a": "When editing a card, you can set a date in the 'Follow-up Reminder' field. A reminder notification will appear on the dashboard when the date arrives."
+    },
+    "howToLogNotes": {
+      "q": "How do I log meeting notes?",
+      "a": "Each card's detail view has an 'Activity & Notes' section. You can add calls, meetings, emails, or general notes and track the history."
+    },
+    "offlineUsage": {
+      "q": "What happens when I'm offline?",
+      "a": "The app has offline capabilities. Previously loaded data is displayed, and newly added cards are automatically synced when the internet connection is restored."
+    },
+    "dataSecurity": {
+      "q": "How secure is my data?",
+      "a": "All your data is protected with modern encryption standards. Corporate SSO/SAML support, role-based access control, and secure session management provide maximum security."
+    }
+  }
+}

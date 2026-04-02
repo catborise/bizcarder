@@ -1,0 +1,85 @@
+{
+  "title": "Settings",
+  "password": {
+    "mismatch": "New passwords do not match.",
+    "tooShort": "New password must be at least 6 characters.",
+    "changeFailed": "Failed to change password.",
+    "currentLabel": "Current Password",
+    "newLabel": "New Password",
+    "confirmLabel": "Confirm New Password",
+    "updateBtn": "Update Password"
+  },
+  "notify": {
+    "systemLoadFailed": "Failed to load system settings.",
+    "profileUpdated": "Profile updated successfully.",
+    "profileUpdateFailed": "Profile update failed: {{error}}",
+    "systemUpdated": "System settings updated successfully.",
+    "saveFailed": "Save failed: {{error}}",
+    "aiUpdated": "AI settings updated successfully.",
+    "aiSaveFailed": "AI settings save failed: {{error}}",
+    "tagUpdated": "Tag updated.",
+    "tagAdded": "New tag added.",
+    "tagFailed": "Tag operation failed: {{error}}",
+    "uploading": "Uploading file...",
+    "uploaded": "File uploaded successfully.",
+    "uploadFailed": "Upload failed.",
+    "tagDeleted": "Tag deleted.",
+    "deleteFailed": "Delete failed."
+  },
+  "section": {
+    "profile": "Profile Information",
+    "account": "Account Settings",
+    "ai": "Personal AI Settings",
+    "system": "System Settings",
+    "tags": "Tag Management",
+    "aboutDeveloper": "About Page Developer Info",
+    "branding": "Corporate Branding"
+  },
+  "profile": {
+    "username": "Username",
+    "usernameHint": "Username cannot be changed.",
+    "displayName": "Full Name / Display Name",
+    "displayNamePlaceholder": "Enter your name...",
+    "email": "Email Address",
+    "trashRetention": "Personal Trash Retention Period (Days)",
+    "trashRetentionHint": "Determines how long cards you delete will be kept in the trash.",
+    "updateBtn": "Update Profile"
+  },
+  "account": {
+    "ssoMessage": "Since you signed in with a corporate (SSO) account, you must change your password through your organization's portal."
+  },
+  "ai": {
+    "ocrLabel": "AI-Powered OCR",
+    "ocrDescription": "Use AI models for business card scanning.",
+    "providerLabel": "AI Provider",
+    "apiKeyLabel": "API Key",
+    "apiKeyPlaceholder": "Enter your API key...",
+    "saveBtn": "Save AI Settings"
+  },
+  "system": {
+    "logLimit": "Log Limit",
+    "trashRetention": "Trash Bin (Days)",
+    "developerName": "Developer Name",
+    "devNamePlaceholder": "e.g., Muhammet Sağ",
+    "developerEmail": "Developer Email",
+    "devEmailPlaceholder": "e.g., m.sag@catborise.com",
+    "githubUrl": "GitHub URL",
+    "linkedinUrl": "LinkedIn URL",
+    "companyName": "Company / App Name",
+    "companyLogo": "Corporate Logo (Navbar)",
+    "companyIcon": "App Icon (Favicon)",
+    "appBanner": "Dashboard Banner Image",
+    "footerText": "Footer Text",
+    "footerPlaceholder": "© 2026 BizCarder. All Rights Reserved.",
+    "footerHint": "Copyright/producer information displayed at the bottom of all pages.",
+    "saveBtn": "Save System Settings"
+  },
+  "tags": {
+    "nameLabel": "Tag Name",
+    "colorLabel": "Color",
+    "updateBtn": "Update",
+    "addBtn": "Add",
+    "deleteTitle": "Delete Tag",
+    "deleteMessage": "Are you sure you want to delete this tag? The tag association will be removed from all business cards."
+  }
+}

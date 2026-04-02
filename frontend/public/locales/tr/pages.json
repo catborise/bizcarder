@@ -1,0 +1,196 @@
+{
+  "app": {
+    "footer": {
+      "defaultCopyright": "© 2026 BizCarder. Tüm Hakları Saklıdır.",
+      "about": "Hakkında",
+      "help": "Yardım"
+    },
+    "sync": {
+      "syncing": "{{count}} bekleyen kayıt senkronize ediliyor...",
+      "complete": "Senkronizasyon tamamlandı."
+    },
+    "offline": {
+      "banner": "Çevrimdışı Mod - Bazı özellikler kısıtlanmış olabilir."
+    },
+    "pwa": {
+      "installTitle": "Kurumsal CRM Uygulamasını Yükleyin",
+      "installDescription": "Daha hızlı erişim ve çevrimdışı kullanım için ana ekranınıza ekleyin.",
+      "installButton": "Hemen Yükle"
+    },
+    "nav": {
+      "logoAlt": "Logo",
+      "defaultBrand": "CRM",
+      "dashboard": "Dashboard",
+      "contacts": "Kartvizitler",
+      "myCard": "Kartım",
+      "trashBin": "Çöp Kutusu",
+      "login": "Giriş Yap"
+    }
+  },
+  "trash": {
+    "title": "Çöp Kutusu",
+    "loadError": "Çöp kutusu yüklenirken hata oluştu.",
+    "restored": "{{firstName}} {{lastName}} geri yüklendi.",
+    "restoreError": "Geri yükleme başarısız: {{error}}",
+    "permanentlyDeleted": "{{firstName}} {{lastName}} kalıcı olarak silindi.",
+    "deleteError": "Silme başarısız: {{error}}",
+    "emptyError": "Çöp kutusu boşaltılamadı: {{error}}",
+    "emptyTrash": "Çöp Kutusunu Boşalt",
+    "empty": "Çöp kutusu boş",
+    "deletedOn": "Silinme: ",
+    "daysRemaining": "{{days}} gün kaldı",
+    "restore": "Geri Yükle",
+    "permanentDelete": "Kalıcı Sil",
+    "restoreConfirmTitle": "Kartı Geri Yükle",
+    "restoreConfirmMessage": "{{firstName}} {{lastName}} adlı kartviziti geri yüklemek istediğinizden emin misiniz?",
+    "permanentDeleteConfirmTitle": "Kalıcı Olarak Sil",
+    "permanentDeleteConfirmMessage": "{{firstName}} {{lastName}} adlı kartviziti KALICI OLARAK silmek istediğinizden emin misiniz? Bu işlem GERİ ALINAMAZ!",
+    "emptyConfirmMessage": "Tüm çöp kutusunu boşaltmak istediğinizden emin misiniz? Bu işlem GERİ ALINAMAZ!"
+  },
+  "myCard": {
+    "title": "Dijital Kartvizitim",
+    "loadError": "Kişisel kartvizit yüklenirken hata oluştu.",
+    "vcardPreparing": "vCard hazırlanıyor...",
+    "vcardDownloaded": "vCard indirildi.",
+    "vcardDownloadError": "vCard indirilemedi.",
+    "cardReady": "Dijital kartvizitiniz hazır!",
+    "shareTitle": "{{firstName}} {{lastName}} - Dijital Kartvizit",
+    "shareText": "{{company}} bünyesinde {{title}} olarak görev yapan {{firstName}} {{lastName}} kişisinin dijital kartviziti.",
+    "shareError": "Paylaşım sırasında bir hata oluştu.",
+    "linkCopied": "Paylaşım linki kopyalandı!",
+    "editInfo": "Bilgileri Düzenle",
+    "createTitle": "Kendi Kartvizitini Oluştur",
+    "createDescription": "Dijital dünyada profesyonel varlığınızı yansıtın. QR kod veya link ile anında paylaşın.",
+    "startCreate": "Başla ve Oluştur",
+    "live": "Yayında",
+    "companyLogoAlt": "Şirket Logosu",
+    "cardFrontAlt": "Kartvizit ön yüzü",
+    "downloadVcard": "vCard İndir",
+    "shareWithQr": "QR Kod ile Paylaş",
+    "qrDescription": "Diğer kullanıcılar bu QR kodu taratarak iletişim bilgilerinize ulaşabilir.",
+    "linkCopiedShort": "Link kopyalandı!",
+    "copy": "KOPYALA",
+    "tipTitle": "💡 İpucu",
+    "tipDescription": "Dijital kartvizit profilinizi e-posta imzanıza ekleyerek profesyonel iletişiminizi güçlendirin.",
+    "editModalTitle": "Kartviziti Düzenle",
+    "createModalTitle": "Kişisel Kartvizit Oluştur"
+  },
+  "contactProfile": {
+    "loadError": "Kartvizit yüklenemedi.",
+    "vcardPreparing": "vCard dosyası hazırlanıyor...",
+    "vcardDownloaded": "vCard indirildi.",
+    "downloadFailed": "İndirme başarısız.",
+    "errorTitle": "Olamaz! 😕",
+    "addToContacts": "Rehbere Ekle (vCard)",
+    "showQrCode": "QR Kod Göster",
+    "createdWith": "CRM Bizcard App ile oluşturuldu",
+    "logoAlt": "Logo"
+  },
+  "accessDenied": {
+    "title": "Erişim Engellendi",
+    "defaultMessage": "Bu uygulamaya giriş yetkiniz bulunmamaktadır.",
+    "orgNotDefined": "Kurumsal hesabınızın bağlı olduğu organizasyon birimi bu uygulamayı kullanmak için henüz tanımlanmamış olabilir.",
+    "goHome": "Ana Sayfaya Dön",
+    "getSupport": "Destek Al",
+    "switchAccountHint": "Farklı bir hesapla giriş yapmak istiyorsanız <1>buraya tıklayarak</1> giriş sayfasına dönebilirsiniz."
+  },
+  "confirmModal": {
+    "defaultTitle": "Emin misiniz?",
+    "defaultMessage": "Bu işlem geri alınamaz.",
+    "confirmDelete": "Evet, Sil"
+  },
+  "import": {
+    "title": "Toplu İçe Aktarma (Bulk Import)",
+    "templateDownloadError": "Şablon indirilemedi.",
+    "noFileSelected": "Lütfen bir dosya seçin.",
+    "importSuccess": "{{count}} kartvizit başarıyla eklendi.",
+    "uploadError": "Yükleme sırasında hata oluştu.",
+    "step1Title": "1. Şablonu İndirin",
+    "step1Description": "Verilerinizi doğru formatta yüklemek için şablonu kullanın. (*) işaretli alanlar zorunludur.",
+    "xlsxTemplate": "XLSX Şablonu",
+    "csvTemplate": "CSV Şablonu",
+    "vcfSupported": "vCard (.vcf) Doğrudan Desteklenir",
+    "step2Title": "2. Dosyayı Yükleyin",
+    "dragOrSelect": "Dosyayı Sürükleyin veya Seçin",
+    "supportedFormats": "Desteklenen formatlar: .xlsx, .csv, .vcf",
+    "startImport": "İşlemi Başlat",
+    "resultSummary": "İşlem Özeti",
+    "successful": "Başarılı",
+    "errors": "Hata",
+    "errorDetails": "Hata Detayları:",
+    "goToContacts": "Kartvizitlere Git",
+    "newUpload": "Yeni Yükleme Yap"
+  },
+  "reminder": {
+    "title": "Hatırlatıcılar",
+    "dismissed": "Hatırlatıcı temizlendi.",
+    "error": "Hata oluştu: {{error}}",
+    "invalidDate": "Geçersiz Tarih",
+    "dismissTooltip": "Hatırlatıcıyı Temizle"
+  },
+  "activityLogs": {
+    "title": "Sistem İşlem Geçmişi",
+    "searchLabel": "Ara (İşlem veya Detay)",
+    "searchPlaceholder": "Örn: Login, Ekle, Hata...",
+    "startDate": "Başlangıç",
+    "endDate": "Bitiş",
+    "sort": "Sıralama",
+    "newest": "En Yeni",
+    "oldest": "En Eski",
+    "clearFilters": "Temizle",
+    "anonymous": "Anonim",
+    "noResults": "Kriterlere uygun kayıt bulunamadı."
+  },
+  "history": {
+    "loadError": "Geçmiş yüklenirken bir sorun oluştu.",
+    "noRecords": "Henüz geçmiş kaydı yok.",
+    "action": {
+      "created": "Oluşturuldu",
+      "updated": "Güncellendi",
+      "softDeleted": "Çöp Kutusuna Gönderildi",
+      "restored": "Geri Yüklendi",
+      "default": "İşlem Yapıldı"
+    },
+    "system": "Sistem",
+    "emptyValue": "(boş)",
+    "initialCreation": "İlk oluşturulma. {{firstName}} {{lastName}} - {{company}}"
+  },
+  "interaction": {
+    "title": "Aktivite ve Not Akışı",
+    "type": {
+      "meeting": "Toplantı",
+      "call": "Arama",
+      "email": "E-posta",
+      "order": "Sipariş",
+      "note": "Not",
+      "noteInfo": "Not / Bilgi"
+    },
+    "saved": "Görüşme kaydedildi.",
+    "error": "Hata oluştu.",
+    "deleted": "Kayıt silindi.",
+    "deleteFailed": "Silme işlemi başarısız.",
+    "updated": "Kayıt güncellendi.",
+    "updateFailed": "Güncelleme başarısız.",
+    "operationFailed": "İşlem başarısız.",
+    "recordCount": "{{count}} Kayıt",
+    "notesPlaceholder": "Not veya görüşme detayı girin...",
+    "addButton": "Ekle",
+    "noRecords": "Henüz bir kayıt bulunmuyor.",
+    "unpin": "Sabitlemeyi Kaldır",
+    "pin": "Sabitle",
+    "recordedBy": "{{author}} tarafından kaydedildi",
+    "system": "Sistem",
+    "deleteConfirmTitle": "Kaydı Sil",
+    "deleteConfirmMessage": "Bu görüşme kaydını silmek istediğinize emin misiniz?"
+  },
+  "userMenu": {
+    "roleBadge": {
+      "admin": "👑 Admin",
+      "user": "👤 Kullanıcı"
+    },
+    "activityLogs": "İşlem Kayıtları",
+    "userManagement": "Kullanıcı Yönetimi",
+    "settings": "Ayarlar",
+    "logout": "Oturumu Kapat"
+  }
+}

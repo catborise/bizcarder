@@ -1,0 +1,233 @@
+{
+  "addCard": {
+    "validation": {
+      "nameRequired": "First name and last name are required.",
+      "contactRequired": "At least one of email or phone must be filled.",
+      "fillNameFields": "Please fill in the first and last name fields."
+    },
+    "camera": {
+      "notReady": "Camera is not ready yet, please wait.",
+      "starting": "Starting camera...",
+      "alignCard": "Align the card here"
+    },
+    "cameraError": {
+      "permission": "Camera permission denied",
+      "notFound": "Camera not found",
+      "inUse": "Camera is being used by another application",
+      "noSupport": "Your browser does not support camera access",
+      "unknown": "Could not start camera",
+      "permissionHint": "Enable camera permission in your browser settings.",
+      "fallbackHint": "You can use the file picker instead."
+    },
+    "ai": {
+      "boundaryDetected": "AI detected card boundaries.",
+      "manualBoundaryHint": "Please set card boundaries manually.",
+      "resultsPrefetched": "AI scan results applied.",
+      "scanComplete": "AI scan completed.",
+      "fallbackToTesseract": "{{message}} Continuing with local OCR (Tesseract)...",
+      "detecting": "AI Detecting Card Boundaries..."
+    },
+    "ocr": {
+      "error": "An error occurred during OCR processing.",
+      "reading": "Reading OCR..."
+    },
+    "notify": {
+      "updated": "Business card updated successfully!",
+      "created": "Business card added successfully!",
+      "saveFailed": "Error occurred: {{error}}",
+      "contactImported": "Contact info imported from phonebook.",
+      "tagCreated": "Tag created.",
+      "tagCreateFailed": "Failed to create tag.",
+      "ocrApplied": "Data applied to form.",
+      "editMode": "Switched to edit mode.",
+      "cardDetected": "Card Detected: {{cardType}}",
+      "offlineQueued": "No internet: Card queued for sync."
+    },
+    "cardType": {
+      "custom": "Custom Size",
+      "euCredit": "Standard (EU/Credit Card)",
+      "us": "Standard (US)",
+      "square": "Square Card"
+    },
+    "perspectiveCorrection": "Perspective Correction ({{side}})",
+    "perspectiveHint": "Please mark the 4 corners of the business card.",
+    "frontSide": "Front Side",
+    "backSide": "Back Side",
+    "ocrConfirm": {
+      "title": "Confirm Scan Results",
+      "description": "The information read from the business card is shown below. Please verify and correct if needed."
+    },
+    "logoCrop": {
+      "title": "Select Company Logo",
+      "hint": "Please mark the logo area with 4 corners."
+    },
+    "duplicate": {
+      "title": "Similar Record Found!",
+      "description": "A record already exists for <1>{{firstName}} {{lastName}}</1>.",
+      "company": "Company:",
+      "email": "Email:",
+      "addedBy": "Added by:"
+    },
+    "placeholder": {
+      "firstName": "First Name *",
+      "lastName": "Last Name *",
+      "company": "Company",
+      "title": "Title",
+      "email": "Email *",
+      "phone": "Phone *",
+      "website": "Website",
+      "address": "Full Address",
+      "city": "City",
+      "country": "Country",
+      "tagName": "Tag name...",
+      "source": "e.g., Expo 2026, LinkedIn, Referral...",
+      "notes": "Personal notes about the contact, hobbies, interests...",
+      "ocrText": "OCR scanned text..."
+    },
+    "label": {
+      "addressInfo": "Address Information",
+      "tags": "Tags",
+      "tagsLoading": "Loading tags...",
+      "reminder": "Follow-up Reminder",
+      "leadStatus": "Lead Status",
+      "priority": "Priority",
+      "source": "Source",
+      "notes": "Notes",
+      "ocrText": "OCR Text"
+    },
+    "ocrLabel": {
+      "firstName": "FIRST NAME",
+      "lastName": "LAST NAME",
+      "company": "COMPANY",
+      "title": "TITLE",
+      "email": "EMAIL",
+      "phone": "PHONE",
+      "website": "WEBSITE",
+      "address": "ADDRESS"
+    },
+    "visibility": {
+      "private": "🔒 Only Me (Private)",
+      "public": "🌍 Everyone (Shared)"
+    },
+    "btn": {
+      "importFromContacts": "Import from Contacts (Quick Fill)",
+      "changeLogo": "Change Logo",
+      "selectLogo": "Select Logo",
+      "select": "Select",
+      "camera": "Camera",
+      "selectFile": "Select File",
+      "captureFromCamera": "📷 Capture from Camera",
+      "newTag": "+ New",
+      "takePhoto": "Take Photo",
+      "selectFromFile": "Select from File",
+      "confirmAndApply": "Confirm & Apply",
+      "updateExisting": "Update Existing Record",
+      "createAnyway": "Create New Anyway",
+      "cancelAction": "Cancel"
+    },
+    "step": {
+      "basic": "Basic",
+      "detail": "Details",
+      "lead": "Lead"
+    },
+    "hint": {
+      "contactRequired": "* At least one of email or phone is required"
+    },
+    "showMore": "Show More Fields",
+    "showLess": "Show Less"
+  },
+  "contacts": {
+    "title": "Business Cards",
+    "notify": {
+      "deleted": "Business card deleted.",
+      "deleteFailed": "Delete failed: {{error}}",
+      "bulkDeleted": "{{count}} cards deleted.",
+      "bulkDeleteFailed": "Bulk delete failed.",
+      "visibilityUpdated": "Visibility updated to {{visibility}}.",
+      "visibilityFailed": "Failed to update visibility.",
+      "tagsUpdated": "Tags updated successfully.",
+      "tagsFailed": "Tagging failed.",
+      "exportPreparing": "Preparing {{type}} file...",
+      "fileDownloaded": "File downloaded.",
+      "downloadFailed": "Download failed.",
+      "vcardPreparing": "Preparing vCard file...",
+      "vcardDownloaded": "vCard downloaded.",
+      "excelPreparing": "Preparing Excel file...",
+      "excelDownloaded": "Excel file downloaded.",
+      "pdfPreparing": "Preparing PDF file...",
+      "pdfDownloaded": "PDF file downloaded.",
+      "offlineMode": "Offline mode: Showing cached data."
+    },
+    "error": {
+      "title": "An Error Occurred",
+      "unexpectedFormat": "API returned unexpected data format.",
+      "loadFailedNoCache": "An error occurred while loading data and no local cache was found."
+    },
+    "followUp": {
+      "whatsappMessage": "Hello {{name}}, it was great meeting you. I'm sharing my contact information. Looking forward to connecting again.",
+      "emailSubject": "Nice Meeting You",
+      "emailBody": "Dear {{firstName}} {{lastName}},\n\nIt was great meeting you. I've saved your business card in my CRM system.\n\nLooking forward to connecting again soon.\n\nBest regards."
+    },
+    "field": {
+      "reminder": "Reminder:",
+      "noDate": "No Date Set",
+      "lastInteraction": "Last Interaction:",
+      "email": "Email:",
+      "phone": "Phone:",
+      "web": "Web:",
+      "location": "Location:",
+      "address": "Address:",
+      "source": "Source:"
+    },
+    "btn": {
+      "addNew": "Add New Card",
+      "edit": "Edit",
+      "previous": "Previous",
+      "next": "Next",
+      "activityNotes": "Activity & Notes",
+      "tag": "Tag",
+      "makePublic": "Make Public",
+      "makePrivate": "Make Private",
+      "apply": "Apply",
+      "deselect": "Deselect"
+    },
+    "bulkTag": {
+      "addToExisting": "Add to Existing",
+      "replaceAll": "Replace All"
+    },
+    "titleAttr": {
+      "downloadExcel": "Download as Excel",
+      "downloadPdf": "Download as PDF",
+      "whatsappFollow": "WhatsApp Follow-up",
+      "emailFollow": "Email Follow-up",
+      "qrVcard": "QR / vCard",
+      "downloadVcard": "Download vCard",
+      "history": "History"
+    },
+    "pagination": "Page {{current}} / {{total}}",
+    "selected": "{{count}} selected",
+    "selectAll": "Select All",
+    "selectedLabel": "Selected",
+    "empty": "No records found",
+    "emptyTitle": "No business cards yet",
+    "emptyDescription": "Start building your network by adding your first business card.",
+    "lastInteraction": "Last",
+    "noResults": "No results found",
+    "noResultsDescription": "No business cards match your filters. Try clearing them.",
+    "modal": {
+      "image": "Image",
+      "frontSide": "Front Side",
+      "backSide": "Back Side",
+      "history": "Card History",
+      "deleteTitle": "Delete Business Card",
+      "deleteMessage": "Are you sure you want to delete {{firstName}} {{lastName}}'s business card?",
+      "editTitle": "Edit Business Card",
+      "addTitle": "Add New Business Card",
+      "bulkTagTitle": "Bulk Tag Management",
+      "actionType": "Action Type",
+      "tags": "Tags",
+      "bulkDeleteTitle": "Bulk Delete",
+      "bulkDeleteMessage": "Are you sure you want to delete {{count}} business cards?"
+    }
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "app": {
+    "footer": {
+      "defaultCopyright": "© 2026 BizCarder. All Rights Reserved.",
+      "about": "About",
+      "help": "Help"
+    },
+    "sync": {
+      "syncing": "Syncing {{count}} pending records...",
+      "complete": "Sync completed."
+    },
+    "offline": {
+      "banner": "Offline Mode - Some features may be limited."
+    },
+    "pwa": {
+      "installTitle": "Install Corporate CRM App",
+      "installDescription": "Add to your home screen for faster access and offline use.",
+      "installButton": "Install Now"
+    },
+    "nav": {
+      "logoAlt": "Logo",
+      "defaultBrand": "CRM",
+      "dashboard": "Dashboard",
+      "contacts": "Business Cards",
+      "myCard": "My Card",
+      "trashBin": "Trash Bin",
+      "login": "Sign In"
+    }
+  },
+  "trash": {
+    "title": "Trash Bin",
+    "loadError": "Failed to load trash bin.",
+    "restored": "{{firstName}} {{lastName}} restored.",
+    "restoreError": "Restore failed: {{error}}",
+    "permanentlyDeleted": "{{firstName}} {{lastName}} permanently deleted.",
+    "deleteError": "Delete failed: {{error}}",
+    "emptyError": "Failed to empty trash: {{error}}",
+    "emptyTrash": "Empty Trash",
+    "empty": "Trash is empty",
+    "deletedOn": "Deleted: ",
+    "daysRemaining": "{{days}} days remaining",
+    "restore": "Restore",
+    "permanentDelete": "Delete Permanently",
+    "restoreConfirmTitle": "Restore Card",
+    "restoreConfirmMessage": "Are you sure you want to restore {{firstName}} {{lastName}}'s business card?",
+    "permanentDeleteConfirmTitle": "Delete Permanently",
+    "permanentDeleteConfirmMessage": "Are you sure you want to PERMANENTLY delete {{firstName}} {{lastName}}'s business card? This action CANNOT be undone!",
+    "emptyConfirmMessage": "Are you sure you want to empty the entire trash? This action CANNOT be undone!"
+  },
+  "myCard": {
+    "title": "My Digital Business Card",
+    "loadError": "Failed to load personal business card.",
+    "vcardPreparing": "Preparing vCard...",
+    "vcardDownloaded": "vCard downloaded.",
+    "vcardDownloadError": "Failed to download vCard.",
+    "cardReady": "Your digital business card is ready!",
+    "shareTitle": "{{firstName}} {{lastName}} - Digital Business Card",
+    "shareText": "Digital business card of {{firstName}} {{lastName}}, {{title}} at {{company}}.",
+    "shareError": "An error occurred while sharing.",
+    "linkCopied": "Share link copied!",
+    "editInfo": "Edit Info",
+    "createTitle": "Create Your Business Card",
+    "createDescription": "Reflect your professional presence in the digital world. Share instantly via QR code or link.",
+    "startCreate": "Start & Create",
+    "live": "Live",
+    "companyLogoAlt": "Company Logo",
+    "cardFrontAlt": "Business card front",
+    "downloadVcard": "Download vCard",
+    "shareWithQr": "Share with QR Code",
+    "qrDescription": "Others can access your contact information by scanning this QR code.",
+    "linkCopiedShort": "Link copied!",
+    "copy": "COPY",
+    "tipTitle": "💡 Tip",
+    "tipDescription": "Add your digital business card profile to your email signature to enhance your professional communication.",
+    "editModalTitle": "Edit Business Card",
+    "createModalTitle": "Create Personal Business Card"
+  },
+  "contactProfile": {
+    "loadError": "Failed to load business card.",
+    "vcardPreparing": "Preparing vCard file...",
+    "vcardDownloaded": "vCard downloaded.",
+    "downloadFailed": "Download failed.",
+    "errorTitle": "Oh no! 😕",
+    "addToContacts": "Add to Contacts (vCard)",
+    "showQrCode": "Show QR Code",
+    "createdWith": "Created with CRM Bizcard App",
+    "logoAlt": "Logo"
+  },
+  "accessDenied": {
+    "title": "Access Denied",
+    "defaultMessage": "You do not have permission to access this application.",
+    "orgNotDefined": "The organizational unit associated with your corporate account may not yet be defined for this application.",
+    "goHome": "Go to Home",
+    "getSupport": "Get Support",
+    "switchAccountHint": "If you want to sign in with a different account, you can <1>click here</1> to go back to the login page."
+  },
+  "confirmModal": {
+    "defaultTitle": "Are you sure?",
+    "defaultMessage": "This action cannot be undone.",
+    "confirmDelete": "Yes, Delete"
+  },
+  "import": {
+    "title": "Bulk Import",
+    "templateDownloadError": "Failed to download template.",
+    "noFileSelected": "Please select a file.",
+    "importSuccess": "{{count}} business cards imported successfully.",
+    "uploadError": "An error occurred during upload.",
+    "step1Title": "1. Download Template",
+    "step1Description": "Use the template to upload your data in the correct format. Fields marked with (*) are required.",
+    "xlsxTemplate": "XLSX Template",
+    "csvTemplate": "CSV Template",
+    "vcfSupported": "vCard (.vcf) Directly Supported",
+    "step2Title": "2. Upload File",
+    "dragOrSelect": "Drag & Drop or Select File",
+    "supportedFormats": "Supported formats: .xlsx, .csv, .vcf",
+    "startImport": "Start Import",
+    "resultSummary": "Import Summary",
+    "successful": "Successful",
+    "errors": "Errors",
+    "errorDetails": "Error Details:",
+    "goToContacts": "Go to Business Cards",
+    "newUpload": "New Upload"
+  },
+  "reminder": {
+    "title": "Reminders",
+    "dismissed": "Reminder dismissed.",
+    "error": "Error occurred: {{error}}",
+    "invalidDate": "Invalid Date",
+    "dismissTooltip": "Dismiss Reminder"
+  },
+  "activityLogs": {
+    "title": "System Activity Logs",
+    "searchLabel": "Search (Action or Detail)",
+    "searchPlaceholder": "e.g., Login, Add, Error...",
+    "startDate": "Start",
+    "endDate": "End",
+    "sort": "Sort",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "clearFilters": "Clear",
+    "anonymous": "Anonymous",
+    "noResults": "No records match the criteria."
+  },
+  "history": {
+    "loadError": "An error occurred while loading history.",
+    "noRecords": "No history records yet.",
+    "action": {
+      "created": "Created",
+      "updated": "Updated",
+      "softDeleted": "Moved to Trash",
+      "restored": "Restored",
+      "default": "Action Performed"
+    },
+    "system": "System",
+    "emptyValue": "(empty)",
+    "initialCreation": "Initial creation. {{firstName}} {{lastName}} - {{company}}"
+  },
+  "interaction": {
+    "title": "Activity & Notes",
+    "type": {
+      "meeting": "Meeting",
+      "call": "Call",
+      "email": "Email",
+      "order": "Order",
+      "note": "Note",
+      "noteInfo": "Note / Info"
+    },
+    "saved": "Interaction saved.",
+    "error": "An error occurred.",
+    "deleted": "Record deleted.",
+    "deleteFailed": "Delete failed.",
+    "updated": "Record updated.",
+    "updateFailed": "Update failed.",
+    "operationFailed": "Operation failed.",
+    "recordCount": "{{count}} Records",
+    "notesPlaceholder": "Enter a note or meeting details...",
+    "addButton": "Add",
+    "noRecords": "No records yet.",
+    "unpin": "Unpin",
+    "pin": "Pin",
+    "recordedBy": "Recorded by {{author}}",
+    "system": "System",
+    "deleteConfirmTitle": "Delete Record",
+    "deleteConfirmMessage": "Are you sure you want to delete this interaction record?"
+  },
+  "userMenu": {
+    "roleBadge": {
+      "admin": "👑 Admin",
+      "user": "👤 User"
+    },
+    "activityLogs": "Activity Logs",
+    "userManagement": "User Management",
+    "settings": "Settings",
+    "logout": "Sign Out"
+  }
+}

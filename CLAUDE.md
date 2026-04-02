@@ -49,7 +49,9 @@ frontend/
 
 ### i18n
 - Namespaces: `common`, `cards`, `pages`, `dashboard`, `auth`, `filters`, `help`, `settings`, `users`, `about`
-- Locale files: `frontend/src/i18n/locales/{en,tr}/<namespace>.json`
+- Locale files (source of truth): `frontend/src/i18n/locales/{en,tr}/<namespace>.json`
+- **Lazy loading**: `common`, `cards`, `dashboard`, `auth`, `pages` are bundled eagerly. `help`, `about`, `users`, `settings`, `filters` are fetched at runtime via `i18next-http-backend` from `/locales/{lng}/{ns}.json`.
+- **Public copies**: `frontend/public/locales/` contains HTTP-served copies of ALL locale files. When you edit a namespace JSON in `src/i18n/locales/`, also update the matching file in `public/locales/` (or re-run `cp frontend/src/i18n/locales/**/*.json` to the public counterpart).
 - Always use `t('namespace:key')` with explicit namespace prefix
 - Never hardcode Turkish fallbacks in `t()` second argument — add keys to both locale files instead
 - Dates: use `i18n.language === 'tr' ? 'tr-TR' : 'en-US'` for `toLocaleDateString()`

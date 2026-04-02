@@ -1,0 +1,40 @@
+{
+  "title": "Hakkında",
+  "subtitle": "CRM & Akıllı Kartvizit Yönetim Platformu — Bold Premium Sürümü",
+  "capabilities": "Sistem Yetenekleri",
+  "contactDeveloper": "İletişim & Geliştirici",
+  "devRole": "Full Stack Developer & Sistem Yöneticisi",
+  "githubAccount": "GitHub Hesabı",
+  "digitalCard": "Dijital Kartvizit",
+  "copyright": "© {{year}} BizCarder CRM. Tüm hakları saklıdır.",
+  "cap": {
+    "scanning": {
+      "title": "Hızlı Kartvizit Tarama",
+      "desc": "Yapay zeka destekli OCR teknolojisi ile kartvizitleri saniyeler içinde dijitalleştirin."
+    },
+    "crm": {
+      "title": "Gelişmiş CRM",
+      "desc": "Müşteri görüşmelerini kaydedin, ilişki durumlarını takip edin ve hatırlatıcılar ayarlayın."
+    },
+    "vcard": {
+      "title": "Dijital Kartvizit (vCard)",
+      "desc": "Kendi dijital kartvizitinizi oluşturun, QR kod veya link ile paylaşın."
+    },
+    "security": {
+      "title": "Güvenli Veri Yönetimi",
+      "desc": "Rol tabanlı yetkilendirme sistemi, kurumsal SSO/SAML desteği ve güvenli oturum yönetimi."
+    },
+    "pwa": {
+      "title": "PWA Desteği",
+      "desc": "Uygulamayı telefonunuza yükleyerek çevrimdışı bile kullanmaya devam edin."
+    },
+    "design": {
+      "title": "Bold Premium Tasarım",
+      "desc": "Gradient vurgular, renk kodlu CRM kartları, mobil öncelikli responsive layout ve karanlık/aydınlık tema desteği."
+    },
+    "i18n": {
+      "title": "Çoklu Dil Desteği",
+      "desc": "Türkçe ve İngilizce tam dil desteği ile anlık dil değiştirme."
+    }
+  }
+}

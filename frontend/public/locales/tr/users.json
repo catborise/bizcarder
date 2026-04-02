@@ -1,0 +1,56 @@
+{
+  "title": "Kullanıcı Yönetimi",
+  "listing": "Kullanıcı Listeleniyor",
+  "searchPlaceholder": "İsim, e-posta veya kullanıcı adı ara...",
+  "roleUpdateError": "Rol güncellenirken hata oluştu.",
+  "passwordMinLength": "Şifre en az 6 karakter olmalıdır.",
+  "passwordUpdated": "Şifre başarıyla güncellendi.",
+  "passwordResetError": "Şifre sıfırlanırken hata oluştu: {{error}}",
+  "approvalError": "Onay işlemi sırasında hata oluştu: {{error}}",
+  "userDeleted": "Kullanıcı başarıyla silindi.",
+  "userDeleteError": "Kullanıcı silinirken hata oluştu: {{error}}",
+  "filter": {
+    "roleAll": "Rol: Tümü",
+    "admin": "Admin",
+    "user": "Kullanıcı",
+    "statusAll": "Durum: Tümü",
+    "approved": "Onaylı",
+    "pending": "Beklemede"
+  },
+  "table": {
+    "userInfo": "Kullanıcı Bilgileri",
+    "memberDate": "Üyelik Tarihi",
+    "accountApproval": "Hesap Onayı",
+    "adminAuthority": "Yönetici Yetkisi",
+    "actions": "İşlemler"
+  },
+  "youBadge": "SİZ",
+  "suspendAccount": "Hesabı Askıya Al",
+  "approveAccount": "Hesabı Onayla",
+  "status": {
+    "approved": "Onaylı",
+    "pending": "Beklemede"
+  },
+  "revokeAdmin": "Admin Yetkisini Al",
+  "makeAdmin": "Admin Yap",
+  "role": {
+    "admin": "Admin",
+    "user": "Kullanıcı"
+  },
+  "resetPassword": "Şifre Sıfırla",
+  "deleteUser": "Kullanıcıyı Sil",
+  "noResults": "Sonuç Bulunamadı",
+  "noResultsDescription": "Aradığınız kriterlere uygun kullanıcı yok.",
+  "clearFilters": "Filtreleri Temizle",
+  "newPasswordLabel": "Yeni Şifre",
+  "newPasswordPlaceholder": "Yeni şifreyi girin...",
+  "passwordHint": "En az 6 karakter uzunluğunda olmalıdır.",
+  "updatePassword": "Şifreyi Güncelle",
+  "deleteConfirmTitle": "Bu kullanıcıyı silmek istediğinize emin misiniz?",
+  "deleteConfirmMessage": "{{displayName}} (@{{username}}) kullanıcısı kalıcı olarak silinecektir.",
+  "deleteCardQuestion": "Kullanıcının kartvizitleri ile ne yapmak istersiniz?",
+  "transferAndDelete": "Kartvizitleri Bana Aktar ve Sil",
+  "transferDescription": "Kartvizitler sizin hesabınıza aktarılır.",
+  "deleteWithCards": "Kartvizitlerle Birlikte Sil",
+  "deleteWithCardsDescription": "Kartvizitler çöp kutusuna taşınır."
+}

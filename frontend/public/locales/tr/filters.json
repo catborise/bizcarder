@@ -1,0 +1,28 @@
+{
+  "sort": {
+    "newest": "En Yeni Eklenen",
+    "oldest": "En Eski Eklenen",
+    "nameAsc": "İsim (A-Z)",
+    "nameDesc": "İsim (Z-A)",
+    "companyAsc": "Şirket (A-Z)",
+    "priorityDesc": "Önem Sırası (5-1)",
+    "lastInteraction": "Son Etkileşim"
+  },
+  "advancedFilter": "Gelişmiş Filtrele",
+  "clear": "Temizle",
+  "saveCurrentFilter": "+ Mevcut Filtreyi Kaydet",
+  "filterLabel": {
+    "tag": "ETİKET",
+    "city": "ŞEHİR",
+    "leadStatus": "SÜREÇ DURUMU",
+    "source": "KAYNAK",
+    "dateStart": "BAŞLANGIÇ TARİHİ",
+    "dateEnd": "BİTİŞ TARİHİ",
+    "savedFilters": "KAYITLI FİLTRELER"
+  },
+  "searchPlaceholder": "Kartvizitlerde ara... (Ad, Şirket, E-posta)",
+  "sourcePlaceholder": "Kaynak (Örn: LinkedIn)",
+  "onlyReminders": "Sadece Hatırlatıcılar",
+  "noSavedFilters": "Henüz kayıtlı filtre yok.",
+  "filterNamePrompt": "Filtre için bir isim girin:"
+}
