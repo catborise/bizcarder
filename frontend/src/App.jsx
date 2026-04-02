@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
-import ActivityLogs from './components/admin/ActivityLogs';
-import UserManagement from './components/admin/UserManagement';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NotificationBanner from './components/layout/NotificationBanner';
@@ -18,19 +16,22 @@ import PageTransition from './components/layout/PageTransition';
 import BottomNav from './components/layout/BottomNav';
 import FAB from './components/layout/FAB';
 
-
+// Eager imports (critical path)
 import Dashboard from './components/dashboard/Dashboard';
-import Settings from './components/settings/Settings';
-import TrashBin from './components/admin/TrashBin';
-import ImportCards from './components/cards/ImportCards';
-import About from './components/pages/About';
-import Help from './components/pages/Help';
-import MyCard from './components/mycard/MyCard';
-import ContactProfile from './components/cards/ContactProfile';
-import AccessDenied from './components/auth/AccessDenied';
+import Contacts from './components/cards/Contacts';
 import { FaTrash, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
 
-import Contacts from './components/cards/Contacts';
+// Lazy imports (infrequently visited pages)
+const Settings = lazy(() => import('./components/settings/Settings'));
+const Help = lazy(() => import('./components/pages/Help'));
+const About = lazy(() => import('./components/pages/About'));
+const MyCard = lazy(() => import('./components/mycard/MyCard'));
+const ImportCards = lazy(() => import('./components/cards/ImportCards'));
+const UserManagement = lazy(() => import('./components/admin/UserManagement'));
+const ActivityLogs = lazy(() => import('./components/admin/ActivityLogs'));
+const TrashBin = lazy(() => import('./components/admin/TrashBin'));
+const ContactProfile = lazy(() => import('./components/cards/ContactProfile'));
+const AccessDenied = lazy(() => import('./components/auth/AccessDenied'));
 
 // AppContent bileşeni - useAuth hook'unu kullanmak için AuthProvider içinde olması gerek
 const AppContent = () => {
@@ -362,74 +363,79 @@ const AppContent = () => {
 
             {/* Main Content Area */}
             <main id="main-content">
-
-                <AnimatePresence mode="wait">
-                    <Routes location={location} key={location.pathname}>
-                        <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
-                        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-                        <Route
-                            path="/contacts"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><Contacts /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/logs"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><ActivityLogs /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/trash"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><TrashBin /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/users"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><UserManagement /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/settings"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><Settings /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/my-card"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><MyCard /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/import"
-                            element={
-                                <ProtectedRoute>
-                                    <PageTransition><ImportCards /></PageTransition>
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-                        <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
-                        <Route path="/access-denied" element={<PageTransition><AccessDenied /></PageTransition>} />
-                        {/* Public Route for Business Card Sharing (using token) */}
-                        <Route path="/contact-profile/:token" element={<PageTransition><ContactProfile /></PageTransition>} />
-                    </Routes>
-                </AnimatePresence>
+                <Suspense fallback={
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+                        <div className="skeleton-box" style={{ width: '60px', height: '60px', borderRadius: '12px' }} />
+                    </div>
+                }>
+                    <AnimatePresence mode="wait">
+                        <Routes location={location} key={location.pathname}>
+                            <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
+                            <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                            <Route
+                                path="/contacts"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><Contacts /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/logs"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><ActivityLogs /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/trash"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><TrashBin /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/users"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><UserManagement /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/settings"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><Settings /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/my-card"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><MyCard /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/import"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition><ImportCards /></PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+                            <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
+                            <Route path="/access-denied" element={<PageTransition><AccessDenied /></PageTransition>} />
+                            {/* Public Route for Business Card Sharing (using token) */}
+                            <Route path="/contact-profile/:token" element={<PageTransition><ContactProfile /></PageTransition>} />
+                        </Routes>
+                    </AnimatePresence>
+                </Suspense>
             </main >
 
             {isAuthenticated && <BottomNav />}
