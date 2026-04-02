@@ -1,19 +1,25 @@
 const rateLimit = require('express-rate-limit');
 
 // Use Redis store for multi-instance deployments
-// Set REDIS_URL env var to enable (e.g. redis://redis:6379)
-let store = undefined; // defaults to in-memory
+// Each limiter needs its own RedisStore instance with a unique prefix
+let redisClient = null;
+let RedisStore = null;
+
 if (process.env.REDIS_URL) {
     try {
-        const { RedisStore } = require('rate-limit-redis');
+        RedisStore = require('rate-limit-redis').RedisStore;
         const { createClient } = require('redis');
-        const client = createClient({ url: process.env.REDIS_URL });
-        client.connect().catch(err => console.error('[RATE-LIMIT] Redis connection failed, falling back to in-memory:', err.message));
-        store = new RedisStore({ sendCommand: (...args) => client.sendCommand(args) });
+        redisClient = createClient({ url: process.env.REDIS_URL });
+        redisClient.connect().catch(err => console.error('[RATE-LIMIT] Redis connection failed, falling back to in-memory:', err.message));
         console.log('[RATE-LIMIT] Using Redis store for distributed rate limiting.');
     } catch (err) {
         console.warn('[RATE-LIMIT] Redis packages not installed. Using in-memory store (not suitable for multi-instance).');
     }
+}
+
+function createStore(prefix) {
+    if (!redisClient || !RedisStore) return undefined;
+    return new RedisStore({ sendCommand: (...args) => redisClient.sendCommand(args), prefix: `rl:${prefix}:` });
 }
 
 // In test environment, use a passthrough middleware to avoid rate limiting interference
@@ -41,7 +47,7 @@ const apiLimiter = isTest ? passThrough : rateLimit({
     limit: 100,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    store,
+    store: createStore('api'),
     message: { error: 'Too many requests. Please try again in a minute.' },
     handler: violationHandler,
 });
@@ -54,7 +60,7 @@ const authLimiter = isTest ? passThrough : rateLimit({
     limit: 5,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    store,
+    store: createStore('auth'),
     message: { error: 'Login attempts limited for security. Please try again in 15 minutes.' },
     handler: violationHandler,
 });
@@ -67,7 +73,7 @@ const ocrLimiter = isTest ? passThrough : rateLimit({
     limit: 20,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    store,
+    store: createStore('ocr'),
     message: { error: 'Hourly AI analysis limit reached. Please try again later.' },
     handler: violationHandler,
 });
