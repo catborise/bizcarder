@@ -13,7 +13,7 @@ function csrfProtection(req, res, next) {
         const token = crypto.randomBytes(32).toString('hex');
         res.cookie(CSRF_COOKIE, token, {
             httpOnly: false,  // JS must read this
-            sameSite: 'strict',
+            sameSite: 'lax',  // 'strict' blocks cookie on SAML callback redirects
             secure: process.env.SESSION_SECURE === 'true',
             path: '/',
         });
@@ -23,6 +23,9 @@ function csrfProtection(req, res, next) {
 
     // Safe methods don't need CSRF validation
     if (SAFE_METHODS.includes(req.method)) return next();
+
+    // SAML auth callback comes via browser redirect — cannot carry CSRF token
+    if (req.path.startsWith('/auth/login/callback') || req.path.startsWith('/auth/local/login')) return next();
 
     // Validate: compare cookie with header
     const cookieToken = req.cookies[CSRF_COOKIE];
