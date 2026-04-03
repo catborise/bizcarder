@@ -188,6 +188,10 @@
       "admin": "👑 Admin",
       "user": "👤 User"
     },
+    "myCard": "My Card",
+    "reminders": "Reminders",
+    "import": "Bulk Import",
+    "export": "Excel/PDF Export",
     "activityLogs": "Activity Logs",
     "userManagement": "User Management",
     "settings": "Settings",

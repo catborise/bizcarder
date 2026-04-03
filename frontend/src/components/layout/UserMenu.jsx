@@ -3,7 +3,22 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FaUser, FaSignOutAlt, FaChevronDown, FaUsers, FaCog, FaClipboardList, FaTrash, FaMoon, FaSun, FaGlobe } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaChevronDown, FaUsers, FaCog, FaClipboardList, FaTrash, FaMoon, FaSun, FaGlobe, FaBell, FaFileImport, FaFileExcel, FaIdCard } from 'react-icons/fa';
+
+const menuItemStyle = {
+    width: '100%', padding: '9px 12px', backgroundColor: 'transparent',
+    color: 'var(--text-primary)', border: 'none', cursor: 'pointer',
+    fontSize: '13px', display: 'flex', alignItems: 'center', gap: '10px',
+    transition: 'all 0.2s ease', borderRadius: '8px', textAlign: 'left',
+};
+
+const MenuItem = ({ icon: Icon, label, onClick }) => (
+    <button onClick={onClick} style={menuItemStyle}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
+        <Icon size={15} /><span>{label}</span>
+    </button>
+);
 
 const UserMenu = () => {
     const { t, i18n } = useTranslation('pages');
@@ -115,115 +130,21 @@ const UserMenu = () => {
                         </div>
 
                         <div style={{ padding: '8px' }}>
-                            <button
-                                onClick={() => {
-                                    setShowDropdown(false);
-                                    navigate('/logs');
-                                }}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-primary)',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    transition: 'all 0.2s ease',
-                                    borderRadius: '8px',
-                                    textAlign: 'left'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                            >
-                                <FaClipboardList size={16} />
-                                <span>{t('userMenu.activityLogs')}</span>
-                            </button>
+                            {/* Quick Actions */}
+                            <MenuItem icon={FaIdCard} label={t('userMenu.myCard', 'Kartvizitim')} onClick={() => { setShowDropdown(false); navigate('/my-card'); }} />
+                            <MenuItem icon={FaBell} label={t('userMenu.reminders', 'Hatırlatmalar')} onClick={() => { setShowDropdown(false); navigate('/contacts?filter=reminders'); }} />
+                            <MenuItem icon={FaFileImport} label={t('userMenu.import', 'Toplu İçe Aktar')} onClick={() => { setShowDropdown(false); navigate('/import'); }} />
+                            <MenuItem icon={FaFileExcel} label={t('userMenu.export', 'Excel/PDF Dışa Aktar')} onClick={() => { setShowDropdown(false); navigate('/contacts'); }} />
 
+                            <div style={{ height: '1px', background: 'var(--glass-border)', margin: '6px 0' }} />
+
+                            {/* Management */}
+                            <MenuItem icon={FaClipboardList} label={t('userMenu.activityLogs')} onClick={() => { setShowDropdown(false); navigate('/logs'); }} />
                             {user.role === 'admin' && (
-                                <button
-                                    onClick={() => {
-                                        setShowDropdown(false);
-                                        navigate('/users');
-                                    }}
-                                    style={{
-                                        width: '100%',
-                                        padding: '10px 12px',
-                                        backgroundColor: 'transparent',
-                                        color: 'var(--text-primary)',
-                                        border: 'none',
-                                        cursor: 'pointer',
-                                        fontSize: '14px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '10px',
-                                        transition: 'all 0.2s ease',
-                                        borderRadius: '8px',
-                                        textAlign: 'left'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                >
-                                    <FaUsers size={16} />
-                                    <span>{t('userMenu.userManagement')}</span>
-                                </button>
+                                <MenuItem icon={FaUsers} label={t('userMenu.userManagement')} onClick={() => { setShowDropdown(false); navigate('/users'); }} />
                             )}
-
-                            <button
-                                onClick={() => {
-                                    setShowDropdown(false);
-                                    navigate('/settings');
-                                }}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-primary)',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    transition: 'all 0.2s ease',
-                                    borderRadius: '8px',
-                                    textAlign: 'left'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                            >
-                                <FaCog size={16} />
-                                <span>{t('userMenu.settings')}</span>
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setShowDropdown(false);
-                                    navigate('/trash');
-                                }}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    backgroundColor: 'transparent',
-                                    color: 'var(--text-primary)',
-                                    border: 'none',
-                                    cursor: 'pointer',
-                                    fontSize: '14px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '10px',
-                                    transition: 'all 0.2s ease',
-                                    borderRadius: '8px',
-                                    textAlign: 'left'
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--glass-bg-hover)'}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                            >
-                                <FaTrash size={16} />
-                                <span>{t('pages:app.nav.trashBin')}</span>
-                            </button>
+                            <MenuItem icon={FaCog} label={t('userMenu.settings')} onClick={() => { setShowDropdown(false); navigate('/settings'); }} />
+                            <MenuItem icon={FaTrash} label={t('pages:app.nav.trashBin')} onClick={() => { setShowDropdown(false); navigate('/trash'); }} />
 
                             <div style={{ height: '1px', background: 'var(--glass-border)', margin: '8px 0' }}></div>
 

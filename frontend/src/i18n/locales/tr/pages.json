@@ -188,6 +188,10 @@
       "admin": "👑 Admin",
       "user": "👤 Kullanıcı"
     },
+    "myCard": "Kartvizitim",
+    "reminders": "Hatırlatmalar",
+    "import": "Toplu İçe Aktar",
+    "export": "Excel/PDF Dışa Aktar",
     "activityLogs": "İşlem Kayıtları",
     "userManagement": "Kullanıcı Yönetimi",
     "settings": "Ayarlar",
