@@ -100,18 +100,20 @@ npm run dev
 
 ## Backup & Restore
 
+Run inside the backend container:
+
 ```bash
 # Create backup (database + uploads)
-./backend/scripts/backup.sh
+docker compose exec backend bash scripts/backup.sh
 
 # List available backups
-./backend/scripts/restore.sh
+docker compose exec backend bash scripts/restore.sh
 
 # Restore from backup
-./backend/scripts/restore.sh 20260401_120000
+docker compose exec backend bash scripts/restore.sh 20260403_120000
 ```
 
-Backups are stored in `./backups/` (last 7 retained automatically).
+Backups are stored in the `crm_backups` Docker volume (last 7 retained automatically).
 
 ## License
 

@@ -1,18 +1,20 @@
 #!/bin/bash
 # Restore PostgreSQL database and uploads from backup
+# Run inside backend container: docker compose exec backend bash scripts/restore.sh [timestamp]
 set -euo pipefail
 
+BACKUP_DIR="${BACKUP_DIR:-/app/backups}"
+
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <timestamp>"
-    echo "Example: $0 20260401_120000"
+    echo "Usage: restore.sh <timestamp>"
+    echo "Example: restore.sh 20260403_120000"
     echo ""
     echo "Available backups:"
-    ls -1 "${BACKUP_DIR:-./backups}"/db_*.sql.gz 2>/dev/null | sed 's/.*db_//;s/.sql.gz//'
+    ls -1 "$BACKUP_DIR"/db_*.sql.gz 2>/dev/null | sed 's|.*/db_||;s|.sql.gz||' || echo "  No backups found in $BACKUP_DIR"
     exit 1
 fi
 
 TIMESTAMP=$1
-BACKUP_DIR="${BACKUP_DIR:-./backups}"
 DB_FILE="$BACKUP_DIR/db_${TIMESTAMP}.sql.gz"
 UPLOADS_FILE="$BACKUP_DIR/uploads_${TIMESTAMP}.tar.gz"
 
@@ -28,14 +30,21 @@ if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
     exit 0
 fi
 
+# Database connection from env vars
+DB_HOST="${DB_HOST:-db}"
+DB_USER="${DB_USER:-${POSTGRES_USER:-crm_user}}"
+DB_NAME="${DB_NAME:-${POSTGRES_DB:-crm_db}}"
+DB_PASSWORD="${DB_PASSWORD:-${POSTGRES_PASSWORD:-crm_password}}"
+
 # Restore database
 echo "[RESTORE] Restoring database..."
-gunzip -c "$DB_FILE" | docker exec -i crm_db psql -U "${POSTGRES_USER:-crm_user}" -d "${POSTGRES_DB:-crm_db}" --quiet
+gunzip -c "$DB_FILE" | PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" --quiet 2>/dev/null
+echo "[RESTORE] Database restored."
 
 # Restore uploads (if backup exists)
 if [ -f "$UPLOADS_FILE" ]; then
     echo "[RESTORE] Restoring uploads..."
-    gunzip -c "$UPLOADS_FILE" | docker cp - crm_backend:/app/
+    tar xzf "$UPLOADS_FILE" -C /app
     echo "[RESTORE] Uploads restored."
 else
     echo "[RESTORE] No uploads backup found, skipping."

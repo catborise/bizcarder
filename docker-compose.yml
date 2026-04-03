@@ -85,6 +85,7 @@ services:
       - ./backend:/app
       - /app/node_modules
       - crm_uploads:/app/uploads
+      - crm_backups:/app/backups
 
   frontend:
     build:
@@ -109,4 +110,5 @@ services:
 volumes:
   pgdata:
   crm_uploads:
+  crm_backups:
   redis_data:
