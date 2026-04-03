@@ -21,20 +21,28 @@
       "desc": "Kendi dijital kartvizitinizi oluşturun, QR kod veya link ile paylaşın."
     },
     "security": {
-      "title": "Güvenli Veri Yönetimi",
-      "desc": "Rol tabanlı yetkilendirme sistemi, kurumsal SSO/SAML desteği ve güvenli oturum yönetimi."
+      "title": "Kurumsal Güvenlik",
+      "desc": "AES-256-GCM şifreleme, CSRF koruması, iki faktörlü doğrulama (TOTP), kurumsal SSO/SAML, rol tabanlı erişim kontrolü ve dağıtık hız sınırlama."
     },
     "pwa": {
       "title": "PWA Desteği",
       "desc": "Uygulamayı telefonunuza yükleyerek çevrimdışı bile kullanmaya devam edin."
     },
+    "notifications": {
+      "title": "E-posta Bildirimleri",
+      "desc": "Takip hatırlatmaları, yeni kullanıcı karşılama ve onay bildirimleri için otomatik e-posta. Tamamen isteğe bağlı — SMTP yapılandırması olmadan da çalışır."
+    },
+    "backup": {
+      "title": "Yedekleme & Geri Yükleme",
+      "desc": "Tek komutla veritabanı ve dosya yedekleme, cron ile günlük otomatik zamanlama. Zaman damgası ile istediğiniz noktaya geri dönün. Son 7 yedek otomatik saklanır."
+    },
     "design": {
-      "title": "Bold Premium Tasarım",
-      "desc": "Gradient vurgular, renk kodlu CRM kartları, mobil öncelikli responsive layout ve karanlık/aydınlık tema desteği."
+      "title": "Özelleştirilebilir Dashboard",
+      "desc": "Gradient vurgulu Bold Premium tasarım, karanlık/aydınlık tema ve kullanıcı bazlı özelleştirilebilir dashboard widget'ları. İş akışınıza uygun şekilde widget'ları açın/kapatın ve sıralayın."
     },
     "i18n": {
       "title": "Çoklu Dil Desteği",
-      "desc": "Türkçe ve İngilizce tam dil desteği ile anlık dil değiştirme."
+      "desc": "Türkçe ve İngilizce tam dil desteği, anlık dil değiştirme ve hızlı sayfa yüklemesi için lazy-load çeviriler."
     }
   }
 }

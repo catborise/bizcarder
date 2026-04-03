@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
-import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush, FaLanguage } from 'react-icons/fa';
+import { FaGithub, FaEnvelope, FaIdCard, FaCode, FaRocket, FaShieldAlt, FaMobileAlt, FaDatabase, FaPaintBrush, FaLanguage, FaBell, FaCloudDownloadAlt } from 'react-icons/fa';
 
 const About = () => {
     const { t } = useTranslation('about');
@@ -54,6 +54,16 @@ const About = () => {
             icon: <FaMobileAlt />,
             title: t('cap.pwa.title'),
             description: t('cap.pwa.desc')
+        },
+        {
+            icon: <FaBell />,
+            title: t('cap.notifications.title'),
+            description: t('cap.notifications.desc')
+        },
+        {
+            icon: <FaCloudDownloadAlt />,
+            title: t('cap.backup.title'),
+            description: t('cap.backup.desc')
         },
         {
             icon: <FaPaintBrush />,
