@@ -671,7 +671,47 @@ router.get('/:id/history', async (req, res) => {
     }
 });
 
-// vCard İndir
+// Bulk vCard Export — all cards or selected IDs
+router.get('/export/vcf', async (req, res) => {
+    try {
+        const { whereClause } = buildCardsQuery(req);
+
+        // Optional: export only selected IDs
+        if (req.query.ids) {
+            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
+            whereClause.id = { [Op.in]: ids };
+        }
+
+        const cards = await BusinessCard.findAll({
+            where: whereClause,
+            include: [{ model: User, as: 'owner', attributes: ['displayName'] }],
+            order: [['firstName', 'ASC'], ['lastName', 'ASC']],
+            limit: 2000,
+        });
+
+        if (cards.length === 0) {
+            return res.status(404).json({ error: 'No cards to export.' });
+        }
+
+        // Concatenate all vCards into one file
+        const vcfContent = cards.map(card => generateVCard(card)).join('\r\n');
+
+        res.setHeader('Content-Type', 'text/vcard');
+        res.setHeader('Content-Disposition', `attachment; filename="contacts_${new Date().toISOString().slice(0, 10)}.vcf"`);
+        res.send(vcfContent);
+
+        await logAction({
+            action: 'CARD_BULK_VCF_EXPORT',
+            details: `Bulk vCard export: ${cards.length} cards`,
+            req
+        });
+    } catch (error) {
+        console.error('Bulk VCF export error:', error);
+        res.status(500).json({ error: 'vCard export failed.' });
+    }
+});
+
+// vCard İndir (single card)
 router.get('/:id/vcf', async (req, res) => {
     try {
         const { id } = req.params;

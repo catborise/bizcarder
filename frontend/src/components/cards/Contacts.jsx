@@ -381,6 +381,29 @@ const Contacts = () => {
                         <FaFilePdf size={20} />
                     </button>
 
+                    <button
+                        onClick={async () => {
+                            try {
+                                showNotification(t('cards:contacts.notify.vcardPreparing', 'Preparing vCard...'), 'info');
+                                const response = await api.get('/api/cards/export/vcf', {
+                                    responseType: 'blob',
+                                });
+                                downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
+                                showNotification(t('cards:contacts.notify.vcardDownloaded', 'vCard downloaded.'), 'success');
+                            } catch (err) {
+                                showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
+                            }
+                        }}
+                        title={t('cards:contacts.titleAttr.downloadVcf', 'Download all as vCard')}
+                        style={{
+                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
+                            cursor: 'pointer', color: 'var(--accent-secondary)', transition: 'all 0.2s ease',
+                        }}
+                    >
+                        <FaDownload size={20} />
+                    </button>
+
                     <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
