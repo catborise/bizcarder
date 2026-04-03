@@ -49,17 +49,18 @@ For details on how to configure SAML for your organization, please refer to the 
 
 ## Installation & Setup
 
-### Using Docker (Recommended)
+### Quick Install (Recommended)
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/catborise/bizcarder.git
-    cd bizcarder
-    ```
-2.  Start the services:
-    ```bash
-    docker-compose up --build
-    ```
+```bash
+git clone https://github.com/catborise/bizcarder.git
+cd bizcarder
+cp .env.example .env    # Edit with your settings
+./install.sh            # Build, start, sync DB, seed data, health check
+```
+
+The install script handles everything: container build, DB schema sync, default data seeding, and health verification. Use `./install.sh --fresh` to start from scratch (deletes all data).
+
+### Manual Docker Setup
 3.  Access the applications:
     -   Frontend: [http://localhost:5173](http://localhost:5173)
     -   Backend API: [http://localhost:5000](http://localhost:5000)
