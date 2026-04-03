@@ -116,6 +116,10 @@ const Help = () => {
                 {
                     q: t('faq.howToEnable2FA.q'),
                     a: t('faq.howToEnable2FA.a')
+                },
+                {
+                    q: t('faq.howToAutoBackup.q'),
+                    a: t('faq.howToAutoBackup.a')
                 }
             ]
         }

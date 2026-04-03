@@ -115,6 +115,14 @@ docker compose exec backend bash scripts/restore.sh 20260403_120000
 
 Backups are stored in the `crm_backups` Docker volume (last 7 retained automatically).
 
+**Automatic daily backup (cron):**
+
+```bash
+crontab -e
+# Add this line (adjust /path/to/project):
+0 3 * * * cd /path/to/project && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1
+```
+
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

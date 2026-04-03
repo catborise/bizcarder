@@ -72,6 +72,10 @@
     "howToEnable2FA": {
       "q": "İki faktörlü doğrulamayı nasıl etkinleştiririm?",
       "a": "Ayarlar sayfasına gidin, Güvenlik bölümünü bulun ve '2FA Kur' düğmesine tıklayın. QR kodu Google Authenticator veya herhangi bir TOTP uygulaması ile tarayın, ardından doğrulama kodunu girerek etkinleştirin."
+    },
+    "howToAutoBackup": {
+      "q": "Otomatik günlük yedekleme nasıl kurulur?",
+      "a": "Sunucuda cron görevi ekleyin: 'crontab -e' komutunu çalıştırın ve şu satırı ekleyin:\n\n0 3 * * * cd /proje/dizini && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\n'/proje/dizini' kısmını gerçek proje dizininizle değiştirin. Bu, her gün saat 03:00'te yedekleme yapar. -T flag'i cron'un etkileşimsiz çalışması için gereklidir. Logları kontrol edin: tail -f /var/log/crm_backup.log"
     }
   }
 }

@@ -72,6 +72,10 @@
     "howToEnable2FA": {
       "q": "How do I enable two-factor authentication?",
       "a": "Go to Settings, find the Security section, and click 'Setup 2FA'. Scan the QR code with Google Authenticator or any TOTP app, then enter the verification code to activate."
+    },
+    "howToAutoBackup": {
+      "q": "How do I set up automatic daily backups?",
+      "a": "Add a cron job on the host server: Run 'crontab -e' and add this line:\n\n0 3 * * * cd /path/to/project && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\nReplace '/path/to/project' with your actual project directory. This runs backup every day at 03:00. The -T flag is required for non-interactive cron execution. Check logs with: tail -f /var/log/crm_backup.log"
     }
   }
 }
