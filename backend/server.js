@@ -88,9 +88,9 @@ if (process.env.ALLOWED_ORIGINS) {
 
 app.use(cors({
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        // AYRICA: Aynı domainden (same-origin) gelen fetch/xhr de bazen origin göndermez.
-        if (!origin) return callback(null, true);
+        // Allow requests with no origin (SAML callback, mobile apps, same-origin)
+        // Some browsers send literal string "null" for cross-origin form redirects
+        if (!origin || origin === 'null') return callback(null, true);
 
         // Sadece tam eşleşmeye izin ver
         const isAllowed = allowedOrigins.includes(origin);

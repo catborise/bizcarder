@@ -24,8 +24,13 @@ function csrfProtection(req, res, next) {
     // Safe methods don't need CSRF validation
     if (SAFE_METHODS.includes(req.method)) return next();
 
-    // SAML auth callback comes via browser redirect — cannot carry CSRF token
-    if (req.path.startsWith('/auth/login/callback') || req.path.startsWith('/auth/local/login')) return next();
+    // Auth endpoints exempt from CSRF:
+    // - SAML callback: browser form-redirect from IdP, cannot carry CSRF token
+    // - Local login: first POST before CSRF cookie is set in browser
+    // - Register: same as login
+    // - Logout: session destruction, no state change risk
+    const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/register', '/auth/logout'];
+    if (authExempt.some(p => req.originalUrl.startsWith(p))) return next();
 
     // Validate: compare cookie with header
     const cookieToken = req.cookies[CSRF_COOKIE];
