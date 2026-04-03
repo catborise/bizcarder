@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaSearch, FaQuestionCircle, FaIdCard, FaQrcode, FaBell,
     FaMobileAlt, FaShieldAlt, FaChevronRight, FaChevronDown,
-    FaLightbulb, FaSync, FaTrashAlt
+    FaLightbulb, FaSync, FaTrashAlt, FaDatabase
 } from 'react-icons/fa';
 
 const Help = () => {
@@ -93,6 +93,29 @@ const Help = () => {
                 {
                     q: t('faq.dataSecurity.q'),
                     a: t('faq.dataSecurity.a')
+                }
+            ]
+        },
+        {
+            id: 'admin-backup',
+            title: t('sections.adminBackup'),
+            icon: <FaDatabase />,
+            items: [
+                {
+                    q: t('faq.howToBackup.q'),
+                    a: t('faq.howToBackup.a')
+                },
+                {
+                    q: t('faq.howToRestore.q'),
+                    a: t('faq.howToRestore.a')
+                },
+                {
+                    q: t('faq.howToResetAdmin.q'),
+                    a: t('faq.howToResetAdmin.a')
+                },
+                {
+                    q: t('faq.howToEnable2FA.q'),
+                    a: t('faq.howToEnable2FA.a')
                 }
             ]
         }

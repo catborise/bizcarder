@@ -13,7 +13,8 @@
     "digitalCard": "My Digital Card",
     "crmFeatures": "CRM Features",
     "offlineMode": "Offline Usage",
-    "security": "Security & Privacy"
+    "security": "Security & Privacy",
+    "adminBackup": "Administration & Backup"
   },
   "faq": {
     "whatIsBizcarder": {
@@ -55,6 +56,22 @@
     "dataSecurity": {
       "q": "How secure is my data?",
       "a": "All your data is protected with modern encryption standards. Corporate SSO/SAML support, role-based access control, and secure session management provide maximum security."
+    },
+    "howToBackup": {
+      "q": "How do I backup the database?",
+      "a": "Run this command: docker compose exec backend bash scripts/backup.sh — This creates a compressed database dump and uploads archive. Last 7 backups are kept automatically."
+    },
+    "howToRestore": {
+      "q": "How do I restore from a backup?",
+      "a": "First list available backups: docker compose exec backend bash scripts/restore.sh — Then restore: docker compose exec backend bash scripts/restore.sh <timestamp>"
+    },
+    "howToResetAdmin": {
+      "q": "How do I reset the admin account?",
+      "a": "Run the seed script: docker compose exec backend node scripts/seed.js — This creates the default admin user (admin/admin) if it doesn't exist. Change the password immediately after."
+    },
+    "howToEnable2FA": {
+      "q": "How do I enable two-factor authentication?",
+      "a": "Go to Settings, find the Security section, and click 'Setup 2FA'. Scan the QR code with Google Authenticator or any TOTP app, then enter the verification code to activate."
     }
   }
 }

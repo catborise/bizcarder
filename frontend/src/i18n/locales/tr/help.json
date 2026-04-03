@@ -13,7 +13,8 @@
     "digitalCard": "Dijital Kartvizitim",
     "crmFeatures": "CRM Özellikleri",
     "offlineMode": "Çevrimdışı Kullanım",
-    "security": "Güvenlik & Gizlilik"
+    "security": "Güvenlik & Gizlilik",
+    "adminBackup": "Yönetim & Yedekleme"
   },
   "faq": {
     "whatIsBizcarder": {
@@ -55,6 +56,22 @@
     "dataSecurity": {
       "q": "Verilerim ne kadar güvende?",
       "a": "Tüm verileriniz modern şifreleme standartlarıyla korunur. Kurumsal SSO/SAML desteği, rol tabanlı erişim kontrolü ve güvenli oturum yönetimi ile maksimum güvenlik sağlanır."
+    },
+    "howToBackup": {
+      "q": "Veritabanını nasıl yedeklerim?",
+      "a": "Şu komutu çalıştırın: docker compose exec backend bash scripts/backup.sh — Bu komut veritabanı ve yüklenen dosyaların sıkıştırılmış yedeğini oluşturur. Son 7 yedek otomatik saklanır."
+    },
+    "howToRestore": {
+      "q": "Yedekten nasıl geri yüklerim?",
+      "a": "Önce mevcut yedekleri listeleyin: docker compose exec backend bash scripts/restore.sh — Sonra geri yükleyin: docker compose exec backend bash scripts/restore.sh <zaman_damgasi>"
+    },
+    "howToResetAdmin": {
+      "q": "Admin hesabını nasıl sıfırlarım?",
+      "a": "Seed scriptini çalıştırın: docker compose exec backend node scripts/seed.js — Bu, varsayılan admin kullanıcısını (admin/admin) yoksa oluşturur. Giriş yaptıktan sonra şifreyi hemen değiştirin."
+    },
+    "howToEnable2FA": {
+      "q": "İki faktörlü doğrulamayı nasıl etkinleştiririm?",
+      "a": "Ayarlar sayfasına gidin, Güvenlik bölümünü bulun ve '2FA Kur' düğmesine tıklayın. QR kodu Google Authenticator veya herhangi bir TOTP uygulaması ile tarayın, ardından doğrulama kodunu girerek etkinleştirin."
     }
   }
 }
