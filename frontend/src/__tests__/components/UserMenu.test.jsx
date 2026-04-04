@@ -6,7 +6,7 @@ const mockChangeLanguage = vi.fn();
 const mockLogout = vi.fn(() => Promise.resolve());
 const mockToggleTheme = vi.fn();
 
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
 

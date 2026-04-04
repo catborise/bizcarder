@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaCalendarCheck, FaTimes, FaExternalLinkAlt, FaTrashAlt } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 

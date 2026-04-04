@@ -1,7 +1,7 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 # pg_dump and psql needed for backup/restore scripts
-RUN apk add --no-cache postgresql15-client
+RUN apk add --no-cache postgresql16-client
 
 WORKDIR /app
 

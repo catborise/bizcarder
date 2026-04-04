@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router';
 import { useTranslation, Trans } from 'react-i18next';
 import { FaShieldAlt, FaHome, FaEnvelope } from 'react-icons/fa';
 

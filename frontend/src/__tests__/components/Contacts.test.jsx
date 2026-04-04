@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 
-// Mock react-router-dom
+// Mock react-router
 const mockNavigate = vi.fn();
-vi.mock('react-router-dom', () => ({
+vi.mock('react-router', () => ({
     useLocation: () => ({ state: null, pathname: '/contacts', search: '' }),
     useNavigate: () => mockNavigate,
     Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,

@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NotificationBanner from './components/layout/NotificationBanner';

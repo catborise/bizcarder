@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import * as Icons from 'react-icons/fa';
 import api, { API_URL as BASE_API_URL } from '../../api/axios';
