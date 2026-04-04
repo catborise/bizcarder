@@ -204,6 +204,10 @@
       "delete": "Delete Selected",
       "deselect": "Clear Selection"
     },
+    "vcfExport": {
+      "title": "Export All as vCard",
+      "message": "All your business cards will be downloaded as a single .vcf file. This file can be imported into any phone or email client. Continue?"
+    },
     "titleAttr": {
       "downloadExcel": "Download as Excel",
       "downloadPdf": "Download as PDF",

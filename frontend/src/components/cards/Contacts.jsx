@@ -59,6 +59,7 @@ const Contacts = () => {
     const [bulkTagAction, setBulkTagAction] = useState('add'); // 'add' or 'replace'
     const [selectedBulkTags, setSelectedBulkTags] = useState([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
+    const [isVcfExportConfirmOpen, setIsVcfExportConfirmOpen] = useState(false);
     const { showNotification } = useNotification();
     const location = useLocation();
     const navigate = useNavigate();
@@ -382,18 +383,7 @@ const Contacts = () => {
                     </button>
 
                     <button
-                        onClick={async () => {
-                            try {
-                                showNotification(t('cards:contacts.notify.vcardPreparing', 'Preparing vCard...'), 'info');
-                                const response = await api.get('/api/cards/export/vcf', {
-                                    responseType: 'blob',
-                                });
-                                downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
-                                showNotification(t('cards:contacts.notify.vcardDownloaded', 'vCard downloaded.'), 'success');
-                            } catch (err) {
-                                showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
-                            }
-                        }}
+                        onClick={() => setIsVcfExportConfirmOpen(true)}
                         title={t('cards:contacts.titleAttr.downloadVcf', 'Download all as vCard')}
                         style={{
                             width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -912,6 +902,24 @@ const Contacts = () => {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            <ConfirmModal
+                isOpen={isVcfExportConfirmOpen}
+                onClose={() => setIsVcfExportConfirmOpen(false)}
+                onConfirm={async () => {
+                    setIsVcfExportConfirmOpen(false);
+                    try {
+                        showNotification(t('cards:contacts.notify.vcardPreparing', 'Preparing vCard...'), 'info');
+                        const response = await api.get('/api/cards/export/vcf', { responseType: 'blob' });
+                        downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
+                        showNotification(t('cards:contacts.notify.vcardDownloaded', 'vCard downloaded.'), 'success');
+                    } catch (err) {
+                        showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
+                    }
+                }}
+                title={t('cards:contacts.vcfExport.title', 'Export All as vCard')}
+                message={t('cards:contacts.vcfExport.message', 'All your business cards will be downloaded as a single .vcf file. This file can be imported into any phone or email client. Continue?')}
+            />
         </div>
     );
 };

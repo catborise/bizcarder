@@ -204,6 +204,10 @@
       "delete": "Seçilenleri Sil",
       "deselect": "Seçimi Kaldır"
     },
+    "vcfExport": {
+      "title": "Tümünü vCard Olarak İndir",
+      "message": "Tüm kartvizitleriniz tek bir .vcf dosyası olarak indirilecektir. Bu dosya herhangi bir telefon veya e-posta uygulamasına aktarılabilir. Devam etmek istiyor musunuz?"
+    },
     "titleAttr": {
       "downloadExcel": "Excel Olarak İndir",
       "downloadPdf": "PDF Olarak İndir",
