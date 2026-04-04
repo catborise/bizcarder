@@ -195,6 +195,19 @@
       "addToExisting": "Mevcutlara Ekle",
       "replaceAll": "Tümünü Değiştir"
     },
+    "bulk": {
+      "tag": "Etiketle",
+      "makePublic": "Herkese Açık Yap",
+      "makePrivate": "Gizli Yap",
+      "exportExcel": "Excel Olarak İndir",
+      "exportPdf": "PDF Olarak İndir",
+      "delete": "Seçilenleri Sil",
+      "deselect": "Seçimi Kaldır"
+    },
+    "vcfExport": {
+      "title": "Tümünü vCard Olarak İndir",
+      "message": "Tüm kartvizitleriniz tek bir .vcf dosyası olarak indirilecektir. Bu dosya herhangi bir telefon veya e-posta uygulamasına aktarılabilir. Devam etmek istiyor musunuz?"
+    },
     "titleAttr": {
       "downloadExcel": "Excel Olarak İndir",
       "downloadPdf": "PDF Olarak İndir",
@@ -202,6 +215,7 @@
       "emailFollow": "E-Posta Takip",
       "qrVcard": "QR / vCard",
       "downloadVcard": "vCard İndir",
+      "downloadVcf": "Tümünü vCard Olarak İndir",
       "history": "Geçmiş"
     },
     "pagination": "Sayfa {{current}} / {{total}}",

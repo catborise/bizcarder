@@ -215,6 +215,7 @@
       "emailFollow": "Email Follow-up",
       "qrVcard": "QR / vCard",
       "downloadVcard": "Download vCard",
+      "downloadVcf": "Download all as vCard",
       "history": "History"
     },
     "pagination": "Page {{current}} / {{total}}",

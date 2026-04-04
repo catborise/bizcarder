@@ -195,6 +195,19 @@
       "addToExisting": "Add to Existing",
       "replaceAll": "Replace All"
     },
+    "bulk": {
+      "tag": "Tag Selected",
+      "makePublic": "Make Public",
+      "makePrivate": "Make Private",
+      "exportExcel": "Download as Excel",
+      "exportPdf": "Download as PDF",
+      "delete": "Delete Selected",
+      "deselect": "Clear Selection"
+    },
+    "vcfExport": {
+      "title": "Export All as vCard",
+      "message": "All your business cards will be downloaded as a single .vcf file. This file can be imported into any phone or email client. Continue?"
+    },
     "titleAttr": {
       "downloadExcel": "Download as Excel",
       "downloadPdf": "Download as PDF",
@@ -202,6 +215,7 @@
       "emailFollow": "Email Follow-up",
       "qrVcard": "QR / vCard",
       "downloadVcard": "Download vCard",
+      "downloadVcf": "Download all as vCard",
       "history": "History"
     },
     "pagination": "Page {{current}} / {{total}}",

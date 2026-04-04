@@ -208,6 +208,18 @@ const Contacts = () => {
         );
     };
 
+    const handleBulkVcfExport = async () => {
+        setIsVcfExportConfirmOpen(false);
+        try {
+            showNotification(t('cards:contacts.notify.vcardPreparing'), 'info');
+            const response = await api.get('/api/cards/export/vcf', { responseType: 'blob' });
+            downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
+            showNotification(t('cards:contacts.notify.vcardDownloaded'), 'success');
+        } catch (err) {
+            showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
+        }
+    };
+
     const handleBulkDelete = async () => {
         try {
             await api.post('/api/cards/bulk-delete', { ids: selectedIds });
@@ -384,11 +396,12 @@ const Contacts = () => {
 
                     <button
                         onClick={() => setIsVcfExportConfirmOpen(true)}
-                        title={t('cards:contacts.titleAttr.downloadVcf', 'Download all as vCard')}
+                        title={t('cards:contacts.titleAttr.downloadVcf')}
                         style={{
                             width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
                             cursor: 'pointer', color: 'var(--accent-secondary)', transition: 'all 0.2s ease',
+                            backdropFilter: 'blur(10px)',
                         }}
                     >
                         <FaDownload size={20} />
@@ -877,25 +890,25 @@ const Contacts = () => {
                         </div>
 
                         <div className="bulk-bar-actions">
-                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.tag', 'Etiketle')} style={{ color: 'var(--accent-warning)' }}>
+                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.tag')} style={{ color: 'var(--accent-warning)' }}>
                                 <FaStar size={12} /> {t('cards:contacts.btn.tag')}
                             </button>
-                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" title={t('cards:contacts.bulk.makePublic', 'Herkese Açık Yap')} style={{ color: 'var(--accent-success)' }}>
+                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" title={t('cards:contacts.bulk.makePublic')} style={{ color: 'var(--accent-success)' }}>
                                 <FaGlobe size={12} />
                             </button>
-                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" title={t('cards:contacts.bulk.makePrivate', 'Gizli Yap')} style={{ color: 'var(--text-tertiary)' }}>
+                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" title={t('cards:contacts.bulk.makePrivate')} style={{ color: 'var(--text-tertiary)' }}>
                                 <FaIdCard size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" title={t('cards:contacts.bulk.exportExcel', 'Excel Olarak İndir')} style={{ color: '#27ae60' }}>
+                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" title={t('cards:contacts.bulk.exportExcel')} style={{ color: '#27ae60' }}>
                                 <FaFileExcel size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" title={t('cards:contacts.bulk.exportPdf', 'PDF Olarak İndir')} style={{ color: '#e74c3c' }}>
+                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" title={t('cards:contacts.bulk.exportPdf')} style={{ color: '#e74c3c' }}>
                                 <FaFilePdf size={12} />
                             </button>
-                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.delete', 'Seçilenleri Sil')} style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
+                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.delete')} style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
                                 <FaTrash size={12} />
                             </button>
-                            <button onClick={() => setSelectedIds([])} className="glass-button-small" title={t('cards:contacts.bulk.deselect', 'Seçimi Kaldır')} style={{ color: 'var(--text-tertiary)' }}>
+                            <button onClick={() => setSelectedIds([])} className="glass-button-small" title={t('cards:contacts.bulk.deselect')} style={{ color: 'var(--text-tertiary)' }}>
                                 ✕
                             </button>
                         </div>
@@ -906,19 +919,9 @@ const Contacts = () => {
             <ConfirmModal
                 isOpen={isVcfExportConfirmOpen}
                 onClose={() => setIsVcfExportConfirmOpen(false)}
-                onConfirm={async () => {
-                    setIsVcfExportConfirmOpen(false);
-                    try {
-                        showNotification(t('cards:contacts.notify.vcardPreparing', 'Preparing vCard...'), 'info');
-                        const response = await api.get('/api/cards/export/vcf', { responseType: 'blob' });
-                        downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
-                        showNotification(t('cards:contacts.notify.vcardDownloaded', 'vCard downloaded.'), 'success');
-                    } catch (err) {
-                        showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
-                    }
-                }}
-                title={t('cards:contacts.vcfExport.title', 'Export All as vCard')}
-                message={t('cards:contacts.vcfExport.message', 'All your business cards will be downloaded as a single .vcf file. This file can be imported into any phone or email client. Continue?')}
+                onConfirm={handleBulkVcfExport}
+                title={t('cards:contacts.vcfExport.title')}
+                message={t('cards:contacts.vcfExport.message')}
             />
         </div>
     );

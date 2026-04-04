@@ -215,6 +215,7 @@
       "emailFollow": "E-Posta Takip",
       "qrVcard": "QR / vCard",
       "downloadVcard": "vCard İndir",
+      "downloadVcf": "Tümünü vCard Olarak İndir",
       "history": "Geçmiş"
     },
     "pagination": "Sayfa {{current}} / {{total}}",

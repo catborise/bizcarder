@@ -131,10 +131,10 @@ const UserMenu = () => {
 
                         <div style={{ padding: '8px' }}>
                             {/* Quick Actions */}
-                            <MenuItem icon={FaIdCard} label={t('userMenu.myCard', 'Kartvizitim')} onClick={() => { setShowDropdown(false); navigate('/my-card'); }} />
-                            <MenuItem icon={FaBell} label={t('userMenu.reminders', 'Hatırlatmalar')} onClick={() => { setShowDropdown(false); navigate('/contacts?filter=reminders'); }} />
-                            <MenuItem icon={FaFileImport} label={t('userMenu.import', 'Toplu İçe Aktar')} onClick={() => { setShowDropdown(false); navigate('/import'); }} />
-                            <MenuItem icon={FaFileExcel} label={t('userMenu.export', 'Excel/PDF Dışa Aktar')} onClick={() => { setShowDropdown(false); navigate('/contacts'); }} />
+                            <MenuItem icon={FaIdCard} label={t('userMenu.myCard')} onClick={() => { setShowDropdown(false); navigate('/my-card'); }} />
+                            <MenuItem icon={FaBell} label={t('userMenu.reminders')} onClick={() => { setShowDropdown(false); navigate('/contacts?filter=reminders'); }} />
+                            <MenuItem icon={FaFileImport} label={t('userMenu.import')} onClick={() => { setShowDropdown(false); navigate('/import'); }} />
+                            <MenuItem icon={FaFileExcel} label={t('userMenu.export')} onClick={() => { setShowDropdown(false); navigate('/contacts'); }} />
 
                             <div style={{ height: '1px', background: 'var(--glass-border)', margin: '6px 0' }} />
 

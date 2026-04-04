@@ -684,7 +684,7 @@ router.get('/export/vcf', async (req, res) => {
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
-            include: [{ model: User, as: 'owner', attributes: ['displayName'] }],
+            attributes: ['id', 'firstName', 'lastName', 'company', 'title', 'email', 'phone', 'website', 'address', 'city', 'country', 'notes'],
             order: [['firstName', 'ASC'], ['lastName', 'ASC']],
             limit: 2000,
         });
