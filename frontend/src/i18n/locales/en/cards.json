@@ -195,6 +195,15 @@
       "addToExisting": "Add to Existing",
       "replaceAll": "Replace All"
     },
+    "bulk": {
+      "tag": "Tag Selected",
+      "makePublic": "Make Public",
+      "makePrivate": "Make Private",
+      "exportExcel": "Download as Excel",
+      "exportPdf": "Download as PDF",
+      "delete": "Delete Selected",
+      "deselect": "Clear Selection"
+    },
     "titleAttr": {
       "downloadExcel": "Download as Excel",
       "downloadPdf": "Download as PDF",

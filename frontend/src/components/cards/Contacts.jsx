@@ -887,25 +887,25 @@ const Contacts = () => {
                         </div>
 
                         <div className="bulk-bar-actions">
-                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" style={{ color: 'var(--accent-warning)' }}>
+                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.tag', 'Etiketle')} style={{ color: 'var(--accent-warning)' }}>
                                 <FaStar size={12} /> {t('cards:contacts.btn.tag')}
                             </button>
-                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" style={{ color: 'var(--accent-success)' }}>
+                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" title={t('cards:contacts.bulk.makePublic', 'Herkese Açık Yap')} style={{ color: 'var(--accent-success)' }}>
                                 <FaGlobe size={12} />
                             </button>
-                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" style={{ color: 'var(--text-tertiary)' }}>
+                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" title={t('cards:contacts.bulk.makePrivate', 'Gizli Yap')} style={{ color: 'var(--text-tertiary)' }}>
                                 <FaIdCard size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" style={{ color: '#27ae60' }}>
+                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" title={t('cards:contacts.bulk.exportExcel', 'Excel Olarak İndir')} style={{ color: '#27ae60' }}>
                                 <FaFileExcel size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" style={{ color: '#e74c3c' }}>
+                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" title={t('cards:contacts.bulk.exportPdf', 'PDF Olarak İndir')} style={{ color: '#e74c3c' }}>
                                 <FaFilePdf size={12} />
                             </button>
-                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
+                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.delete', 'Seçilenleri Sil')} style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
                                 <FaTrash size={12} />
                             </button>
-                            <button onClick={() => setSelectedIds([])} className="glass-button-small" style={{ color: 'var(--text-tertiary)' }}>
+                            <button onClick={() => setSelectedIds([])} className="glass-button-small" title={t('cards:contacts.bulk.deselect', 'Seçimi Kaldır')} style={{ color: 'var(--text-tertiary)' }}>
                                 ✕
                             </button>
                         </div>

@@ -195,6 +195,15 @@
       "addToExisting": "Mevcutlara Ekle",
       "replaceAll": "Tümünü Değiştir"
     },
+    "bulk": {
+      "tag": "Etiketle",
+      "makePublic": "Herkese Açık Yap",
+      "makePrivate": "Gizli Yap",
+      "exportExcel": "Excel Olarak İndir",
+      "exportPdf": "PDF Olarak İndir",
+      "delete": "Seçilenleri Sil",
+      "deselect": "Seçimi Kaldır"
+    },
     "titleAttr": {
       "downloadExcel": "Excel Olarak İndir",
       "downloadPdf": "PDF Olarak İndir",
