@@ -139,17 +139,22 @@ Run `make help` to see all available targets:
 | -------------------------------- | ------------------------------------------------------------ |
 | **Setup**                        |                                                              |
 | `make install`                   | First-time setup: copy `.env`, build, start, seed            |
-| `make build`                     | Rebuild images and start                                     |
+| `make build`                     | Rebuild backend image and start                              |
 | `make fresh`                     | Wipe everything and rebuild from scratch (asks confirmation) |
-| **Lifecycle**                    |                                                              |
-| `make up`                        | Start all containers                                         |
+| **Dev**                          |                                                              |
+| `make up`                        | Start backend + db + redis                                   |
+| `make dev-frontend`              | Start frontend dev server (Vite, HMR, port 5173)             |
 | `make down`                      | Stop all containers                                          |
 | `make restart`                   | Restart all containers                                       |
 | `make status`                    | Show container status                                        |
+| **Production**                   |                                                              |
+| `make prod`                      | Build and start production stack (Caddy + backend)           |
+| `make prod-up`                   | Start production containers                                  |
+| `make prod-down`                 | Stop production containers                                   |
+| `make prod-logs`                 | Tail production logs                                         |
 | **Logs**                         |                                                              |
 | `make logs`                      | Tail all service logs                                        |
 | `make logs-backend`              | Tail backend logs only                                       |
-| `make logs-frontend`             | Tail frontend logs only                                      |
 | **Database**                     |                                                              |
 | `make seed`                      | Seed default admin user and dashboard tiles                  |
 | `make migrate`                   | Run pending database migrations                              |
@@ -164,11 +169,6 @@ Run `make help` to see all available targets:
 | **Code quality**                 |                                                              |
 | `make lint`                      | Run ESLint on frontend                                       |
 | `make format`                    | Format all code with Prettier                                |
-| **Production**                   |                                                              |
-| `make prod`                      | Build and start production stack (Caddy, no Nginx)           |
-| `make prod-up`                   | Start production containers                                  |
-| `make prod-down`                 | Stop production containers                                   |
-| `make prod-logs`                 | Tail production logs                                         |
 | **Shell access**                 |                                                              |
 | `make shell`                     | Open shell in backend container                              |
 | `make shell-db`                  | Open psql shell                                              |

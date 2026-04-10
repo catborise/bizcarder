@@ -1,5 +1,5 @@
 # Multi-stage: build frontend, serve everything via Caddy
-# Used by docker-compose.prod.yml — replaces both frontend container and Nginx
+# Used by: docker compose --profile prod (see docker-compose.yml)
 
 # ── Stage 1: Build frontend ─────────────────────────────
 FROM node:22-alpine AS frontend

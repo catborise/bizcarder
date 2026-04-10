@@ -1,12 +1,15 @@
 # Bizcarder CRM — Makefile
 # Usage: make help
+#
+# Dev:  make up   → backend + db + redis (frontend: make dev-frontend)
+# Prod: make prod → backend + db + redis + caddy (auto HTTPS, static serve)
 
-COMPOSE     = docker compose
-COMPOSE_DEV = $(COMPOSE) --profile dev
+COMPOSE      = docker compose
 COMPOSE_PROD = $(COMPOSE) --profile prod
-BACKEND     = $(COMPOSE) exec backend
+BACKEND      = $(COMPOSE) exec backend
 
 .PHONY: help install upgrade up down restart build logs \
+        dev-frontend \
         seed migrate backup restore \
         test test-backend test-frontend \
         lint format \
@@ -22,11 +25,12 @@ help: ## Show this help
 
 install: ## First-time setup: copy .env, build, start, seed
 	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example — edit it before proceeding")
-	$(COMPOSE_DEV) up --build -d
+	$(COMPOSE) up --build -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 5
 	$(BACKEND) node scripts/seed.js
-	@echo "\n✓ Bizcarder is running at http://localhost:5173"
+	@echo "\n✓ Backend running on http://localhost:5000"
+	@echo "  Run 'make dev-frontend' in another terminal for the UI"
 	@echo "  Default login: admin / admin"
 
 upgrade: ## Pull latest code, rebuild, sync DB schema, re-seed
@@ -39,26 +43,29 @@ upgrade: ## Pull latest code, rebuild, sync DB schema, re-seed
 		echo "   Running pg-upgrade to migrate data...\n"; \
 		./scripts/pg-upgrade.sh --force; \
 	fi; \
-	$(COMPOSE_DEV) up --build -d; \
+	$(COMPOSE) up --build -d; \
 	echo "Waiting for backend to be ready..."; \
 	sleep 5; \
 	$(BACKEND) npx sequelize-cli db:migrate; \
 	$(BACKEND) node scripts/seed.js; \
 	echo "\n✓ Upgrade complete."
 
-# ── Docker lifecycle (dev) ──────────────────────────────
+# ── Dev ─────────────────────────────────────────────────
 
-up: ## Start dev containers (frontend via Nginx)
-	$(COMPOSE_DEV) up -d
+up: ## Start backend + db + redis
+	$(COMPOSE) up -d
 
 down: ## Stop all containers
 	$(COMPOSE) down
 
 restart: ## Restart all containers
-	$(COMPOSE_DEV) restart
+	$(COMPOSE) restart
 
-build: ## Rebuild dev images and start
-	$(COMPOSE_DEV) up --build -d
+build: ## Rebuild backend image and start
+	$(COMPOSE) up --build -d
+
+dev-frontend: ## Start frontend dev server (Vite, HMR, port 5173)
+	cd frontend && npm run dev
 
 logs: ## Tail logs from all services (Ctrl+C to quit)
 	$(COMPOSE) logs -f --tail=100
@@ -66,15 +73,12 @@ logs: ## Tail logs from all services (Ctrl+C to quit)
 logs-backend: ## Tail backend logs only
 	$(COMPOSE) logs -f --tail=100 backend
 
-logs-frontend: ## Tail frontend logs only
-	$(COMPOSE) logs -f --tail=100 frontend
-
 status: ## Show container status
 	$(COMPOSE) ps -a
 
 # ── Production (Caddy) ──────────────────────────────────
 
-prod: ## Build and start production stack (Caddy, no Nginx)
+prod: ## Build and start production stack (Caddy + backend)
 	$(COMPOSE_PROD) up --build -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 5
@@ -153,7 +157,7 @@ fresh: ## DESTRUCTIVE: wipe everything (volumes + images) and rebuild
 	@echo "⚠  This will delete ALL data (database, uploads, backups)."
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
 	$(COMPOSE) down -v --rmi local
-	$(COMPOSE_DEV) up --build -d
+	$(COMPOSE) up --build -d
 	@sleep 5
 	$(BACKEND) node scripts/seed.js
 	@echo "\n✓ Fresh install complete."
