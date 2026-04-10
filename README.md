@@ -150,6 +150,7 @@ Run `make help` to see all available targets:
 | `make install`                   | First-time setup: copy `.env`, build, migrate, seed          |
 | `make upgrade`                   | Pull latest code, rebuild dev, migrate, seed                 |
 | `make prod-upgrade`              | Pull latest code, rebuild prod (Caddy), migrate, seed        |
+| `make deps`                      | Install dependencies (frontend + backend)                    |
 | **Dev**                          |                                                              |
 | `make up`                        | Start backend + db + redis                                   |
 | `make dev-frontend`              | Start frontend dev server (Vite, HMR, port 5173)             |
@@ -160,23 +161,28 @@ Run `make help` to see all available targets:
 | **Production**                   |                                                              |
 | `make prod`                      | Build and start production stack (Caddy + backend)           |
 | `make prod-up`                   | Start production containers (no rebuild)                     |
-| **Logs**                         |                                                              |
+| **Logs & monitoring**            |                                                              |
 | `make logs`                      | Tail all service logs                                        |
 | `make logs-backend`              | Tail backend logs only                                       |
+| `make logs-db`                   | Tail database logs only                                      |
+| `make health`                    | Check health of all running services                         |
 | **Database**                     |                                                              |
 | `make seed`                      | Seed default admin user and dashboard tiles                  |
 | `make migrate`                   | Run pending database migrations                              |
+| `make migrate-undo`              | Rollback last database migration                             |
+| `make migrate-status`            | Show migration status (pending/applied)                      |
 | `make backup`                    | Create database + uploads backup                             |
 | `make restore`                   | List available backups                                       |
 | `make restore T=20260403_120000` | Restore from a specific backup                               |
 | `make pg-upgrade`                | Upgrade PostgreSQL version (migration script)                |
-| **Testing**                      |                                                              |
+| **Testing & quality**            |                                                              |
 | `make test`                      | Run all tests (backend + frontend)                           |
 | `make test-backend`              | Run backend tests only (Jest)                                |
 | `make test-frontend`             | Run frontend tests only (Vitest)                             |
-| **Code quality**                 |                                                              |
+| `make check`                     | Run lint + format check + tests (CI locally)                 |
 | `make lint`                      | Run ESLint on frontend                                       |
 | `make format`                    | Format all code with Prettier                                |
+| `make format-check`              | Check formatting without writing (CI mode)                   |
 | **Shell access**                 |                                                              |
 | `make shell`                     | Open shell in backend container                              |
 | `make shell-db`                  | Open psql shell                                              |
