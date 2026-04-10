@@ -8,28 +8,31 @@ COMPOSE      = docker compose
 COMPOSE_PROD = $(COMPOSE) --profile prod
 BACKEND      = $(COMPOSE) exec backend
 
-.PHONY: help install upgrade prod-upgrade up down restart build logs \
-        dev-frontend \
-        seed migrate backup restore \
+.PHONY: help install upgrade prod-upgrade _upgrade \
+        up down restart build dev-frontend \
+        logs logs-backend status \
+        prod prod-up \
+        seed migrate backup restore pg-upgrade \
         test test-backend test-frontend \
         lint format \
         shell shell-db shell-redis \
-        status clean fresh pg-upgrade \
-        prod prod-up prod-down prod-build prod-logs
+        clean fresh
 
 # ── Setup ────────────────────────────────────────────────
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-install: ## First-time setup: copy .env, build, start, seed
+install: ## First-time setup: copy .env, build, start, migrate, seed
 	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example — edit it before proceeding")
 	$(COMPOSE) up --build -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 5
+	$(BACKEND) npx sequelize-cli db:migrate
 	$(BACKEND) node scripts/seed.js
-	@echo "\n✓ Backend running on http://localhost:5000"
+	@echo ""
+	@echo "✓ Backend running on http://localhost:5000"
 	@echo "  Run 'make dev-frontend' in another terminal for the UI"
 	@echo "  Default login: admin / admin"
 
@@ -45,8 +48,10 @@ _upgrade:
 	git pull; \
 	NEW_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
 	if [ "$$OLD_PG" != "$$NEW_PG" ]; then \
-		echo "\n⚠  PostgreSQL version changed: $$OLD_PG → $$NEW_PG"; \
-		echo "   Running pg-upgrade to migrate data...\n"; \
+		echo ""; \
+		echo "⚠  PostgreSQL version changed: $$OLD_PG → $$NEW_PG"; \
+		echo "   Running pg-upgrade to migrate data..."; \
+		echo ""; \
 		./scripts/pg-upgrade.sh --force; \
 	fi; \
 	$(_COMPOSE_UP) up --build -d; \
@@ -54,7 +59,8 @@ _upgrade:
 	sleep 5; \
 	$(BACKEND) npx sequelize-cli db:migrate; \
 	$(BACKEND) node scripts/seed.js; \
-	echo "\n✓ Upgrade complete."
+	echo ""; \
+	echo "✓ Upgrade complete."
 
 # ── Dev ─────────────────────────────────────────────────
 
@@ -71,9 +77,9 @@ build: ## Rebuild backend image and start
 	$(COMPOSE) up --build -d
 
 dev-frontend: ## Start frontend dev server (Vite, HMR, port 5173)
-	cd frontend && npm run dev
+	cd frontend && test -d node_modules || npm install && npm run dev
 
-logs: ## Tail logs from all services (Ctrl+C to quit)
+logs: ## Tail logs from all services
 	$(COMPOSE) logs -f --tail=100
 
 logs-backend: ## Tail backend logs only
@@ -90,19 +96,11 @@ prod: ## Build and start production stack (Caddy + backend)
 	@sleep 5
 	$(BACKEND) npx sequelize-cli db:migrate
 	$(BACKEND) node scripts/seed.js
-	@echo "\n✓ Production stack running."
+	@echo ""
+	@echo "✓ Production stack running."
 
-prod-up: ## Start production containers
+prod-up: ## Start production containers (no rebuild)
 	$(COMPOSE_PROD) up -d
-
-prod-down: ## Stop production containers
-	$(COMPOSE) down
-
-prod-build: ## Rebuild production images
-	$(COMPOSE_PROD) up --build -d
-
-prod-logs: ## Tail production logs
-	$(COMPOSE) logs -f --tail=100
 
 # ── Database & data ──────────────────────────────────────
 
@@ -165,5 +163,7 @@ fresh: ## DESTRUCTIVE: wipe everything (volumes + images) and rebuild
 	$(COMPOSE) down -v --rmi local
 	$(COMPOSE) up --build -d
 	@sleep 5
+	$(BACKEND) npx sequelize-cli db:migrate
 	$(BACKEND) node scripts/seed.js
-	@echo "\n✓ Fresh install complete."
+	@echo ""
+	@echo "✓ Fresh install complete."
