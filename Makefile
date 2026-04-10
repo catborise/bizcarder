@@ -9,12 +9,13 @@ COMPOSE_PROD = $(COMPOSE) --profile prod
 BACKEND      = $(COMPOSE) exec backend
 
 .PHONY: help install upgrade prod-upgrade _upgrade \
-        up down restart build dev-frontend \
-        logs logs-backend status \
+        up down restart build dev-frontend deps \
+        logs logs-backend logs-db status health \
         prod prod-up \
-        seed migrate backup restore pg-upgrade \
-        test test-backend test-frontend \
-        lint format \
+        seed migrate migrate-undo migrate-status \
+        backup restore pg-upgrade \
+        test test-backend test-frontend check \
+        lint format format-check \
         shell shell-db shell-redis \
         clean fresh
 
@@ -67,6 +68,10 @@ _upgrade:
 	echo ""; \
 	echo "✓ Upgrade complete."
 
+deps: ## Install dependencies (frontend + backend)
+	cd backend && npm install
+	cd frontend && npm install
+
 # ── Dev ─────────────────────────────────────────────────
 
 up: ## Start backend + db + redis
@@ -82,7 +87,9 @@ build: ## Rebuild backend image and start
 	$(COMPOSE) up --build -d
 
 dev-frontend: ## Start frontend dev server (Vite, HMR, port 5173)
-	cd frontend && test -d node_modules || npm install && npm run dev
+	cd frontend && (test -d node_modules || npm install) && npm run dev
+
+# ── Logs & monitoring ───────────────────────────────────
 
 logs: ## Tail logs from all services
 	$(COMPOSE) logs -f --tail=100
@@ -90,8 +97,30 @@ logs: ## Tail logs from all services
 logs-backend: ## Tail backend logs only
 	$(COMPOSE) logs -f --tail=100 backend
 
+logs-db: ## Tail database logs only
+	$(COMPOSE) logs -f --tail=100 db
+
 status: ## Show container status
 	$(COMPOSE) ps -a
+
+health: ## Check health of all running services
+	@echo "── Containers ──"
+	@$(COMPOSE) ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null || $(COMPOSE) ps
+	@echo ""
+	@echo "── Backend API ──"
+	@curl -sf http://localhost:5000/ > /dev/null \
+		&& echo "  ✓ Backend responding on :5000" \
+		|| echo "  ✗ Backend not responding on :5000"
+	@echo ""
+	@echo "── Database ──"
+	@$(COMPOSE) exec -T db pg_isready -U $${POSTGRES_USER:-crm_user} -d $${POSTGRES_DB:-crm_db} > /dev/null 2>&1 \
+		&& echo "  ✓ PostgreSQL ready" \
+		|| echo "  ✗ PostgreSQL not ready"
+	@echo ""
+	@echo "── Redis ──"
+	@$(COMPOSE) exec -T redis redis-cli ping > /dev/null 2>&1 \
+		&& echo "  ✓ Redis responding" \
+		|| echo "  ✗ Redis not responding"
 
 # ── Production (Caddy) ──────────────────────────────────
 
@@ -115,6 +144,12 @@ seed: ## Seed default admin user and dashboard tiles
 migrate: ## Run pending database migrations
 	$(BACKEND) npx sequelize-cli db:migrate
 
+migrate-undo: ## Rollback last database migration
+	$(BACKEND) npx sequelize-cli db:migrate:undo
+
+migrate-status: ## Show migration status (pending/applied)
+	$(BACKEND) npx sequelize-cli db:migrate:status
+
 backup: ## Create database + uploads backup
 	$(BACKEND) bash scripts/backup.sh
 
@@ -128,7 +163,7 @@ endif
 pg-upgrade: ## Upgrade PostgreSQL version (runs migration script)
 	./scripts/pg-upgrade.sh
 
-# ── Testing ──────────────────────────────────────────────
+# ── Testing & quality ───────────────────────────────────
 
 test: test-backend test-frontend ## Run all tests
 
@@ -138,13 +173,16 @@ test-backend: ## Run backend tests (Jest)
 test-frontend: ## Run frontend tests (Vitest)
 	cd frontend && npm test
 
-# ── Code quality ────────────────────────────────────────
+check: lint format-check test ## Run lint + format check + tests (CI locally)
 
 lint: ## Run ESLint on frontend
 	cd frontend && npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0
 
 format: ## Format all code with Prettier
 	npx prettier --write .
+
+format-check: ## Check formatting without writing (CI mode)
+	npx prettier --check .
 
 # ── Shell access ─────────────────────────────────────────
 
