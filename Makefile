@@ -43,13 +43,18 @@ prod-upgrade: _COMPOSE_UP = $(COMPOSE_PROD)
 prod-upgrade: _upgrade ## Pull latest code, rebuild prod (Caddy), migrate, seed
 
 _upgrade:
-	@OLD_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
+	@set -e; \
 	$(COMPOSE) down; \
 	git pull; \
-	NEW_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
-	if [ "$$OLD_PG" != "$$NEW_PG" ]; then \
+	TARGET_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
+	VOL_NAME=$$(docker volume ls --format '{{.Name}}' | grep pgdata | head -1 || echo ""); \
+	CURRENT_PG=""; \
+	if [ -n "$$VOL_NAME" ]; then \
+		CURRENT_PG=$$(docker run --rm -v "$$VOL_NAME:/pgdata" alpine cat /pgdata/PG_VERSION 2>/dev/null || echo ""); \
+	fi; \
+	if [ -n "$$CURRENT_PG" ] && [ "$$CURRENT_PG" != "$$TARGET_PG" ]; then \
 		echo ""; \
-		echo "⚠  PostgreSQL version changed: $$OLD_PG → $$NEW_PG"; \
+		echo "⚠  PostgreSQL data version ($$CURRENT_PG) does not match target ($$TARGET_PG)"; \
 		echo "   Running pg-upgrade to migrate data..."; \
 		echo ""; \
 		./scripts/pg-upgrade.sh --force; \
