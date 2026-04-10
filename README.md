@@ -152,7 +152,7 @@ Run `make help` to see all available targets:
 | `make logs-frontend` | Tail frontend logs only |
 | **Database** | |
 | `make seed` | Seed default admin user and dashboard tiles |
-| `make sync` | Sync DB schema — add new columns (dev only) |
+| `make migrate` | Run pending database migrations |
 | `make backup` | Create database + uploads backup |
 | `make restore` | List available backups |
 | `make restore T=20260403_120000` | Restore from a specific backup |

@@ -5,8 +5,8 @@ COMPOSE = docker compose
 BACKEND = $(COMPOSE) exec backend
 FRONTEND = $(COMPOSE) exec frontend
 
-.PHONY: help install up down restart build logs \
-        seed sync backup restore \
+.PHONY: help install upgrade up down restart build logs \
+        seed migrate backup restore \
         test test-backend test-frontend \
         shell shell-db shell-redis \
         status clean fresh pg-upgrade
@@ -25,6 +25,23 @@ install: ## First-time setup: copy .env, build, start, seed
 	$(BACKEND) node scripts/seed.js
 	@echo "\n✓ Bizcarder is running at http://localhost:5173"
 	@echo "  Default login: admin / admin"
+
+upgrade: ## Pull latest code, rebuild, sync DB schema, re-seed
+	@OLD_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
+	$(COMPOSE) down; \
+	git pull; \
+	NEW_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
+	if [ "$$OLD_PG" != "$$NEW_PG" ]; then \
+		echo "\n⚠  PostgreSQL version changed: $$OLD_PG → $$NEW_PG"; \
+		echo "   Running pg-upgrade to migrate data...\n"; \
+		./scripts/pg-upgrade.sh --force; \
+	fi; \
+	$(COMPOSE) up --build -d; \
+	echo "Waiting for backend to be ready..."; \
+	sleep 5; \
+	$(COMPOSE) exec backend npx sequelize-cli db:migrate; \
+	$(COMPOSE) exec backend node scripts/seed.js; \
+	echo "\n✓ Upgrade complete."
 
 # ── Docker lifecycle ─────────────────────────────────────
 
@@ -57,8 +74,8 @@ status: ## Show container status
 seed: ## Seed default admin user and dashboard tiles
 	$(BACKEND) node scripts/seed.js
 
-sync: ## Sync DB schema (add new columns — dev only)
-	$(BACKEND) node -e "require('./models').sequelize.sync({ alter: true }).then(() => process.exit(0))"
+migrate: ## Run pending database migrations
+	$(BACKEND) npx sequelize-cli db:migrate
 
 backup: ## Create database + uploads backup
 	$(BACKEND) bash scripts/backup.sh

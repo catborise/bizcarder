@@ -90,8 +90,8 @@ docker compose exec backend bash scripts/restore.sh 20260403_120000
 # Seed default admin user + dashboard tiles (safe to re-run)
 docker compose exec backend node scripts/seed.js
 
-# Sync DB schema (add new columns, dev only)
-docker compose exec backend node -e "require('./models').sequelize.sync({ alter: true }).then(() => process.exit(0))"
+# Run pending database migrations
+docker compose exec backend npx sequelize-cli db:migrate
 ```
 
 ## Multi-Instance / Horizontal Scaling

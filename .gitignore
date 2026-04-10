@@ -11,3 +11,6 @@ backend/logs/
 backend/uploads/
 .superpowers/
 backups/
+.bg-shell/
+.pg-upgrade-backups/
+docs/superpowers/
