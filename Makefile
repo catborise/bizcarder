@@ -8,7 +8,7 @@ COMPOSE      = docker compose
 COMPOSE_PROD = $(COMPOSE) --profile prod
 BACKEND      = $(COMPOSE) exec backend
 
-.PHONY: help install upgrade up down restart build logs \
+.PHONY: help install upgrade prod-upgrade up down restart build logs \
         dev-frontend \
         seed migrate backup restore \
         test test-backend test-frontend \
@@ -33,7 +33,13 @@ install: ## First-time setup: copy .env, build, start, seed
 	@echo "  Run 'make dev-frontend' in another terminal for the UI"
 	@echo "  Default login: admin / admin"
 
-upgrade: ## Pull latest code, rebuild, sync DB schema, re-seed
+upgrade: _COMPOSE_UP = $(COMPOSE)
+upgrade: _upgrade ## Pull latest code, rebuild dev, migrate, seed
+
+prod-upgrade: _COMPOSE_UP = $(COMPOSE_PROD)
+prod-upgrade: _upgrade ## Pull latest code, rebuild prod (Caddy), migrate, seed
+
+_upgrade:
 	@OLD_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
 	$(COMPOSE) down; \
 	git pull; \
@@ -43,7 +49,7 @@ upgrade: ## Pull latest code, rebuild, sync DB schema, re-seed
 		echo "   Running pg-upgrade to migrate data...\n"; \
 		./scripts/pg-upgrade.sh --force; \
 	fi; \
-	$(COMPOSE) up --build -d; \
+	$(_COMPOSE_UP) up --build -d; \
 	echo "Waiting for backend to be ready..."; \
 	sleep 5; \
 	$(BACKEND) npx sequelize-cli db:migrate; \
