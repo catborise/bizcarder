@@ -76,6 +76,10 @@
     "howToAutoBackup": {
       "q": "Otomatik günlük yedekleme nasıl kurulur?",
       "a": "Sunucuda cron görevi ekleyin: 'crontab -e' komutunu çalıştırın ve şu satırı ekleyin:\n\n0 3 * * * cd /proje/dizini && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\n'/proje/dizini' kısmını gerçek proje dizininizle değiştirin. Bu, her gün saat 03:00'te yedekleme yapar. -T flag'i cron'un etkileşimsiz çalışması için gereklidir. Logları kontrol edin: tail -f /var/log/crm_backup.log"
+    },
+    "howToUpgradePostgres": {
+      "q": "PostgreSQL sürümünü nasıl yükseltirim?",
+      "a": "PostgreSQL major sürüm yükseltmelerinde (ör. 15→16, 16→17) veri formatı değişir ve taşıma gerekir. Şu adımları izleyin:\n\n1. docker-compose.yml dosyasındaki postgres imaj sürümünü değiştirin (ör. postgres:17-alpine)\n2. backend/Dockerfile içindeki postgresql-client sürümünü eşleştirin\n3. Çalıştırın: ./scripts/pg-upgrade.sh\n\nBetik otomatik olarak sürüm uyumsuzluğunu algılar, veritabanınızı yedekler, eski veri birimini kaldırır, yeni sürümü başlatır ve tüm verileri geri yükler. Yedek .pg-upgrade-backups/ dizininde saklanır ve başarılı yükseltmeden sonra bile silinmez. Onay istemini atlamak için --force parametresini kullanabilirsiniz."
     }
   }
 }

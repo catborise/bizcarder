@@ -39,6 +39,8 @@ const tileStyle = {
 const Dashboard = () => {
     const { t } = useTranslation(['dashboard', 'common']);
     const { theme } = useTheme();
+    // Resolve tile text: if it looks like an i18n key (starts with "tiles."), translate it; otherwise show as-is.
+    const tileText = (value) => value && value.startsWith('tiles.') ? t(`dashboard:${value}`) : value;
     const [stats, setStats] = useState({ totalCards: 0 });
     const [tagStats, setTagStats] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -567,8 +569,8 @@ const Dashboard = () => {
                                     <DynamicIcon name={tile.icon} size={18} />
                                 </div>
                                 <div style={{ minWidth: 0 }}>
-                                    <div style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.2 }}>{tile.title}</div>
-                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>{tile.subtitle}</div>
+                                    <div style={{ fontSize: '0.9rem', fontWeight: 700, lineHeight: 1.2 }}>{tileText(tile.title)}</div>
+                                    <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 400 }}>{tileText(tile.subtitle)}</div>
                                 </div>
                             </Link>
                         ))
@@ -616,13 +618,13 @@ const Dashboard = () => {
                                                 marginBottom: '6px',
                                                 letterSpacing: '-0.02em'
                                             }}>
-                                                {tile.title}
+                                                {tileText(tile.title)}
                                             </span>
                                             <span style={{
                                                 fontSize: '0.9rem',
                                                 color: 'var(--text-secondary)'
                                             }}>
-                                                {tile.subtitle}
+                                                {tileText(tile.subtitle)}
                                             </span>
                                         </div>
                                     </TileWrapper>

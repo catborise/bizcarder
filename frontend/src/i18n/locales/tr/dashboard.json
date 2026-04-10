@@ -55,5 +55,19 @@
       "order": "Sıralama",
       "isInternal": "Dahili Sayfa mı?"
     }
+  },
+  "tiles": {
+    "contacts": {
+      "title": "Kartvizitler",
+      "subtitle": "Tüm kartvizitlerinizi yönetin"
+    },
+    "logs": {
+      "title": "İşlem Kayıtları",
+      "subtitle": "Sistem aktivite geçmişi"
+    },
+    "import": {
+      "title": "Toplu İçe Aktar",
+      "subtitle": "Excel/CSV ile toplu yükleme"
+    }
   }
 }

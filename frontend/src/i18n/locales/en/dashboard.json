@@ -55,5 +55,19 @@
       "order": "Order",
       "isInternal": "Internal Page?"
     }
+  },
+  "tiles": {
+    "contacts": {
+      "title": "Contacts",
+      "subtitle": "Manage all your business cards"
+    },
+    "logs": {
+      "title": "Activity Logs",
+      "subtitle": "System activity history"
+    },
+    "import": {
+      "title": "Bulk Import",
+      "subtitle": "Upload via Excel/CSV"
+    }
   }
 }

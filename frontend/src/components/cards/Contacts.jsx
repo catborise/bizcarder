@@ -533,48 +533,44 @@ const Contacts = () => {
 
                                 {/* Image + Status Badges Column */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-                                {card.frontImageUrl ? (
-                                    <div
-                                        onClick={() => setSelectedImageCard(card)}
-                                        className="card-image-container"
-                                    >
-                                        <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                        <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.8 }}>v{card.version || 1}</div>
-                                    </div>
-                                ) : (
-                                    <div className="card-image-container">
-                                        <FaIdCard size={64} style={{ opacity: 0.5 }} />
-                                        <div style={{ position: 'absolute', bottom: '8px', left: '8px', color: 'var(--text-tertiary)', fontSize: '11px', fontWeight: 'bold', opacity: 0.5 }}>v{card.version || 1}</div>
-                                    </div>
-                                )}
+                                {(() => {
+                                    const hasImage = !!card.frontImageUrl;
+                                    const statusStyle = card.leadStatus ? getStatusStyle(card.leadStatus) : null;
+                                    return (
+                                        <div
+                                            className="card-image-container"
+                                            onClick={hasImage ? () => setSelectedImageCard(card) : undefined}
+                                        >
+                                            {hasImage
+                                                ? <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                                : <FaIdCard size={64} style={{ opacity: 0.5 }} />
+                                            }
+                                            {card.priority > 0 && (
+                                                <div style={{ position: 'absolute', top: '6px', left: '8px', display: 'flex', gap: '1px' }}>
+                                                    {[1, 2, 3, 4, 5].map(star => (
+                                                        <FaStar key={star} size={10} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(128,128,128,0.4)'} style={hasImage ? { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' } : undefined} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <div style={{ position: 'absolute', bottom: '6px', left: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                <span style={{ color: 'var(--text-tertiary)', fontSize: '10px', fontWeight: 'bold', opacity: hasImage ? 0.8 : 0.5, ...(hasImage && { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }) }}>v{card.version || 1}</span>
+                                                {statusStyle && (
+                                                    <span style={{
+                                                        padding: '2px 6px', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', lineHeight: 1.2,
+                                                        background: statusStyle.bg, color: statusStyle.color,
+                                                        border: `1px solid ${statusStyle.color}33`,
+                                                        ...(hasImage && { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }),
+                                                    }}>
+                                                        {statusStyle.icon} {statusStyle.label}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
 
-                                {/* Status / Priority / Tags — below the image */}
+                                {/* Tags — below the image */}
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {card.leadStatus && (
-                                        <div style={{ 
-                                            padding: '4px 10px', 
-                                            borderRadius: '8px', 
-                                            fontSize: '0.75rem', 
-                                            fontWeight: 'bold',
-                                            background: getStatusStyle(card.leadStatus).bg,
-                                            color: getStatusStyle(card.leadStatus).color,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '5px',
-                                            border: `1px solid ${getStatusStyle(card.leadStatus).color}33`
-                                        }}>
-                                            <span>{getStatusStyle(card.leadStatus).icon}</span>
-                                            {getStatusStyle(card.leadStatus).label}
-                                        </div>
-                                    )}
-                                    {card.priority > 0 && (
-                                        <div style={{ display: 'flex', gap: '2px', justifyContent: 'center' }}>
-                                            {[1, 2, 3, 4, 5].map(star => (
-                                                <FaStar key={star} size={12} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(128,128,128,0.3)'} />
-                                            ))}
-                                        </div>
-                                    )}
                                     {card.tags && card.tags.length > 0 && (
                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
                                             {card.tags.map(tag => {

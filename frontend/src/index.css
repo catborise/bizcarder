@@ -301,11 +301,11 @@ main {
   flex-shrink: 0;
 }
 
-/* Card image column */
+/* Card image column — business card aspect ratio */
 .card-image-container {
   flex: 0 0 200px;
   width: 200px;
-  height: 120px;
+  aspect-ratio: 9 / 5;
   background: var(--bg-input);
   border-radius: 12px;
   overflow: hidden;
@@ -1156,6 +1156,20 @@ button:focus-visible {
   animation: staggerSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
+/* Page loader spinner for Suspense fallback */
+.page-loader {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--glass-border);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 .skeleton-box {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
@@ -1186,11 +1200,6 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   margin-bottom: 10px;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .fade-in { animation: fadeIn 0.3s ease; }

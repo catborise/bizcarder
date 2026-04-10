@@ -76,6 +76,10 @@
     "howToAutoBackup": {
       "q": "How do I set up automatic daily backups?",
       "a": "Add a cron job on the host server: Run 'crontab -e' and add this line:\n\n0 3 * * * cd /path/to/project && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\nReplace '/path/to/project' with your actual project directory. This runs backup every day at 03:00. The -T flag is required for non-interactive cron execution. Check logs with: tail -f /var/log/crm_backup.log"
+    },
+    "howToUpgradePostgres": {
+      "q": "How do I upgrade PostgreSQL to a new version?",
+      "a": "When upgrading PostgreSQL (e.g., 15→16, 16→17), the data format changes and requires migration. Follow these steps:\n\n1. Edit docker-compose.yml and change the postgres image version (e.g., postgres:17-alpine)\n2. Update the postgresql-client version in backend/Dockerfile to match\n3. Run: ./scripts/pg-upgrade.sh\n\nThe script automatically detects the version mismatch, dumps your data, removes the old volume, starts the new version, and restores everything. A backup is saved to .pg-upgrade-backups/ and kept even after a successful upgrade. Use --force flag to skip the confirmation prompt."
     }
   }
 }

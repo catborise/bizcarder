@@ -28,10 +28,12 @@ async function seed() {
         console.log(adminCreated ? 'Admin user created.' : 'Admin user already exists.');
 
         // Seed default tiles
+        // Tile titles use i18n keys (dashboard:tiles.<key>.title / .subtitle).
+        // The frontend resolves these via t() for proper multilingual support.
         const defaultTiles = [
-            { title: 'Kartvizitler', subtitle: 'Tüm kartvizitlerinizi yönetin', url: '/contacts', icon: 'FaIdCard', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 1, isInternal: true },
-            { title: 'İşlem Kayıtları', subtitle: 'Sistem aktivite geçmişi', url: '/logs', icon: 'FaClipboardList', backgroundColor: 'rgba(245, 158, 11, 0.3)', order: 2, isInternal: true },
-            { title: 'Toplu İçe Aktar', subtitle: 'Excel/CSV ile toplu yükleme', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(16, 185, 129, 0.3)', order: 3, isInternal: true },
+            { title: 'tiles.contacts.title', subtitle: 'tiles.contacts.subtitle', url: '/contacts', icon: 'FaIdCard', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 1, isInternal: true },
+            { title: 'tiles.logs.title', subtitle: 'tiles.logs.subtitle', url: '/logs', icon: 'FaClipboardList', backgroundColor: 'rgba(245, 158, 11, 0.3)', order: 2, isInternal: true },
+            { title: 'tiles.import.title', subtitle: 'tiles.import.subtitle', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(16, 185, 129, 0.3)', order: 3, isInternal: true },
         ];
 
         let tilesCreated = 0;

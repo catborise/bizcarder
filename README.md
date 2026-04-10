@@ -1,129 +1,245 @@
-# Bizcarder - CRM Business Card Management System
+<p align="center">
+  <img src="docs/logo-placeholder.png" alt="Bizcarder" width="80" />
+</p>
 
-Bizcarder is a modern CRM application designed for managing business cards. It features OCR-powered data extraction, secure authentication, and robust export capabilities — all wrapped in a Bold Premium design with gradient accents and full mobile responsiveness.
+<h1 align="center">Bizcarder</h1>
 
-## Features
+<p align="center">
+  <strong>Turn paper business cards into a powerful CRM — scan, organize, follow up.</strong>
+</p>
 
--   **OCR Integration**: Automatically extract information from business card images using Tesseract.js.
--   **Secure Authentication**: Session-based authentication with Passport.js, SAML/Shibboleth SSO support.
--   **Dashboard**: Statistics overview with gradient stat cards, quick actions, and frequent tags.
--   **Bold Premium UI**: Gradient color system, color-coded CRM cards, accent-based visual hierarchy, and dark/light theme support.
--   **Mobile-First Design**: Bottom navigation, floating action button, full-screen modals, responsive grids, and touch-optimized controls.
--   **Multilingual**: Full Turkish and English language support with real-time switching (i18next).
--   **Digital Business Card**: Personal vCard with QR code sharing and public profile link.
--   **Export Capabilities**: Export business cards to XLSX or PDF formats.
--   **CRM Features**: Lead status tracking, priority levels, tags, interaction logging, reminders, and follow-ups.
--   **Admin Panel**: User management with role/approval toggles, activity logs, and system settings.
--   **PWA Support**: Installable as a mobile app with offline capabilities via Service Worker and IndexedDB.
--   **Trash Management**: Soft delete with configurable retention and restore functionality.
+<p align="center">
+  <img src="https://img.shields.io/badge/react-19-blue?logo=react" alt="React 19" />
+  <img src="https://img.shields.io/badge/node-22-green?logo=node.js" alt="Node 22" />
+  <img src="https://img.shields.io/badge/postgres-16-336791?logo=postgresql&logoColor=white" alt="PostgreSQL 16" />
+  <img src="https://img.shields.io/badge/vite-8-646CFF?logo=vite&logoColor=white" alt="Vite 8" />
+  <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License" />
+  <img src="https://img.shields.io/badge/i18n-TR%20%7C%20EN-orange" alt="Multilingual" />
+</p>
 
-## Authentication
+---
 
-The system supports two methods of authentication:
-1. **Local Authentication**: Standard username and password login with registration and admin approval workflow.
-2. **SAML 2.0 (Shibboleth)**: Enterprise SSO integration.
+## What is Bizcarder?
 
-For details on how to configure SAML for your organization, please refer to the [SAML / Shibboleth Configuration Guide](SAML_GUIDE.md).
+Bizcarder is an open-source CRM that turns physical business cards into structured, searchable contacts. Snap a photo, let OCR extract the details, then manage leads, log interactions, and export anywhere.
 
-## Technology Stack
+**Key highlights:**
 
-### Backend
--   **Runtime**: Node.js
--   **Framework**: Express.js
--   **Database**: PostgreSQL
--   **ORM**: Sequelize
--   **Authentication**: Passport.js (Local & Session), SAML 2.0
--   **File Storage**: Local filesystem via Multer
+- **AI-powered OCR** — Tesseract.js reads business cards so you don't have to type
+- **Full CRM pipeline** — Lead status, priority stars, tags, reminders, interaction history
+- **Digital business card** — Share your own contact via QR code or public profile link
+- **Mobile-first PWA** — Installable, works offline, syncs when back online
+- **Enterprise-ready** — SAML/SSO, role-based access, audit logs, 2FA
 
-### Frontend
--   **Framework**: React 18 (Vite)
--   **UI Library**: Material UI (MUI) v7, React Icons
--   **Styling**: CSS custom properties (design tokens), gradient color system, responsive breakpoints
--   **Animations**: Framer Motion (page transitions, staggered lists, micro-interactions)
--   **OCR**: Tesseract.js
--   **i18n**: i18next with namespace-based translations (TR/EN)
--   **State Management**: React Context API (Auth, Theme, Notification)
--   **HTTP Client**: Axios
--   **Offline**: Dexie (IndexedDB), Service Worker
--   **QR**: qrcode.react
+---
 
-## Installation & Setup
-
-### Quick Install (Recommended)
+## Quick Start
 
 ```bash
 git clone https://github.com/catborise/bizcarder.git
 cd bizcarder
-cp .env.example .env    # Edit with your settings
-./install.sh            # Build, start, sync DB, seed data, health check
+make install
 ```
 
-The install script handles everything: container build, DB schema sync, default data seeding, and health verification. Use `./install.sh --fresh` to start from scratch (deletes all data).
+That's it — `make install` copies `.env.example`, builds all containers, starts the services, and seeds the database. Open [localhost:5173](http://localhost:5173) and log in with `admin` / `admin`.
 
-### Manual Docker Setup
-3.  Access the applications:
-    -   Frontend: [http://localhost:5173](http://localhost:5173)
-    -   Backend API: [http://localhost:5000](http://localhost:5000)
+> Change the default password immediately.
 
-### Default Credentials
-
-After setting up the application, you can log in with the following default administrative account:
-- **Username**: `admin`
-- **Password**: `admin`
-
-> **Important:** Please change your password immediately after your first login for security reasons.
-
-### Manual Setup
-
-#### 1. Backend
-```bash
-cd backend
-npm install
-# Configure .env (refer to docker-compose.yml for required keys)
-npm run dev
-```
-
-#### 2. Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-## Usage
-
-1.  **Register/Login**: Create an account or use SSO.
-2.  **Add Card**: Use the "Add Card" button or the mobile FAB (+) to upload a business card image.
-3.  **OCR Processing**: Crop the card image, and OCR will auto-fill contact details.
-4.  **Manage**: View, edit, filter, and tag cards. Track lead status, priority, and interactions.
-5.  **Share**: Create your digital business card and share via QR code or link.
-6.  **Export**: Download your contacts as Excel, PDF, or vCard.
-
-## Backup & Restore
-
-Run inside the backend container:
+<details>
+<summary><strong>Alternative setup (without Make)</strong></summary>
 
 ```bash
-# Create backup (database + uploads)
-docker compose exec backend bash scripts/backup.sh
-
-# List available backups
-docker compose exec backend bash scripts/restore.sh
-
-# Restore from backup
-docker compose exec backend bash scripts/restore.sh 20260403_120000
+cp .env.example .env       # edit with your settings
+docker compose up --build -d
+docker compose exec backend node scripts/seed.js
 ```
 
-Backups are stored in the `crm_backups` Docker volume (last 7 retained automatically).
+**Without Docker:**
 
-**Automatic daily backup (cron):**
+```bash
+# Backend (port 5000)
+cd backend && npm install && npm run dev
+
+# Frontend (port 5173)
+cd frontend && npm install && npm run dev
+```
+
+</details>
+
+---
+
+## Features
+
+| Category | What you get |
+|----------|-------------|
+| **Scan & Import** | OCR card scanning, bulk CSV/Excel import, drag-and-drop upload |
+| **CRM** | Lead status (hot/warm/cold), 5-star priority, tags, interaction log, follow-up reminders |
+| **Digital Card** | Personal vCard page, QR code sharing, public profile link |
+| **Export** | Excel, PDF, vCard (.vcf) — single or bulk |
+| **Collaboration** | Multi-user with admin/user roles, card visibility (public/private), shared tag system |
+| **Security** | Local auth + SAML 2.0 SSO, two-factor auth (TOTP), session encryption, audit logs |
+| **UI/UX** | Dark/light themes, glassmorphism design, responsive grid, bottom nav, FAB, page transitions |
+| **Offline** | PWA installable, IndexedDB cache, auto-sync on reconnect |
+| **i18n** | Turkish and English with real-time switching |
+
+---
+
+## Tech Stack
+
+```
+Frontend                          Backend                         Infra
+────────────────────────          ──────────────────────          ──────────────
+React 19 + Vite 8                 Express 5 (Node 22)             Docker Compose
+React Router 7                    Sequelize ORM                    PostgreSQL 16
+MUI v7 + Framer Motion            Passport.js (Local + SAML)       Redis 7
+i18next (TR/EN)                   Multer 2 + Helmet 8              Nginx (prod)
+Dexie 4 (IndexedDB)               Winston logger                   Alpine Linux
+Tesseract.js 7 (OCR)              bcryptjs 3 + speakeasy (2FA)
+```
+
+---
+
+## Architecture
+
+```
+browser ──→ nginx:80 (static SPA)
+              │
+              └──→ express:5000 (API)
+                       │
+                       ├──→ PostgreSQL:5432 (data + sessions)
+                       ├──→ Redis:6379 (rate limiting)
+                       └──→ filesystem (uploads, backups)
+```
+
+```
+project/
+├── backend/
+│   ├── routes/         # API endpoints (auth, cards, users, tags, ...)
+│   ├── models/         # Sequelize models
+│   ├── middleware/      # auth, rate limiting
+│   ├── utils/          # encryption, vcard, logger
+│   └── scripts/        # backup, restore, seed
+├── frontend/
+│   ├── src/components/ # React pages & UI
+│   ├── src/context/    # Auth, Theme, Notification providers
+│   └── src/i18n/       # Locale files (en, tr)
+└── scripts/
+    └── pg-upgrade.sh   # PostgreSQL version migration
+```
+
+---
+
+## Make Commands
+
+The project includes a `Makefile` that wraps every common operation into short, memorable commands. No more copy-pasting long `docker compose exec` lines — just `make <target>`.
+
+Run `make help` to see all available targets:
+
+| Command | Description |
+|---------|-------------|
+| **Setup** | |
+| `make install` | First-time setup: copy `.env`, build, start, seed |
+| `make build` | Rebuild images and start |
+| `make fresh` | Wipe everything and rebuild from scratch (asks confirmation) |
+| **Lifecycle** | |
+| `make up` | Start all containers |
+| `make down` | Stop all containers |
+| `make restart` | Restart all containers |
+| `make status` | Show container status |
+| **Logs** | |
+| `make logs` | Tail all service logs |
+| `make logs-backend` | Tail backend logs only |
+| `make logs-frontend` | Tail frontend logs only |
+| **Database** | |
+| `make seed` | Seed default admin user and dashboard tiles |
+| `make sync` | Sync DB schema — add new columns (dev only) |
+| `make backup` | Create database + uploads backup |
+| `make restore` | List available backups |
+| `make restore T=20260403_120000` | Restore from a specific backup |
+| `make pg-upgrade` | Upgrade PostgreSQL version (migration script) |
+| **Testing** | |
+| `make test` | Run all tests (backend + frontend) |
+| `make test-backend` | Run backend tests only (Jest) |
+| `make test-frontend` | Run frontend tests only (Vitest) |
+| **Shell access** | |
+| `make shell` | Open shell in backend container |
+| `make shell-db` | Open psql shell |
+| `make shell-redis` | Open redis-cli shell |
+| **Cleanup** | |
+| `make clean` | Stop containers, remove images (keeps data) |
+
+Last 7 backups are retained automatically.
+
+<details>
+<summary><strong>Set up daily automatic backups</strong></summary>
 
 ```bash
 crontab -e
-# Add this line (adjust /path/to/project):
-0 3 * * * cd /path/to/project && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1
+# Add (adjust path):
+0 3 * * * cd /path/to/project && make backup >> /var/log/crm_backup.log 2>&1
 ```
+
+</details>
+
+<details>
+<summary><strong>PostgreSQL version upgrade</strong></summary>
+
+When changing PostgreSQL major versions (e.g., 16 → 17):
+
+```bash
+# 1. Edit docker-compose.yml → image: postgres:17-alpine
+# 2. Match client in backend/Dockerfile → postgresql17-client
+# 3. Run:
+make pg-upgrade
+```
+
+The script auto-detects the version mismatch, dumps your data, swaps the volume, restores everything, and starts all services. Backups are kept in `.pg-upgrade-backups/`. Use `--force` to skip the confirmation prompt.
+
+</details>
+
+---
+
+## Authentication
+
+| Method | Description |
+|--------|-------------|
+| **Local** | Username/password with registration + admin approval workflow |
+| **SAML 2.0** | Enterprise SSO via Shibboleth or any SAML IdP |
+| **2FA** | Optional TOTP second factor (Google Authenticator, etc.) |
+
+See [SAML_GUIDE.md](SAML_GUIDE.md) for SSO configuration.
+
+---
+
+## Environment Variables
+
+Key variables in `.env` (see `.env.example` for the full list):
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `POSTGRES_USER` | Database user | `crm_user` |
+| `POSTGRES_PASSWORD` | Database password | `crm_password` |
+| `POSTGRES_DB` | Database name | `crm_db` |
+| `SESSION_SECRET` | Session encryption key | *(required)* |
+| `VITE_API_URL` | Backend URL for frontend | `http://localhost:5000` |
+| `REDIS_URL` | Redis connection string | `redis://redis:6379` |
+| `SAML_ENTRY_POINT` | SAML IdP login URL | *(optional)* |
+| `SMTP_HOST` | Mail server for notifications | *(optional)* |
+
+---
+
+## Testing
+
+```bash
+make test            # run all tests
+make test-backend    # 227 tests — Jest + Supertest
+make test-frontend   # 53 tests — Vitest + React Testing Library
+```
+
+Tests never touch production data — the backend test suite uses an isolated `crm_db_test` database.
+
+---
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT — see [LICENSE](LICENSE) for details.

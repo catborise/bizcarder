@@ -365,7 +365,7 @@ const AppContent = () => {
             <main id="main-content">
                 <Suspense fallback={
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-                        <div className="skeleton-box" style={{ width: '60px', height: '60px', borderRadius: '12px' }} />
+                        <div className="page-loader" />
                     </div>
                 }>
                     <AnimatePresence mode="wait">
