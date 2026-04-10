@@ -1,0 +1,28 @@
+{$DOMAIN:localhost} {
+    # API, auth, uploads → backend
+    handle /auth/* {
+        reverse_proxy backend:5000
+    }
+    handle /api/* {
+        reverse_proxy backend:5000
+    }
+    handle /uploads/* {
+        reverse_proxy backend:5000
+    }
+
+    # Everything else → static SPA from /srv
+    handle {
+        root * /srv
+
+        # Vite hashed assets — long cache
+        @static path /assets/*
+        header @static Cache-Control "public, max-age=2592000, immutable"
+
+        try_files {path} /index.html
+        file_server
+    }
+
+    log {
+        output file /data/access.log
+    }
+}

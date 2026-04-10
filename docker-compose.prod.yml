@@ -1,0 +1,42 @@
+# Production override — extends docker-compose.yml
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# Replaces the Nginx-based frontend container with Caddy.
+# Caddy serves static files directly + reverse proxies API + auto HTTPS.
+
+services:
+  # Disable the dev frontend container (Caddy takes over)
+  frontend:
+    profiles:
+      - disabled
+
+  caddy:
+    build:
+      context: .
+      dockerfile: Dockerfile.caddy
+      args:
+        - VITE_API_URL=${VITE_API_URL}
+    container_name: crm_caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+
+  # Prod backend: don't bind-mount source code, don't expose port to host
+  backend:
+    volumes:
+      - crm_uploads:/app/uploads
+      - crm_backups:/app/backups
+    ports: []
+
+volumes:
+  caddy_data:
+  caddy_config:

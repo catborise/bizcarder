@@ -2,6 +2,7 @@
 # Usage: make help
 
 COMPOSE = docker compose
+COMPOSE_PROD = docker compose -f docker-compose.yml -f docker-compose.prod.yml
 BACKEND = $(COMPOSE) exec backend
 FRONTEND = $(COMPOSE) exec frontend
 
@@ -10,7 +11,8 @@ FRONTEND = $(COMPOSE) exec frontend
         test test-backend test-frontend \
         lint format \
         shell shell-db shell-redis \
-        status clean fresh pg-upgrade
+        status clean fresh pg-upgrade \
+        prod prod-up prod-down prod-build prod-logs
 
 # ── Setup ────────────────────────────────────────────────
 
@@ -119,6 +121,28 @@ shell-db: ## Open psql shell
 
 shell-redis: ## Open redis-cli shell
 	$(COMPOSE) exec redis redis-cli
+
+# ── Production (Caddy) ──────────────────────────────────
+
+prod: ## Build and start production stack (Caddy + backend, no Nginx)
+	$(COMPOSE_PROD) up --build -d
+	@echo "Waiting for backend to be ready..."
+	@sleep 5
+	$(COMPOSE_PROD) exec backend npx sequelize-cli db:migrate
+	$(COMPOSE_PROD) exec backend node scripts/seed.js
+	@echo "\n✓ Production stack running."
+
+prod-up: ## Start production containers
+	$(COMPOSE_PROD) up -d
+
+prod-down: ## Stop production containers
+	$(COMPOSE_PROD) down
+
+prod-build: ## Rebuild production images
+	$(COMPOSE_PROD) up --build -d
+
+prod-logs: ## Tail production logs
+	$(COMPOSE_PROD) logs -f --tail=100
 
 # ── Cleanup ──────────────────────────────────────────────
 

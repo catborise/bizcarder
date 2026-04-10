@@ -70,17 +70,17 @@ cd frontend && npm install && npm run dev
 
 ## Features
 
-| Category | What you get |
-|----------|-------------|
-| **Scan & Import** | OCR card scanning, bulk CSV/Excel import, drag-and-drop upload |
-| **CRM** | Lead status (hot/warm/cold), 5-star priority, tags, interaction log, follow-up reminders |
-| **Digital Card** | Personal vCard page, QR code sharing, public profile link |
-| **Export** | Excel, PDF, vCard (.vcf) — single or bulk |
-| **Collaboration** | Multi-user with admin/user roles, card visibility (public/private), shared tag system |
-| **Security** | Local auth + SAML 2.0 SSO, two-factor auth (TOTP), session encryption, audit logs |
-| **UI/UX** | Dark/light themes, glassmorphism design, responsive grid, bottom nav, FAB, page transitions |
-| **Offline** | PWA installable, IndexedDB cache, auto-sync on reconnect |
-| **i18n** | Turkish and English with real-time switching |
+| Category          | What you get                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| **Scan & Import** | OCR card scanning, bulk CSV/Excel import, drag-and-drop upload                              |
+| **CRM**           | Lead status (hot/warm/cold), 5-star priority, tags, interaction log, follow-up reminders    |
+| **Digital Card**  | Personal vCard page, QR code sharing, public profile link                                   |
+| **Export**        | Excel, PDF, vCard (.vcf) — single or bulk                                                   |
+| **Collaboration** | Multi-user with admin/user roles, card visibility (public/private), shared tag system       |
+| **Security**      | Local auth + SAML 2.0 SSO, two-factor auth (TOTP), session encryption, audit logs           |
+| **UI/UX**         | Dark/light themes, glassmorphism design, responsive grid, bottom nav, FAB, page transitions |
+| **Offline**       | PWA installable, IndexedDB cache, auto-sync on reconnect                                    |
+| **i18n**          | Turkish and English with real-time switching                                                |
 
 ---
 
@@ -135,38 +135,46 @@ The project includes a `Makefile` that wraps every common operation into short, 
 
 Run `make help` to see all available targets:
 
-| Command | Description |
-|---------|-------------|
-| **Setup** | |
-| `make install` | First-time setup: copy `.env`, build, start, seed |
-| `make build` | Rebuild images and start |
-| `make fresh` | Wipe everything and rebuild from scratch (asks confirmation) |
-| **Lifecycle** | |
-| `make up` | Start all containers |
-| `make down` | Stop all containers |
-| `make restart` | Restart all containers |
-| `make status` | Show container status |
-| **Logs** | |
-| `make logs` | Tail all service logs |
-| `make logs-backend` | Tail backend logs only |
-| `make logs-frontend` | Tail frontend logs only |
-| **Database** | |
-| `make seed` | Seed default admin user and dashboard tiles |
-| `make migrate` | Run pending database migrations |
-| `make backup` | Create database + uploads backup |
-| `make restore` | List available backups |
-| `make restore T=20260403_120000` | Restore from a specific backup |
-| `make pg-upgrade` | Upgrade PostgreSQL version (migration script) |
-| **Testing** | |
-| `make test` | Run all tests (backend + frontend) |
-| `make test-backend` | Run backend tests only (Jest) |
-| `make test-frontend` | Run frontend tests only (Vitest) |
-| **Shell access** | |
-| `make shell` | Open shell in backend container |
-| `make shell-db` | Open psql shell |
-| `make shell-redis` | Open redis-cli shell |
-| **Cleanup** | |
-| `make clean` | Stop containers, remove images (keeps data) |
+| Command                          | Description                                                  |
+| -------------------------------- | ------------------------------------------------------------ |
+| **Setup**                        |                                                              |
+| `make install`                   | First-time setup: copy `.env`, build, start, seed            |
+| `make build`                     | Rebuild images and start                                     |
+| `make fresh`                     | Wipe everything and rebuild from scratch (asks confirmation) |
+| **Lifecycle**                    |                                                              |
+| `make up`                        | Start all containers                                         |
+| `make down`                      | Stop all containers                                          |
+| `make restart`                   | Restart all containers                                       |
+| `make status`                    | Show container status                                        |
+| **Logs**                         |                                                              |
+| `make logs`                      | Tail all service logs                                        |
+| `make logs-backend`              | Tail backend logs only                                       |
+| `make logs-frontend`             | Tail frontend logs only                                      |
+| **Database**                     |                                                              |
+| `make seed`                      | Seed default admin user and dashboard tiles                  |
+| `make migrate`                   | Run pending database migrations                              |
+| `make backup`                    | Create database + uploads backup                             |
+| `make restore`                   | List available backups                                       |
+| `make restore T=20260403_120000` | Restore from a specific backup                               |
+| `make pg-upgrade`                | Upgrade PostgreSQL version (migration script)                |
+| **Testing**                      |                                                              |
+| `make test`                      | Run all tests (backend + frontend)                           |
+| `make test-backend`              | Run backend tests only (Jest)                                |
+| `make test-frontend`             | Run frontend tests only (Vitest)                             |
+| **Code quality**                 |                                                              |
+| `make lint`                      | Run ESLint on frontend                                       |
+| `make format`                    | Format all code with Prettier                                |
+| **Production**                   |                                                              |
+| `make prod`                      | Build and start production stack (Caddy, no Nginx)           |
+| `make prod-up`                   | Start production containers                                  |
+| `make prod-down`                 | Stop production containers                                   |
+| `make prod-logs`                 | Tail production logs                                         |
+| **Shell access**                 |                                                              |
+| `make shell`                     | Open shell in backend container                              |
+| `make shell-db`                  | Open psql shell                                              |
+| `make shell-redis`               | Open redis-cli shell                                         |
+| **Cleanup**                      |                                                              |
+| `make clean`                     | Stop containers, remove images (keeps data)                  |
 
 Last 7 backups are retained automatically.
 
@@ -201,11 +209,11 @@ The script auto-detects the version mismatch, dumps your data, swaps the volume,
 
 ## Authentication
 
-| Method | Description |
-|--------|-------------|
-| **Local** | Username/password with registration + admin approval workflow |
-| **SAML 2.0** | Enterprise SSO via Shibboleth or any SAML IdP |
-| **2FA** | Optional TOTP second factor (Google Authenticator, etc.) |
+| Method       | Description                                                   |
+| ------------ | ------------------------------------------------------------- |
+| **Local**    | Username/password with registration + admin approval workflow |
+| **SAML 2.0** | Enterprise SSO via Shibboleth or any SAML IdP                 |
+| **2FA**      | Optional TOTP second factor (Google Authenticator, etc.)      |
 
 See [SAML_GUIDE.md](SAML_GUIDE.md) for SSO configuration.
 
@@ -215,16 +223,16 @@ See [SAML_GUIDE.md](SAML_GUIDE.md) for SSO configuration.
 
 Key variables in `.env` (see `.env.example` for the full list):
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `POSTGRES_USER` | Database user | `crm_user` |
-| `POSTGRES_PASSWORD` | Database password | `crm_password` |
-| `POSTGRES_DB` | Database name | `crm_db` |
-| `SESSION_SECRET` | Session encryption key | *(required)* |
-| `VITE_API_URL` | Backend URL for frontend | `http://localhost:5000` |
-| `REDIS_URL` | Redis connection string | `redis://redis:6379` |
-| `SAML_ENTRY_POINT` | SAML IdP login URL | *(optional)* |
-| `SMTP_HOST` | Mail server for notifications | *(optional)* |
+| Variable            | Description                   | Default                 |
+| ------------------- | ----------------------------- | ----------------------- |
+| `POSTGRES_USER`     | Database user                 | `crm_user`              |
+| `POSTGRES_PASSWORD` | Database password             | `crm_password`          |
+| `POSTGRES_DB`       | Database name                 | `crm_db`                |
+| `SESSION_SECRET`    | Session encryption key        | _(required)_            |
+| `VITE_API_URL`      | Backend URL for frontend      | `http://localhost:5000` |
+| `REDIS_URL`         | Redis connection string       | `redis://redis:6379`    |
+| `SAML_ENTRY_POINT`  | SAML IdP login URL            | _(optional)_            |
+| `SMTP_HOST`         | Mail server for notifications | _(optional)_            |
 
 ---
 
