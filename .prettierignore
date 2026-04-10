@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+coverage/
+.env
+*.min.js
+*.min.css
+backend/uploads/
+backend/backups/
+backend/logs/
+pgdata/
+.pg-upgrade-backups/
+.bg-shell/

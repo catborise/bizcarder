@@ -8,6 +8,7 @@ FRONTEND = $(COMPOSE) exec frontend
 .PHONY: help install upgrade up down restart build logs \
         seed migrate backup restore \
         test test-backend test-frontend \
+        lint format \
         shell shell-db shell-redis \
         status clean fresh pg-upgrade
 
@@ -99,6 +100,14 @@ test-backend: ## Run backend tests (Jest)
 
 test-frontend: ## Run frontend tests (Vitest)
 	cd frontend && npm test
+
+# ── Code quality ────────────────────────────────────────
+
+lint: ## Run ESLint on frontend
+	cd frontend && npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0
+
+format: ## Format all code with Prettier
+	npx prettier --write .
 
 # ── Shell access ─────────────────────────────────────────
 
