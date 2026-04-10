@@ -3,17 +3,20 @@
 ## Commands
 
 ```bash
-# Docker (recommended)
-docker-compose up --build
+# Dev (recommended)
+make install          # first-time: build, migrate, seed
+make up               # start backend + db + redis
+make dev-frontend     # start Vite dev server (separate terminal)
+
+# Production
+make prod             # Caddy + backend + db + redis
+make prod-upgrade     # pull, rebuild, migrate, seed (prod)
 
 # Manual — Backend
 cd backend && npm install && npm run dev    # port 5000
 
 # Manual — Frontend
 cd frontend && npm install && npm run dev   # port 5173
-
-# Frontend build
-cd frontend && npm run build
 
 # Default login: admin / admin
 ```
@@ -42,12 +45,14 @@ frontend/
 ## Key Conventions
 
 ### CSS Design System
+
 - Design tokens in `frontend/src/index.css` `:root` — spacing (`--space-1` to `--space-12`), gradients (`--gradient-primary`, etc.), glass variables
 - Component layout classes: `.mycard-grid`, `.usermgmt-card`, `.trash-card`, `.bulk-bar`, `.bottom-nav`
 - Mobile breakpoint: `768px`. Use doubled-class specificity (`.foo.foo`) instead of `!important` for overrides
 - Prefer CSS classes over inline styles for responsive behavior
 
 ### i18n
+
 - Namespaces: `common`, `cards`, `pages`, `dashboard`, `auth`, `filters`, `help`, `settings`, `users`, `about`
 - Locale files (source of truth): `frontend/src/i18n/locales/{en,tr}/<namespace>.json`
 - **Lazy loading**: `common`, `cards`, `dashboard`, `auth`, `pages` are bundled eagerly. `help`, `about`, `users`, `settings`, `filters` are fetched at runtime via `i18next-http-backend` from `/locales/{lng}/{ns}.json`.
@@ -57,11 +62,13 @@ frontend/
 - Dates: use `i18n.language === 'tr' ? 'tr-TR' : 'en-US'` for `toLocaleDateString()`
 
 ### Auth
+
 - `requireAuth` middleware on all API routes (except public: `/api/settings` GET, `/contact-profile/:token`)
 - `requireAdmin` for user management routes
 - Session-based auth via Passport.js (local + SAML)
 
 ### File Uploads
+
 - Multer with MIME whitelist (`image/jpeg`, `image/png`, `image/gif`, `image/webp`)
 - Card images: max 5MB. Branding: max 2MB
 - Stored in `backend/uploads/`
@@ -78,20 +85,12 @@ frontend/
 ## Operations
 
 ```bash
-# Backup database + uploads
-docker compose exec backend bash scripts/backup.sh
-
-# List available backups
-docker compose exec backend bash scripts/restore.sh
-
-# Restore from backup
-docker compose exec backend bash scripts/restore.sh 20260403_120000
-
-# Seed default admin user + dashboard tiles (safe to re-run)
-docker compose exec backend node scripts/seed.js
-
-# Run pending database migrations
-docker compose exec backend npx sequelize-cli db:migrate
+make backup                       # Backup database + uploads
+make restore                      # List available backups
+make restore T=20260403_120000    # Restore from backup
+make seed                         # Seed default admin user + dashboard tiles
+make migrate                      # Run pending database migrations
+make pg-upgrade                   # Upgrade PostgreSQL version
 ```
 
 ## Multi-Instance / Horizontal Scaling

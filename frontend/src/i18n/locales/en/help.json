@@ -1,85 +1,85 @@
 {
-  "heading": "How can we help you?",
-  "searchPlaceholder": "Search for a topic or question...",
-  "notFound": "No results found for your search.",
-  "notFoundHint": "Please try different keywords.",
-  "contactTitle": "Didn't find what you're looking for?",
-  "contactDescription": "Contact us directly for support on any topic.",
-  "sendEmail": "Send Email",
-  "devTeam": "Developer Team",
-  "sections": {
-    "gettingStarted": "Getting Started",
-    "cardManagement": "Card Management",
-    "digitalCard": "My Digital Card",
-    "crmFeatures": "CRM Features",
-    "offlineMode": "Offline Usage",
-    "security": "Security & Privacy",
-    "adminBackup": "Administration & Backup"
-  },
-  "faq": {
-    "whatIsBizcarder": {
-      "q": "What is BizCarder?",
-      "a": "BizCarder is a modern CRM platform that helps you digitize physical business cards, manage your contact network, and track professional relationships."
+    "heading": "How can we help you?",
+    "searchPlaceholder": "Search for a topic or question...",
+    "notFound": "No results found for your search.",
+    "notFoundHint": "Please try different keywords.",
+    "contactTitle": "Didn't find what you're looking for?",
+    "contactDescription": "Contact us directly for support on any topic.",
+    "sendEmail": "Send Email",
+    "devTeam": "Developer Team",
+    "sections": {
+        "gettingStarted": "Getting Started",
+        "cardManagement": "Card Management",
+        "digitalCard": "My Digital Card",
+        "crmFeatures": "CRM Features",
+        "offlineMode": "Offline Usage",
+        "security": "Security & Privacy",
+        "adminBackup": "Administration & Backup"
     },
-    "howToInstall": {
-      "q": "How do I install the app? (PWA)",
-      "a": "BizCarder is a Progressive Web App (PWA). You can install it by clicking the 'Install' icon in your browser's address bar or using the 'Add to Home Screen' option on mobile."
-    },
-    "howToAddCard": {
-      "q": "How do I add a new business card?",
-      "a": "Click the 'Add New Card' button on the Contacts page. You can scan the card with your camera or enter information manually. AI-powered OCR automatically detects information on the card."
-    },
-    "howToExport": {
-      "q": "How do I export business cards?",
-      "a": "Export options in Excel, PDF, and vCard formats are available at the top right of the Cards page. You can select multiple cards for bulk export."
-    },
-    "howToShare": {
-      "q": "How do I share my digital business card?",
-      "a": "Go to the 'My Card' tab to create or edit your personal digital business card. Share via QR code, link sharing, or vCard download."
-    },
-    "whatIsVcard": {
-      "q": "What is a vCard?",
-      "a": "vCard is a standard file format (.vcf) containing contact information. It can be directly added to phone contacts and works across all platforms."
-    },
-    "howReminders": {
-      "q": "How do reminders work?",
-      "a": "When editing a card, you can set a date in the 'Follow-up Reminder' field. A reminder notification will appear on the dashboard when the date arrives."
-    },
-    "howToLogNotes": {
-      "q": "How do I log meeting notes?",
-      "a": "Each card's detail view has an 'Activity & Notes' section. You can add calls, meetings, emails, or general notes and track the history."
-    },
-    "offlineUsage": {
-      "q": "What happens when I'm offline?",
-      "a": "The app has offline capabilities. Previously loaded data is displayed, and newly added cards are automatically synced when the internet connection is restored."
-    },
-    "dataSecurity": {
-      "q": "How secure is my data?",
-      "a": "All your data is protected with modern encryption standards. Corporate SSO/SAML support, role-based access control, and secure session management provide maximum security."
-    },
-    "howToBackup": {
-      "q": "How do I backup the database?",
-      "a": "Run this command: docker compose exec backend bash scripts/backup.sh — This creates a compressed database dump and uploads archive. Last 7 backups are kept automatically."
-    },
-    "howToRestore": {
-      "q": "How do I restore from a backup?",
-      "a": "First list available backups: docker compose exec backend bash scripts/restore.sh — Then restore: docker compose exec backend bash scripts/restore.sh <timestamp>"
-    },
-    "howToResetAdmin": {
-      "q": "How do I reset the admin account?",
-      "a": "Run the seed script: docker compose exec backend node scripts/seed.js — This creates the default admin user (admin/admin) if it doesn't exist. Change the password immediately after."
-    },
-    "howToEnable2FA": {
-      "q": "How do I enable two-factor authentication?",
-      "a": "Go to Settings, find the Security section, and click 'Setup 2FA'. Scan the QR code with Google Authenticator or any TOTP app, then enter the verification code to activate."
-    },
-    "howToAutoBackup": {
-      "q": "How do I set up automatic daily backups?",
-      "a": "Add a cron job on the host server: Run 'crontab -e' and add this line:\n\n0 3 * * * cd /path/to/project && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\nReplace '/path/to/project' with your actual project directory. This runs backup every day at 03:00. The -T flag is required for non-interactive cron execution. Check logs with: tail -f /var/log/crm_backup.log"
-    },
-    "howToUpgradePostgres": {
-      "q": "How do I upgrade PostgreSQL to a new version?",
-      "a": "When upgrading PostgreSQL (e.g., 15→16, 16→17), the data format changes and requires migration. Follow these steps:\n\n1. Edit docker-compose.yml and change the postgres image version (e.g., postgres:17-alpine)\n2. Update the postgresql-client version in backend/Dockerfile to match\n3. Run: ./scripts/pg-upgrade.sh\n\nThe script automatically detects the version mismatch, dumps your data, removes the old volume, starts the new version, and restores everything. A backup is saved to .pg-upgrade-backups/ and kept even after a successful upgrade. Use --force flag to skip the confirmation prompt."
+    "faq": {
+        "whatIsBizcarder": {
+            "q": "What is BizCarder?",
+            "a": "BizCarder is a modern CRM platform that helps you digitize physical business cards, manage your contact network, and track professional relationships."
+        },
+        "howToInstall": {
+            "q": "How do I install the app? (PWA)",
+            "a": "BizCarder is a Progressive Web App (PWA). You can install it by clicking the 'Install' icon in your browser's address bar or using the 'Add to Home Screen' option on mobile."
+        },
+        "howToAddCard": {
+            "q": "How do I add a new business card?",
+            "a": "Click the 'Add New Card' button on the Contacts page. You can scan the card with your camera or enter information manually. AI-powered OCR automatically detects information on the card."
+        },
+        "howToExport": {
+            "q": "How do I export business cards?",
+            "a": "Export options in Excel, PDF, and vCard formats are available at the top right of the Cards page. You can select multiple cards for bulk export."
+        },
+        "howToShare": {
+            "q": "How do I share my digital business card?",
+            "a": "Go to the 'My Card' tab to create or edit your personal digital business card. Share via QR code, link sharing, or vCard download."
+        },
+        "whatIsVcard": {
+            "q": "What is a vCard?",
+            "a": "vCard is a standard file format (.vcf) containing contact information. It can be directly added to phone contacts and works across all platforms."
+        },
+        "howReminders": {
+            "q": "How do reminders work?",
+            "a": "When editing a card, you can set a date in the 'Follow-up Reminder' field. A reminder notification will appear on the dashboard when the date arrives."
+        },
+        "howToLogNotes": {
+            "q": "How do I log meeting notes?",
+            "a": "Each card's detail view has an 'Activity & Notes' section. You can add calls, meetings, emails, or general notes and track the history."
+        },
+        "offlineUsage": {
+            "q": "What happens when I'm offline?",
+            "a": "The app has offline capabilities. Previously loaded data is displayed, and newly added cards are automatically synced when the internet connection is restored."
+        },
+        "dataSecurity": {
+            "q": "How secure is my data?",
+            "a": "All your data is protected with modern encryption standards. Corporate SSO/SAML support, role-based access control, and secure session management provide maximum security."
+        },
+        "howToBackup": {
+            "q": "How do I backup the database?",
+            "a": "Run: make backup — This creates a compressed database dump and uploads archive. Last 7 backups are kept automatically."
+        },
+        "howToRestore": {
+            "q": "How do I restore from a backup?",
+            "a": "First list available backups: make restore — Then restore a specific one: make restore T=20260403_120000"
+        },
+        "howToResetAdmin": {
+            "q": "How do I reset the admin account?",
+            "a": "Run: make seed — This creates the default admin user (admin/admin) if it doesn't exist. Change the password immediately after."
+        },
+        "howToEnable2FA": {
+            "q": "How do I enable two-factor authentication?",
+            "a": "Go to Settings, find the Security section, and click 'Setup 2FA'. Scan the QR code with Google Authenticator or any TOTP app, then enter the verification code to activate."
+        },
+        "howToAutoBackup": {
+            "q": "How do I set up automatic daily backups?",
+            "a": "Add a cron job on the host server: Run 'crontab -e' and add this line:\n\n0 3 * * * cd /path/to/project && make backup >> /var/log/crm_backup.log 2>&1\n\nReplace '/path/to/project' with your actual project directory. This runs backup every day at 03:00. Check logs with: tail -f /var/log/crm_backup.log"
+        },
+        "howToUpgradePostgres": {
+            "q": "How do I upgrade PostgreSQL to a new version?",
+            "a": "When upgrading PostgreSQL (e.g., 15→16, 16→17), the data format changes and requires migration. Follow these steps:\n\n1. Edit docker-compose.yml and change the postgres image version (e.g., postgres:17-alpine)\n2. Update the postgresql-client version in backend/Dockerfile to match\n3. Run: make pg-upgrade\n\nThe script automatically detects the version mismatch, dumps your data, removes the old volume, starts the new version, and restores everything. A backup is saved to .pg-upgrade-backups/ and kept even after a successful upgrade. Use --force flag to skip the confirmation prompt."
+        }
     }
-  }
 }

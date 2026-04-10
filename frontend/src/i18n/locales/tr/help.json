@@ -1,85 +1,85 @@
 {
-  "heading": "Size nasıl yardımcı olabiliriz?",
-  "searchPlaceholder": "Bir soru veya konu arayın...",
-  "notFound": "Aradığınız konu bulunamadı.",
-  "notFoundHint": "Lütfen farklı anahtar kelimelerle tekrar deneyin.",
-  "contactTitle": "Aradığınızı bulamadınız mı?",
-  "contactDescription": "Bize doğrudan ulaşarak her konuda destek alabilirsiniz.",
-  "sendEmail": "E-Posta Gönder",
-  "devTeam": "Geliştirici Ekibi",
-  "sections": {
-    "gettingStarted": "Başlangıç",
-    "cardManagement": "Kartvizit Yönetimi",
-    "digitalCard": "Dijital Kartvizitim",
-    "crmFeatures": "CRM Özellikleri",
-    "offlineMode": "Çevrimdışı Kullanım",
-    "security": "Güvenlik & Gizlilik",
-    "adminBackup": "Yönetim & Yedekleme"
-  },
-  "faq": {
-    "whatIsBizcarder": {
-      "q": "BizCarder nedir?",
-      "a": "BizCarder, fiziksel kartvizitlerinizi dijital ortama aktarmanıza, kişi ağınızı yönetmenize ve profesyonel ilişkilerinizi takip etmenize yardımcı olan modern bir CRM platformudur."
+    "heading": "Size nasıl yardımcı olabiliriz?",
+    "searchPlaceholder": "Bir soru veya konu arayın...",
+    "notFound": "Aradığınız konu bulunamadı.",
+    "notFoundHint": "Lütfen farklı anahtar kelimelerle tekrar deneyin.",
+    "contactTitle": "Aradığınızı bulamadınız mı?",
+    "contactDescription": "Bize doğrudan ulaşarak her konuda destek alabilirsiniz.",
+    "sendEmail": "E-Posta Gönder",
+    "devTeam": "Geliştirici Ekibi",
+    "sections": {
+        "gettingStarted": "Başlangıç",
+        "cardManagement": "Kartvizit Yönetimi",
+        "digitalCard": "Dijital Kartvizitim",
+        "crmFeatures": "CRM Özellikleri",
+        "offlineMode": "Çevrimdışı Kullanım",
+        "security": "Güvenlik & Gizlilik",
+        "adminBackup": "Yönetim & Yedekleme"
     },
-    "howToInstall": {
-      "q": "Uygulamayı nasıl yüklerim? (PWA)",
-      "a": "BizCarder bir Progresif Web Uygulamasıdır (PWA). Tarayıcınızın adres çubuğundaki 'Yükle' simgesine tıklayarak veya mobilde 'Ana Ekrana Ekle' seçeneğini kullanarak yükleyebilirsiniz."
-    },
-    "howToAddCard": {
-      "q": "Yeni bir kartvizit nasıl eklenir?",
-      "a": "Kontaklar sayfasındaki 'Yeni Kart Ekle' butonuna tıklayın. Kameranızla kartviziti tarayabilir veya bilgileri elle girebilirsiniz. AI destekli OCR, kartvizitteki bilgileri otomatik olarak algılar."
-    },
-    "howToExport": {
-      "q": "Kartvizitleri nasıl dışa aktarırım?",
-      "a": "Kartvizitler sayfasının sağ üstünde Excel, PDF ve vCard formatlarında dışa aktarma seçenekleri bulunur. Toplu seçim yaparak birden fazla kartı aynı anda dışa aktarabilirsiniz."
-    },
-    "howToShare": {
-      "q": "Kendi dijital kartvizitimi nasıl paylaşırım?",
-      "a": "'Kartım' sekmesine giderek kişisel dijital kartvizitinizi oluşturabilir veya düzenleyebilirsiniz. QR kod, link paylaşımı veya vCard indirme yöntemleriyle paylaşabilirsiniz."
-    },
-    "whatIsVcard": {
-      "q": "vCard nedir?",
-      "a": "vCard, iletişim bilgilerini içeren standart bir dosya formatıdır (.vcf). Telefonların rehberine doğrudan eklenebilir ve tüm platformlarda çalışır."
-    },
-    "howReminders": {
-      "q": "Hatırlatıcılar nasıl çalışır?",
-      "a": "Bir kartı düzenlerken 'Takip Hatırlatıcısı' alanına tarih girebilirsiniz. Belirlenen tarih geldiğinde dashboard'da hatırlatıcı bildirimi gösterilir."
-    },
-    "howToLogNotes": {
-      "q": "Görüşme notlarını nasıl kaydederim?",
-      "a": "Her bir kartın detayında 'Aktivite ve Notlar' bölümü bulunur. Buradan arama, toplantı, e-posta veya genel not ekleyebilir ve geçmişi takip edebilirsiniz."
-    },
-    "offlineUsage": {
-      "q": "İnternetim olmadığında ne olur?",
-      "a": "Uygulama çevrimdışı çalışabilme özelliğine sahiptir. Daha önce yüklenen veriler gösterilir ve yeni eklenen kartlar internet bağlantısı geldiğinde otomatik senkronize edilir."
-    },
-    "dataSecurity": {
-      "q": "Verilerim ne kadar güvende?",
-      "a": "Tüm verileriniz modern şifreleme standartlarıyla korunur. Kurumsal SSO/SAML desteği, rol tabanlı erişim kontrolü ve güvenli oturum yönetimi ile maksimum güvenlik sağlanır."
-    },
-    "howToBackup": {
-      "q": "Veritabanını nasıl yedeklerim?",
-      "a": "Şu komutu çalıştırın: docker compose exec backend bash scripts/backup.sh — Bu komut veritabanı ve yüklenen dosyaların sıkıştırılmış yedeğini oluşturur. Son 7 yedek otomatik saklanır."
-    },
-    "howToRestore": {
-      "q": "Yedekten nasıl geri yüklerim?",
-      "a": "Önce mevcut yedekleri listeleyin: docker compose exec backend bash scripts/restore.sh — Sonra geri yükleyin: docker compose exec backend bash scripts/restore.sh <zaman_damgasi>"
-    },
-    "howToResetAdmin": {
-      "q": "Admin hesabını nasıl sıfırlarım?",
-      "a": "Seed scriptini çalıştırın: docker compose exec backend node scripts/seed.js — Bu, varsayılan admin kullanıcısını (admin/admin) yoksa oluşturur. Giriş yaptıktan sonra şifreyi hemen değiştirin."
-    },
-    "howToEnable2FA": {
-      "q": "İki faktörlü doğrulamayı nasıl etkinleştiririm?",
-      "a": "Ayarlar sayfasına gidin, Güvenlik bölümünü bulun ve '2FA Kur' düğmesine tıklayın. QR kodu Google Authenticator veya herhangi bir TOTP uygulaması ile tarayın, ardından doğrulama kodunu girerek etkinleştirin."
-    },
-    "howToAutoBackup": {
-      "q": "Otomatik günlük yedekleme nasıl kurulur?",
-      "a": "Sunucuda cron görevi ekleyin: 'crontab -e' komutunu çalıştırın ve şu satırı ekleyin:\n\n0 3 * * * cd /proje/dizini && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1\n\n'/proje/dizini' kısmını gerçek proje dizininizle değiştirin. Bu, her gün saat 03:00'te yedekleme yapar. -T flag'i cron'un etkileşimsiz çalışması için gereklidir. Logları kontrol edin: tail -f /var/log/crm_backup.log"
-    },
-    "howToUpgradePostgres": {
-      "q": "PostgreSQL sürümünü nasıl yükseltirim?",
-      "a": "PostgreSQL major sürüm yükseltmelerinde (ör. 15→16, 16→17) veri formatı değişir ve taşıma gerekir. Şu adımları izleyin:\n\n1. docker-compose.yml dosyasındaki postgres imaj sürümünü değiştirin (ör. postgres:17-alpine)\n2. backend/Dockerfile içindeki postgresql-client sürümünü eşleştirin\n3. Çalıştırın: ./scripts/pg-upgrade.sh\n\nBetik otomatik olarak sürüm uyumsuzluğunu algılar, veritabanınızı yedekler, eski veri birimini kaldırır, yeni sürümü başlatır ve tüm verileri geri yükler. Yedek .pg-upgrade-backups/ dizininde saklanır ve başarılı yükseltmeden sonra bile silinmez. Onay istemini atlamak için --force parametresini kullanabilirsiniz."
+    "faq": {
+        "whatIsBizcarder": {
+            "q": "BizCarder nedir?",
+            "a": "BizCarder, fiziksel kartvizitlerinizi dijital ortama aktarmanıza, kişi ağınızı yönetmenize ve profesyonel ilişkilerinizi takip etmenize yardımcı olan modern bir CRM platformudur."
+        },
+        "howToInstall": {
+            "q": "Uygulamayı nasıl yüklerim? (PWA)",
+            "a": "BizCarder bir Progresif Web Uygulamasıdır (PWA). Tarayıcınızın adres çubuğundaki 'Yükle' simgesine tıklayarak veya mobilde 'Ana Ekrana Ekle' seçeneğini kullanarak yükleyebilirsiniz."
+        },
+        "howToAddCard": {
+            "q": "Yeni bir kartvizit nasıl eklenir?",
+            "a": "Kontaklar sayfasındaki 'Yeni Kart Ekle' butonuna tıklayın. Kameranızla kartviziti tarayabilir veya bilgileri elle girebilirsiniz. AI destekli OCR, kartvizitteki bilgileri otomatik olarak algılar."
+        },
+        "howToExport": {
+            "q": "Kartvizitleri nasıl dışa aktarırım?",
+            "a": "Kartvizitler sayfasının sağ üstünde Excel, PDF ve vCard formatlarında dışa aktarma seçenekleri bulunur. Toplu seçim yaparak birden fazla kartı aynı anda dışa aktarabilirsiniz."
+        },
+        "howToShare": {
+            "q": "Kendi dijital kartvizitimi nasıl paylaşırım?",
+            "a": "'Kartım' sekmesine giderek kişisel dijital kartvizitinizi oluşturabilir veya düzenleyebilirsiniz. QR kod, link paylaşımı veya vCard indirme yöntemleriyle paylaşabilirsiniz."
+        },
+        "whatIsVcard": {
+            "q": "vCard nedir?",
+            "a": "vCard, iletişim bilgilerini içeren standart bir dosya formatıdır (.vcf). Telefonların rehberine doğrudan eklenebilir ve tüm platformlarda çalışır."
+        },
+        "howReminders": {
+            "q": "Hatırlatıcılar nasıl çalışır?",
+            "a": "Bir kartı düzenlerken 'Takip Hatırlatıcısı' alanına tarih girebilirsiniz. Belirlenen tarih geldiğinde dashboard'da hatırlatıcı bildirimi gösterilir."
+        },
+        "howToLogNotes": {
+            "q": "Görüşme notlarını nasıl kaydederim?",
+            "a": "Her bir kartın detayında 'Aktivite ve Notlar' bölümü bulunur. Buradan arama, toplantı, e-posta veya genel not ekleyebilir ve geçmişi takip edebilirsiniz."
+        },
+        "offlineUsage": {
+            "q": "İnternetim olmadığında ne olur?",
+            "a": "Uygulama çevrimdışı çalışabilme özelliğine sahiptir. Daha önce yüklenen veriler gösterilir ve yeni eklenen kartlar internet bağlantısı geldiğinde otomatik senkronize edilir."
+        },
+        "dataSecurity": {
+            "q": "Verilerim ne kadar güvende?",
+            "a": "Tüm verileriniz modern şifreleme standartlarıyla korunur. Kurumsal SSO/SAML desteği, rol tabanlı erişim kontrolü ve güvenli oturum yönetimi ile maksimum güvenlik sağlanır."
+        },
+        "howToBackup": {
+            "q": "Veritabanını nasıl yedeklerim?",
+            "a": "Şu komutu çalıştırın: make backup — Bu komut veritabanı ve yüklenen dosyaların sıkıştırılmış yedeğini oluşturur. Son 7 yedek otomatik saklanır."
+        },
+        "howToRestore": {
+            "q": "Yedekten nasıl geri yüklerim?",
+            "a": "Önce mevcut yedekleri listeleyin: make restore — Sonra belirli bir yedeği geri yükleyin: make restore T=20260403_120000"
+        },
+        "howToResetAdmin": {
+            "q": "Admin hesabını nasıl sıfırlarım?",
+            "a": "Şu komutu çalıştırın: make seed — Bu, varsayılan admin kullanıcısını (admin/admin) yoksa oluşturur. Giriş yaptıktan sonra şifreyi hemen değiştirin."
+        },
+        "howToEnable2FA": {
+            "q": "İki faktörlü doğrulamayı nasıl etkinleştiririm?",
+            "a": "Ayarlar sayfasına gidin, Güvenlik bölümünü bulun ve '2FA Kur' düğmesine tıklayın. QR kodu Google Authenticator veya herhangi bir TOTP uygulaması ile tarayın, ardından doğrulama kodunu girerek etkinleştirin."
+        },
+        "howToAutoBackup": {
+            "q": "Otomatik günlük yedekleme nasıl kurulur?",
+            "a": "Sunucuda cron görevi ekleyin: 'crontab -e' komutunu çalıştırın ve şu satırı ekleyin:\n\n0 3 * * * cd /proje/dizini && make backup >> /var/log/crm_backup.log 2>&1\n\n'/proje/dizini' kısmını gerçek proje dizininizle değiştirin. Bu, her gün saat 03:00'te yedekleme yapar. Logları kontrol edin: tail -f /var/log/crm_backup.log"
+        },
+        "howToUpgradePostgres": {
+            "q": "PostgreSQL sürümünü nasıl yükseltirim?",
+            "a": "PostgreSQL major sürüm yükseltmelerinde (ör. 15→16, 16→17) veri formatı değişir ve taşıma gerekir. Şu adımları izleyin:\n\n1. docker-compose.yml dosyasındaki postgres imaj sürümünü değiştirin (ör. postgres:17-alpine)\n2. backend/Dockerfile içindeki postgresql-client sürümünü eşleştirin\n3. Çalıştırın: make pg-upgrade\n\nBetik otomatik olarak sürüm uyumsuzluğunu algılar, veritabanınızı yedekler, eski veri birimini kaldırır, yeni sürümü başlatır ve tüm verileri geri yükler. Yedek .pg-upgrade-backups/ dizininde saklanır ve başarılı yükseltmeden sonra bile silinmez. Onay istemini atlamak için --force parametresini kullanabilirsiniz."
+        }
     }
-  }
 }

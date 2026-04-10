@@ -41,7 +41,13 @@ cd bizcarder
 make install
 ```
 
-That's it — `make install` copies `.env.example`, builds all containers, starts the services, and seeds the database. Open [localhost:5173](http://localhost:5173) and log in with `admin` / `admin`.
+That's it — `make install` copies `.env.example`, builds containers, runs migrations, and seeds the database. Then start the frontend in a second terminal:
+
+```bash
+make dev-frontend
+```
+
+Open [localhost:5173](http://localhost:5173) and log in with `admin` / `admin`.
 
 > Change the default password immediately.
 
@@ -51,7 +57,10 @@ That's it — `make install` copies `.env.example`, builds all containers, start
 ```bash
 cp .env.example .env       # edit with your settings
 docker compose up --build -d
+docker compose exec backend npx sequelize-cli db:migrate
 docker compose exec backend node scripts/seed.js
+# Frontend (separate terminal)
+cd frontend && npm install && npm run dev
 ```
 
 **Without Docker:**
@@ -60,7 +69,7 @@ docker compose exec backend node scripts/seed.js
 # Backend (port 5000)
 cd backend && npm install && npm run dev
 
-# Frontend (port 5173)
+# Frontend (port 5173, separate terminal)
 cd frontend && npm install && npm run dev
 ```
 
@@ -138,20 +147,19 @@ Run `make help` to see all available targets:
 | Command                          | Description                                                  |
 | -------------------------------- | ------------------------------------------------------------ |
 | **Setup**                        |                                                              |
-| `make install`                   | First-time setup: copy `.env`, build, start, seed            |
-| `make build`                     | Rebuild backend image and start                              |
-| `make fresh`                     | Wipe everything and rebuild from scratch (asks confirmation) |
+| `make install`                   | First-time setup: copy `.env`, build, migrate, seed          |
+| `make upgrade`                   | Pull latest code, rebuild dev, migrate, seed                 |
+| `make prod-upgrade`              | Pull latest code, rebuild prod (Caddy), migrate, seed        |
 | **Dev**                          |                                                              |
 | `make up`                        | Start backend + db + redis                                   |
 | `make dev-frontend`              | Start frontend dev server (Vite, HMR, port 5173)             |
 | `make down`                      | Stop all containers                                          |
 | `make restart`                   | Restart all containers                                       |
+| `make build`                     | Rebuild backend image and start                              |
 | `make status`                    | Show container status                                        |
 | **Production**                   |                                                              |
 | `make prod`                      | Build and start production stack (Caddy + backend)           |
-| `make prod-up`                   | Start production containers                                  |
-| `make prod-down`                 | Stop production containers                                   |
-| `make prod-logs`                 | Tail production logs                                         |
+| `make prod-up`                   | Start production containers (no rebuild)                     |
 | **Logs**                         |                                                              |
 | `make logs`                      | Tail all service logs                                        |
 | `make logs-backend`              | Tail backend logs only                                       |
@@ -175,6 +183,7 @@ Run `make help` to see all available targets:
 | `make shell-redis`               | Open redis-cli shell                                         |
 | **Cleanup**                      |                                                              |
 | `make clean`                     | Stop containers, remove images (keeps data)                  |
+| `make fresh`                     | Wipe everything and rebuild from scratch (asks confirmation) |
 
 Last 7 backups are retained automatically.
 
