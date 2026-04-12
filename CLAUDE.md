@@ -18,7 +18,7 @@ cd backend && npm install && npm run dev    # port 5000
 # Manual — Frontend
 cd frontend && npm install && npm run dev   # port 5173
 
-# Default login: admin / admin
+# Default login: admin / (see ADMIN_DEFAULT_PASSWORD in .env)
 ```
 
 ## Architecture
@@ -60,6 +60,8 @@ frontend/
 - Always use `t('namespace:key')` with explicit namespace prefix
 - Never hardcode Turkish fallbacks in `t()` second argument — add keys to both locale files instead
 - Dates: use `i18n.language === 'tr' ? 'tr-TR' : 'en-US'` for `toLocaleDateString()`
+- **Backend API messages**: Never return hardcoded Turkish or English strings in error/success responses. Use `errorCode` / `messageCode` with UPPER_SNAKE_CASE codes (e.g., `{ errorCode: 'AUTH_REQUIRED' }`). Frontend resolves these via `auth:errors.{CODE}` i18n keys. Add translations to both `en` and `tr` locale files.
+- **Validation messages** (express-validator `.withMessage()`): Use UPPER_SNAKE_CASE codes, not human-readable strings. Frontend maps these through i18n the same way.
 
 ### Auth
 
