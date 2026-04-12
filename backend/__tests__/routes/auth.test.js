@@ -28,7 +28,7 @@ describe('Auth Routes', () => {
                 .post('/auth/local/login')
                 .send({ username: `${P}_loginuser`, password: 'Test1234!' });
             expect(res.status).toBe(403);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('login with wrong password returns 401', async () => {
@@ -47,12 +47,16 @@ describe('Auth Routes', () => {
         });
 
         test('unapproved admin login returns 403', async () => {
-            await createTestAdmin({ username: `${P}_unapprovedadmin`, email: `${P}_unapprovedadmin@example.com`, isApproved: false });
+            await createTestAdmin({
+                username: `${P}_unapprovedadmin`,
+                email: `${P}_unapprovedadmin@example.com`,
+                isApproved: false,
+            });
             const res = await supertest(app)
                 .post('/auth/local/login')
                 .send({ username: `${P}_unapprovedadmin`, password: 'Test1234!' });
             expect(res.status).toBe(403);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
     });
 
@@ -65,7 +69,7 @@ describe('Auth Routes', () => {
                     username: `${P}_newuser`,
                     email: `${P}_new@test.com`,
                     password: 'NewPass123!',
-                    displayName: 'New User'
+                    displayName: 'New User',
                 });
             expect(res.status).toBe(201);
             expect(res.body.success).toBe(true);
@@ -80,10 +84,10 @@ describe('Auth Routes', () => {
                     username: `${P}_dupeuser`,
                     email: `${P}_other@test.com`,
                     password: 'NewPass123!',
-                    displayName: 'Dup'
+                    displayName: 'Dup',
                 });
             expect(res.status).toBe(400);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('register with duplicate email returns 400', async () => {
@@ -93,10 +97,10 @@ describe('Auth Routes', () => {
                 .send({
                     username: `${P}_differentuser`,
                     email: `${P}_dupeemail@example.com`,
-                    password: 'NewPass123!'
+                    password: 'NewPass123!',
                 });
             expect(res.status).toBe(400);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('register with missing password returns 400 (validation)', async () => {
@@ -211,7 +215,7 @@ describe('Auth Routes', () => {
                 .put('/auth/change-password')
                 .send({ currentPassword: 'WrongCurrentPass!', newPassword: 'NewSecurePass456!' });
             expect(res.status).toBe(400);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
     });
 });

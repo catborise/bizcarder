@@ -32,8 +32,16 @@ describe('Cards Export — Bulk VCF', () => {
         });
 
         test('exports only selected cards when ids param is provided', async () => {
-            const c1 = await createTestCard(user.id, { firstName: `${P}_Sel1`, lastName: 'One', email: `${P}_sel1@test.com` });
-            const c2 = await createTestCard(user.id, { firstName: `${P}_Sel2`, lastName: 'Two', email: `${P}_sel2@test.com` });
+            const c1 = await createTestCard(user.id, {
+                firstName: `${P}_Sel1`,
+                lastName: 'One',
+                email: `${P}_sel1@test.com`,
+            });
+            const c2 = await createTestCard(user.id, {
+                firstName: `${P}_Sel2`,
+                lastName: 'Two',
+                email: `${P}_sel2@test.com`,
+            });
             await createTestCard(user.id, { firstName: `${P}_Sel3`, lastName: 'Three', email: `${P}_sel3@test.com` });
 
             const res = await agent.get(`/api/cards/export/vcf?ids=${c1.id},${c2.id}`);
@@ -47,7 +55,7 @@ describe('Cards Export — Bulk VCF', () => {
         test('returns 404 when no cards match', async () => {
             const res = await agent.get('/api/cards/export/vcf?ids=999998,999999');
             expect(res.status).toBe(404);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('requires authentication', async () => {

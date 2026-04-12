@@ -21,8 +21,14 @@ describe('Public Routes', () => {
         });
 
         test('soft-deleted cards are excluded from totalCards count', async () => {
-            const user = await createTestUser({ username: `${P}_softdelstats`, email: `${P}_softdelstats@testcorp.com` });
-            const card = await createTestCard(user.id, { firstName: `${P}_SoftDel`, email: `${P}_softdel@testcorp.com` });
+            const user = await createTestUser({
+                username: `${P}_softdelstats`,
+                email: `${P}_softdelstats@testcorp.com`,
+            });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_SoftDel`,
+                email: `${P}_softdel@testcorp.com`,
+            });
             // Soft-delete the card
             await card.update({ deletedAt: new Date() });
             // Get count before and ensure this card is not counted
@@ -51,20 +57,24 @@ describe('Public Routes', () => {
             const card = await createTestCard(user.id, { email: `${P}_privatecard@testcorp.com` });
             const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}`);
             expect(res.status).toBe(404);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('invalid / non-existent token returns 404', async () => {
-            const res = await supertest(app).get(
-                '/api/cards/public/00000000-0000-0000-0000-000000000000'
-            );
+            const res = await supertest(app).get('/api/cards/public/00000000-0000-0000-0000-000000000000');
             expect(res.status).toBe(404);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('soft-deleted public card returns 404', async () => {
-            const user = await createTestUser({ username: `${P}_softdelpublic`, email: `${P}_softdelpublic@testcorp.com` });
-            const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_softdelpubliccard@testcorp.com` });
+            const user = await createTestUser({
+                username: `${P}_softdelpublic`,
+                email: `${P}_softdelpublic@testcorp.com`,
+            });
+            const card = await createTestCard(user.id, {
+                visibility: 'public',
+                email: `${P}_softdelpubliccard@testcorp.com`,
+            });
             await card.update({ deletedAt: new Date() });
 
             const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}`);
@@ -72,7 +82,11 @@ describe('Public Routes', () => {
         });
 
         test('response includes tags and owner display name', async () => {
-            const user = await createTestUser({ username: `${P}_tagsowner`, email: `${P}_tagsowner@testcorp.com`, displayName: `${P} Tags Owner` });
+            const user = await createTestUser({
+                username: `${P}_tagsowner`,
+                email: `${P}_tagsowner@testcorp.com`,
+                displayName: `${P} Tags Owner`,
+            });
             const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_tagscard@testcorp.com` });
             const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}`);
             expect(res.status).toBe(200);
@@ -88,9 +102,7 @@ describe('Public Routes', () => {
         test('valid token returns vCard file with correct content-type', async () => {
             const user = await createTestUser({ username: `${P}_vcfuser1`, email: `${P}_vcfuser1@testcorp.com` });
             const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_vcf1@testcorp.com` });
-            const res = await supertest(app).get(
-                `/api/cards/public/${card.sharingToken}/vcf`
-            );
+            const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}/vcf`);
             expect(res.status).toBe(200);
             expect(res.headers['content-type']).toMatch(/text\/vcard|text\/x-vcard/i);
         });
@@ -98,9 +110,7 @@ describe('Public Routes', () => {
         test('valid token returns attachment with content-disposition header', async () => {
             const user = await createTestUser({ username: `${P}_vcfuser2`, email: `${P}_vcfuser2@testcorp.com` });
             const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_vcf2@testcorp.com` });
-            const res = await supertest(app).get(
-                `/api/cards/public/${card.sharingToken}/vcf`
-            );
+            const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}/vcf`);
             expect(res.status).toBe(200);
             expect(res.headers['content-disposition']).toMatch(/attachment/i);
         });
@@ -108,20 +118,16 @@ describe('Public Routes', () => {
         test('vCard body contains BEGIN:VCARD and END:VCARD', async () => {
             const user = await createTestUser({ username: `${P}_vcfuser3`, email: `${P}_vcfuser3@testcorp.com` });
             const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_vcf3@testcorp.com` });
-            const res = await supertest(app).get(
-                `/api/cards/public/${card.sharingToken}/vcf`
-            );
+            const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}/vcf`);
             expect(res.status).toBe(200);
             expect(res.text).toContain('BEGIN:VCARD');
             expect(res.text).toContain('END:VCARD');
         });
 
         test('invalid token returns 404', async () => {
-            const res = await supertest(app).get(
-                '/api/cards/public/00000000-0000-0000-0000-000000000000/vcf'
-            );
+            const res = await supertest(app).get('/api/cards/public/00000000-0000-0000-0000-000000000000/vcf');
             expect(res.status).toBe(404);
-            expect(res.body.error).toBeDefined();
+            expect(res.body.errorCode).toBeDefined();
         });
 
         test('soft-deleted public card vcf returns 404', async () => {
@@ -129,9 +135,7 @@ describe('Public Routes', () => {
             const card = await createTestCard(user.id, { visibility: 'public', email: `${P}_vcfsoftdel@card.com` });
             await card.update({ deletedAt: new Date() });
 
-            const res = await supertest(app).get(
-                `/api/cards/public/${card.sharingToken}/vcf`
-            );
+            const res = await supertest(app).get(`/api/cards/public/${card.sharingToken}/vcf`);
             expect(res.status).toBe(404);
         });
     });

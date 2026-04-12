@@ -21,9 +21,11 @@ afterAll(async () => {
     // Clean up uploaded branding files
     const dir = path.join(__dirname, '../../uploads/branding');
     if (fs.existsSync(dir)) {
-        const files = fs.readdirSync(dir).filter(f => f.startsWith('branding-'));
-        files.forEach(f => {
-            try { fs.unlinkSync(path.join(dir, f)); } catch (e) {}
+        const files = fs.readdirSync(dir).filter((f) => f.startsWith('branding-'));
+        files.forEach((f) => {
+            try {
+                fs.unlinkSync(path.join(dir, f));
+            } catch (e) {}
         });
     }
 });
@@ -141,9 +143,7 @@ describe('GET /api/settings (admin)', () => {
 
 describe('PUT /api/settings', () => {
     test('requires authentication', async () => {
-        const res = await supertest(app)
-            .put('/api/settings')
-            .send({ companyName: 'Hacker' });
+        const res = await supertest(app).put('/api/settings').send({ companyName: 'Hacker' });
         expect([401, 403, 302]).toContain(res.status);
     });
 
@@ -159,10 +159,7 @@ describe('PUT /api/settings', () => {
     });
 
     test('updates single setting', async () => {
-        const res = await agent
-            .put('/api/settings')
-            .send({ companyName: 'UpdatedCorp' })
-            .expect(200);
+        const res = await agent.put('/api/settings').send({ companyName: 'UpdatedCorp' }).expect(200);
 
         expect(res.body.message).toBeTruthy();
 
@@ -185,7 +182,9 @@ describe('PUT /api/settings', () => {
 
         const settings = await SystemSetting.findAll();
         const map = {};
-        settings.forEach(s => { map[s.key] = s.value; });
+        settings.forEach((s) => {
+            map[s.key] = s.value;
+        });
 
         expect(map.logRetentionLimit).toBe('500');
         expect(map.trashRetentionDays).toBe('14');
@@ -195,76 +194,52 @@ describe('PUT /api/settings', () => {
     });
 
     test('updates are reflected in GET response', async () => {
-        await agent
-            .put('/api/settings')
-            .send({ developerEmail: 'updated@test.com' })
-            .expect(200);
+        await agent.put('/api/settings').send({ developerEmail: 'updated@test.com' }).expect(200);
 
         const res = await agent.get('/api/settings').expect(200);
         expect(res.body.developerEmail).toBe('updated@test.com');
     });
 
     test('rejects invalid logRetentionLimit (below minimum)', async () => {
-        const res = await agent
-            .put('/api/settings')
-            .send({ logRetentionLimit: 5 })
-            .expect(400);
+        const res = await agent.put('/api/settings').send({ logRetentionLimit: 5 }).expect(400);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('rejects invalid logRetentionLimit (NaN)', async () => {
-        const res = await agent
-            .put('/api/settings')
-            .send({ logRetentionLimit: 'abc' })
-            .expect(400);
+        const res = await agent.put('/api/settings').send({ logRetentionLimit: 'abc' }).expect(400);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('rejects invalid trashRetentionDays (below minimum)', async () => {
         // Note: 0 is falsy so it skips the validation guard (trashRetentionDays && ...).
         // Use -1 which is truthy but below minimum.
-        const res = await agent
-            .put('/api/settings')
-            .send({ trashRetentionDays: -1 })
-            .expect(400);
+        const res = await agent.put('/api/settings').send({ trashRetentionDays: -1 }).expect(400);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('rejects invalid trashRetentionDays (NaN)', async () => {
-        const res = await agent
-            .put('/api/settings')
-            .send({ trashRetentionDays: 'abc' })
-            .expect(400);
+        const res = await agent.put('/api/settings').send({ trashRetentionDays: 'abc' }).expect(400);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('upserts correctly — creates then updates same key', async () => {
-        await agent
-            .put('/api/settings')
-            .send({ developerGithub: 'https://github.com/first' })
-            .expect(200);
+        await agent.put('/api/settings').send({ developerGithub: 'https://github.com/first' }).expect(200);
 
         let setting = await SystemSetting.findOne({ where: { key: 'developerGithub' } });
         expect(setting.value).toBe('https://github.com/first');
 
-        await agent
-            .put('/api/settings')
-            .send({ developerGithub: 'https://github.com/second' })
-            .expect(200);
+        await agent.put('/api/settings').send({ developerGithub: 'https://github.com/second' }).expect(200);
 
         setting = await SystemSetting.findOne({ where: { key: 'developerGithub' } });
         expect(setting.value).toBe('https://github.com/second');
     });
 
     test('updates allowPublicRegistration boolean', async () => {
-        await agent
-            .put('/api/settings')
-            .send({ allowPublicRegistration: false })
-            .expect(200);
+        await agent.put('/api/settings').send({ allowPublicRegistration: false }).expect(200);
 
         const res = await agent.get('/api/settings').expect(200);
         expect(res.body.allowPublicRegistration).toBe(false);
@@ -346,8 +321,8 @@ describe('POST /api/settings/upload-branding', () => {
     test('uploads valid JPEG image', async () => {
         // Minimal JPEG header
         const jpegBuf = Buffer.from([
-            0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
-            0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9
+            0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01,
+            0x00, 0x00, 0xff, 0xd9,
         ]);
 
         const res = await agent
@@ -361,8 +336,7 @@ describe('POST /api/settings/upload-branding', () => {
     test('uploads valid PNG image', async () => {
         // Minimal PNG header
         const pngBuf = Buffer.from([
-            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
-            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
         ]);
 
         const res = await agent
@@ -382,17 +356,15 @@ describe('POST /api/settings/upload-branding', () => {
     });
 
     test('returns 400 when no file is provided', async () => {
-        const res = await agent
-            .post('/api/settings/upload-branding')
-            .expect(400);
+        const res = await agent.post('/api/settings/upload-branding').expect(400);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('file is saved to disk', async () => {
         const jpegBuf = Buffer.from([
-            0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46, 0x00, 0x01,
-            0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xFF, 0xD9
+            0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x01,
+            0x00, 0x00, 0xff, 0xd9,
         ]);
 
         const res = await agent

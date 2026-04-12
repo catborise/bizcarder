@@ -32,8 +32,20 @@ describe('GET /api/interactions/:cardId', () => {
     });
 
     test('returns interactions for a card', async () => {
-        await Interaction.create({ cardId: card.id, type: 'call', notes: 'Test call', date: new Date(), authorId: admin.id });
-        await Interaction.create({ cardId: card.id, type: 'email', notes: 'Test email', date: new Date(), authorId: admin.id });
+        await Interaction.create({
+            cardId: card.id,
+            type: 'call',
+            notes: 'Test call',
+            date: new Date(),
+            authorId: admin.id,
+        });
+        await Interaction.create({
+            cardId: card.id,
+            type: 'email',
+            notes: 'Test email',
+            date: new Date(),
+            authorId: admin.id,
+        });
 
         const res = await agent.get(`/api/interactions/${card.id}`).expect(200);
         expect(res.body.length).toBeGreaterThanOrEqual(2);
@@ -41,19 +53,33 @@ describe('GET /api/interactions/:cardId', () => {
 
     test('includes author displayName', async () => {
         const res = await agent.get(`/api/interactions/${card.id}`).expect(200);
-        const withAuthor = res.body.find(i => i.author);
+        const withAuthor = res.body.find((i) => i.author);
         expect(withAuthor).toBeTruthy();
         expect(withAuthor.author).toHaveProperty('displayName');
     });
 
     test('pinned interactions appear first', async () => {
         // Create unpinned then pinned
-        const unpinned = await Interaction.create({ cardId: card.id, type: 'note', notes: 'Unpinned', date: new Date(), authorId: admin.id, isPinned: false });
-        const pinned = await Interaction.create({ cardId: card.id, type: 'note', notes: 'Pinned', date: new Date(), authorId: admin.id, isPinned: true });
+        const unpinned = await Interaction.create({
+            cardId: card.id,
+            type: 'note',
+            notes: 'Unpinned',
+            date: new Date(),
+            authorId: admin.id,
+            isPinned: false,
+        });
+        const pinned = await Interaction.create({
+            cardId: card.id,
+            type: 'note',
+            notes: 'Pinned',
+            date: new Date(),
+            authorId: admin.id,
+            isPinned: true,
+        });
 
         const res = await agent.get(`/api/interactions/${card.id}`).expect(200);
-        const pinnedIdx = res.body.findIndex(i => i.id === pinned.id);
-        const unpinnedIdx = res.body.findIndex(i => i.id === unpinned.id);
+        const pinnedIdx = res.body.findIndex((i) => i.id === pinned.id);
+        const unpinnedIdx = res.body.findIndex((i) => i.id === unpinned.id);
         expect(pinnedIdx).toBeLessThan(unpinnedIdx);
     });
 });
@@ -62,9 +88,7 @@ describe('GET /api/interactions/:cardId', () => {
 
 describe('POST /api/interactions/:cardId', () => {
     test('requires authentication', async () => {
-        const res = await supertest(app)
-            .post(`/api/interactions/${card.id}`)
-            .send({ type: 'call', notes: 'Hack' });
+        const res = await supertest(app).post(`/api/interactions/${card.id}`).send({ type: 'call', notes: 'Hack' });
         expect([401, 403, 302]).toContain(res.status);
     });
 
@@ -129,14 +153,16 @@ describe('PUT /api/interactions/:id', () => {
 
     beforeAll(async () => {
         interaction = await Interaction.create({
-            cardId: card.id, type: 'call', notes: 'Original', date: new Date(), authorId: admin.id,
+            cardId: card.id,
+            type: 'call',
+            notes: 'Original',
+            date: new Date(),
+            authorId: admin.id,
         });
     });
 
     test('requires authentication', async () => {
-        const res = await supertest(app)
-            .put(`/api/interactions/${interaction.id}`)
-            .send({ notes: 'Hack' });
+        const res = await supertest(app).put(`/api/interactions/${interaction.id}`).send({ notes: 'Hack' });
         expect([401, 403, 302]).toContain(res.status);
     });
 
@@ -151,12 +177,9 @@ describe('PUT /api/interactions/:id', () => {
     });
 
     test('returns 404 for non-existent interaction', async () => {
-        const res = await agent
-            .put('/api/interactions/999999')
-            .send({ notes: 'Nope' })
-            .expect(404);
+        const res = await agent.put('/api/interactions/999999').send({ notes: 'Nope' }).expect(404);
 
-        expect(res.body.error).toBeTruthy();
+        expect(res.body.errorCode).toBeTruthy();
     });
 
     test('non-admin cannot update another users interaction', async () => {
@@ -167,9 +190,7 @@ describe('PUT /api/interactions/:id', () => {
         });
         const otherAgent = await getAuthAgent(otherUser);
 
-        const res = await otherAgent
-            .put(`/api/interactions/${interaction.id}`)
-            .send({ notes: 'Unauthorized edit' });
+        const res = await otherAgent.put(`/api/interactions/${interaction.id}`).send({ notes: 'Unauthorized edit' });
 
         expect(res.status).toBe(403);
     });
@@ -181,7 +202,11 @@ describe('PUT /api/interactions/:id', () => {
             role: 'user',
         });
         const otherInteraction = await Interaction.create({
-            cardId: card.id, type: 'note', notes: 'Other user note', date: new Date(), authorId: otherUser.id,
+            cardId: card.id,
+            type: 'note',
+            notes: 'Other user note',
+            date: new Date(),
+            authorId: otherUser.id,
         });
 
         const res = await agent
@@ -194,7 +219,11 @@ describe('PUT /api/interactions/:id', () => {
 
     test('keeps original date when no date provided', async () => {
         const original = await Interaction.create({
-            cardId: card.id, type: 'call', notes: 'Keep date', date: '2026-02-01T08:00:00.000Z', authorId: admin.id,
+            cardId: card.id,
+            type: 'call',
+            notes: 'Keep date',
+            date: '2026-02-01T08:00:00.000Z',
+            authorId: admin.id,
         });
 
         const res = await agent
@@ -211,7 +240,11 @@ describe('PUT /api/interactions/:id', () => {
 describe('DELETE /api/interactions/:id', () => {
     test('requires authentication', async () => {
         const interaction = await Interaction.create({
-            cardId: card.id, type: 'call', notes: 'To delete unauth', date: new Date(), authorId: admin.id,
+            cardId: card.id,
+            type: 'call',
+            notes: 'To delete unauth',
+            date: new Date(),
+            authorId: admin.id,
         });
         const res = await supertest(app).delete(`/api/interactions/${interaction.id}`);
         expect([401, 403, 302]).toContain(res.status);
@@ -219,7 +252,11 @@ describe('DELETE /api/interactions/:id', () => {
 
     test('deletes own interaction', async () => {
         const interaction = await Interaction.create({
-            cardId: card.id, type: 'note', notes: 'Delete me', date: new Date(), authorId: admin.id,
+            cardId: card.id,
+            type: 'note',
+            notes: 'Delete me',
+            date: new Date(),
+            authorId: admin.id,
         });
 
         await agent.delete(`/api/interactions/${interaction.id}`).expect(200);
@@ -234,7 +271,11 @@ describe('DELETE /api/interactions/:id', () => {
 
     test('non-admin cannot delete another users interaction', async () => {
         const interaction = await Interaction.create({
-            cardId: card.id, type: 'call', notes: 'Admin owned', date: new Date(), authorId: admin.id,
+            cardId: card.id,
+            type: 'call',
+            notes: 'Admin owned',
+            date: new Date(),
+            authorId: admin.id,
         });
 
         const otherUser = await createTestUser({
@@ -254,7 +295,11 @@ describe('DELETE /api/interactions/:id', () => {
             role: 'user',
         });
         const interaction = await Interaction.create({
-            cardId: card.id, type: 'note', notes: 'Other owns this', date: new Date(), authorId: otherUser.id,
+            cardId: card.id,
+            type: 'note',
+            notes: 'Other owns this',
+            date: new Date(),
+            authorId: otherUser.id,
         });
 
         await agent.delete(`/api/interactions/${interaction.id}`).expect(200);
@@ -271,7 +316,12 @@ describe('PUT /api/interactions/:id/pin', () => {
 
     beforeAll(async () => {
         interaction = await Interaction.create({
-            cardId: card.id, type: 'note', notes: 'Pin test', date: new Date(), authorId: admin.id, isPinned: false,
+            cardId: card.id,
+            type: 'note',
+            notes: 'Pin test',
+            date: new Date(),
+            authorId: admin.id,
+            isPinned: false,
         });
     });
 
@@ -312,7 +362,12 @@ describe('PUT /api/interactions/:id/pin', () => {
             role: 'user',
         });
         const otherInteraction = await Interaction.create({
-            cardId: card.id, type: 'call', notes: 'Other pin', date: new Date(), authorId: otherUser.id, isPinned: false,
+            cardId: card.id,
+            type: 'call',
+            notes: 'Other pin',
+            date: new Date(),
+            authorId: otherUser.id,
+            isPinned: false,
         });
 
         const res = await agent.put(`/api/interactions/${otherInteraction.id}/pin`).expect(200);
