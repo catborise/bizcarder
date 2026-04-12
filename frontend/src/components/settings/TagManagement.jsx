@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
@@ -12,7 +12,7 @@ const inputStyle = {
     borderRadius: '8px',
     color: 'var(--text-primary)',
     fontSize: '1rem',
-    marginTop: '8px'
+    marginTop: '8px',
 };
 
 const TagManagement = () => {
@@ -74,7 +74,10 @@ const TagManagement = () => {
 
     return (
         <div>
-            <form onSubmit={handleTagSubmit} style={{ display: 'flex', gap: '10px', marginBottom: '25px', alignItems: 'flex-end' }}>
+            <form
+                onSubmit={handleTagSubmit}
+                style={{ display: 'flex', gap: '10px', marginBottom: '25px', alignItems: 'flex-end' }}
+            >
                 <div style={{ flex: 1 }}>
                     <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('tags.nameLabel')}</label>
                     <input
@@ -86,7 +89,9 @@ const TagManagement = () => {
                     />
                 </div>
                 <div>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{t('tags.colorLabel')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                        {t('tags.colorLabel')}
+                    </label>
                     <input
                         type="color"
                         value={tagForm.color}
@@ -103,7 +108,7 @@ const TagManagement = () => {
                         padding: '12px 20px',
                         borderRadius: '8px',
                         fontWeight: '600',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
                     }}
                 >
                     {editingTag ? t('tags.updateBtn') : t('tags.addBtn')}
@@ -115,13 +120,24 @@ const TagManagement = () => {
                     <div
                         key={tag.id}
                         style={{
-                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '12px 15px', background: 'var(--bg-input)', borderRadius: '10px',
-                            border: '1px solid var(--glass-border)'
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            padding: '12px 15px',
+                            background: 'var(--bg-input)',
+                            borderRadius: '10px',
+                            border: '1px solid var(--glass-border)',
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: tag.color }}></div>
+                            <div
+                                style={{
+                                    width: '12px',
+                                    height: '12px',
+                                    borderRadius: '50%',
+                                    backgroundColor: tag.color,
+                                }}
+                            ></div>
                             <span>{tag.name}</span>
                         </div>
                         <div style={{ display: 'flex', gap: '8px' }}>

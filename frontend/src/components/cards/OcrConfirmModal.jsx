@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../shared/Modal';
 
 const inputStyle = {
@@ -12,13 +12,13 @@ const inputStyle = {
     outline: 'none',
     transition: 'all 0.2s ease',
     width: '100%',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
 };
 
 const labelStyle = {
     color: 'var(--accent-warning)',
     fontSize: '0.8rem',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
 };
 
 export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm, t }) {
@@ -31,7 +31,7 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
         phone: '',
         website: '',
         address: '',
-        ocrText: ''
+        ocrText: '',
     });
 
     // Sync local fields when ocrResults changes (new scan)
@@ -46,13 +46,13 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
                 phone: ocrResults.phone || '',
                 website: ocrResults.website || '',
                 address: ocrResults.address || '',
-                ocrText: ocrResults.ocrText || ''
+                ocrText: ocrResults.ocrText || '',
             });
         }
     }, [ocrResults]);
 
     const handleChange = (field) => (e) => {
-        setFields(prev => ({ ...prev, [field]: e.target.value }));
+        setFields((prev) => ({ ...prev, [field]: e.target.value }));
     };
 
     const handleFocus = (e) => {
@@ -72,7 +72,10 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
             </p>
 
             <div style={{ display: 'grid', gap: '15px', marginBottom: '30px' }}>
-                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div
+                    className="addcard-form-grid"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+                >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                         <label style={labelStyle}>{t('addCard.ocrLabel.firstName')}</label>
                         <input
@@ -99,7 +102,10 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
                     </div>
                 </div>
 
-                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div
+                    className="addcard-form-grid"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+                >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                         <label style={labelStyle}>{t('addCard.ocrLabel.company')}</label>
                         <input
@@ -124,7 +130,10 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
                     </div>
                 </div>
 
-                <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div
+                    className="addcard-form-grid"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}
+                >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                         <label style={labelStyle}>{t('addCard.ocrLabel.email')}</label>
                         <input
@@ -185,7 +194,7 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
                         border: '1px solid var(--glass-border)',
                         borderRadius: '12px',
                         cursor: 'pointer',
-                        fontWeight: '600'
+                        fontWeight: '600',
                     }}
                 >
                     {t('common:cancel')}
@@ -202,7 +211,7 @@ export default function OcrConfirmModal({ isOpen, onClose, ocrResults, onConfirm
                         borderRadius: '12px',
                         cursor: 'pointer',
                         fontWeight: '700',
-                        boxShadow: 'var(--glass-shadow)'
+                        boxShadow: 'var(--glass-shadow)',
                     }}
                 >
                     {t('addCard.btn.confirmAndApply')}

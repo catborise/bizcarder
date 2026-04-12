@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -22,7 +22,7 @@ const Login = () => {
     const [samlEnabled, setSamlEnabled] = useState(true);
     const [branding, setBranding] = useState({
         companyName: 'BizCarder',
-        companyLogo: ''
+        companyLogo: '',
     });
 
     const { loginLocal, registerLocal } = useAuth();
@@ -42,14 +42,14 @@ const Login = () => {
                 setSamlEnabled(data.samlEnabled !== false);
                 setBranding({
                     companyName: data.companyName || 'BizCarder',
-                    companyLogo: data.companyLogo || ''
+                    companyLogo: data.companyLogo || '',
                 });
 
                 if (data.samlEnabled === false) {
                     setShowLocalForm(true);
                 }
             } catch (err) {
-                console.error("Config fetch error:", err);
+                console.error('Config fetch error:', err);
             }
         };
         fetchConfig();
@@ -113,41 +113,46 @@ const Login = () => {
         padding: branding.companyLogo ? '10px' : '0',
         marginBottom: '20px',
         boxShadow: 'var(--glass-shadow-hover)',
-        border: branding.companyLogo ? '1px solid var(--glass-border)' : 'none'
+        border: branding.companyLogo ? '1px solid var(--glass-border)' : 'none',
     };
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'var(--bg-main)',
-            backgroundImage: `
+        <div
+            style={{
+                minHeight: '100vh',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'var(--bg-main)',
+                backgroundImage: `
                 radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
                 radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.1) 0%, transparent 40%)
             `,
-            backgroundAttachment: 'fixed',
-            padding: '20px'
-        }}>
-
-            <div className="fade-in" style={{
-                width: '100%',
-                maxWidth: '440px',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(20px)',
-                borderRadius: '24px',
-                border: '1px solid var(--glass-border)',
-                boxShadow: 'var(--glass-shadow)',
-                overflow: 'hidden'
-            }}>
-
+                backgroundAttachment: 'fixed',
+                padding: '20px',
+            }}
+        >
+            <div
+                className="fade-in"
+                style={{
+                    width: '100%',
+                    maxWidth: '440px',
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: '24px',
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: 'var(--glass-shadow)',
+                    overflow: 'hidden',
+                }}
+            >
                 {/* Header Section */}
-                <div style={{
-                    padding: '40px 40px 20px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid var(--glass-border)'
-                }}>
+                <div
+                    style={{
+                        padding: '40px 40px 20px',
+                        textAlign: 'center',
+                        borderBottom: '1px solid var(--glass-border)',
+                    }}
+                >
                     <div style={iconWrapperStyle}>
                         {branding.companyLogo ? (
                             <img
@@ -159,22 +164,28 @@ const Login = () => {
                             <FaUserLock size={30} color="var(--bg-card)" />
                         )}
                     </div>
-                    <h1 style={{
-                        margin: 0,
-                        fontSize: '1.75rem',
-                        color: 'var(--text-primary)',
-                        fontWeight: '700',
-                        letterSpacing: '-0.025em'
-                    }}>
+                    <h1
+                        style={{
+                            margin: 0,
+                            fontSize: '1.75rem',
+                            color: 'var(--text-primary)',
+                            fontWeight: '700',
+                            letterSpacing: '-0.025em',
+                        }}
+                    >
                         {branding.companyName}
                     </h1>
-                    <p style={{
-                        margin: '10px 0 0',
-                        color: 'var(--text-secondary)',
-                        fontSize: '0.925rem'
-                    }}>
+                    <p
+                        style={{
+                            margin: '10px 0 0',
+                            color: 'var(--text-secondary)',
+                            fontSize: '0.925rem',
+                        }}
+                    >
                         {showLocalForm
-                            ? (samlEnabled ? t('login.localLoginSubtitle') : t('login.samlDisabledSubtitle'))
+                            ? samlEnabled
+                                ? t('login.localLoginSubtitle')
+                                : t('login.samlDisabledSubtitle')
                             : t('login.corporateLoginSubtitle')}
                     </p>
                 </div>
@@ -182,18 +193,28 @@ const Login = () => {
                 {/* Main Content Area */}
                 <div style={{ padding: '40px' }}>
                     {error && (
-                        <div style={{
-                            padding: '12px 16px',
-                            marginBottom: '24px',
-                            backgroundColor: error.includes('başarılı') ? 'rgba(var(--accent-success-rgb), 0.1)' : (error.includes('bekliyor') ? 'rgba(var(--accent-warning-rgb), 0.1)' : 'rgba(var(--accent-error-rgb), 0.1)'),
-                            border: `1px solid ${error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)')}`,
-                            borderRadius: '12px',
-                            color: error.includes('başarılı') ? 'var(--accent-success)' : (error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)'),
-                            fontSize: '0.875rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '8px'
-                        }}>
+                        <div
+                            style={{
+                                padding: '12px 16px',
+                                marginBottom: '24px',
+                                backgroundColor: error.includes('başarılı')
+                                    ? 'rgba(var(--accent-success-rgb), 0.1)'
+                                    : error.includes('bekliyor')
+                                      ? 'rgba(var(--accent-warning-rgb), 0.1)'
+                                      : 'rgba(var(--accent-error-rgb), 0.1)',
+                                border: `1px solid ${error.includes('başarılı') ? 'var(--accent-success)' : error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)'}`,
+                                borderRadius: '12px',
+                                color: error.includes('başarılı')
+                                    ? 'var(--accent-success)'
+                                    : error.includes('bekliyor')
+                                      ? 'var(--accent-warning)'
+                                      : 'var(--accent-error)',
+                                fontSize: '0.875rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                            }}
+                        >
                             <span>{error}</span>
                         </div>
                     )}
@@ -201,11 +222,27 @@ const Login = () => {
                     {showLocalForm ? (
                         <form onSubmit={handleLocalSubmit}>
                             <div style={{ marginBottom: '20px' }}>
-                                <label htmlFor="login-username" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                <label
+                                    htmlFor="login-username"
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '8px',
+                                        color: 'var(--text-secondary)',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500',
+                                    }}
+                                >
                                     {t('login.usernameLabel')} {isRegisterMode && t('login.orEmail')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
-                                    <FaUser style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
+                                    <FaUser
+                                        style={{
+                                            position: 'absolute',
+                                            left: '12px',
+                                            top: '14px',
+                                            color: 'var(--text-tertiary)',
+                                        }}
+                                    />
                                     <input
                                         id="login-username"
                                         type="text"
@@ -222,11 +259,15 @@ const Login = () => {
                                             fontSize: '0.925rem',
                                             outline: 'none',
                                             transition: 'border-color 0.2s',
-                                            boxSizing: 'border-box'
+                                            boxSizing: 'border-box',
                                         }}
-                                        onFocus={(e) => e.target.style.borderColor = 'var(--accent-primary)'}
-                                        onBlur={(e) => e.target.style.borderColor = 'var(--glass-border)'}
-                                        placeholder={isRegisterMode ? t('login.usernamePlaceholder') : t('login.usernameOrEmailPlaceholder')}
+                                        onFocus={(e) => (e.target.style.borderColor = 'var(--accent-primary)')}
+                                        onBlur={(e) => (e.target.style.borderColor = 'var(--glass-border)')}
+                                        placeholder={
+                                            isRegisterMode
+                                                ? t('login.usernamePlaceholder')
+                                                : t('login.usernameOrEmailPlaceholder')
+                                        }
                                     />
                                 </div>
                             </div>
@@ -234,11 +275,27 @@ const Login = () => {
                             {isRegisterMode && (
                                 <>
                                     <div style={{ marginBottom: '20px' }}>
-                                        <label htmlFor="login-email" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                        <label
+                                            htmlFor="login-email"
+                                            style={{
+                                                display: 'block',
+                                                marginBottom: '8px',
+                                                color: 'var(--text-secondary)',
+                                                fontSize: '0.875rem',
+                                                fontWeight: '500',
+                                            }}
+                                        >
                                             {t('login.emailLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
-                                            <FaEnvelope style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
+                                            <FaEnvelope
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: '12px',
+                                                    top: '14px',
+                                                    color: 'var(--text-tertiary)',
+                                                }}
+                                            />
                                             <input
                                                 id="login-email"
                                                 type="email"
@@ -254,7 +311,7 @@ const Login = () => {
                                                     color: 'var(--text-primary)',
                                                     fontSize: '0.925rem',
                                                     outline: 'none',
-                                                    boxSizing: 'border-box'
+                                                    boxSizing: 'border-box',
                                                 }}
                                                 placeholder={t('login.emailPlaceholder')}
                                             />
@@ -262,11 +319,27 @@ const Login = () => {
                                     </div>
 
                                     <div style={{ marginBottom: '20px' }}>
-                                        <label htmlFor="login-displayname" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                        <label
+                                            htmlFor="login-displayname"
+                                            style={{
+                                                display: 'block',
+                                                marginBottom: '8px',
+                                                color: 'var(--text-secondary)',
+                                                fontSize: '0.875rem',
+                                                fontWeight: '500',
+                                            }}
+                                        >
                                             {t('login.displayNameLabel')}
                                         </label>
                                         <div style={{ position: 'relative' }}>
-                                            <FaIdCard style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
+                                            <FaIdCard
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: '12px',
+                                                    top: '14px',
+                                                    color: 'var(--text-tertiary)',
+                                                }}
+                                            />
                                             <input
                                                 id="login-displayname"
                                                 type="text"
@@ -281,7 +354,7 @@ const Login = () => {
                                                     color: 'var(--text-primary)',
                                                     fontSize: '0.925rem',
                                                     outline: 'none',
-                                                    boxSizing: 'border-box'
+                                                    boxSizing: 'border-box',
                                                 }}
                                                 placeholder={t('login.displayNamePlaceholder')}
                                             />
@@ -291,11 +364,27 @@ const Login = () => {
                             )}
 
                             <div style={{ marginBottom: '24px' }}>
-                                <label htmlFor="login-password" style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: '500' }}>
+                                <label
+                                    htmlFor="login-password"
+                                    style={{
+                                        display: 'block',
+                                        marginBottom: '8px',
+                                        color: 'var(--text-secondary)',
+                                        fontSize: '0.875rem',
+                                        fontWeight: '500',
+                                    }}
+                                >
                                     {t('login.passwordLabel')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
-                                    <FaKey style={{ position: 'absolute', left: '12px', top: '14px', color: 'var(--text-tertiary)' }} />
+                                    <FaKey
+                                        style={{
+                                            position: 'absolute',
+                                            left: '12px',
+                                            top: '14px',
+                                            color: 'var(--text-tertiary)',
+                                        }}
+                                    />
                                     <input
                                         id="login-password"
                                         type="password"
@@ -311,7 +400,7 @@ const Login = () => {
                                             color: 'var(--text-primary)',
                                             fontSize: '0.925rem',
                                             outline: 'none',
-                                            boxSizing: 'border-box'
+                                            boxSizing: 'border-box',
                                         }}
                                         placeholder="••••••••"
                                     />
@@ -333,13 +422,25 @@ const Login = () => {
                                     cursor: loading ? 'not-allowed' : 'pointer',
                                     transition: 'all 0.2s ease',
                                     boxShadow: 'var(--glass-shadow)',
-                                    opacity: loading ? 0.7 : 1
+                                    opacity: loading ? 0.7 : 1,
                                 }}
                             >
-                                {loading ? t('login.processing') : (isRegisterMode ? t('login.createAccount') : t('login.loginButton'))}
+                                {loading
+                                    ? t('login.processing')
+                                    : isRegisterMode
+                                      ? t('login.createAccount')
+                                      : t('login.loginButton')}
                             </button>
 
-                            <div style={{ marginTop: '20px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <div
+                                style={{
+                                    marginTop: '20px',
+                                    textAlign: 'center',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '10px',
+                                }}
+                            >
                                 {allowRegistration && (
                                     <button
                                         type="button"
@@ -352,7 +453,7 @@ const Login = () => {
                                             border: 'none',
                                             color: 'var(--text-secondary)',
                                             fontSize: '0.825rem',
-                                            cursor: 'pointer'
+                                            cursor: 'pointer',
                                         }}
                                     >
                                         {isRegisterMode ? t('login.alreadyHaveAccount') : t('login.createAdminAccount')}
@@ -372,7 +473,7 @@ const Login = () => {
                                             fontSize: '0.875rem',
                                             fontWeight: '600',
                                             cursor: 'pointer',
-                                            marginTop: '10px'
+                                            marginTop: '10px',
                                         }}
                                     >
                                         {t('login.backToCorporateLogin')}
@@ -382,17 +483,33 @@ const Login = () => {
                         </form>
                     ) : (
                         <div style={{ textAlign: 'center' }}>
-                            <div style={{
-                                padding: '30px',
-                                background: 'var(--glass-bg)',
-                                borderRadius: '20px',
-                                border: '1px dashed var(--glass-border)',
-                                marginBottom: '30px'
-                            }}>
-                                <p style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1rem', fontWeight: '500' }}>
+                            <div
+                                style={{
+                                    padding: '30px',
+                                    background: 'var(--glass-bg)',
+                                    borderRadius: '20px',
+                                    border: '1px dashed var(--glass-border)',
+                                    marginBottom: '30px',
+                                }}
+                            >
+                                <p
+                                    style={{
+                                        color: 'var(--text-primary)',
+                                        marginBottom: '20px',
+                                        fontSize: '1rem',
+                                        fontWeight: '500',
+                                    }}
+                                >
                                     {t('login.secureCorporateLogin')}
                                 </p>
-                                <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '0.875rem', lineHeight: '1.6' }}>
+                                <p
+                                    style={{
+                                        color: 'var(--text-secondary)',
+                                        marginBottom: '30px',
+                                        fontSize: '0.875rem',
+                                        lineHeight: '1.6',
+                                    }}
+                                >
                                     {t('login.corporateLoginDescription')}
                                 </p>
                                 <button
@@ -412,7 +529,7 @@ const Login = () => {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: '10px',
-                                        boxShadow: 'var(--glass-shadow)'
+                                        boxShadow: 'var(--glass-shadow)',
                                     }}
                                 >
                                     {t('login.samlSsoButton')}
@@ -427,7 +544,7 @@ const Login = () => {
                                     color: 'var(--text-tertiary)',
                                     fontSize: '0.875rem',
                                     cursor: 'pointer',
-                                    textDecoration: 'underline'
+                                    textDecoration: 'underline',
                                 }}
                             >
                                 {t('login.adminLocalLogin')}
@@ -436,7 +553,7 @@ const Login = () => {
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 

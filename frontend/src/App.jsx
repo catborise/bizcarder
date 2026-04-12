@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -35,7 +35,7 @@ const AccessDenied = lazy(() => import('./components/auth/AccessDenied'));
 
 // AppContent bileşeni - useAuth hook'unu kullanmak için AuthProvider içinde olması gerek
 const AppContent = () => {
-    const { isAuthenticated, user: currentUser } = useAuth();
+    const { isAuthenticated } = useAuth();
     const { showNotification } = useNotification();
     const { t } = useTranslation('pages');
     const location = useLocation();
@@ -47,7 +47,7 @@ const AppContent = () => {
         companyName: 'BizCarder',
         companyLogo: '',
         companyIcon: '',
-        footerText: ''
+        footerText: '',
     });
 
     const syncQueuedCards = async () => {
@@ -62,7 +62,7 @@ const AppContent = () => {
                 const formDataToSync = new FormData();
 
                 // Reconstruction of FormData
-                Object.keys(data).forEach(key => {
+                Object.keys(data).forEach((key) => {
                     if (!['frontBlob', 'backBlob', 'logoBlob'].includes(key)) {
                         formDataToSync.append(key, data[key]);
                     }
@@ -78,7 +78,7 @@ const AppContent = () => {
 
                 try {
                     await api.post('/api/cards', formDataToSync, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
+                        headers: { 'Content-Type': 'multipart/form-data' },
                     });
                     await clearSyncItem(item.id);
                 } catch (err) {
@@ -115,6 +115,7 @@ const AppContent = () => {
             window.removeEventListener('offline', handleOffline);
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -137,7 +138,7 @@ const AppContent = () => {
                     document.title = res.data.companyName;
                 }
             } catch (err) {
-                console.error("Global settings fetch error:", err);
+                console.error('Global settings fetch error:', err);
             }
         };
         fetchSettings();
@@ -169,55 +170,63 @@ const AppContent = () => {
     });
 
     return (
-        <div style={{
-            minHeight: '100vh',
-            width: '100%',
-            paddingTop: !isOnline || showInstallBanner ? '50px' : '0',
-            display: 'flex',
-            flexDirection: 'column'
-        }}>
-            <a href="#main-content" className="skip-link">Skip to main content</a>
+        <div
+            style={{
+                minHeight: '100vh',
+                width: '100%',
+                paddingTop: !isOnline || showInstallBanner ? '50px' : '0',
+                display: 'flex',
+                flexDirection: 'column',
+            }}
+        >
+            <a href="#main-content" className="skip-link">
+                Skip to main content
+            </a>
             {/* Offline Banner */}
             {!isOnline && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    background: 'var(--accent-error)',
-                    color: 'var(--bg-card)',
-                    padding: '10px',
-                    textAlign: 'center',
-                    zIndex: 2000,
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px'
-                }}>
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'var(--accent-error)',
+                        color: 'var(--bg-card)',
+                        padding: '10px',
+                        textAlign: 'center',
+                        zIndex: 2000,
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                    }}
+                >
                     <FaPlane /> {t('app.offline.banner')}
                 </div>
             )}
 
             {/* PWA Install Banner */}
             {showInstallBanner && isOnline && (
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    background: 'linear-gradient(135deg, var(--accent-primary), #1e40af)',
-                    backdropFilter: 'blur(15px)',
-                    color: 'white',
-                    padding: '12px 24px',
-                    zIndex: 2001,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                    animation: 'slideDown 0.5s ease-out'
-                }}>
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        background: 'linear-gradient(135deg, var(--accent-primary), #1e40af)',
+                        backdropFilter: 'blur(15px)',
+                        color: 'white',
+                        padding: '12px 24px',
+                        zIndex: 2001,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                        animation: 'slideDown 0.5s ease-out',
+                    }}
+                >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                         <div style={{ fontSize: '24px' }}>📱</div>
                         <div>
@@ -237,7 +246,7 @@ const AppContent = () => {
                                 fontWeight: '700',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                             }}
                         >
                             {t('app.pwa.installButton')}
@@ -245,7 +254,18 @@ const AppContent = () => {
                         <button
                             onClick={() => setShowInstallBanner(false)}
                             aria-label="Dismiss install banner"
-                            style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', cursor: 'pointer', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            style={{
+                                background: 'rgba(255,255,255,0.2)',
+                                border: 'none',
+                                color: 'white',
+                                cursor: 'pointer',
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}
                         >
                             <FaTimes />
                         </button>
@@ -267,7 +287,7 @@ const AppContent = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '12px',
-                                minWidth: 0
+                                minWidth: 0,
                             }}
                         >
                             {settings.companyLogo ? (
@@ -281,33 +301,26 @@ const AppContent = () => {
                                         padding: '3px',
                                         border: '1px solid var(--glass-border)',
                                         boxShadow: 'var(--glass-shadow)',
-                                        flexShrink: 0
+                                        flexShrink: 0,
                                     }}
                                 />
                             ) : (
                                 <span style={{ fontSize: '1.8rem', flexShrink: 0 }}>🏢</span>
                             )}
-                            <span className="navbar-logo-text">{settings.companyName || t('app.nav.defaultBrand')}</span>
+                            <span className="navbar-logo-text">
+                                {settings.companyName || t('app.nav.defaultBrand')}
+                            </span>
                         </Link>
                         <div className="nav-links">
-                            <Link
-                                to="/"
-                                style={navLinkStyle(location.pathname === '/')}
-                            >
+                            <Link to="/" style={navLinkStyle(location.pathname === '/')}>
                                 <FaChartPie size={18} />
                                 <span className="hide-on-mobile">{t('app.nav.dashboard')}</span>
                             </Link>
-                            <Link
-                                to="/contacts"
-                                style={navLinkStyle(location.pathname === '/contacts')}
-                            >
+                            <Link to="/contacts" style={navLinkStyle(location.pathname === '/contacts')}>
                                 <FaUsers size={18} />
                                 <span>{t('app.nav.contacts')}</span>
                             </Link>
-                            <Link
-                                to="/my-card"
-                                style={navLinkStyle(location.pathname === '/my-card')}
-                            >
+                            <Link to="/my-card" style={navLinkStyle(location.pathname === '/my-card')}>
                                 <FaAddressCard size={18} />
                                 <span className="hide-on-mobile">{t('app.nav.myCard')}</span>
                             </Link>
@@ -324,7 +337,7 @@ const AppContent = () => {
                                 transition: 'all 0.2s ease',
                                 fontSize: '1.2rem',
                                 display: 'flex',
-                                alignItems: 'center'
+                                alignItems: 'center',
                             }}
                             onMouseEnter={(e) => {
                                 e.currentTarget.style.background = 'var(--glass-bg-hover)';
@@ -347,11 +360,12 @@ const AppContent = () => {
                                 style={{
                                     padding: '10px 24px',
                                     borderRadius: '12px',
-                                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
+                                    background:
+                                        'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
                                     color: 'white',
                                     fontWeight: '600',
                                     boxShadow: '0 4px 15px rgba(var(--accent-primary-rgb), 0.3)',
-                                    transition: 'all 0.3s ease'
+                                    transition: 'all 0.3s ease',
                                 }}
                             >
                                 {t('app.nav.login')}
@@ -363,20 +377,45 @@ const AppContent = () => {
 
             {/* Main Content Area */}
             <main id="main-content">
-                <Suspense fallback={
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
-                        <div className="page-loader" />
-                    </div>
-                }>
+                <Suspense
+                    fallback={
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                minHeight: '50vh',
+                            }}
+                        >
+                            <div className="page-loader" />
+                        </div>
+                    }
+                >
                     <AnimatePresence mode="wait">
                         <Routes location={location} key={location.pathname}>
-                            <Route path="/" element={<PageTransition><Dashboard /></PageTransition>} />
-                            <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                            <Route
+                                path="/"
+                                element={
+                                    <PageTransition>
+                                        <Dashboard />
+                                    </PageTransition>
+                                }
+                            />
+                            <Route
+                                path="/login"
+                                element={
+                                    <PageTransition>
+                                        <Login />
+                                    </PageTransition>
+                                }
+                            />
                             <Route
                                 path="/contacts"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><Contacts /></PageTransition>
+                                        <PageTransition>
+                                            <Contacts />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -384,7 +423,9 @@ const AppContent = () => {
                                 path="/logs"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><ActivityLogs /></PageTransition>
+                                        <PageTransition>
+                                            <ActivityLogs />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -392,7 +433,9 @@ const AppContent = () => {
                                 path="/trash"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><TrashBin /></PageTransition>
+                                        <PageTransition>
+                                            <TrashBin />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -400,7 +443,9 @@ const AppContent = () => {
                                 path="/users"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><UserManagement /></PageTransition>
+                                        <PageTransition>
+                                            <UserManagement />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -408,7 +453,9 @@ const AppContent = () => {
                                 path="/settings"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><Settings /></PageTransition>
+                                        <PageTransition>
+                                            <Settings />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -416,7 +463,9 @@ const AppContent = () => {
                                 path="/my-card"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><MyCard /></PageTransition>
+                                        <PageTransition>
+                                            <MyCard />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
@@ -424,48 +473,90 @@ const AppContent = () => {
                                 path="/import"
                                 element={
                                     <ProtectedRoute>
-                                        <PageTransition><ImportCards /></PageTransition>
+                                        <PageTransition>
+                                            <ImportCards />
+                                        </PageTransition>
                                     </ProtectedRoute>
                                 }
                             />
-                            <Route path="/about" element={<PageTransition><About /></PageTransition>} />
-                            <Route path="/help" element={<PageTransition><Help /></PageTransition>} />
-                            <Route path="/access-denied" element={<PageTransition><AccessDenied /></PageTransition>} />
+                            <Route
+                                path="/about"
+                                element={
+                                    <PageTransition>
+                                        <About />
+                                    </PageTransition>
+                                }
+                            />
+                            <Route
+                                path="/help"
+                                element={
+                                    <PageTransition>
+                                        <Help />
+                                    </PageTransition>
+                                }
+                            />
+                            <Route
+                                path="/access-denied"
+                                element={
+                                    <PageTransition>
+                                        <AccessDenied />
+                                    </PageTransition>
+                                }
+                            />
                             {/* Public Route for Business Card Sharing (using token) */}
-                            <Route path="/contact-profile/:token" element={<PageTransition><ContactProfile /></PageTransition>} />
+                            <Route
+                                path="/contact-profile/:token"
+                                element={
+                                    <PageTransition>
+                                        <ContactProfile />
+                                    </PageTransition>
+                                }
+                            />
                         </Routes>
                     </AnimatePresence>
                 </Suspense>
-            </main >
+            </main>
 
             {isAuthenticated && <BottomNav />}
-            {isAuthenticated && (
-              <FAB onClick={() => navigate('/contacts', { state: { openAddCard: true } })} />
-            )}
+            {isAuthenticated && <FAB onClick={() => navigate('/contacts', { state: { openAddCard: true } })} />}
 
             {/* Ultra-Compact Footer */}
-            <footer style={{
-                padding: '0.6rem 2rem',
-                marginTop: 'auto',
-                borderTop: '1px solid var(--glass-border)',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                color: 'var(--text-tertiary)',
-                fontSize: '0.75rem'
-            }}>
-                <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                        {settings.footerText || t('app.footer.defaultCopyright')}
-                    </div>
+            <footer
+                style={{
+                    padding: '0.6rem 2rem',
+                    marginTop: 'auto',
+                    borderTop: '1px solid var(--glass-border)',
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(10px)',
+                    color: 'var(--text-tertiary)',
+                    fontSize: '0.75rem',
+                }}
+            >
+                <div
+                    style={{
+                        maxWidth: '1400px',
+                        margin: '0 auto',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                    }}
+                >
+                    <div>{settings.footerText || t('app.footer.defaultCopyright')}</div>
                     <div style={{ display: 'flex', gap: '20px' }}>
-                        <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>{t('app.footer.about')}</Link>
-                        {isAuthenticated && <Link to="/help" style={{ color: 'inherit', textDecoration: 'none' }}>{t('app.footer.help')}</Link>}
+                        <Link to="/about" style={{ color: 'inherit', textDecoration: 'none' }}>
+                            {t('app.footer.about')}
+                        </Link>
+                        {isAuthenticated && (
+                            <Link to="/help" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                {t('app.footer.help')}
+                            </Link>
+                        )}
                     </div>
                 </div>
             </footer>
 
             <NotificationBanner />
-        </div >
+        </div>
     );
 };
 
@@ -484,6 +575,5 @@ function App() {
         </ThemeProvider>
     );
 }
-
 
 export default App;

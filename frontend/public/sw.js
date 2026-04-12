@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const CACHE_NAME = 'bizcard-crm-v2'; // Bumped version
 const STATIC_CACHE = 'bizcard-static-v1';
 const DATA_CACHE = 'bizcard-data-v1';

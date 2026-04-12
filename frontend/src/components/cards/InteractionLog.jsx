@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
@@ -17,7 +17,7 @@ import {
     FaTimes,
     FaCheck,
     FaThumbtack,
-    FaStickyNote
+    FaStickyNote,
 } from 'react-icons/fa';
 
 const InteractionLog = ({ cardId }) => {
@@ -33,7 +33,7 @@ const InteractionLog = ({ cardId }) => {
     const [formData, setFormData] = useState({
         type: 'meeting',
         notes: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
     });
 
     const fetchInteractions = async () => {
@@ -49,27 +49,50 @@ const InteractionLog = ({ cardId }) => {
 
     useEffect(() => {
         if (cardId) fetchInteractions();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cardId]);
 
     const getIcon = (type) => {
         switch (type) {
-            case 'call': case 'Arama': return <FaPhone style={{ color: 'var(--accent-success)' }} />;
-            case 'meeting': case 'Toplantı': return <FaHandshake style={{ color: 'var(--accent-primary)' }} />;
-            case 'email': case 'E-posta': return <FaEnvelope style={{ color: 'var(--accent-primary)' }} />;
-            case 'order': case 'Sipariş': return <FaShoppingCart style={{ color: 'var(--accent-warning)' }} />;
-            case 'note': case 'Not': return <FaStickyNote style={{ color: 'var(--accent-warning)' }} />;
-            default: return <FaComment style={{ color: 'var(--text-tertiary)' }} />;
+            case 'call':
+            case 'Arama':
+                return <FaPhone style={{ color: 'var(--accent-success)' }} />;
+            case 'meeting':
+            case 'Toplantı':
+                return <FaHandshake style={{ color: 'var(--accent-primary)' }} />;
+            case 'email':
+            case 'E-posta':
+                return <FaEnvelope style={{ color: 'var(--accent-primary)' }} />;
+            case 'order':
+            case 'Sipariş':
+                return <FaShoppingCart style={{ color: 'var(--accent-warning)' }} />;
+            case 'note':
+            case 'Not':
+                return <FaStickyNote style={{ color: 'var(--accent-warning)' }} />;
+            default:
+                return <FaComment style={{ color: 'var(--text-tertiary)' }} />;
         }
     };
 
     const getTypeColor = (type) => {
         switch (type) {
-            case 'call': case 'Arama': return 'var(--accent-success)';
-            case 'meeting': case 'Toplantı': return 'var(--accent-primary)';
-            case 'email': case 'E-posta': return 'var(--accent-primary)';
-            case 'order': case 'Sipariş': return 'var(--accent-warning)';
-            case 'note': case 'Not': return 'var(--accent-warning)';
-            default: return 'var(--text-tertiary)';
+            case 'call':
+            case 'Arama':
+                return 'var(--accent-success)';
+            case 'meeting':
+            case 'Toplantı':
+                return 'var(--accent-primary)';
+            case 'email':
+            case 'E-posta':
+                return 'var(--accent-primary)';
+            case 'order':
+            case 'Sipariş':
+                return 'var(--accent-warning)';
+            case 'note':
+            case 'Not':
+                return 'var(--accent-warning)';
+            default:
+                return 'var(--text-tertiary)';
         }
     };
 
@@ -77,7 +100,7 @@ const InteractionLog = ({ cardId }) => {
         e.preventDefault();
         try {
             await api.post(`/api/interactions/${cardId}`, formData);
-            setFormData(prev => ({ ...prev, notes: '' }));
+            setFormData((prev) => ({ ...prev, notes: '' }));
             showNotification(t('interaction.saved'), 'success');
             fetchInteractions();
         } catch (err) {
@@ -102,7 +125,7 @@ const InteractionLog = ({ cardId }) => {
         setEditForm({
             type: log.type,
             notes: log.notes,
-            date: new Date(log.date).toISOString().split('T')[0]
+            date: new Date(log.date).toISOString().split('T')[0],
         });
     };
 
@@ -131,7 +154,7 @@ const InteractionLog = ({ cardId }) => {
         borderRadius: '16px',
         padding: '24px',
         border: '1px solid var(--glass-border)',
-        marginTop: '25px'
+        marginTop: '25px',
     };
 
     const timelineItemStyle = {
@@ -139,7 +162,7 @@ const InteractionLog = ({ cardId }) => {
         paddingLeft: '45px',
         paddingBottom: '30px',
         borderLeft: '2px solid var(--glass-border)',
-        marginLeft: '15px'
+        marginLeft: '15px',
     };
 
     const iconBoxStyle = (type) => ({
@@ -156,7 +179,7 @@ const InteractionLog = ({ cardId }) => {
         border: `2px solid ${getTypeColor(type)}`,
         boxShadow: `0 0 10px ${getTypeColor(type)}44`,
         zIndex: 2,
-        fontSize: '14px'
+        fontSize: '14px',
     });
 
     const itemCardStyle = (log) => ({
@@ -171,7 +194,7 @@ const InteractionLog = ({ cardId }) => {
         gap: '8px',
         boxShadow: log.isPinned ? '0 0 15px rgba(241, 196, 15, 0.2)' : 'var(--glass-shadow)',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
     });
 
     const formInputStyle = {
@@ -181,34 +204,52 @@ const InteractionLog = ({ cardId }) => {
         color: 'var(--text-primary)',
         padding: '10px',
         fontSize: '0.9rem',
-        outline: 'none'
+        outline: 'none',
     };
 
     return (
         <div style={cardContainerStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-                <h3 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} /> {t('interaction.title')}
+            <div
+                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}
+            >
+                <h3
+                    style={{
+                        margin: 0,
+                        fontSize: '1.4rem',
+                        fontWeight: '700',
+                        color: 'var(--text-primary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '10px',
+                    }}
+                >
+                    <FaHistory style={{ color: 'var(--accent-primary)', fontSize: '1.2rem' }} />{' '}
+                    {t('interaction.title')}
                 </h3>
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>{t('interaction.recordCount', { count: interactions.length })}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>
+                    {t('interaction.recordCount', { count: interactions.length })}
+                </span>
             </div>
 
             {/* Yeni Kayıt Formu */}
-            <form onSubmit={handleSubmit} style={{
-                marginBottom: '35px',
-                background: 'var(--glass-bg)',
-                padding: '18px',
-                borderRadius: '12px',
-                border: '1px solid var(--accent-primary)',
-                opacity: 0.9,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
-            }}>
+            <form
+                onSubmit={handleSubmit}
+                style={{
+                    marginBottom: '35px',
+                    background: 'var(--glass-bg)',
+                    padding: '18px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--accent-primary)',
+                    opacity: 0.9,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                }}
+            >
                 <div style={{ display: 'flex', gap: '10px' }}>
                     <select
                         value={formData.type}
-                        onChange={e => setFormData({ ...formData, type: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                         style={{ ...formInputStyle, width: '130px', cursor: 'pointer' }}
                     >
                         <option value="meeting">{t('interaction.type.meeting')}</option>
@@ -220,7 +261,7 @@ const InteractionLog = ({ cardId }) => {
                     <input
                         type="date"
                         value={formData.date}
-                        onChange={e => setFormData({ ...formData, date: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                         style={{ ...formInputStyle, width: '160px' }}
                     />
                 </div>
@@ -228,24 +269,27 @@ const InteractionLog = ({ cardId }) => {
                     <textarea
                         placeholder={t('interaction.notesPlaceholder')}
                         value={formData.notes}
-                        onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                         required
                         style={{ ...formInputStyle, flex: 1, minHeight: '60px', resize: 'none' }}
                     />
-                    <button type="submit" style={{
-                        background: 'var(--accent-primary)',
-                        color: 'var(--bg-card)',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '8px',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        transition: '0.2s',
-                        height: 'fit-content'
-                    }}>
+                    <button
+                        type="submit"
+                        style={{
+                            background: 'var(--accent-primary)',
+                            color: 'var(--bg-card)',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '8px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: '0.2s',
+                            height: 'fit-content',
+                        }}
+                    >
                         <FaPlus /> {t('interaction.addButton')}
                     </button>
                 </div>
@@ -260,31 +304,35 @@ const InteractionLog = ({ cardId }) => {
                 )}
 
                 {interactions.map((log, index) => (
-                    <div key={log.id} className="timeline-item" style={{
-                        ...timelineItemStyle,
-                        borderLeft: index === interactions.length - 1 ? 'none' : timelineItemStyle.borderLeft
-                    }}>
-                        <div style={iconBoxStyle(log.type)}>
-                            {getIcon(log.type)}
-                        </div>
+                    <div
+                        key={log.id}
+                        className="timeline-item"
+                        style={{
+                            ...timelineItemStyle,
+                            borderLeft: index === interactions.length - 1 ? 'none' : timelineItemStyle.borderLeft,
+                        }}
+                    >
+                        <div style={iconBoxStyle(log.type)}>{getIcon(log.type)}</div>
 
                         <div className="interaction-card" style={itemCardStyle(log)}>
                             {log.isPinned && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '0',
-                                    right: '0',
-                                    width: '30px',
-                                    height: '30px',
-                                    background: 'var(--accent-warning)',
-                                    color: 'black',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
-                                    paddingLeft: '8px',
-                                    paddingBottom: '8px'
-                                }}>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        top: '0',
+                                        right: '0',
+                                        width: '30px',
+                                        height: '30px',
+                                        background: 'var(--accent-warning)',
+                                        color: 'black',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+                                        paddingLeft: '8px',
+                                        paddingBottom: '8px',
+                                    }}
+                                >
                                     <FaThumbtack size={10} />
                                 </div>
                             )}
@@ -293,7 +341,7 @@ const InteractionLog = ({ cardId }) => {
                                     {editingId === log.id ? (
                                         <select
                                             value={editForm.type}
-                                            onChange={e => setEditForm({ ...editForm, type: e.target.value })}
+                                            onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
                                             style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                         >
                                             <option value="meeting">{t('interaction.type.meeting')}</option>
@@ -303,16 +351,20 @@ const InteractionLog = ({ cardId }) => {
                                             <option value="note">{t('interaction.type.note')}</option>
                                         </select>
                                     ) : (
-                                        <span style={{
-                                            fontSize: '0.75rem',
-                                            background: `rgba(255,255,255,0.05)`,
-                                            color: getTypeColor(log.type),
-                                            padding: '3px 8px',
-                                            borderRadius: '20px',
-                                            fontWeight: '700',
-                                            textTransform: 'uppercase',
-                                            border: `1px solid ${getTypeColor(log.type)}`
-                                        }}>{t(`interaction.type.${log.type}`, { defaultValue: log.type })}</span>
+                                        <span
+                                            style={{
+                                                fontSize: '0.75rem',
+                                                background: `rgba(255,255,255,0.05)`,
+                                                color: getTypeColor(log.type),
+                                                padding: '3px 8px',
+                                                borderRadius: '20px',
+                                                fontWeight: '700',
+                                                textTransform: 'uppercase',
+                                                border: `1px solid ${getTypeColor(log.type)}`,
+                                            }}
+                                        >
+                                            {t(`interaction.type.${log.type}`, { defaultValue: log.type })}
+                                        </span>
                                     )}
 
                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>
@@ -320,10 +372,15 @@ const InteractionLog = ({ cardId }) => {
                                             <input
                                                 type="date"
                                                 value={editForm.date}
-                                                onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                                                onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
                                                 style={{ ...formInputStyle, padding: '4px 8px', fontSize: '0.8rem' }}
                                             />
-                                        ) : new Date(log.date).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        ) : (
+                                            new Date(log.date).toLocaleDateString(
+                                                i18n.language === 'tr' ? 'tr-TR' : 'en-US',
+                                                { day: 'numeric', month: 'long', year: 'numeric' },
+                                            )
+                                        )}
                                     </span>
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>
@@ -331,20 +388,69 @@ const InteractionLog = ({ cardId }) => {
                                         <>
                                             {editingId === log.id ? (
                                                 <>
-                                                    <button onClick={() => handleUpdate(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-success)', cursor: 'pointer' }}><FaCheck /></button>
-                                                    <button onClick={() => setEditingId(null)} style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer' }}><FaTimes /></button>
+                                                    <button
+                                                        onClick={() => handleUpdate(log.id)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--accent-success)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <FaCheck />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setEditingId(null)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--accent-error)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <FaTimes />
+                                                    </button>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <button 
-                                                        onClick={() => handleTogglePin(log.id)} 
-                                                        style={{ background: 'transparent', border: 'none', color: log.isPinned ? 'var(--accent-warning)' : 'var(--text-tertiary)', cursor: 'pointer' }}
-                                                        title={log.isPinned ? t('interaction.unpin') : t('interaction.pin')}
+                                                    <button
+                                                        onClick={() => handleTogglePin(log.id)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: log.isPinned
+                                                                ? 'var(--accent-warning)'
+                                                                : 'var(--text-tertiary)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                        title={
+                                                            log.isPinned ? t('interaction.unpin') : t('interaction.pin')
+                                                        }
                                                     >
                                                         <FaThumbtack />
                                                     </button>
-                                                    <button onClick={() => startEdit(log)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><FaEdit /></button>
-                                                    <button onClick={() => setDeleteConfirmId(log.id)} style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer' }}><FaTrash /></button>
+                                                    <button
+                                                        onClick={() => startEdit(log)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--text-tertiary)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setDeleteConfirmId(log.id)}
+                                                        style={{
+                                                            background: 'transparent',
+                                                            border: 'none',
+                                                            color: 'var(--text-tertiary)',
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        <FaTrash />
+                                                    </button>
                                                 </>
                                             )}
                                         </>
@@ -357,16 +463,43 @@ const InteractionLog = ({ cardId }) => {
                             {editingId === log.id ? (
                                 <textarea
                                     value={editForm.notes}
-                                    onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
-                                    style={{ ...formInputStyle, marginTop: '10px', minHeight: '80px', width: '100%', resize: 'vertical' }}
+                                    onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                                    style={{
+                                        ...formInputStyle,
+                                        marginTop: '10px',
+                                        minHeight: '80px',
+                                        width: '100%',
+                                        resize: 'vertical',
+                                    }}
                                 />
                             ) : (
-                                <p style={{ margin: '8px 0', color: 'var(--text-primary)', lineHeight: '1.6', fontSize: '1rem', whiteSpace: 'pre-wrap' }}>{log.notes}</p>
+                                <p
+                                    style={{
+                                        margin: '8px 0',
+                                        color: 'var(--text-primary)',
+                                        lineHeight: '1.6',
+                                        fontSize: '1rem',
+                                        whiteSpace: 'pre-wrap',
+                                    }}
+                                >
+                                    {log.notes}
+                                </p>
                             )}
 
-                            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '5px' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-                                    {t('interaction.recordedBy', { author: log.author?.displayName || t('interaction.system') })}
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                    marginTop: '5px',
+                                }}
+                            >
+                                <span
+                                    style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontStyle: 'italic' }}
+                                >
+                                    {t('interaction.recordedBy', {
+                                        author: log.author?.displayName || t('interaction.system'),
+                                    })}
                                 </span>
                             </div>
                         </div>
@@ -374,7 +507,7 @@ const InteractionLog = ({ cardId }) => {
                 ))}
             </div>
 
-            <ConfirmModal 
+            <ConfirmModal
                 isOpen={!!deleteConfirmId}
                 onClose={() => setDeleteConfirmId(null)}
                 onConfirm={handleDelete}

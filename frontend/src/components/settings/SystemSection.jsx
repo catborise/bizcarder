@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api, { API_URL } from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
@@ -12,7 +12,7 @@ const inputStyle = {
     borderRadius: '8px',
     color: 'var(--text-primary)',
     fontSize: '1rem',
-    marginTop: '8px'
+    marginTop: '8px',
 };
 
 const SystemSection = () => {
@@ -32,7 +32,7 @@ const SystemSection = () => {
         companyLogo: '',
         companyIcon: '',
         appBanner: '',
-        footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
+        footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.',
     });
     const [loading, setLoading] = useState(true);
 
@@ -55,6 +55,7 @@ const SystemSection = () => {
             }
         };
         fetchSystemSettings();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const handleSaveSystem = async () => {
@@ -77,7 +78,7 @@ const SystemSection = () => {
         try {
             showNotification(t('notify.uploading'), 'info');
             const res = await api.post('/api/settings/upload-branding', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
             setSystemSettings((prev) => ({ ...prev, [field]: res.data.url }));
             showNotification(t('notify.uploaded'), 'success');
@@ -94,33 +95,56 @@ const SystemSection = () => {
     return (
         <div>
             <div style={{ marginBottom: '25px' }}>
-                <label style={{ display: 'block', color: 'var(--accent-warning)', marginBottom: '5px', fontWeight: '600' }}>📜 {t('system.logLimit')}</label>
+                <label
+                    style={{ display: 'block', color: 'var(--accent-warning)', marginBottom: '5px', fontWeight: '600' }}
+                >
+                    📜 {t('system.logLimit')}
+                </label>
                 <input
                     type="number"
                     value={systemSettings.logRetentionLimit}
-                    onChange={(e) => setSystemSettings({ ...systemSettings, logRetentionLimit: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                        setSystemSettings({ ...systemSettings, logRetentionLimit: parseInt(e.target.value) || 0 })
+                    }
                     style={inputStyle}
                 />
             </div>
 
             <div style={{ marginBottom: '30px' }}>
-                <label style={{ display: 'block', color: 'var(--accent-error)', marginBottom: '5px', fontWeight: '600' }}>🗑️ {t('system.trashRetention')}</label>
+                <label
+                    style={{ display: 'block', color: 'var(--accent-error)', marginBottom: '5px', fontWeight: '600' }}
+                >
+                    🗑️ {t('system.trashRetention')}
+                </label>
                 <input
                     type="number"
                     value={systemSettings.trashRetentionDays}
-                    onChange={(e) => setSystemSettings({ ...systemSettings, trashRetentionDays: parseInt(e.target.value) || 0 })}
+                    onChange={(e) =>
+                        setSystemSettings({ ...systemSettings, trashRetentionDays: parseInt(e.target.value) || 0 })
+                    }
                     style={inputStyle}
                 />
             </div>
 
             {/* Developer Info */}
             <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
-                <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4
+                    style={{
+                        color: 'var(--text-primary)',
+                        marginBottom: '20px',
+                        fontSize: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}
+                >
                     👨‍💻 {t('section.aboutDeveloper')}
                 </h4>
 
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.developerName')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.developerName')}
+                    </label>
                     <input
                         type="text"
                         value={systemSettings.developerName}
@@ -131,7 +155,9 @@ const SystemSection = () => {
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.developerEmail')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.developerEmail')}
+                    </label>
                     <input
                         type="email"
                         value={systemSettings.developerEmail}
@@ -142,7 +168,9 @@ const SystemSection = () => {
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.githubUrl')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.githubUrl')}
+                    </label>
                     <input
                         type="text"
                         value={systemSettings.developerGithub}
@@ -153,7 +181,9 @@ const SystemSection = () => {
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.linkedinUrl')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.linkedinUrl')}
+                    </label>
                     <input
                         type="text"
                         value={systemSettings.developerLinkedin}
@@ -166,12 +196,23 @@ const SystemSection = () => {
 
             {/* Branding */}
             <div style={{ marginBottom: '30px', borderTop: '1px solid var(--glass-border)', paddingTop: '20px' }}>
-                <h4 style={{ color: 'var(--text-primary)', marginBottom: '20px', fontSize: '1.2rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <h4
+                    style={{
+                        color: 'var(--text-primary)',
+                        marginBottom: '20px',
+                        fontSize: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                    }}
+                >
                     🎨 {t('section.branding')}
                 </h4>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.companyName')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.companyName')}
+                    </label>
                     <input
                         type="text"
                         value={systemSettings.companyName}
@@ -184,11 +225,29 @@ const SystemSection = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
                     {/* Logo Upload */}
                     <div>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.companyLogo')}</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {t('system.companyLogo')}
+                        </label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
                             {systemSettings.companyLogo && (
-                                <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <img src={`${API_URL}${systemSettings.companyLogo}`} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                <div
+                                    style={{
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '8px',
+                                        background: 'var(--bg-card)',
+                                        padding: '4px',
+                                        border: '1px solid var(--glass-border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <img
+                                        src={`${API_URL}${systemSettings.companyLogo}`}
+                                        alt="Logo"
+                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    />
                                 </div>
                             )}
                             <input
@@ -202,11 +261,29 @@ const SystemSection = () => {
 
                     {/* Icon / Favicon Upload */}
                     <div>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.companyIcon')}</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {t('system.companyIcon')}
+                        </label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '8px' }}>
                             {systemSettings.companyIcon && (
-                                <div style={{ width: '45px', height: '45px', borderRadius: '8px', background: 'var(--bg-card)', padding: '4px', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <img src={`${API_URL}${systemSettings.companyIcon}`} alt="Icon" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                                <div
+                                    style={{
+                                        width: '45px',
+                                        height: '45px',
+                                        borderRadius: '8px',
+                                        background: 'var(--bg-card)',
+                                        padding: '4px',
+                                        border: '1px solid var(--glass-border)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <img
+                                        src={`${API_URL}${systemSettings.companyIcon}`}
+                                        alt="Icon"
+                                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    />
                                 </div>
                             )}
                             <input
@@ -220,11 +297,26 @@ const SystemSection = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.appBanner')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.appBanner')}
+                    </label>
                     <div style={{ marginTop: '8px' }}>
                         {systemSettings.appBanner && (
-                            <div style={{ width: '100%', height: '100px', borderRadius: '12px', overflow: 'hidden', marginBottom: '10px', border: '1px solid var(--glass-border)' }}>
-                                <img src={`${API_URL}${systemSettings.appBanner}`} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <div
+                                style={{
+                                    width: '100%',
+                                    height: '100px',
+                                    borderRadius: '12px',
+                                    overflow: 'hidden',
+                                    marginBottom: '10px',
+                                    border: '1px solid var(--glass-border)',
+                                }}
+                            >
+                                <img
+                                    src={`${API_URL}${systemSettings.appBanner}`}
+                                    alt="Banner"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
                             </div>
                         )}
                         <input
@@ -237,7 +329,9 @@ const SystemSection = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('system.footerText')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('system.footerText')}
+                    </label>
                     <input
                         type="text"
                         value={systemSettings.footerText}
@@ -245,7 +339,9 @@ const SystemSection = () => {
                         style={inputStyle}
                         placeholder={t('system.footerPlaceholder')}
                     />
-                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>{t('system.footerHint')}</small>
+                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>
+                        {t('system.footerHint')}
+                    </small>
                 </div>
             </div>
 
@@ -261,7 +357,7 @@ const SystemSection = () => {
                         fontWeight: '600',
                         cursor: 'pointer',
                         boxShadow: 'var(--glass-shadow)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                     }}
                 >
                     {t('system.saveBtn')}

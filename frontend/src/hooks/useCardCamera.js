@@ -23,7 +23,7 @@ export default function useCardCamera({ onCapture }) {
     const streamRef = useRef(null);
 
     // Kamera Başlatma
-    const startCamera = async (side) => {
+    const startCamera = async (_side) => {
         setCameraReady(false);
         setCameraError(null);
 
@@ -41,9 +41,9 @@ export default function useCardCamera({ onCapture }) {
                     video: {
                         facingMode: { exact: 'environment' },
                         width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        height: { ideal: 1080 },
                     },
-                    audio: false
+                    audio: false,
                 });
             } catch {
                 // exact: environment başarısız olduysa fallback
@@ -51,9 +51,9 @@ export default function useCardCamera({ onCapture }) {
                     video: {
                         facingMode: 'environment',
                         width: { ideal: 1920 },
-                        height: { ideal: 1080 }
+                        height: { ideal: 1080 },
                     },
-                    audio: false
+                    audio: false,
                 });
             }
 
@@ -82,7 +82,7 @@ export default function useCardCamera({ onCapture }) {
 
             // Stream alındıysa temizle
             if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current.getTracks().forEach((track) => track.stop());
                 streamRef.current = null;
             }
 
@@ -100,7 +100,7 @@ export default function useCardCamera({ onCapture }) {
 
     const stopCameraStream = () => {
         if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
         }
         if (videoRef.current) {
@@ -142,19 +142,23 @@ export default function useCardCamera({ onCapture }) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0);
 
-        canvas.toBlob(async (blob) => {
-            if (!blob) return;
+        canvas.toBlob(
+            async (blob) => {
+                if (!blob) return;
 
-            const capturedSide = cameraSide;
+                const capturedSide = cameraSide;
 
-            // Kamerayı kapat
-            stopCameraStream();
-            setShowCameraModal(false);
+                // Kamerayı kapat
+                stopCameraStream();
+                setShowCameraModal(false);
 
-            // Dosya nesnesine dönüştür ve onCapture callback'i çağır
-            const file = new File([blob], `camera_${capturedSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            onCapture(file, capturedSide);
-        }, 'image/jpeg', 0.92);
+                // Dosya nesnesine dönüştür ve onCapture callback'i çağır
+                const file = new File([blob], `camera_${capturedSide}_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                onCapture(file, capturedSide);
+            },
+            'image/jpeg',
+            0.92,
+        );
     };
 
     const openCamera = (side) => {
@@ -175,10 +179,11 @@ export default function useCardCamera({ onCapture }) {
         return () => {
             // Cleanup: sadece stream'i kapat, state değiştirme
             if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop());
+                streamRef.current.getTracks().forEach((track) => track.stop());
                 streamRef.current = null;
             }
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showCameraModal]);
 
     return {

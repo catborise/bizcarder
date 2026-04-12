@@ -1,11 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import api, { API_URL } from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../../utils/offlineStore';
 import { downloadFile } from '../../utils/downloadHelper';
-import { FaIdCard, FaEnvelope, FaPhone, FaMapMarkerAlt, FaCity, FaGlobe, FaStickyNote, FaChevronDown, FaChevronUp, FaTrash, FaClock, FaFileExcel, FaFilePdf, FaDownload, FaCalendarCheck, FaEdit, FaSave, FaCopy, FaQrcode, FaStar, FaWhatsapp, FaAddressCard } from 'react-icons/fa';
+import {
+    FaIdCard,
+    FaEnvelope,
+    FaPhone,
+    FaMapMarkerAlt,
+    FaCity,
+    FaGlobe,
+    FaStickyNote,
+    FaChevronDown,
+    FaChevronUp,
+    FaTrash,
+    FaClock,
+    FaFileExcel,
+    FaFilePdf,
+    FaDownload,
+    FaCalendarCheck,
+    FaQrcode,
+    FaStar,
+    FaWhatsapp,
+    FaAddressCard,
+} from 'react-icons/fa';
 import EmptyState from '../shared/EmptyState';
 import SearchBar from './SearchBar';
 import Modal from '../shared/Modal';
@@ -34,7 +54,7 @@ const Contacts = () => {
             leadStatus: '',
             source: '',
             dateStart: '',
-            dateEnd: ''
+            dateEnd: '',
         };
     });
 
@@ -42,7 +62,7 @@ const Contacts = () => {
         totalItems: 0,
         totalPages: 1,
         currentPage: 1,
-        limit: 20
+        limit: 20,
     });
 
     const [availableTags, setAvailableTags] = useState([]);
@@ -69,18 +89,17 @@ const Contacts = () => {
             setIsModalOpen(true);
             navigate(location.pathname, { replace: true, state: {} });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.state]);
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    // eslint-disable-next-line no-unused-vars
     const [isCachedData, setIsCachedData] = useState(false);
 
     const fetchAvailableFilters = async () => {
         try {
-            const [tagsRes, citiesRes] = await Promise.all([
-                api.get('/api/tags'),
-                api.get('/api/cards/cities')
-            ]);
+            const [tagsRes, citiesRes] = await Promise.all([api.get('/api/tags'), api.get('/api/cards/cities')]);
             setAvailableTags(tagsRes.data);
             setAvailableCities(citiesRes.data);
         } catch (err) {
@@ -103,11 +122,11 @@ const Contacts = () => {
                 leadStatus: advancedFilters.leadStatus,
                 source: advancedFilters.source,
                 dateStart: advancedFilters.dateStart,
-                dateEnd: advancedFilters.dateEnd
+                dateEnd: advancedFilters.dateEnd,
             };
 
             const res = await api.get('/api/cards', { params });
-            
+
             if (res.data && Array.isArray(res.data.cards)) {
                 setCards(res.data.cards);
                 setPagination(res.data.pagination);
@@ -139,11 +158,15 @@ const Contacts = () => {
 
     // Filtreleri veya Arama Terimini Takip Eden Tek Bir Effect
     useEffect(() => {
-        const delayDebounceFn = setTimeout(() => {
-            fetchCards(1);
-        }, searchTerm ? 500 : 0); // Boş aramada anında çek, yazarken bekle
+        const delayDebounceFn = setTimeout(
+            () => {
+                fetchCards(1);
+            },
+            searchTerm ? 500 : 0,
+        ); // Boş aramada anında çek, yazarken bekle
 
         return () => clearTimeout(delayDebounceFn);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, sortOption, advancedFilters]);
 
     // Sadece Sayfa Değişimi İçin (Filtreler Değiştiğinde Değil)
@@ -153,12 +176,12 @@ const Contacts = () => {
         if (pagination.currentPage !== 1) {
             fetchCards(pagination.currentPage);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [pagination.currentPage]);
 
     const toggleDetails = (id) => {
         setExpandedCardId(expandedCardId === id ? null : id);
     };
-
 
     const handleDeleteClick = (card) => {
         setDeleteConfirmCard(card);
@@ -173,7 +196,10 @@ const Contacts = () => {
             fetchCards(pagination.currentPage);
             setDeleteConfirmCard(null);
         } catch (error) {
-            showNotification(t('cards:contacts.notify.deleteFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(
+                t('cards:contacts.notify.deleteFailed', { error: error.response?.data?.error || error.message }),
+                'error',
+            );
         }
     };
 
@@ -196,16 +222,14 @@ const Contacts = () => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedIds(cards.map(c => c.id));
+            setSelectedIds(cards.map((c) => c.id));
         } else {
             setSelectedIds([]);
         }
     };
 
     const handleSelectCard = (id) => {
-        setSelectedIds(prev => 
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
     };
 
     const handleBulkVcfExport = async () => {
@@ -235,7 +259,13 @@ const Contacts = () => {
     const handleBulkVisibility = async (visibility) => {
         try {
             await api.post('/api/cards/bulk-visibility', { ids: selectedIds, visibility });
-            showNotification(t('cards:contacts.notify.visibilityUpdated', { visibility: visibility === 'public' ? t('common:visibility.public') : t('common:visibility.private') }), 'success');
+            showNotification(
+                t('cards:contacts.notify.visibilityUpdated', {
+                    visibility:
+                        visibility === 'public' ? t('common:visibility.public') : t('common:visibility.private'),
+                }),
+                'success',
+            );
             setSelectedIds([]);
             fetchCards(pagination.currentPage);
         } catch (error) {
@@ -245,10 +275,10 @@ const Contacts = () => {
 
     const handleBulkTags = async () => {
         try {
-            await api.post('/api/cards/bulk-tags', { 
-                ids: selectedIds, 
+            await api.post('/api/cards/bulk-tags', {
+                ids: selectedIds,
                 tagIds: selectedBulkTags,
-                mode: bulkTagAction
+                mode: bulkTagAction,
             });
             showNotification(t('cards:contacts.notify.tagsUpdated'), 'success');
             setSelectedIds([]);
@@ -264,12 +294,15 @@ const Contacts = () => {
         try {
             const endpoint = type === 'excel' ? '/api/cards/export/excel' : '/api/cards/export/pdf';
             const fileName = `secilen_kartvizitler.${type === 'excel' ? 'xlsx' : 'pdf'}`;
-            const mimeType = type === 'excel' ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : 'application/pdf';
-            
+            const mimeType =
+                type === 'excel'
+                    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    : 'application/pdf';
+
             showNotification(t('cards:contacts.notify.exportPreparing', { type: type.toUpperCase() }), 'info');
             const response = await api.get(endpoint, {
                 params: { ids: selectedIds.join(',') },
-                responseType: 'blob'
+                responseType: 'blob',
             });
             downloadFile(response.data, fileName, mimeType);
             showNotification(t('cards:contacts.notify.fileDownloaded'), 'success');
@@ -282,7 +315,7 @@ const Contacts = () => {
         try {
             showNotification(t('cards:contacts.notify.vcardPreparing'), 'info');
             const response = await api.get(`/api/cards/${card.id}/vcf`, {
-                responseType: 'blob'
+                responseType: 'blob',
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
             showNotification(t('cards:contacts.notify.vcardDownloaded'), 'success');
@@ -292,9 +325,14 @@ const Contacts = () => {
     };
 
     const handleWhatsAppFollowUp = (card) => {
-        const message = t('cards:contacts.followUp.whatsappMessage', { name: card.firstName + (card.lastName ? ' ' + card.lastName : '') });
+        const message = t('cards:contacts.followUp.whatsappMessage', {
+            name: card.firstName + (card.lastName ? ' ' + card.lastName : ''),
+        });
         const phone = card.phone.replace(/\D/g, '');
-        window.open(`https://wa.me/${phone.startsWith('0') ? '9' + phone : phone}?text=${encodeURIComponent(message)}`, '_blank');
+        window.open(
+            `https://wa.me/${phone.startsWith('0') ? '9' + phone : phone}?text=${encodeURIComponent(message)}`,
+            '_blank',
+        );
     };
 
     const handleEmailFollowUp = (card) => {
@@ -304,13 +342,49 @@ const Contacts = () => {
     };
 
     const getStatusStyle = (status) => {
-        switch(status) {
-            case 'Hot': return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', icon: '🔥', label: t('common:leadStatusShort.Hot') };
-            case 'Warm': return { bg: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b', icon: '⛅', label: t('common:leadStatusShort.Warm') };
-            case 'Cold': return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', icon: '❄️', label: t('common:leadStatusShort.Cold') };
-            case 'Following-up': return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', icon: '🔄', label: t('common:leadStatusShort.Following-up') };
-            case 'Converted': return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', icon: '✅', label: t('common:leadStatusShort.Converted') };
-            default: return { bg: 'rgba(156, 163, 175, 0.1)', color: '#9ca3af', icon: '👤', label: t('common:leadStatusShort.unknown') };
+        switch (status) {
+            case 'Hot':
+                return {
+                    bg: 'rgba(239, 68, 68, 0.1)',
+                    color: '#ef4444',
+                    icon: '🔥',
+                    label: t('common:leadStatusShort.Hot'),
+                };
+            case 'Warm':
+                return {
+                    bg: 'rgba(245, 158, 11, 0.1)',
+                    color: '#f59e0b',
+                    icon: '⛅',
+                    label: t('common:leadStatusShort.Warm'),
+                };
+            case 'Cold':
+                return {
+                    bg: 'rgba(59, 130, 246, 0.1)',
+                    color: '#3b82f6',
+                    icon: '❄️',
+                    label: t('common:leadStatusShort.Cold'),
+                };
+            case 'Following-up':
+                return {
+                    bg: 'rgba(139, 92, 246, 0.1)',
+                    color: '#8b5cf6',
+                    icon: '🔄',
+                    label: t('common:leadStatusShort.Following-up'),
+                };
+            case 'Converted':
+                return {
+                    bg: 'rgba(16, 185, 129, 0.1)',
+                    color: '#10b981',
+                    icon: '✅',
+                    label: t('common:leadStatusShort.Converted'),
+                };
+            default:
+                return {
+                    bg: 'rgba(156, 163, 175, 0.1)',
+                    color: '#9ca3af',
+                    icon: '👤',
+                    label: t('common:leadStatusShort.unknown'),
+                };
         }
     };
 
@@ -319,18 +393,18 @@ const Contacts = () => {
             <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--accent-error)' }}>
                 <h3 style={{ fontSize: '1.5rem', marginBottom: '15px' }}>{t('cards:contacts.error.title')}</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>{error}</p>
-                <motion.button 
+                <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={fetchCards} 
-                    style={{ 
-                        padding: '12px 24px', 
-                        backgroundColor: 'var(--bg-card)', 
-                        color: 'var(--text-primary)', 
-                        border: '1px solid var(--glass-border)', 
-                        borderRadius: '10px', 
+                    onClick={fetchCards}
+                    style={{
+                        padding: '12px 24px',
+                        backgroundColor: 'var(--bg-card)',
+                        color: 'var(--text-primary)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '10px',
                         cursor: 'pointer',
-                        fontWeight: '600'
+                        fontWeight: '600',
                     }}
                 >
                     {t('common:retry')}
@@ -351,9 +425,13 @@ const Contacts = () => {
                                 showNotification(t('cards:contacts.notify.excelPreparing'), 'info');
                                 const response = await api.get('/api/cards/export/excel', {
                                     params: { search: searchTerm },
-                                    responseType: 'blob'
+                                    responseType: 'blob',
                                 });
-                                downloadFile(response.data, 'kartvizitler.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                                downloadFile(
+                                    response.data,
+                                    'kartvizitler.xlsx',
+                                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                );
                                 showNotification(t('cards:contacts.notify.excelDownloaded'), 'success');
                             } catch (error) {
                                 showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
@@ -361,10 +439,18 @@ const Contacts = () => {
                         }}
                         title={t('cards:contacts.titleAttr.downloadExcel')}
                         style={{
-                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
-                            cursor: 'pointer', color: 'var(--accent-success)', transition: 'all 0.2s ease',
-                            backdropFilter: 'blur(10px)'
+                            width: '44px',
+                            height: '44px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            color: 'var(--accent-success)',
+                            transition: 'all 0.2s ease',
+                            backdropFilter: 'blur(10px)',
                         }}
                     >
                         <FaFileExcel size={20} />
@@ -375,7 +461,7 @@ const Contacts = () => {
                                 showNotification(t('cards:contacts.notify.pdfPreparing'), 'info');
                                 const response = await api.get('/api/cards/export/pdf', {
                                     params: { search: searchTerm },
-                                    responseType: 'blob'
+                                    responseType: 'blob',
                                 });
                                 downloadFile(response.data, 'kartvizitler.pdf', 'application/pdf');
                                 showNotification(t('cards:contacts.notify.pdfDownloaded'), 'success');
@@ -385,10 +471,18 @@ const Contacts = () => {
                         }}
                         title={t('cards:contacts.titleAttr.downloadPdf')}
                         style={{
-                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
-                            cursor: 'pointer', color: 'var(--accent-error)', transition: 'all 0.2s ease',
-                            backdropFilter: 'blur(10px)'
+                            width: '44px',
+                            height: '44px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            color: 'var(--accent-error)',
+                            transition: 'all 0.2s ease',
+                            backdropFilter: 'blur(10px)',
                         }}
                     >
                         <FaFilePdf size={20} />
@@ -398,9 +492,17 @@ const Contacts = () => {
                         onClick={() => setIsVcfExportConfirmOpen(true)}
                         title={t('cards:contacts.titleAttr.downloadVcf')}
                         style={{
-                            width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', borderRadius: '12px',
-                            cursor: 'pointer', color: 'var(--accent-secondary)', transition: 'all 0.2s ease',
+                            width: '44px',
+                            height: '44px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'var(--glass-bg)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            color: 'var(--accent-secondary)',
+                            transition: 'all 0.2s ease',
                             backdropFilter: 'blur(10px)',
                         }}
                     >
@@ -412,13 +514,23 @@ const Contacts = () => {
                         whileTap={{ scale: 0.98 }}
                         onClick={openNewCardModal}
                         style={{
-                            height: '44px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '8px',
+                            height: '44px',
+                            padding: '0 20px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
                             background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-                            color: '#fff', border: 'none', borderRadius: '12px', cursor: 'pointer',
-                            fontSize: '14px', fontWeight: '700', whiteSpace: 'nowrap'
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '12px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '700',
+                            whiteSpace: 'nowrap',
                         }}
                     >
-                        <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: '800' }}>+</span> {t('cards:contacts.btn.addNew')}
+                        <span style={{ fontSize: '18px', lineHeight: 1, fontWeight: '800' }}>+</span>{' '}
+                        {t('cards:contacts.btn.addNew')}
                     </motion.button>
                 </div>
             </div>
@@ -435,308 +547,651 @@ const Contacts = () => {
             />
 
             {/* Select All Bar */}
-            <div style={{ 
-                margin: '20px 0 10px 0', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '12px',
-                padding: '0 10px'
-            }}>
-                <input 
-                    type="checkbox" 
+            <div
+                style={{
+                    margin: '20px 0 10px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '0 10px',
+                }}
+            >
+                <input
+                    type="checkbox"
                     onChange={handleSelectAll}
                     checked={selectedIds.length === cards.length && cards.length > 0}
-                    style={{ 
-                        width: '18px', 
-                        height: '18px', 
+                    style={{
+                        width: '18px',
+                        height: '18px',
                         cursor: 'pointer',
-                        accentColor: 'var(--accent-primary)'
-                    }} 
+                        accentColor: 'var(--accent-primary)',
+                    }}
                 />
                 <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '600' }}>
-                    {selectedIds.length > 0 ? t('cards:contacts.selected', { count: selectedIds.length }) : t('cards:contacts.selectAll')}
+                    {selectedIds.length > 0
+                        ? t('cards:contacts.selected', { count: selectedIds.length })
+                        : t('cards:contacts.selectAll')}
                 </span>
             </div>
 
             {loading && (
-              <div className="my-card-layout">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="card-wrapper">
-                    <div className="glass-container skeleton-box" style={{ padding: '16px' }}>
-                      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                        <div style={{ width: '200px', height: '120px', borderRadius: '12px', background: 'rgba(var(--accent-secondary-rgb), 0.05)' }} />
-                        <div style={{ flex: 1 }}>
-                          <div className="skeleton-text" style={{ width: '60%', height: '20px', marginBottom: '8px' }} />
-                          <div className="skeleton-text" style={{ width: '40%', height: '16px', marginBottom: '12px' }} />
-                          <div className="skeleton-text" style={{ width: '80%', height: '14px' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {!loading && cards.length === 0 ? (
-              searchTerm || advancedFilters.tagId || advancedFilters.city || advancedFilters.hasReminder || advancedFilters.leadStatus || advancedFilters.source || advancedFilters.dateStart || advancedFilters.dateEnd ? (
-                <EmptyState
-                  icon={FaAddressCard}
-                  title={t('cards:contacts.noResults', 'Sonuç bulunamadı')}
-                  description={t('cards:contacts.noResultsDescription', 'Filtrelere uygun kartvizit bulunamadı. Filtreleri temizleyip tekrar deneyin.')}
-                  actionLabel={t('common:clearFilters', 'Filtreleri Temizle')}
-                  onAction={() => {
-                    setSearchTerm('');
-                    setAdvancedFilters({ tagId: '', city: '', hasReminder: false, leadStatus: '', source: '', dateStart: '', dateEnd: '' });
-                  }}
-                />
-              ) : (
-                <EmptyState
-                  icon={FaAddressCard}
-                  title={t('cards:contacts.emptyTitle')}
-                  description={t('cards:contacts.emptyDescription')}
-                  actionLabel={t('cards:contacts.btn.addNew')}
-                  onAction={() => setIsModalOpen(true)}
-                />
-              )
-            ) : !loading ? (
-            <div className="my-card-layout" style={{ marginTop: '30px' }}>
-                {cards.length > 0 ? (
-                    cards.map((card, index) => (
-                        <motion.div
-                          key={card.id}
-                          className="card-wrapper"
-                          data-priority={card.priority || ''}
-                          data-lead={card.leadStatus || ''}
-                          initial={{ opacity: 0, y: 16 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{
-                            duration: 0.3,
-                            delay: index * 0.04,
-                            ease: 'easeOut',
-                          }}
-                        >
-                        <div className="glass-container" style={{
-                            border: selectedIds.includes(card.id) ? '1px solid var(--accent-primary)' : '1px solid var(--glass-border)',
-                            backgroundColor: selectedIds.includes(card.id) ? 'var(--accent-primary-transparent)' : 'var(--glass-bg)',
-                            padding: '20px'
-                        }}>
-                            <div className="contact-card">
-                                {/* Row Checkbox */}
-                                <div className="checkbox-container">
-                                    <input 
-                                        type="checkbox"
-                                        checked={selectedIds.includes(card.id)}
-                                        onChange={() => handleSelectCard(card.id)}
-                                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+                <div className="my-card-layout">
+                    {[1, 2, 3].map((i) => (
+                        <div key={i} className="card-wrapper">
+                            <div className="glass-container skeleton-box" style={{ padding: '16px' }}>
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                                    <div
+                                        style={{
+                                            width: '200px',
+                                            height: '120px',
+                                            borderRadius: '12px',
+                                            background: 'rgba(var(--accent-secondary-rgb), 0.05)',
+                                        }}
                                     />
-                                </div>
-
-                                {/* Image + Status Badges Column */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }}>
-                                {(() => {
-                                    const hasImage = !!card.frontImageUrl;
-                                    const statusStyle = card.leadStatus ? getStatusStyle(card.leadStatus) : null;
-                                    return (
+                                    <div style={{ flex: 1 }}>
                                         <div
-                                            className="card-image-container"
-                                            onClick={hasImage ? () => setSelectedImageCard(card) : undefined}
-                                        >
-                                            {hasImage
-                                                ? <img src={`${API_URL}${card.frontImageUrl}`} alt={card.firstName} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                                                : <FaIdCard size={64} style={{ opacity: 0.5 }} />
-                                            }
-                                            {card.priority > 0 && (
-                                                <div style={{ position: 'absolute', top: '6px', left: '8px', display: 'flex', gap: '1px' }}>
-                                                    {[1, 2, 3, 4, 5].map(star => (
-                                                        <FaStar key={star} size={10} color={card.priority >= star ? 'var(--accent-warning)' : 'rgba(128,128,128,0.4)'} style={hasImage ? { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' } : undefined} />
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <div style={{ position: 'absolute', bottom: '6px', left: '8px', right: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                                <span style={{ color: 'var(--text-tertiary)', fontSize: '10px', fontWeight: 'bold', opacity: hasImage ? 0.8 : 0.5, ...(hasImage && { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }) }}>v{card.version || 1}</span>
-                                                {statusStyle && (
-                                                    <span style={{
-                                                        padding: '2px 6px', borderRadius: '6px', fontSize: '9px', fontWeight: 'bold', lineHeight: 1.2,
-                                                        background: statusStyle.bg, color: statusStyle.color,
-                                                        border: `1px solid ${statusStyle.color}33`,
-                                                        ...(hasImage && { filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }),
-                                                    }}>
-                                                        {statusStyle.icon} {statusStyle.label}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
-
-                                {/* Tags — below the image */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {card.tags && card.tags.length > 0 && (
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'center' }}>
-                                            {card.tags.map(tag => {
-                                                const isLight = (color) => {
-                                                    if (!color || color.length < 7) return true;
-                                                    const hex = color.replace('#', '');
-                                                    const r = parseInt(hex.substring(0, 2), 16);
-                                                    const g = parseInt(hex.substring(2, 4), 16);
-                                                    const b = parseInt(hex.substring(4, 6), 16);
-                                                    return (r * 299 + g * 587 + b * 114) / 1000 > 155;
-                                                };
-                                                return (
-                                                    <span 
-                                                        key={tag.id} 
-                                                        onClick={(e) => { e.stopPropagation(); navigate(`/contacts?tagId=${tag.id}`); }}
-                                                        style={{ 
-                                                            padding: '2px 8px', 
-                                                            borderRadius: '12px', 
-                                                            fontSize: '0.7rem', 
-                                                            fontWeight: '700', 
-                                                            background: tag.color || 'var(--accent-primary)', 
-                                                            color: isLight(tag.color) ? '#000' : '#fff',
-                                                            cursor: 'pointer'
-                                                        }}
-                                                    >
-                                                        {tag.name}
-                                                    </span>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                                </div>
-
-                                <div className="card-info">
-                                    <h3>{card.firstName} {card.lastName}</h3>
-                                    <p className="company-line">
-                                        {card.logoUrl && <img src={`${API_URL}${card.logoUrl}`} alt={card.company ? `${card.company} logo` : 'Company logo'} style={{ width: '20px', height: '20px', objectFit: 'contain', borderRadius: '4px', background: 'var(--bg-card)', padding: '2px', border: '1px solid var(--glass-border)' }} />}
-                                        {card.company} {card.title && `- ${card.title}`}
-                                    </p>
-
-                                    {card.tags && card.tags.length > 0 && (
-                                      <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '4px' }}>
-                                        {card.tags.slice(0, 3).map(tag => (
-                                          <span key={tag._id || tag} className="tag-chip">
-                                            {tag.name || tag}
-                                          </span>
-                                        ))}
-                                        {card.tags.length > 3 && (
-                                          <span className="tag-chip-more">+{card.tags.length - 3}</span>
-                                        )}
-                                      </div>
-                                    )}
-
-                                    {card.lastInteraction && (
-                                      <div style={{
-                                        fontSize: '0.75rem',
-                                        color: 'var(--text-tertiary)',
-                                        marginTop: '4px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '4px',
-                                      }}>
-                                        <FaClock size={10} />
-                                        {t('cards:contacts.lastInteraction')}: {card.lastInteraction.type} — {new Date(card.lastInteraction.date).toLocaleDateString()}
-                                      </div>
-                                    )}
-
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px', fontSize: '0.9em' }}>
-                                        {card.reminderDate && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--accent-warning)', marginBottom: '5px' }}>
-                                                <FaCalendarCheck color="var(--accent-warning)" />
-                                                <strong style={{ color: 'var(--text-primary)' }}>{t('cards:contacts.field.reminder')}</strong>
-                                                <span style={{ color: 'var(--text-secondary)' }}>
-                                                    {(() => {
-                                                        const d = new Date(card.reminderDate);
-                                                        return isNaN(d.getTime()) ? t('cards:contacts.field.noDate') : d.toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US');
-                                                    })()}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {card.lastInteractionDate && (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <FaClock color="var(--accent-primary)" size={12} /> 
-                                                <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.lastInteraction')}</strong> 
-                                                <span style={{ color: 'var(--text-secondary)' }}>{new Date(card.lastInteractionDate).toLocaleDateString(i18n.language === 'tr' ? 'tr-TR' : 'en-US')}</span>
-                                            </div>
-                                        )}
-                                        {card.email && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaEnvelope color="var(--accent-warning)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.email')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.email}</span></div>}
-                                        {card.phone && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaPhone color="var(--accent-success)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.phone')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.phone}</span></div>}
-                                        {card.website && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaGlobe color="var(--accent-primary)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.web')}</strong> <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-secondary)' }}>{card.website}</a></div>}
-                                        {(card.city || card.country) && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaCity color="var(--accent-error)" /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.location')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.city}{card.city && card.country && ', '}{card.country}</span></div>}
-                                        {card.address && <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}><FaMapMarkerAlt color="var(--accent-error)" style={{ marginTop: '3px' }} /><strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.address')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.address}</span></div>}
-                                        {card.source && <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaIdCard color="var(--accent-primary)" size={12} /> <strong style={{ color: 'var(--text-tertiary)' }}>{t('cards:contacts.field.source')}</strong> <span style={{ color: 'var(--text-secondary)' }}>{card.source}</span></div>}
-                                    </div>
-                                </div>
-
-                                <div className="card-actions">
-                                    <button onClick={() => toggleDetails(card.id)} className="glass-button-block" style={{ color: 'var(--accent-warning)', padding: '10px 12px', fontSize: '0.9rem', border: '1px solid var(--accent-warning)', background: expandedCardId === card.id ? 'var(--glass-bg-hover)' : 'transparent' }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><FaStickyNote /> {t('cards:contacts.btn.activityNotes')}</span>
-                                        {expandedCardId === card.id ? <FaChevronUp size={12} /> : <FaChevronDown size={12} />}
-                                    </button>
-                                    
-                                    {/* Hızlı Takip Butonları */}
-                                    <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                                        {card.phone && (
-                                            <button 
-                                                onClick={() => handleWhatsAppFollowUp(card)} 
-                                                className="glass-button-square" 
-                                                title={t('cards:contacts.titleAttr.whatsappFollow')} 
-                                                style={{ color: '#25D366', borderColor: 'rgba(37, 211, 102, 0.3)' }}
-                                            >
-                                                <FaWhatsapp size={20} />
-                                            </button>
-                                        )}
-                                        {card.email && (
-                                            <button 
-                                                onClick={() => handleEmailFollowUp(card)} 
-                                                className="glass-button-square" 
-                                                title={t('cards:contacts.titleAttr.emailFollow')} 
-                                                style={{ color: 'var(--accent-warning)', borderColor: 'rgba(255, 193, 7, 0.3)' }}
-                                            >
-                                                <FaEnvelope size={18} />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <div style={{ height: '1px', background: 'var(--glass-border)', margin: '4px 0' }}></div>
-
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => setQrModalCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.qrVcard')} aria-label={t('cards:contacts.titleAttr.qrVcard')}><FaQrcode size={18} /></button>
-                                        <button onClick={() => handleDownloadVCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.downloadVcard')} aria-label={t('cards:contacts.titleAttr.downloadVcard')}><FaDownload size={18} /></button>
-                                        <button onClick={() => setHistoryCard(card)} className="glass-button-square" title={t('cards:contacts.titleAttr.history')} aria-label={t('cards:contacts.titleAttr.history')}><FaClock size={16} /></button>
-                                    </div>
-
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button onClick={() => handleEdit(card)} className="glass-button-small" style={{ flex: 1 }}>{t('cards:contacts.btn.edit')}</button>
-                                        <button onClick={() => handleDeleteClick(card)} className="glass-button-small" aria-label={t('cards:contacts.deleteTitle', { firstName: card.firstName, lastName: card.lastName })} style={{ color: 'var(--accent-error)', width: '40px' }}><FaTrash size={14} /></button>
+                                            className="skeleton-text"
+                                            style={{ width: '60%', height: '20px', marginBottom: '8px' }}
+                                        />
+                                        <div
+                                            className="skeleton-text"
+                                            style={{ width: '40%', height: '16px', marginBottom: '12px' }}
+                                        />
+                                        <div className="skeleton-text" style={{ width: '80%', height: '14px' }} />
                                     </div>
                                 </div>
                             </div>
-
-                            {expandedCardId === card.id && (
-                                <div style={{ marginTop: '15px', padding: '20px', background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                                    <InteractionLog cardId={card.id} />
-                                </div>
-                            )}
                         </div>
-                        </motion.div>
-                    ))
+                    ))}
+                </div>
+            )}
+
+            {!loading && cards.length === 0 ? (
+                searchTerm ||
+                advancedFilters.tagId ||
+                advancedFilters.city ||
+                advancedFilters.hasReminder ||
+                advancedFilters.leadStatus ||
+                advancedFilters.source ||
+                advancedFilters.dateStart ||
+                advancedFilters.dateEnd ? (
+                    <EmptyState
+                        icon={FaAddressCard}
+                        title={t('cards:contacts.noResults', 'Sonuç bulunamadı')}
+                        description={t(
+                            'cards:contacts.noResultsDescription',
+                            'Filtrelere uygun kartvizit bulunamadı. Filtreleri temizleyip tekrar deneyin.',
+                        )}
+                        actionLabel={t('common:clearFilters', 'Filtreleri Temizle')}
+                        onAction={() => {
+                            setSearchTerm('');
+                            setAdvancedFilters({
+                                tagId: '',
+                                city: '',
+                                hasReminder: false,
+                                leadStatus: '',
+                                source: '',
+                                dateStart: '',
+                                dateEnd: '',
+                            });
+                        }}
+                    />
                 ) : (
-                    <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}><FaIdCard size={64} style={{ marginBottom: '20px' }} /><h3>{t('cards:contacts.empty')}</h3></div>
-                )}
-            </div>
+                    <EmptyState
+                        icon={FaAddressCard}
+                        title={t('cards:contacts.emptyTitle')}
+                        description={t('cards:contacts.emptyDescription')}
+                        actionLabel={t('cards:contacts.btn.addNew')}
+                        onAction={() => setIsModalOpen(true)}
+                    />
+                )
+            ) : !loading ? (
+                <div className="my-card-layout" style={{ marginTop: '30px' }}>
+                    {cards.length > 0 ? (
+                        cards.map((card, index) => (
+                            <motion.div
+                                key={card.id}
+                                className="card-wrapper"
+                                data-priority={card.priority || ''}
+                                data-lead={card.leadStatus || ''}
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{
+                                    duration: 0.3,
+                                    delay: index * 0.04,
+                                    ease: 'easeOut',
+                                }}
+                            >
+                                <div
+                                    className="glass-container"
+                                    style={{
+                                        border: selectedIds.includes(card.id)
+                                            ? '1px solid var(--accent-primary)'
+                                            : '1px solid var(--glass-border)',
+                                        backgroundColor: selectedIds.includes(card.id)
+                                            ? 'var(--accent-primary-transparent)'
+                                            : 'var(--glass-bg)',
+                                        padding: '20px',
+                                    }}
+                                >
+                                    <div className="contact-card">
+                                        {/* Row Checkbox */}
+                                        <div className="checkbox-container">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedIds.includes(card.id)}
+                                                onChange={() => handleSelectCard(card.id)}
+                                                style={{
+                                                    width: '18px',
+                                                    height: '18px',
+                                                    cursor: 'pointer',
+                                                    accentColor: 'var(--accent-primary)',
+                                                }}
+                                            />
+                                        </div>
+
+                                        {/* Image + Status Badges Column */}
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                gap: '8px',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            {(() => {
+                                                const hasImage = !!card.frontImageUrl;
+                                                const statusStyle = card.leadStatus
+                                                    ? getStatusStyle(card.leadStatus)
+                                                    : null;
+                                                return (
+                                                    <div
+                                                        className="card-image-container"
+                                                        onClick={
+                                                            hasImage ? () => setSelectedImageCard(card) : undefined
+                                                        }
+                                                    >
+                                                        {hasImage ? (
+                                                            <img
+                                                                src={`${API_URL}${card.frontImageUrl}`}
+                                                                alt={card.firstName}
+                                                                style={{
+                                                                    maxWidth: '100%',
+                                                                    maxHeight: '100%',
+                                                                    objectFit: 'contain',
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <FaIdCard size={64} style={{ opacity: 0.5 }} />
+                                                        )}
+                                                        {card.priority > 0 && (
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: '6px',
+                                                                    left: '8px',
+                                                                    display: 'flex',
+                                                                    gap: '1px',
+                                                                }}
+                                                            >
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <FaStar
+                                                                        key={star}
+                                                                        size={10}
+                                                                        color={
+                                                                            card.priority >= star
+                                                                                ? 'var(--accent-warning)'
+                                                                                : 'rgba(128,128,128,0.4)'
+                                                                        }
+                                                                        style={
+                                                                            hasImage
+                                                                                ? {
+                                                                                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
+                                                                                  }
+                                                                                : undefined
+                                                                        }
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        <div
+                                                            style={{
+                                                                position: 'absolute',
+                                                                bottom: '6px',
+                                                                left: '8px',
+                                                                right: '8px',
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                            }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    color: 'var(--text-tertiary)',
+                                                                    fontSize: '10px',
+                                                                    fontWeight: 'bold',
+                                                                    opacity: hasImage ? 0.8 : 0.5,
+                                                                    ...(hasImage && {
+                                                                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
+                                                                    }),
+                                                                }}
+                                                            >
+                                                                v{card.version || 1}
+                                                            </span>
+                                                            {statusStyle && (
+                                                                <span
+                                                                    style={{
+                                                                        padding: '2px 6px',
+                                                                        borderRadius: '6px',
+                                                                        fontSize: '9px',
+                                                                        fontWeight: 'bold',
+                                                                        lineHeight: 1.2,
+                                                                        background: statusStyle.bg,
+                                                                        color: statusStyle.color,
+                                                                        border: `1px solid ${statusStyle.color}33`,
+                                                                        ...(hasImage && {
+                                                                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
+                                                                        }),
+                                                                    }}
+                                                                >
+                                                                    {statusStyle.icon} {statusStyle.label}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
+
+                                            {/* Tags — below the image */}
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                {card.tags && card.tags.length > 0 && (
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            flexWrap: 'wrap',
+                                                            gap: '4px',
+                                                            justifyContent: 'center',
+                                                        }}
+                                                    >
+                                                        {card.tags.map((tag) => {
+                                                            const isLight = (color) => {
+                                                                if (!color || color.length < 7) return true;
+                                                                const hex = color.replace('#', '');
+                                                                const r = parseInt(hex.substring(0, 2), 16);
+                                                                const g = parseInt(hex.substring(2, 4), 16);
+                                                                const b = parseInt(hex.substring(4, 6), 16);
+                                                                return (r * 299 + g * 587 + b * 114) / 1000 > 155;
+                                                            };
+                                                            return (
+                                                                <span
+                                                                    key={tag.id}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        navigate(`/contacts?tagId=${tag.id}`);
+                                                                    }}
+                                                                    style={{
+                                                                        padding: '2px 8px',
+                                                                        borderRadius: '12px',
+                                                                        fontSize: '0.7rem',
+                                                                        fontWeight: '700',
+                                                                        background:
+                                                                            tag.color || 'var(--accent-primary)',
+                                                                        color: isLight(tag.color) ? '#000' : '#fff',
+                                                                        cursor: 'pointer',
+                                                                    }}
+                                                                >
+                                                                    {tag.name}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="card-info">
+                                            <h3>
+                                                {card.firstName} {card.lastName}
+                                            </h3>
+                                            <p className="company-line">
+                                                {card.logoUrl && (
+                                                    <img
+                                                        src={`${API_URL}${card.logoUrl}`}
+                                                        alt={card.company ? `${card.company} logo` : 'Company logo'}
+                                                        style={{
+                                                            width: '20px',
+                                                            height: '20px',
+                                                            objectFit: 'contain',
+                                                            borderRadius: '4px',
+                                                            background: 'var(--bg-card)',
+                                                            padding: '2px',
+                                                            border: '1px solid var(--glass-border)',
+                                                        }}
+                                                    />
+                                                )}
+                                                {card.company} {card.title && `- ${card.title}`}
+                                            </p>
+
+                                            {card.tags && card.tags.length > 0 && (
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        gap: '4px',
+                                                        flexWrap: 'wrap',
+                                                        marginTop: '4px',
+                                                    }}
+                                                >
+                                                    {card.tags.slice(0, 3).map((tag) => (
+                                                        <span key={tag._id || tag} className="tag-chip">
+                                                            {tag.name || tag}
+                                                        </span>
+                                                    ))}
+                                                    {card.tags.length > 3 && (
+                                                        <span className="tag-chip-more">+{card.tags.length - 3}</span>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {card.lastInteraction && (
+                                                <div
+                                                    style={{
+                                                        fontSize: '0.75rem',
+                                                        color: 'var(--text-tertiary)',
+                                                        marginTop: '4px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                    }}
+                                                >
+                                                    <FaClock size={10} />
+                                                    {t('cards:contacts.lastInteraction')}: {card.lastInteraction.type} —{' '}
+                                                    {new Date(card.lastInteraction.date).toLocaleDateString()}
+                                                </div>
+                                            )}
+
+                                            <div
+                                                style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: '1fr',
+                                                    gap: '8px',
+                                                    fontSize: '0.9em',
+                                                }}
+                                            >
+                                                {card.reminderDate && (
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '8px',
+                                                            padding: '6px 10px',
+                                                            background: 'var(--glass-bg)',
+                                                            borderRadius: '8px',
+                                                            border: '1px solid var(--accent-warning)',
+                                                            marginBottom: '5px',
+                                                        }}
+                                                    >
+                                                        <FaCalendarCheck color="var(--accent-warning)" />
+                                                        <strong style={{ color: 'var(--text-primary)' }}>
+                                                            {t('cards:contacts.field.reminder')}
+                                                        </strong>
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {(() => {
+                                                                const d = new Date(card.reminderDate);
+                                                                return isNaN(d.getTime())
+                                                                    ? t('cards:contacts.field.noDate')
+                                                                    : d.toLocaleDateString(
+                                                                          i18n.language === 'tr' ? 'tr-TR' : 'en-US',
+                                                                      );
+                                                            })()}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.lastInteractionDate && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaClock color="var(--accent-primary)" size={12} />
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.lastInteraction')}
+                                                        </strong>
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {new Date(card.lastInteractionDate).toLocaleDateString(
+                                                                i18n.language === 'tr' ? 'tr-TR' : 'en-US',
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.email && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaEnvelope color="var(--accent-warning)" />{' '}
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.email')}
+                                                        </strong>{' '}
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {card.email}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.phone && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaPhone color="var(--accent-success)" />{' '}
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.phone')}
+                                                        </strong>{' '}
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {card.phone}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.website && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaGlobe color="var(--accent-primary)" />{' '}
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.web')}
+                                                        </strong>{' '}
+                                                        <a
+                                                            href={
+                                                                card.website.startsWith('http')
+                                                                    ? card.website
+                                                                    : `https://${card.website}`
+                                                            }
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            style={{ color: 'var(--accent-secondary)' }}
+                                                        >
+                                                            {card.website}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                                {(card.city || card.country) && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaCity color="var(--accent-error)" />{' '}
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.location')}
+                                                        </strong>{' '}
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {card.city}
+                                                            {card.city && card.country && ', '}
+                                                            {card.country}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.address && (
+                                                    <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                                                        <FaMapMarkerAlt
+                                                            color="var(--accent-error)"
+                                                            style={{ marginTop: '3px' }}
+                                                        />
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.address')}
+                                                        </strong>{' '}
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {card.address}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {card.source && (
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <FaIdCard color="var(--accent-primary)" size={12} />{' '}
+                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
+                                                            {t('cards:contacts.field.source')}
+                                                        </strong>{' '}
+                                                        <span style={{ color: 'var(--text-secondary)' }}>
+                                                            {card.source}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="card-actions">
+                                            <button
+                                                onClick={() => toggleDetails(card.id)}
+                                                className="glass-button-block"
+                                                style={{
+                                                    color: 'var(--accent-warning)',
+                                                    padding: '10px 12px',
+                                                    fontSize: '0.9rem',
+                                                    border: '1px solid var(--accent-warning)',
+                                                    background:
+                                                        expandedCardId === card.id
+                                                            ? 'var(--glass-bg-hover)'
+                                                            : 'transparent',
+                                                }}
+                                            >
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <FaStickyNote /> {t('cards:contacts.btn.activityNotes')}
+                                                </span>
+                                                {expandedCardId === card.id ? (
+                                                    <FaChevronUp size={12} />
+                                                ) : (
+                                                    <FaChevronDown size={12} />
+                                                )}
+                                            </button>
+
+                                            {/* Hızlı Takip Butonları */}
+                                            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                                {card.phone && (
+                                                    <button
+                                                        onClick={() => handleWhatsAppFollowUp(card)}
+                                                        className="glass-button-square"
+                                                        title={t('cards:contacts.titleAttr.whatsappFollow')}
+                                                        style={{
+                                                            color: '#25D366',
+                                                            borderColor: 'rgba(37, 211, 102, 0.3)',
+                                                        }}
+                                                    >
+                                                        <FaWhatsapp size={20} />
+                                                    </button>
+                                                )}
+                                                {card.email && (
+                                                    <button
+                                                        onClick={() => handleEmailFollowUp(card)}
+                                                        className="glass-button-square"
+                                                        title={t('cards:contacts.titleAttr.emailFollow')}
+                                                        style={{
+                                                            color: 'var(--accent-warning)',
+                                                            borderColor: 'rgba(255, 193, 7, 0.3)',
+                                                        }}
+                                                    >
+                                                        <FaEnvelope size={18} />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <div
+                                                style={{
+                                                    height: '1px',
+                                                    background: 'var(--glass-border)',
+                                                    margin: '4px 0',
+                                                }}
+                                            ></div>
+
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    onClick={() => setQrModalCard(card)}
+                                                    className="glass-button-square"
+                                                    title={t('cards:contacts.titleAttr.qrVcard')}
+                                                    aria-label={t('cards:contacts.titleAttr.qrVcard')}
+                                                >
+                                                    <FaQrcode size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDownloadVCard(card)}
+                                                    className="glass-button-square"
+                                                    title={t('cards:contacts.titleAttr.downloadVcard')}
+                                                    aria-label={t('cards:contacts.titleAttr.downloadVcard')}
+                                                >
+                                                    <FaDownload size={18} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setHistoryCard(card)}
+                                                    className="glass-button-square"
+                                                    title={t('cards:contacts.titleAttr.history')}
+                                                    aria-label={t('cards:contacts.titleAttr.history')}
+                                                >
+                                                    <FaClock size={16} />
+                                                </button>
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                                <button
+                                                    onClick={() => handleEdit(card)}
+                                                    className="glass-button-small"
+                                                    style={{ flex: 1 }}
+                                                >
+                                                    {t('cards:contacts.btn.edit')}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteClick(card)}
+                                                    className="glass-button-small"
+                                                    aria-label={t('cards:contacts.deleteTitle', {
+                                                        firstName: card.firstName,
+                                                        lastName: card.lastName,
+                                                    })}
+                                                    style={{ color: 'var(--accent-error)', width: '40px' }}
+                                                >
+                                                    <FaTrash size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {expandedCardId === card.id && (
+                                        <div
+                                            style={{
+                                                marginTop: '15px',
+                                                padding: '20px',
+                                                background: 'var(--bg-input)',
+                                                borderRadius: '12px',
+                                                border: '1px solid var(--glass-border)',
+                                            }}
+                                        >
+                                            <InteractionLog cardId={card.id} />
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}>
+                            <FaIdCard size={64} style={{ marginBottom: '20px' }} />
+                            <h3>{t('cards:contacts.empty')}</h3>
+                        </div>
+                    )}
+                </div>
             ) : null}
 
             {/* Pagination Controls */}
             {pagination.totalPages > 1 && (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '20px',
-                    marginTop: '40px',
-                    padding: '20px'
-                }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        gap: '20px',
+                        marginTop: '40px',
+                        padding: '20px',
+                    }}
+                >
                     <button
                         onClick={() => fetchCards(pagination.currentPage - 1)}
                         disabled={pagination.currentPage === 1}
@@ -744,14 +1199,17 @@ const Contacts = () => {
                         style={{
                             padding: '10px 20px',
                             opacity: pagination.currentPage === 1 ? 0.5 : 1,
-                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
+                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer',
                         }}
                     >
                         {t('cards:contacts.btn.previous')}
                     </button>
 
                     <span style={{ color: 'var(--text-secondary)', fontSize: '14px', fontWeight: '500' }}>
-                        {t('cards:contacts.pagination', { current: pagination.currentPage, total: pagination.totalPages })}
+                        {t('cards:contacts.pagination', {
+                            current: pagination.currentPage,
+                            total: pagination.totalPages,
+                        })}
                     </span>
 
                     <button
@@ -761,7 +1219,7 @@ const Contacts = () => {
                         style={{
                             padding: '10px 20px',
                             opacity: pagination.currentPage === pagination.totalPages ? 0.5 : 1,
-                            cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer'
+                            cursor: pagination.currentPage === pagination.totalPages ? 'not-allowed' : 'pointer',
                         }}
                     >
                         {t('cards:contacts.btn.next')}
@@ -769,26 +1227,97 @@ const Contacts = () => {
                 </div>
             )}
 
-            <Modal title={selectedImageCard ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}` : t('cards:contacts.modal.image')} isOpen={!!selectedImageCard} onClose={() => setSelectedImageCard(null)}>
+            <Modal
+                title={
+                    selectedImageCard
+                        ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}`
+                        : t('cards:contacts.modal.image')
+                }
+                isOpen={!!selectedImageCard}
+                onClose={() => setSelectedImageCard(null)}
+            >
                 {selectedImageCard && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div><h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>{t('cards:contacts.modal.frontSide')}</h4><img src={`${API_URL}${selectedImageCard.frontImageUrl}`} alt={t('cards:contacts.modal.frontSide')} style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>
-                        {selectedImageCard.backImageUrl && (<div><h4 style={{ color: 'var(--accent-warning)', textAlign: 'center', marginBottom: '10px' }}>{t('cards:contacts.modal.backSide')}</h4><img src={`${API_URL}${selectedImageCard.backImageUrl}`} alt={t('cards:contacts.modal.backSide')} style={{ maxWidth: '100%', maxHeight: '60vh', borderRadius: '8px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }} /></div>)}
+                        <div>
+                            <h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>
+                                {t('cards:contacts.modal.frontSide')}
+                            </h4>
+                            <img
+                                src={`${API_URL}${selectedImageCard.frontImageUrl}`}
+                                alt={t('cards:contacts.modal.frontSide')}
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '60vh',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--glass-border)',
+                                    boxShadow: 'var(--glass-shadow)',
+                                }}
+                            />
+                        </div>
+                        {selectedImageCard.backImageUrl && (
+                            <div>
+                                <h4
+                                    style={{
+                                        color: 'var(--accent-warning)',
+                                        textAlign: 'center',
+                                        marginBottom: '10px',
+                                    }}
+                                >
+                                    {t('cards:contacts.modal.backSide')}
+                                </h4>
+                                <img
+                                    src={`${API_URL}${selectedImageCard.backImageUrl}`}
+                                    alt={t('cards:contacts.modal.backSide')}
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '60vh',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--glass-border)',
+                                        boxShadow: 'var(--glass-shadow)',
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
             </Modal>
 
-            <Modal title={t('cards:contacts.modal.history')} isOpen={!!historyCard} onClose={() => setHistoryCard(null)}>{historyCard && <HistoryTimeline cardId={historyCard.id} />}</Modal>
+            <Modal
+                title={t('cards:contacts.modal.history')}
+                isOpen={!!historyCard}
+                onClose={() => setHistoryCard(null)}
+            >
+                {historyCard && <HistoryTimeline cardId={historyCard.id} />}
+            </Modal>
 
-            <ConfirmModal isOpen={!!deleteConfirmCard} onClose={() => setDeleteConfirmCard(null)} onConfirm={handleDeleteConfirm} title={t('cards:contacts.modal.deleteTitle')} message={deleteConfirmCard ? t('cards:contacts.modal.deleteMessage', { firstName: deleteConfirmCard.firstName, lastName: deleteConfirmCard.lastName }) : ''} />
+            <ConfirmModal
+                isOpen={!!deleteConfirmCard}
+                onClose={() => setDeleteConfirmCard(null)}
+                onConfirm={handleDeleteConfirm}
+                title={t('cards:contacts.modal.deleteTitle')}
+                message={
+                    deleteConfirmCard
+                        ? t('cards:contacts.modal.deleteMessage', {
+                              firstName: deleteConfirmCard.firstName,
+                              lastName: deleteConfirmCard.lastName,
+                          })
+                        : ''
+                }
+            />
 
             {qrModalCard && (
-                <QRCodeOverlay title={`${qrModalCard.firstName} ${qrModalCard.lastName}`} url={`${window.location.origin}/contact-profile/${qrModalCard.sharingToken}`} vCardData={generateVCardString(qrModalCard)} onClose={() => setQrModalCard(null)} onDownloadVCard={() => handleDownloadVCard(qrModalCard)} />
+                <QRCodeOverlay
+                    title={`${qrModalCard.firstName} ${qrModalCard.lastName}`}
+                    url={`${window.location.origin}/contact-profile/${qrModalCard.sharingToken}`}
+                    vCardData={generateVCardString(qrModalCard)}
+                    onClose={() => setQrModalCard(null)}
+                    onDownloadVCard={() => handleDownloadVCard(qrModalCard)}
+                />
             )}
 
-            <Modal 
-                title={editingCard ? t('cards:contacts.modal.editTitle') : t('cards:contacts.modal.addTitle')} 
-                isOpen={isModalOpen} 
+            <Modal
+                title={editingCard ? t('cards:contacts.modal.editTitle') : t('cards:contacts.modal.addTitle')}
+                isOpen={isModalOpen}
                 onClose={() => {
                     setIsModalOpen(false);
                     setEditingCard(null);
@@ -798,39 +1327,69 @@ const Contacts = () => {
             </Modal>
 
             {/* Bulk Tag Modal */}
-            <Modal title={t('cards:contacts.modal.bulkTagTitle')} isOpen={isBulkTagModalOpen} onClose={() => setIsBulkTagModalOpen(false)}>
+            <Modal
+                title={t('cards:contacts.modal.bulkTagTitle')}
+                isOpen={isBulkTagModalOpen}
+                onClose={() => setIsBulkTagModalOpen(false)}
+            >
                 <div style={{ padding: '10px' }}>
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>{t('cards:contacts.modal.actionType')}</label>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+                            {t('cards:contacts.modal.actionType')}
+                        </label>
                         <div style={{ display: 'flex', gap: '15px' }}>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <input type="radio" name="bulkTagAction" value="add" checked={bulkTagAction === 'add'} onChange={(e) => setBulkTagAction(e.target.value)} />
+                                <input
+                                    type="radio"
+                                    name="bulkTagAction"
+                                    value="add"
+                                    checked={bulkTagAction === 'add'}
+                                    onChange={(e) => setBulkTagAction(e.target.value)}
+                                />
                                 {t('cards:contacts.bulkTag.addToExisting')}
                             </label>
                             <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <input type="radio" name="bulkTagAction" value="replace" checked={bulkTagAction === 'replace'} onChange={(e) => setBulkTagAction(e.target.value)} />
+                                <input
+                                    type="radio"
+                                    name="bulkTagAction"
+                                    value="replace"
+                                    checked={bulkTagAction === 'replace'}
+                                    onChange={(e) => setBulkTagAction(e.target.value)}
+                                />
                                 {t('cards:contacts.bulkTag.replaceAll')}
                             </label>
                         </div>
                     </div>
 
                     <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>{t('cards:contacts.modal.tags')}</label>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
+                            {t('cards:contacts.modal.tags')}
+                        </label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {availableTags.map(tag => (
+                            {availableTags.map((tag) => (
                                 <button
                                     key={tag.id}
-                                    onClick={() => setSelectedBulkTags(prev => prev.includes(tag.id) ? prev.filter(i => i !== tag.id) : [...prev, tag.id])}
+                                    onClick={() =>
+                                        setSelectedBulkTags((prev) =>
+                                            prev.includes(tag.id)
+                                                ? prev.filter((i) => i !== tag.id)
+                                                : [...prev, tag.id],
+                                        )
+                                    }
                                     style={{
                                         padding: '5px 12px',
                                         borderRadius: '20px',
                                         border: '1px solid var(--glass-border)',
-                                        background: selectedBulkTags.includes(tag.id) ? (tag.color || 'var(--accent-primary)') : 'var(--glass-bg)',
-                                        color: selectedBulkTags.includes(tag.id) ? 'var(--bg-card)' : 'var(--text-primary)',
+                                        background: selectedBulkTags.includes(tag.id)
+                                            ? tag.color || 'var(--accent-primary)'
+                                            : 'var(--glass-bg)',
+                                        color: selectedBulkTags.includes(tag.id)
+                                            ? 'var(--bg-card)'
+                                            : 'var(--text-primary)',
                                         cursor: 'pointer',
                                         fontSize: '0.8rem',
                                         fontWeight: '600',
-                                        transition: 'all 0.2s ease'
+                                        transition: 'all 0.2s ease',
                                     }}
                                 >
                                     {tag.name}
@@ -840,19 +1399,25 @@ const Contacts = () => {
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <button onClick={() => setIsBulkTagModalOpen(false)} className="glass-button" style={{ padding: '8px 20px' }}>{t('common:cancel')}</button>
-                        <button 
-                            onClick={handleBulkTags} 
+                        <button
+                            onClick={() => setIsBulkTagModalOpen(false)}
+                            className="glass-button"
+                            style={{ padding: '8px 20px' }}
+                        >
+                            {t('common:cancel')}
+                        </button>
+                        <button
+                            onClick={handleBulkTags}
                             disabled={selectedBulkTags.length === 0}
-                            style={{ 
-                                padding: '8px 25px', 
-                                background: 'var(--accent-primary)', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: '10px', 
+                            style={{
+                                padding: '8px 25px',
+                                background: 'var(--accent-primary)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '10px',
                                 fontWeight: 'bold',
                                 opacity: selectedBulkTags.length === 0 ? 0.5 : 1,
-                                cursor: selectedBulkTags.length === 0 ? 'not-allowed' : 'pointer'
+                                cursor: selectedBulkTags.length === 0 ? 'not-allowed' : 'pointer',
                             }}
                         >
                             {t('cards:contacts.btn.apply')}
@@ -861,12 +1426,12 @@ const Contacts = () => {
                 </div>
             </Modal>
 
-            <ConfirmModal 
-                isOpen={isBulkDeleteConfirmOpen} 
-                onClose={() => setIsBulkDeleteConfirmOpen(false)} 
+            <ConfirmModal
+                isOpen={isBulkDeleteConfirmOpen}
+                onClose={() => setIsBulkDeleteConfirmOpen(false)}
                 onConfirm={handleBulkDelete}
                 title={t('cards:contacts.modal.bulkDeleteTitle')}
-                message={t('cards:contacts.modal.bulkDeleteMessage', { count: selectedIds.length })} 
+                message={t('cards:contacts.modal.bulkDeleteMessage', { count: selectedIds.length })}
             />
 
             {/* Floating Bulk Action Bar */}
@@ -879,32 +1444,90 @@ const Contacts = () => {
                         className="bulk-bar"
                     >
                         <div className="bulk-bar-count">
-                            <div style={{ width: '28px', height: '28px', background: 'var(--accent-primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold', fontSize: '12px', flexShrink: 0 }}>
+                            <div
+                                style={{
+                                    width: '28px',
+                                    height: '28px',
+                                    background: 'var(--accent-primary)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontWeight: 'bold',
+                                    fontSize: '12px',
+                                    flexShrink: 0,
+                                }}
+                            >
                                 {selectedIds.length}
                             </div>
-                            <span style={{ color: 'var(--text-primary)', fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap' }}>{t('cards:contacts.selectedLabel')}</span>
+                            <span
+                                style={{
+                                    color: 'var(--text-primary)',
+                                    fontWeight: '600',
+                                    fontSize: '0.85rem',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {t('cards:contacts.selectedLabel')}
+                            </span>
                         </div>
 
                         <div className="bulk-bar-actions">
-                            <button onClick={() => setIsBulkTagModalOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.tag')} style={{ color: 'var(--accent-warning)' }}>
+                            <button
+                                onClick={() => setIsBulkTagModalOpen(true)}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.tag')}
+                                style={{ color: 'var(--accent-warning)' }}
+                            >
                                 <FaStar size={12} /> {t('cards:contacts.btn.tag')}
                             </button>
-                            <button onClick={() => handleBulkVisibility('public')} className="glass-button-small" title={t('cards:contacts.bulk.makePublic')} style={{ color: 'var(--accent-success)' }}>
+                            <button
+                                onClick={() => handleBulkVisibility('public')}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.makePublic')}
+                                style={{ color: 'var(--accent-success)' }}
+                            >
                                 <FaGlobe size={12} />
                             </button>
-                            <button onClick={() => handleBulkVisibility('private')} className="glass-button-small" title={t('cards:contacts.bulk.makePrivate')} style={{ color: 'var(--text-tertiary)' }}>
+                            <button
+                                onClick={() => handleBulkVisibility('private')}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.makePrivate')}
+                                style={{ color: 'var(--text-tertiary)' }}
+                            >
                                 <FaIdCard size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('excel')} className="glass-button-small" title={t('cards:contacts.bulk.exportExcel')} style={{ color: '#27ae60' }}>
+                            <button
+                                onClick={() => handleBulkExport('excel')}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.exportExcel')}
+                                style={{ color: '#27ae60' }}
+                            >
                                 <FaFileExcel size={12} />
                             </button>
-                            <button onClick={() => handleBulkExport('pdf')} className="glass-button-small" title={t('cards:contacts.bulk.exportPdf')} style={{ color: '#e74c3c' }}>
+                            <button
+                                onClick={() => handleBulkExport('pdf')}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.exportPdf')}
+                                style={{ color: '#e74c3c' }}
+                            >
                                 <FaFilePdf size={12} />
                             </button>
-                            <button onClick={() => setIsBulkDeleteConfirmOpen(true)} className="glass-button-small" title={t('cards:contacts.bulk.delete')} style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}>
+                            <button
+                                onClick={() => setIsBulkDeleteConfirmOpen(true)}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.delete')}
+                                style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}
+                            >
                                 <FaTrash size={12} />
                             </button>
-                            <button onClick={() => setSelectedIds([])} className="glass-button-small" title={t('cards:contacts.bulk.deselect')} style={{ color: 'var(--text-tertiary)' }}>
+                            <button
+                                onClick={() => setSelectedIds([])}
+                                className="glass-button-small"
+                                title={t('cards:contacts.bulk.deselect')}
+                                style={{ color: 'var(--text-tertiary)' }}
+                            >
                                 ✕
                             </button>
                         </div>

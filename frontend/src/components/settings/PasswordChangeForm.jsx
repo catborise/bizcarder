@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
@@ -11,7 +11,7 @@ const inputStyle = {
     borderRadius: '8px',
     color: 'var(--text-primary)',
     fontSize: '1rem',
-    marginTop: '8px'
+    marginTop: '8px',
 };
 
 const PasswordChangeForm = () => {
@@ -21,7 +21,7 @@ const PasswordChangeForm = () => {
     const [formData, setFormData] = useState({
         currentPassword: '',
         newPassword: '',
-        confirmPassword: ''
+        confirmPassword: '',
     });
 
     const handleChange = (e) => {
@@ -42,7 +42,7 @@ const PasswordChangeForm = () => {
         try {
             const res = await api.put('/auth/change-password', {
                 currentPassword: formData.currentPassword,
-                newPassword: formData.newPassword
+                newPassword: formData.newPassword,
             });
             if (res.data.success) {
                 showNotification(res.data.message, 'success');
@@ -56,7 +56,9 @@ const PasswordChangeForm = () => {
     return (
         <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: '20px' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('password.currentLabel')}</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    {t('password.currentLabel')}
+                </label>
                 <input
                     type="password"
                     name="currentPassword"
@@ -78,7 +80,9 @@ const PasswordChangeForm = () => {
                 />
             </div>
             <div style={{ marginBottom: '30px' }}>
-                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('password.confirmLabel')}</label>
+                <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                    {t('password.confirmLabel')}
+                </label>
                 <input
                     type="password"
                     name="confirmPassword"
@@ -100,7 +104,7 @@ const PasswordChangeForm = () => {
                         fontWeight: '600',
                         cursor: 'pointer',
                         boxShadow: 'var(--glass-shadow)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                     }}
                 >
                     {t('password.updateBtn')}

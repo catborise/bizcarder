@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { FaMoon, FaSun } from 'react-icons/fa';
 
@@ -21,7 +20,7 @@ const ThemeToggle = () => {
                 justifyContent: 'center',
                 cursor: 'pointer',
                 transition: 'all 0.2s ease',
-                boxShadow: 'var(--glass-shadow)'
+                boxShadow: 'var(--glass-shadow)',
             }}
             onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-2px)';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import PerspectiveCropper from './PerspectiveCropper';
@@ -39,10 +39,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     // Cleanup blob URLs on unmount
     useEffect(() => {
         return () => {
-            [frontPreview, backPreview, logoPreview].forEach(url => {
+            [frontPreview, backPreview, logoPreview].forEach((url) => {
                 if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
             });
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [logoBlob, setLogoBlob] = useState(null);
@@ -69,7 +70,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         showNewTagInput: false,
         leadStatus: 'Cold',
         priority: 1,
-        source: ''
+        source: '',
     });
 
     const [availableTags, setAvailableTags] = useState([]);
@@ -96,7 +97,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             if (user?.aiOcrEnabled) {
                 await ocr.detectAiBoundary(file);
             }
-        }
+        },
     });
 
     // Düzenleme Modu: Verileri Yükle
@@ -117,10 +118,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 notes: activeCard?.notes || '',
                 visibility: activeCard.visibility || 'private',
                 reminderDate: activeCard.reminderDate ? activeCard.reminderDate.split('T')[0] : '',
-                tags: activeCard.tags ? activeCard.tags.map(t => t.id) : [],
+                tags: activeCard.tags ? activeCard.tags.map((t) => t.id) : [],
                 leadStatus: activeCard.leadStatus || 'Cold',
                 priority: activeCard.priority || 1,
-                source: activeCard.source || ''
+                source: activeCard.source || '',
             });
             // Var olan resimleri göster
             if (activeCard.frontImageUrl) setFrontPreview(`${API_URL}${activeCard.frontImageUrl}`);
@@ -130,7 +131,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             // Yeni kart ekleme modundaysak taslağı yükle
             const draftData = loadDraft();
             if (draftData) {
-                setFormData(prev => ({ ...prev, ...draftData }));
+                setFormData((prev) => ({ ...prev, ...draftData }));
             }
         }
 
@@ -161,7 +162,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
+        setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
     // Wizard Step Navigation
@@ -190,7 +191,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
     const handlePrevStep = (e) => {
         if (e) e.preventDefault();
-        setCurrentStep(prev => Math.max(prev - 1, 1));
+        setCurrentStep((prev) => Math.max(prev - 1, 1));
     };
 
     const handleQuickSave = async (e) => {
@@ -199,7 +200,6 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             await handleSubmit(e, false, true); // forceAdd=false, isQuickSave=true
         }
     };
-
 
     const onSelectFile = async (e, side) => {
         const file = e.target.files[0];
@@ -220,9 +220,15 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
     const handleCropComplete = async (naturalPoints, image) => {
         // Calculate aspect ratio of selected area
         const topWidth = Math.hypot(naturalPoints[1].x - naturalPoints[0].x, naturalPoints[1].y - naturalPoints[0].y);
-        const bottomWidth = Math.hypot(naturalPoints[2].x - naturalPoints[3].x, naturalPoints[2].y - naturalPoints[3].y);
+        const bottomWidth = Math.hypot(
+            naturalPoints[2].x - naturalPoints[3].x,
+            naturalPoints[2].y - naturalPoints[3].y,
+        );
         const leftHeight = Math.hypot(naturalPoints[3].x - naturalPoints[0].x, naturalPoints[3].y - naturalPoints[0].y);
-        const rightHeight = Math.hypot(naturalPoints[2].x - naturalPoints[1].x, naturalPoints[2].y - naturalPoints[1].y);
+        const rightHeight = Math.hypot(
+            naturalPoints[2].x - naturalPoints[1].x,
+            naturalPoints[2].y - naturalPoints[1].y,
+        );
 
         const avgWidth = (topWidth + bottomWidth) / 2;
         const avgHeight = (leftHeight + rightHeight) / 2;
@@ -246,28 +252,31 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
 
         const canvas = warpPerspective(image, naturalPoints, width, height);
 
-        canvas.toBlob((blob) => {
-            if (!blob) return;
+        canvas.toBlob(
+            (blob) => {
+                if (!blob) return;
 
-            const previewUrl = URL.createObjectURL(blob);
+                const previewUrl = URL.createObjectURL(blob);
 
-            if (activeSide === 'front') {
-                setFrontBlob(blob);
-                revokePreview(frontPreview);
-                setFrontPreview(previewUrl);
-                setLogoTempSrc(previewUrl);
-                ocr.performOCR(blob);
-                showNotification(t('addCard.notify.cardDetected', { cardType }), 'info');
-            } else {
-                setBackBlob(blob);
-                revokePreview(backPreview);
-                setBackPreview(previewUrl);
-            }
+                if (activeSide === 'front') {
+                    setFrontBlob(blob);
+                    revokePreview(frontPreview);
+                    setFrontPreview(previewUrl);
+                    setLogoTempSrc(previewUrl);
+                    ocr.performOCR(blob);
+                    showNotification(t('addCard.notify.cardDetected', { cardType }), 'info');
+                } else {
+                    setBackBlob(blob);
+                    revokePreview(backPreview);
+                    setBackPreview(previewUrl);
+                }
 
-            setSrc(null);
-            setActiveSide(null);
-
-        }, 'image/jpeg', 0.7); // Client-side sıkıştırma eklendi (0.7 kalite)
+                setSrc(null);
+                setActiveSide(null);
+            },
+            'image/jpeg',
+            0.7,
+        ); // Client-side sıkıştırma eklendi (0.7 kalite)
     };
 
     const handleSubmit = async (e, forceAdd = false, isQuickSave = false) => {
@@ -288,12 +297,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         if (!activeCard && !forceAdd && !ignoreDuplicate) {
             try {
                 const dupCheck = await api.get(`/api/cards/check-duplicate`, {
-                    params: { 
-                        firstName: formData.firstName, 
+                    params: {
+                        firstName: formData.firstName,
                         lastName: formData.lastName,
                         email: formData.email,
-                        phone: formData.phone
-                    }
+                        phone: formData.phone,
+                    },
                 });
 
                 if (dupCheck.data) {
@@ -307,7 +316,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
 
         const data = new FormData();
-        Object.keys(formData).forEach(key => {
+        Object.keys(formData).forEach((key) => {
             if (key === 'tags') {
                 data.append(key, JSON.stringify(formData[key]));
             } else {
@@ -335,7 +344,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     logoBlob,
                     isPersonal,
                     tags: formData.tags,
-                    reminderDate: formData.reminderDate
+                    reminderDate: formData.reminderDate,
                 };
                 await queueForSync('CREATE_CARD', offlineData);
                 showNotification(t('addCard.notify.offlineQueued'), 'info');
@@ -346,13 +355,13 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             if (activeCard) {
                 // GÜNCELLEME (PUT)
                 await api.put(`/api/cards/${activeCard.id}`, data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                    headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 showNotification(t('addCard.notify.updated'), 'success');
             } else {
                 // YENİ EKLEME (POST)
                 await api.post('/api/cards', data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                    headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 showNotification(t('addCard.notify.created'), 'success');
             }
@@ -365,7 +374,10 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             // Form Reset (Eğer modal kapanmıyorsa manuel sıfırlama gerekebilir ama modal kapanacağı için sorun yok)
         } catch (error) {
             console.error('Kaydetme hatası:', error);
-            showNotification(t('addCard.notify.saveFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(
+                t('addCard.notify.saveFailed', { error: error.response?.data?.error || error.message }),
+                'error',
+            );
         }
     };
 
@@ -378,40 +390,50 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         boxShadow: 'var(--glass-shadow)',
         fontSize: '15px',
         outline: 'none',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
     };
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0', color: 'var(--text-primary)' }}>
             {src && (
-                <div style={{
-                    marginBottom: '25px',
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(5px)',
-                    border: '1px solid var(--glass-border)',
-                    padding: '20px',
-                    borderRadius: '16px',
-                    textAlign: 'center',
-                    position: 'relative'
-                }}>
-                    <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>{t('addCard.perspectiveCorrection', { side: activeSide === 'front' ? t('addCard.frontSide') : t('addCard.backSide') })}</h4>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>{t('addCard.perspectiveHint')}</p>
+                <div
+                    style={{
+                        marginBottom: '25px',
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'blur(5px)',
+                        border: '1px solid var(--glass-border)',
+                        padding: '20px',
+                        borderRadius: '16px',
+                        textAlign: 'center',
+                        position: 'relative',
+                    }}
+                >
+                    <h4 style={{ margin: '0 0 15px 0', fontWeight: '600', fontSize: '1.1rem' }}>
+                        {t('addCard.perspectiveCorrection', {
+                            side: activeSide === 'front' ? t('addCard.frontSide') : t('addCard.backSide'),
+                        })}
+                    </h4>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
+                        {t('addCard.perspectiveHint')}
+                    </p>
 
                     {ocr.isDetecting && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '60px',
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: 'rgba(0,0,0,0.5)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 100,
-                            borderRadius: '16px'
-                        }}>
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '60px',
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                background: 'rgba(0,0,0,0.5)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                zIndex: 100,
+                                borderRadius: '16px',
+                            }}
+                        >
                             <div className="spinner" style={{ marginBottom: '10px' }}></div>
                             <p style={{ color: 'white', fontWeight: 'bold' }}>{t('addCard.ai.detecting')}</p>
                         </div>
@@ -427,25 +449,51 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             )}
 
             <form onSubmit={handleSubmit} className="addcard-form" style={{ display: 'grid', gap: '25px' }}>
-                <div className="addcard-image-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div
+                    className="addcard-image-grid"
+                    style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}
+                >
                     {/* Ön Yüz */}
-                    <div className="addcard-image-box" style={{
-                        border: '1px dashed var(--glass-border)',
-                        padding: '15px',
-                        borderRadius: '12px',
-                        textAlign: 'center',
-                        background: 'var(--glass-bg)',
-                        minHeight: '160px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        transition: 'all 0.2s ease'
-                    }}>
-                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>{t('addCard.frontSide')}</h4>
+                    <div
+                        className="addcard-image-box"
+                        style={{
+                            border: '1px dashed var(--glass-border)',
+                            padding: '15px',
+                            borderRadius: '12px',
+                            textAlign: 'center',
+                            background: 'var(--glass-bg)',
+                            minHeight: '160px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                            transition: 'all 0.2s ease',
+                        }}
+                    >
+                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>
+                            {t('addCard.frontSide')}
+                        </h4>
                         {frontPreview ? (
                             <div style={{ position: 'relative' }}>
-                                <img src={frontPreview} alt={t('addCard.frontSide')} style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
-                                <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
+                                <img
+                                    src={frontPreview}
+                                    alt={t('addCard.frontSide')}
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '150px',
+                                        objectFit: 'contain',
+                                        borderRadius: '8px',
+                                    }}
+                                />
+                                <div
+                                    className="image-action-buttons"
+                                    style={{
+                                        display: 'flex',
+                                        gap: '5px',
+                                        position: 'absolute',
+                                        bottom: '8px',
+                                        right: '8px',
+                                    }}
+                                >
                                     <button
                                         type="button"
                                         onClick={() => setShowLogoCrop(true)}
@@ -458,11 +506,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             color: 'var(--bg-card)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
-                                            fontWeight: '500'
-                                        }}>{logoPreview ? t('addCard.btn.changeLogo') : t('addCard.btn.selectLogo')}</button>
+                                            fontWeight: '500',
+                                        }}
+                                    >
+                                        {logoPreview ? t('addCard.btn.changeLogo') : t('addCard.btn.selectLogo')}
+                                    </button>
                                     <button
                                         type="button"
-                                        onClick={(e) => document.getElementById('frontInput').click()}
+                                        onClick={(_e) => document.getElementById('frontInput').click()}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -472,11 +523,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             color: 'var(--text-primary)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
-                                            fontWeight: '500'
-                                        }}>{t('addCard.btn.select')}</button>
+                                            fontWeight: '500',
+                                        }}
+                                    >
+                                        {t('addCard.btn.select')}
+                                    </button>
                                     <button
                                         type="button"
-                                        onClick={(e) => camera.openCamera('front')}
+                                        onClick={(_e) => camera.openCamera('front')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -485,70 +539,126 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             color: 'var(--bg-card)',
                                             border: 'none',
                                             borderRadius: '8px',
-                                            fontWeight: '600'
-                                        }}>{t('addCard.btn.camera')}</button>
+                                            fontWeight: '600',
+                                        }}
+                                    >
+                                        {t('addCard.btn.camera')}
+                                    </button>
                                 </div>
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <div onClick={() => document.getElementById('frontInput').click()} style={{
-                                    cursor: 'pointer',
-                                    height: '80px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'var(--glass-bg)',
-                                    borderRadius: '12px',
-                                    border: '1px solid var(--glass-border)',
-                                    transition: 'all 0.2s ease',
-                                    fontSize: '14px'
-                                }}>
+                                <div
+                                    onClick={() => document.getElementById('frontInput').click()}
+                                    style={{
+                                        cursor: 'pointer',
+                                        height: '80px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'var(--glass-bg)',
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--glass-border)',
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px',
+                                    }}
+                                >
                                     <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
-                                <div onClick={() => camera.openCamera('front')} style={{
-                                    cursor: 'pointer',
-                                    height: '80px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'var(--accent-primary)',
-                                    color: 'var(--bg-card)',
-                                    borderRadius: '12px',
-                                    transition: 'all 0.2s ease',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold'
-                                }}>
+                                <div
+                                    onClick={() => camera.openCamera('front')}
+                                    style={{
+                                        cursor: 'pointer',
+                                        height: '80px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'var(--accent-primary)',
+                                        color: 'var(--bg-card)',
+                                        borderRadius: '12px',
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     <span>{t('addCard.btn.captureFromCamera')}</span>
                                 </div>
                             </div>
                         )}
-                        <input id="frontInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
-                        <input id="frontCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'front')} style={{ display: 'none' }} />
-                        {ocr.ocrLoading && <p style={{ color: 'var(--accent-warning)', fontSize: '13px', marginTop: '8px', fontWeight: '500' }}>{t('addCard.ocr.reading')}</p>}
+                        <input
+                            id="frontInput"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => onSelectFile(e, 'front')}
+                            style={{ display: 'none' }}
+                        />
+                        <input
+                            id="frontCamera"
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => onSelectFile(e, 'front')}
+                            style={{ display: 'none' }}
+                        />
+                        {ocr.ocrLoading && (
+                            <p
+                                style={{
+                                    color: 'var(--accent-warning)',
+                                    fontSize: '13px',
+                                    marginTop: '8px',
+                                    fontWeight: '500',
+                                }}
+                            >
+                                {t('addCard.ocr.reading')}
+                            </p>
+                        )}
                     </div>
 
                     {/* Arka Yüz */}
-                    <div className="addcard-image-box" style={{
-                        border: '1px dashed var(--glass-border)',
-                        padding: '15px',
-                        borderRadius: '12px',
-                        textAlign: 'center',
-                        background: 'var(--glass-bg)',
-                        minHeight: '160px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center'
-                    }}>
-                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>{t('addCard.backSide')}</h4>
+                    <div
+                        className="addcard-image-box"
+                        style={{
+                            border: '1px dashed var(--glass-border)',
+                            padding: '15px',
+                            borderRadius: '12px',
+                            textAlign: 'center',
+                            background: 'var(--glass-bg)',
+                            minHeight: '160px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'center',
+                        }}
+                    >
+                        <h4 style={{ marginTop: 0, marginBottom: '12px', fontWeight: '600' }}>
+                            {t('addCard.backSide')}
+                        </h4>
                         {backPreview ? (
                             <div style={{ position: 'relative' }}>
-                                <img src={backPreview} alt={t('addCard.backSide')} style={{ maxWidth: '100%', maxHeight: '150px', objectFit: 'contain', borderRadius: '8px' }} />
-                                <div className="image-action-buttons" style={{ display: 'flex', gap: '5px', position: 'absolute', bottom: '8px', right: '8px' }}>
+                                <img
+                                    src={backPreview}
+                                    alt={t('addCard.backSide')}
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '150px',
+                                        objectFit: 'contain',
+                                        borderRadius: '8px',
+                                    }}
+                                />
+                                <div
+                                    className="image-action-buttons"
+                                    style={{
+                                        display: 'flex',
+                                        gap: '5px',
+                                        position: 'absolute',
+                                        bottom: '8px',
+                                        right: '8px',
+                                    }}
+                                >
                                     <button
                                         type="button"
-                                        onClick={(e) => document.getElementById('backInput').click()}
+                                        onClick={(_e) => document.getElementById('backInput').click()}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -558,11 +668,14 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             color: 'var(--text-primary)',
                                             border: '1px solid var(--glass-border)',
                                             borderRadius: '8px',
-                                            fontWeight: '500'
-                                        }}>{t('addCard.btn.select')}</button>
-                                     <button
+                                            fontWeight: '500',
+                                        }}
+                                    >
+                                        {t('addCard.btn.select')}
+                                    </button>
+                                    <button
                                         type="button"
-                                        onClick={(e) => camera.openCamera('back')}
+                                        onClick={(_e) => camera.openCamera('back')}
                                         style={{
                                             fontSize: '13px',
                                             padding: '6px 12px',
@@ -571,112 +684,213 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             color: 'var(--bg-card)',
                                             border: 'none',
                                             borderRadius: '8px',
-                                            fontWeight: '600'
-                                        }}>{t('addCard.btn.camera')}</button>
+                                            fontWeight: '600',
+                                        }}
+                                    >
+                                        {t('addCard.btn.camera')}
+                                    </button>
                                 </div>
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                <div onClick={() => document.getElementById('backInput').click()} style={{
-                                    cursor: 'pointer',
-                                    height: '80px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'var(--glass-bg)',
-                                    borderRadius: '12px',
-                                    border: '1px solid var(--glass-border)',
-                                    transition: 'all 0.2s ease',
-                                    fontSize: '14px'
-                                }}>
+                                <div
+                                    onClick={() => document.getElementById('backInput').click()}
+                                    style={{
+                                        cursor: 'pointer',
+                                        height: '80px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'var(--glass-bg)',
+                                        borderRadius: '12px',
+                                        border: '1px solid var(--glass-border)',
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px',
+                                    }}
+                                >
                                     <span>{t('addCard.btn.selectFile')}</span>
                                 </div>
-                                <div onClick={() => camera.openCamera('back')} style={{
-                                    cursor: 'pointer',
-                                    height: '80px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    background: 'var(--accent-primary)',
-                                    color: 'var(--bg-card)',
-                                    borderRadius: '12px',
-                                    transition: 'all 0.2s ease',
-                                    fontSize: '14px',
-                                    fontWeight: 'bold'
-                                }}>
+                                <div
+                                    onClick={() => camera.openCamera('back')}
+                                    style={{
+                                        cursor: 'pointer',
+                                        height: '80px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        background: 'var(--accent-primary)',
+                                        color: 'var(--bg-card)',
+                                        borderRadius: '12px',
+                                        transition: 'all 0.2s ease',
+                                        fontSize: '14px',
+                                        fontWeight: 'bold',
+                                    }}
+                                >
                                     <span>{t('addCard.btn.captureFromCamera')}</span>
                                 </div>
                             </div>
                         )}
-                        <input id="backInput" type="file" accept="image/*" onChange={(e) => onSelectFile(e, 'back')} style={{ display: 'none' }} />
-                        <input id="backCamera" type="file" accept="image/*" capture="environment" onChange={(e) => onSelectFile(e, 'back')} style={{ display: 'none' }} />
+                        <input
+                            id="backInput"
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => onSelectFile(e, 'back')}
+                            style={{ display: 'none' }}
+                        />
+                        <input
+                            id="backCamera"
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            onChange={(e) => onSelectFile(e, 'back')}
+                            style={{ display: 'none' }}
+                        />
                     </div>
                 </div>
 
                 <div style={{ height: '1px', background: 'var(--glass-border)' }}></div>
 
                 {/* Progress Indicator */}
-                <div className="addcard-steps" style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '20px',
-                    padding: '20px 0',
-                    marginBottom: '10px'
-                }}>
+                <div
+                    className="addcard-steps"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '20px',
+                        padding: '20px 0',
+                        marginBottom: '10px',
+                    }}
+                >
                     {/* Step 1 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="step-circle" style={{
-                            width: '32px', height: '32px', borderRadius: '50%',
-                            background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
-                            border: currentStep >= 1 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
-                            fontWeight: '700', fontSize: '14px'
-                        }}>1</div>
-                        <span className="step-label" style={{ color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.basic')}</span>
+                        <div
+                            className="step-circle"
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: currentStep >= 1 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                                border:
+                                    currentStep >= 1
+                                        ? '2px solid var(--accent-primary)'
+                                        : '2px solid var(--glass-border)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: currentStep >= 1 ? 'var(--bg-card)' : 'var(--text-secondary)',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                            }}
+                        >
+                            1
+                        </div>
+                        <span
+                            className="step-label"
+                            style={{
+                                color: currentStep >= 1 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                fontSize: '14px',
+                            }}
+                        >
+                            {t('addCard.step.basic')}
+                        </span>
                     </div>
 
-                    <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
+                    <div
+                        className="step-line"
+                        style={{
+                            width: '40px',
+                            height: '2px',
+                            background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-border)',
+                        }}
+                    ></div>
 
                     {/* Step 2 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="step-circle" style={{
-                            width: '32px', height: '32px', borderRadius: '50%',
-                            background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
-                            border: currentStep >= 2 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
-                            fontWeight: '700', fontSize: '14px'
-                        }}>2</div>
-                        <span className="step-label" style={{ color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.detail')}</span>
+                        <div
+                            className="step-circle"
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: currentStep >= 2 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                                border:
+                                    currentStep >= 2
+                                        ? '2px solid var(--accent-primary)'
+                                        : '2px solid var(--glass-border)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: currentStep >= 2 ? 'var(--bg-card)' : 'var(--text-secondary)',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                            }}
+                        >
+                            2
+                        </div>
+                        <span
+                            className="step-label"
+                            style={{
+                                color: currentStep >= 2 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                fontSize: '14px',
+                            }}
+                        >
+                            {t('addCard.step.detail')}
+                        </span>
                     </div>
 
-                    <div className="step-line" style={{ width: '40px', height: '2px', background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)' }}></div>
+                    <div
+                        className="step-line"
+                        style={{
+                            width: '40px',
+                            height: '2px',
+                            background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-border)',
+                        }}
+                    ></div>
 
                     {/* Step 3 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="step-circle" style={{
-                            width: '32px', height: '32px', borderRadius: '50%',
-                            background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-bg)',
-                            border: currentStep >= 3 ? '2px solid var(--accent-primary)' : '2px solid var(--glass-border)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: currentStep >= 3 ? 'var(--bg-card)' : 'var(--text-secondary)',
-                            fontWeight: '700', fontSize: '14px'
-                        }}>3</div>
-                        <span className="step-label" style={{ color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: '14px' }}>{t('addCard.step.lead')}</span>
+                        <div
+                            className="step-circle"
+                            style={{
+                                width: '32px',
+                                height: '32px',
+                                borderRadius: '50%',
+                                background: currentStep >= 3 ? 'var(--accent-primary)' : 'var(--glass-bg)',
+                                border:
+                                    currentStep >= 3
+                                        ? '2px solid var(--accent-primary)'
+                                        : '2px solid var(--glass-border)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: currentStep >= 3 ? 'var(--bg-card)' : 'var(--text-secondary)',
+                                fontWeight: '700',
+                                fontSize: '14px',
+                            }}
+                        >
+                            3
+                        </div>
+                        <span
+                            className="step-label"
+                            style={{
+                                color: currentStep >= 3 ? 'var(--text-primary)' : 'var(--text-secondary)',
+                                fontSize: '14px',
+                            }}
+                        >
+                            {t('addCard.step.lead')}
+                        </span>
                     </div>
                 </div>
-
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
                     {/* Step 1: Basic Information */}
                     {currentStep === 1 && (
                         <>
                             {/* Native Contact Picker Integration */}
-                            {('contacts' in navigator && 'ContactsManager' in window) && (
+                            {'contacts' in navigator && 'ContactsManager' in window && (
                                 <button
                                     type="button"
                                     onClick={async () => {
@@ -687,12 +901,12 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                             if (contacts.length > 0) {
                                                 const contact = contacts[0];
                                                 const names = contact.name[0]?.split(' ') || [];
-                                                setFormData(prev => ({
+                                                setFormData((prev) => ({
                                                     ...prev,
                                                     firstName: names.slice(0, -1).join(' ') || contact.name[0] || '',
                                                     lastName: names[names.length - 1] || '',
                                                     email: contact.email[0] || '',
-                                                    phone: contact.tel[0] || ''
+                                                    phone: contact.tel[0] || '',
                                                 }));
                                                 showNotification(t('addCard.notify.contactImported'), 'success');
                                             }
@@ -711,7 +925,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        gap: '8px'
+                                        gap: '8px',
                                     }}
                                 >
                                     {t('addCard.btn.importFromContacts')}
@@ -719,22 +933,130 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             )}
 
                             {/* Temel Bilgiler */}
-                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="firstName" placeholder={t('addCard.placeholder.firstName')} value={formData.firstName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
-                                <input type="text" name="lastName" placeholder={t('addCard.placeholder.lastName')} value={formData.lastName} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} required />
+                            <div
+                                className="addcard-form-grid"
+                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+                            >
+                                <input
+                                    type="text"
+                                    name="firstName"
+                                    placeholder={t('addCard.placeholder.firstName')}
+                                    value={formData.firstName}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                    required
+                                />
+                                <input
+                                    type="text"
+                                    name="lastName"
+                                    placeholder={t('addCard.placeholder.lastName')}
+                                    value={formData.lastName}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                    required
+                                />
                             </div>
 
-                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="text" name="company" placeholder={t('addCard.placeholder.company')} value={formData.company} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                <input type="text" name="title" placeholder={t('addCard.placeholder.title')} value={formData.title} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                            <div
+                                className="addcard-form-grid"
+                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+                            >
+                                <input
+                                    type="text"
+                                    name="company"
+                                    placeholder={t('addCard.placeholder.company')}
+                                    value={formData.company}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                />
+                                <input
+                                    type="text"
+                                    name="title"
+                                    placeholder={t('addCard.placeholder.title')}
+                                    value={formData.title}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                />
                             </div>
 
                             {/* İletişim Bilgileri */}
-                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                <input type="email" name="email" placeholder={t('addCard.placeholder.email')} value={formData.email} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                <input type="text" name="phone" placeholder={t('addCard.placeholder.phone')} value={formData.phone} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                            <div
+                                className="addcard-form-grid"
+                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+                            >
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder={t('addCard.placeholder.email')}
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                />
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    placeholder={t('addCard.placeholder.phone')}
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
+                                    onFocus={(e) => {
+                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                    }}
+                                    onBlur={(e) => {
+                                        e.target.style.background = 'var(--bg-card)';
+                                        e.target.style.borderColor = 'var(--glass-border)';
+                                    }}
+                                />
                             </div>
-                            <p style={{ fontSize: '12px', color: 'var(--text-tertiary)', margin: '-10px 0 0 0', fontStyle: 'italic' }}>
+                            <p
+                                style={{
+                                    fontSize: '12px',
+                                    color: 'var(--text-tertiary)',
+                                    margin: '-10px 0 0 0',
+                                    fontStyle: 'italic',
+                                }}
+                            >
                                 {t('addCard.hint.contactRequired')}
                             </p>
 
@@ -751,58 +1073,198 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     fontSize: '0.85rem',
                                 }}
                             >
-                                {showMoreFields
-                                    ? t('cards:addCard.showLess')
-                                    : t('cards:addCard.showMore')
-                                }
-                                <span style={{ marginLeft: '6px', transition: 'transform 0.2s', transform: showMoreFields ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+                                {showMoreFields ? t('cards:addCard.showLess') : t('cards:addCard.showMore')}
+                                <span
+                                    style={{
+                                        marginLeft: '6px',
+                                        transition: 'transform 0.2s',
+                                        transform: showMoreFields ? 'rotate(180deg)' : 'rotate(0deg)',
+                                    }}
+                                >
+                                    ▼
+                                </span>
                             </button>
 
                             {showMoreFields && (
-                                <div className="addcard-form-grid" style={{ animation: 'fadeIn 0.2s ease', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div
+                                    className="addcard-form-grid"
+                                    style={{
+                                        animation: 'fadeIn 0.2s ease',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '12px',
+                                    }}
+                                >
                                     {/* Web Sitesi */}
-                                    <input type="text" name="website" placeholder={t('addCard.placeholder.website')} value={formData.website} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                    <input
+                                        type="text"
+                                        name="website"
+                                        placeholder={t('addCard.placeholder.website')}
+                                        value={formData.website}
+                                        onChange={handleInputChange}
+                                        style={inputStyle}
+                                        onFocus={(e) => {
+                                            e.target.style.background = 'var(--glass-bg-hover)';
+                                            e.target.style.borderColor = 'var(--accent-primary)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.background = 'var(--bg-card)';
+                                            e.target.style.borderColor = 'var(--glass-border)';
+                                        }}
+                                    />
 
                                     {/* Adres Bilgileri Grubu */}
-                                    <fieldset style={{ border: '1px solid var(--glass-border)', borderRadius: '12px', padding: '15px', margin: 0, background: 'var(--glass-bg)' }}>
-                                        <legend style={{ padding: '0 8px', color: 'var(--text-secondary)', fontSize: '0.95em', fontWeight: '500' }}>{t('addCard.label.addressInfo')}</legend>
+                                    <fieldset
+                                        style={{
+                                            border: '1px solid var(--glass-border)',
+                                            borderRadius: '12px',
+                                            padding: '15px',
+                                            margin: 0,
+                                            background: 'var(--glass-bg)',
+                                        }}
+                                    >
+                                        <legend
+                                            style={{
+                                                padding: '0 8px',
+                                                color: 'var(--text-secondary)',
+                                                fontSize: '0.95em',
+                                                fontWeight: '500',
+                                            }}
+                                        >
+                                            {t('addCard.label.addressInfo')}
+                                        </legend>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                            <textarea name="address" rows="2" placeholder={t('addCard.placeholder.address')} value={formData.address} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}></textarea>
-                                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                                                <input type="text" name="city" placeholder={t('addCard.placeholder.city')} value={formData.city} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
-                                                <input type="text" name="country" placeholder={t('addCard.placeholder.country')} value={formData.country} onChange={handleInputChange} style={inputStyle} onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }} onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }} />
+                                            <textarea
+                                                name="address"
+                                                rows="2"
+                                                placeholder={t('addCard.placeholder.address')}
+                                                value={formData.address}
+                                                onChange={handleInputChange}
+                                                style={{
+                                                    ...inputStyle,
+                                                    width: '100%',
+                                                    fontFamily: 'inherit',
+                                                    boxSizing: 'border-box',
+                                                    resize: 'vertical',
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.background = 'var(--glass-bg-hover)';
+                                                    e.target.style.borderColor = 'var(--accent-primary)';
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.background = 'var(--bg-card)';
+                                                    e.target.style.borderColor = 'var(--glass-border)';
+                                                }}
+                                            ></textarea>
+                                            <div
+                                                className="addcard-form-grid"
+                                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}
+                                            >
+                                                <input
+                                                    type="text"
+                                                    name="city"
+                                                    placeholder={t('addCard.placeholder.city')}
+                                                    value={formData.city}
+                                                    onChange={handleInputChange}
+                                                    style={inputStyle}
+                                                    onFocus={(e) => {
+                                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        e.target.style.background = 'var(--bg-card)';
+                                                        e.target.style.borderColor = 'var(--glass-border)';
+                                                    }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    name="country"
+                                                    placeholder={t('addCard.placeholder.country')}
+                                                    value={formData.country}
+                                                    onChange={handleInputChange}
+                                                    style={inputStyle}
+                                                    onFocus={(e) => {
+                                                        e.target.style.background = 'var(--glass-bg-hover)';
+                                                        e.target.style.borderColor = 'var(--accent-primary)';
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        e.target.style.background = 'var(--bg-card)';
+                                                        e.target.style.borderColor = 'var(--glass-border)';
+                                                    }}
+                                                />
                                             </div>
                                         </div>
                                     </fieldset>
 
                                     {/* Notlar */}
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                        <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.notes')}</label>
+                                        <label
+                                            style={{
+                                                fontSize: '14px',
+                                                fontWeight: '600',
+                                                color: 'var(--text-secondary)',
+                                            }}
+                                        >
+                                            {t('addCard.label.notes')}
+                                        </label>
                                         <textarea
                                             name="notes"
                                             rows="3"
                                             placeholder={t('addCard.placeholder.notes')}
                                             value={formData.notes}
                                             onChange={handleInputChange}
-                                            style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' }}
-                                            onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }}
-                                            onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}
+                                            style={{
+                                                ...inputStyle,
+                                                width: '100%',
+                                                fontFamily: 'inherit',
+                                                boxSizing: 'border-box',
+                                                resize: 'vertical',
+                                            }}
+                                            onFocus={(e) => {
+                                                e.target.style.background = 'var(--glass-bg-hover)';
+                                                e.target.style.borderColor = 'var(--accent-primary)';
+                                            }}
+                                            onBlur={(e) => {
+                                                e.target.style.background = 'var(--bg-card)';
+                                                e.target.style.borderColor = 'var(--glass-border)';
+                                            }}
                                         />
                                     </div>
 
                                     {/* OCR Metni */}
                                     {formData.ocrText && (
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                            <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('cards:addCard.label.ocrText')}</label>
+                                            <label
+                                                style={{
+                                                    fontSize: '14px',
+                                                    fontWeight: '600',
+                                                    color: 'var(--text-secondary)',
+                                                }}
+                                            >
+                                                {t('cards:addCard.label.ocrText')}
+                                            </label>
                                             <textarea
                                                 name="ocrText"
                                                 rows="3"
                                                 placeholder={t('cards:addCard.placeholder.ocrText')}
                                                 value={formData.ocrText}
                                                 onChange={handleInputChange}
-                                                style={{ ...inputStyle, width: '100%', fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical', fontSize: '12px' }}
-                                                onFocus={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.borderColor = 'var(--accent-primary)'; }}
-                                                onBlur={(e) => { e.target.style.background = 'var(--bg-card)'; e.target.style.borderColor = 'var(--glass-border)'; }}
+                                                style={{
+                                                    ...inputStyle,
+                                                    width: '100%',
+                                                    fontFamily: 'inherit',
+                                                    boxSizing: 'border-box',
+                                                    resize: 'vertical',
+                                                    fontSize: '12px',
+                                                }}
+                                                onFocus={(e) => {
+                                                    e.target.style.background = 'var(--glass-bg-hover)';
+                                                    e.target.style.borderColor = 'var(--accent-primary)';
+                                                }}
+                                                onBlur={(e) => {
+                                                    e.target.style.background = 'var(--bg-card)';
+                                                    e.target.style.borderColor = 'var(--glass-border)';
+                                                }}
                                             />
                                         </div>
                                     )}
@@ -815,51 +1277,75 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                     {currentStep === 2 && (
                         <>
                             {/* CRM Extras: Tags & Reminders */}
-                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div
+                                className="addcard-form-grid"
+                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}
+                            >
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.tags')}</label>
-                                    <div style={{
-                                        display: 'flex',
-                                        flexWrap: 'wrap',
-                                        gap: '8px',
-                                        padding: '10px',
-                                        background: 'var(--bg-input)',
-                                        borderRadius: '12px',
-                                        border: '1px solid var(--glass-border)'
-                                    }}>
+                                    <label
+                                        style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                                    >
+                                        {t('addCard.label.tags')}
+                                    </label>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            flexWrap: 'wrap',
+                                            gap: '8px',
+                                            padding: '10px',
+                                            background: 'var(--bg-input)',
+                                            borderRadius: '12px',
+                                            border: '1px solid var(--glass-border)',
+                                        }}
+                                    >
                                         {tagsLoading ? (
-                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>{t('addCard.label.tagsLoading')}</span>
+                                            <span style={{ color: 'var(--text-tertiary)', fontSize: '12px' }}>
+                                                {t('addCard.label.tagsLoading')}
+                                            </span>
                                         ) : (
                                             <>
-                                                {availableTags && availableTags.length > 0 && availableTags.map(tag => (
-                                                    <button
-                                                        key={tag.id}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            const newTags = formData.tags.includes(tag.id)
-                                                                ? formData.tags.filter(id => id !== tag.id)
-                                                                : [...formData.tags, tag.id];
-                                                            setFormData(prev => ({ ...prev, tags: newTags }));
-                                                        }}
-                                                        style={{
-                                                            padding: '4px 12px',
-                                                            borderRadius: '20px',
-                                                            fontSize: '12px',
-                                                            fontWeight: '600',
-                                                            cursor: 'pointer',
-                                                            border: '1px solid',
-                                                            borderColor: formData.tags.includes(tag.id) ? tag.color : 'var(--glass-border)',
-                                                            background: formData.tags.includes(tag.id) ? tag.color : 'transparent',
-                                                            color: formData.tags.includes(tag.id) ? 'white' : 'var(--text-secondary)',
-                                                            transition: 'all 0.2s'
-                                                        }}
-                                                    >
-                                                        {tag.name}
-                                                    </button>
-                                                ))}
+                                                {availableTags &&
+                                                    availableTags.length > 0 &&
+                                                    availableTags.map((tag) => (
+                                                        <button
+                                                            key={tag.id}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const newTags = formData.tags.includes(tag.id)
+                                                                    ? formData.tags.filter((id) => id !== tag.id)
+                                                                    : [...formData.tags, tag.id];
+                                                                setFormData((prev) => ({ ...prev, tags: newTags }));
+                                                            }}
+                                                            style={{
+                                                                padding: '4px 12px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '12px',
+                                                                fontWeight: '600',
+                                                                cursor: 'pointer',
+                                                                border: '1px solid',
+                                                                borderColor: formData.tags.includes(tag.id)
+                                                                    ? tag.color
+                                                                    : 'var(--glass-border)',
+                                                                background: formData.tags.includes(tag.id)
+                                                                    ? tag.color
+                                                                    : 'transparent',
+                                                                color: formData.tags.includes(tag.id)
+                                                                    ? 'white'
+                                                                    : 'var(--text-secondary)',
+                                                                transition: 'all 0.2s',
+                                                            }}
+                                                        >
+                                                            {tag.name}
+                                                        </button>
+                                                    ))}
                                                 <button
                                                     type="button"
-                                                    onClick={() => setFormData(prev => ({ ...prev, showNewTagInput: !prev.showNewTagInput }))}
+                                                    onClick={() =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            showNewTagInput: !prev.showNewTagInput,
+                                                        }))
+                                                    }
                                                     style={{
                                                         padding: '4px 12px',
                                                         borderRadius: '20px',
@@ -871,49 +1357,77 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                                         color: 'var(--accent-primary)',
                                                         display: 'flex',
                                                         alignItems: 'center',
-                                                        gap: '4px'
+                                                        gap: '4px',
                                                     }}
                                                 >
                                                     {formData.showNewTagInput ? '×' : t('addCard.btn.newTag')}
                                                 </button>
                                                 {formData.showNewTagInput && (
-                                                    <div style={{ display: 'flex', gap: '5px', width: '100%', marginTop: '5px' }}>
-                                                        <input 
-                                                            type="text" 
-                                                            placeholder={t('addCard.placeholder.tagName')} 
+                                                    <div
+                                                        style={{
+                                                            display: 'flex',
+                                                            gap: '5px',
+                                                            width: '100%',
+                                                            marginTop: '5px',
+                                                        }}
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            placeholder={t('addCard.placeholder.tagName')}
                                                             value={formData.newTagName}
-                                                            onChange={(e) => setFormData(prev => ({ ...prev, newTagName: e.target.value }))}
-                                                            style={{ ...inputStyle, flex: 1, padding: '5px 10px', height: '32px', fontSize: '12px' }}
+                                                            onChange={(e) =>
+                                                                setFormData((prev) => ({
+                                                                    ...prev,
+                                                                    newTagName: e.target.value,
+                                                                }))
+                                                            }
+                                                            style={{
+                                                                ...inputStyle,
+                                                                flex: 1,
+                                                                padding: '5px 10px',
+                                                                height: '32px',
+                                                                fontSize: '12px',
+                                                            }}
                                                         />
-                                                        <button 
+                                                        <button
                                                             type="button"
                                                             onClick={async () => {
                                                                 if (!formData.newTagName.trim()) return;
                                                                 try {
-                                                                    const res = await api.post('/api/tags', { 
+                                                                    const res = await api.post('/api/tags', {
                                                                         name: formData.newTagName,
-                                                                        color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0')
+                                                                        color:
+                                                                            '#' +
+                                                                            Math.floor(Math.random() * 16777215)
+                                                                                .toString(16)
+                                                                                .padStart(6, '0'),
                                                                     });
-                                                                    setAvailableTags(prev => [...prev, res.data]);
-                                                                    setFormData(prev => ({ 
-                                                                        ...prev, 
+                                                                    setAvailableTags((prev) => [...prev, res.data]);
+                                                                    setFormData((prev) => ({
+                                                                        ...prev,
                                                                         tags: [...prev.tags, res.data.id],
                                                                         newTagName: '',
-                                                                        showNewTagInput: false
+                                                                        showNewTagInput: false,
                                                                     }));
-                                                                    showNotification(t('addCard.notify.tagCreated'), 'success');
+                                                                    showNotification(
+                                                                        t('addCard.notify.tagCreated'),
+                                                                        'success',
+                                                                    );
                                                                 } catch (err) {
-                                                                    showNotification(t('addCard.notify.tagCreateFailed'), 'error');
+                                                                    showNotification(
+                                                                        t('addCard.notify.tagCreateFailed'),
+                                                                        'error',
+                                                                    );
                                                                 }
                                                             }}
-                                                            style={{ 
-                                                                padding: '0 10px', 
-                                                                background: 'var(--accent-primary)', 
-                                                                color: 'var(--bg-card)', 
-                                                                border: 'none', 
-                                                                borderRadius: '8px', 
-                                                                fontSize: '12px', 
-                                                                cursor: 'pointer' 
+                                                            style={{
+                                                                padding: '0 10px',
+                                                                background: 'var(--accent-primary)',
+                                                                color: 'var(--bg-card)',
+                                                                border: 'none',
+                                                                borderRadius: '8px',
+                                                                fontSize: '12px',
+                                                                cursor: 'pointer',
                                                             }}
                                                         >
                                                             {t('common:add')}
@@ -926,7 +1440,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}>{t('addCard.label.reminder')}</label>
+                                    <label
+                                        style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(255,255,255,0.7)' }}
+                                    >
+                                        {t('addCard.label.reminder')}
+                                    </label>
                                     <input
                                         type="date"
                                         name="reminderDate"
@@ -937,25 +1455,45 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                 </div>
                             </div>
 
-                            <select name="visibility" value={formData.visibility} onChange={handleInputChange} style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}>
-                                <option value="private" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('addCard.visibility.private')}</option>
-                                <option value="public" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('addCard.visibility.public')}</option>
+                            <select
+                                name="visibility"
+                                value={formData.visibility}
+                                onChange={handleInputChange}
+                                style={{ ...inputStyle, width: '100%', cursor: 'pointer', fontWeight: '500' }}
+                            >
+                                <option
+                                    value="private"
+                                    style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                                >
+                                    {t('addCard.visibility.private')}
+                                </option>
+                                <option
+                                    value="public"
+                                    style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                                >
+                                    {t('addCard.visibility.public')}
+                                </option>
                             </select>
-
-
                         </>
                     )}
 
                     {/* Step 3: Relationship Management (Nurturing) */}
                     {currentStep === 3 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <div className="addcard-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div
+                                className="addcard-form-grid"
+                                style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}
+                            >
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.leadStatus')}</label>
-                                    <select 
-                                        name="leadStatus" 
-                                        value={formData.leadStatus} 
-                                        onChange={handleInputChange} 
+                                    <label
+                                        style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                                    >
+                                        {t('addCard.label.leadStatus')}
+                                    </label>
+                                    <select
+                                        name="leadStatus"
+                                        value={formData.leadStatus}
+                                        onChange={handleInputChange}
                                         style={{ ...inputStyle, width: '100%', cursor: 'pointer' }}
                                     >
                                         <option value="Cold">{t('common:leadStatus.Cold')}</option>
@@ -966,15 +1504,37 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     </select>
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                    <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.priority')}</label>
-                                    <div style={{ display: 'flex', gap: '10px', height: '45px', alignItems: 'center', background: 'var(--bg-card)', borderRadius: '10px', padding: '0 15px', border: '1px solid var(--glass-border)' }}>
-                                        {[1, 2, 3, 4, 5].map(star => (
-                                            <FaStar 
+                                    <label
+                                        style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}
+                                    >
+                                        {t('addCard.label.priority')}
+                                    </label>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            gap: '10px',
+                                            height: '45px',
+                                            alignItems: 'center',
+                                            background: 'var(--bg-card)',
+                                            borderRadius: '10px',
+                                            padding: '0 15px',
+                                            border: '1px solid var(--glass-border)',
+                                        }}
+                                    >
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <FaStar
                                                 key={star}
                                                 size={20}
-                                                color={formData.priority >= star ? 'var(--accent-warning)' : 'var(--text-tertiary)'}
-                                                style={{ cursor: 'pointer', opacity: formData.priority >= star ? 1 : 0.3 }}
-                                                onClick={() => setFormData(prev => ({ ...prev, priority: star }))}
+                                                color={
+                                                    formData.priority >= star
+                                                        ? 'var(--accent-warning)'
+                                                        : 'var(--text-tertiary)'
+                                                }
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    opacity: formData.priority >= star ? 1 : 0.3,
+                                                }}
+                                                onClick={() => setFormData((prev) => ({ ...prev, priority: star }))}
                                             />
                                         ))}
                                     </div>
@@ -982,24 +1542,27 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>{t('addCard.label.source')}</label>
-                                <input 
-                                    type="text" 
-                                    name="source" 
-                                    placeholder={t('addCard.placeholder.source')} 
-                                    value={formData.source} 
-                                    onChange={handleInputChange} 
-                                    style={inputStyle} 
+                                <label style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                                    {t('addCard.label.source')}
+                                </label>
+                                <input
+                                    type="text"
+                                    name="source"
+                                    placeholder={t('addCard.placeholder.source')}
+                                    value={formData.source}
+                                    onChange={handleInputChange}
+                                    style={inputStyle}
                                 />
                             </div>
-
                         </div>
                     )}
                 </div>
 
-
                 {/* Wizard Navigation Buttons */}
-                <div className="addcard-nav-buttons" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <div
+                    className="addcard-nav-buttons"
+                    style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}
+                >
                     {currentStep === 1 ? (
                         <>
                             <button
@@ -1016,37 +1579,51 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     cursor: 'pointer',
                                     fontWeight: '600',
                                     transition: 'all 0.2s ease',
-                                    boxShadow: 'var(--glass-shadow)'
+                                    boxShadow: 'var(--glass-shadow)',
                                 }}
-                                onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'; }}
-                                onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'var(--glass-bg-hover)';
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'var(--glass-bg)';
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = 'var(--glass-shadow)';
+                                }}
                             >
                                 {t('common:save')}
                             </button>
-                             <button
-                                 type="button"
-                                 onClick={handleNextStep}
-                                 disabled={ocr.ocrLoading}
-                                 style={{
-                                     padding: '14px 24px',
-                                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                     color: 'white',
-                                     border: '1px solid rgba(255, 255, 255, 0.3)',
-                                     borderRadius: '12px',
-                                     fontSize: '16px',
-                                     cursor: 'pointer',
-                                     fontWeight: '600',
-                                     transition: 'all 0.2s ease',
-                                     boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
-                                     display: 'flex',
-                                     alignItems: 'center',
-                                     gap: '8px'
-                                 }}
-                                 onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)'; }}
-                                 onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)'; }}
-                             >
-                                 {t('common:next')}
-                             </button>
+                            <button
+                                type="button"
+                                onClick={handleNextStep}
+                                disabled={ocr.ocrLoading}
+                                style={{
+                                    padding: '14px 24px',
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    color: 'white',
+                                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                                    borderRadius: '12px',
+                                    fontSize: '16px',
+                                    cursor: 'pointer',
+                                    fontWeight: '600',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.4)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.3)';
+                                }}
+                            >
+                                {t('common:next')}
+                            </button>
                         </>
                     ) : (
                         <>
@@ -1066,10 +1643,18 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     boxShadow: 'var(--glass-shadow)',
                                     display: 'flex',
                                     alignItems: 'center',
-                                    gap: '8px'
+                                    gap: '8px',
                                 }}
-                                onMouseEnter={(e) => { e.target.style.background = 'var(--glass-bg-hover)'; e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                                onMouseLeave={(e) => { e.target.style.background = 'var(--glass-bg)'; e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.background = 'var(--glass-bg-hover)';
+                                    e.target.style.transform = 'translateY(-2px)';
+                                    e.target.style.boxShadow = 'var(--glass-shadow-hover)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.background = 'var(--glass-bg)';
+                                    e.target.style.transform = 'translateY(0)';
+                                    e.target.style.boxShadow = 'var(--glass-shadow)';
+                                }}
                             >
                                 {t('common:back')}
                             </button>
@@ -1079,7 +1664,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     onClick={handleNextStep}
                                     style={{
                                         padding: '14px 24px',
-                                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                                        background:
+                                            'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
                                         color: 'var(--bg-card)',
                                         border: '1px solid var(--glass-border)',
                                         borderRadius: '12px',
@@ -1087,7 +1673,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         cursor: 'pointer',
                                         fontWeight: '600',
                                         transition: 'all 0.2s ease',
-                                        boxShadow: 'var(--glass-shadow)'
+                                        boxShadow: 'var(--glass-shadow)',
                                     }}
                                 >
                                     {t('common:next')}
@@ -1098,7 +1684,8 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                     disabled={ocr.ocrLoading}
                                     style={{
                                         padding: '14px 24px',
-                                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                                        background:
+                                            'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
                                         color: 'var(--bg-card)',
                                         border: '1px solid var(--glass-border)',
                                         borderRadius: '12px',
@@ -1106,10 +1693,16 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                                         cursor: 'pointer',
                                         fontWeight: '600',
                                         transition: 'all 0.2s ease',
-                                        boxShadow: 'var(--glass-shadow)'
+                                        boxShadow: 'var(--glass-shadow)',
                                     }}
-                                    onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--glass-shadow-hover)'; }}
-                                    onMouseLeave={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--glass-shadow)'; }}
+                                    onMouseEnter={(e) => {
+                                        e.target.style.transform = 'translateY(-2px)';
+                                        e.target.style.boxShadow = 'var(--glass-shadow-hover)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.target.style.transform = 'translateY(0)';
+                                        e.target.style.boxShadow = 'var(--glass-shadow)';
+                                    }}
                                 >
                                     {activeCard ? t('common:update') : t('common:save')}
                                 </button>
@@ -1117,7 +1710,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         </>
                     )}
                 </div>
-            </form >
+            </form>
 
             {/* OCR Onay Modalı */}
             <OcrConfirmModal
@@ -1125,7 +1718,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 onClose={() => ocr.setShowOcrConfirm(false)}
                 ocrResults={ocr.ocrResults}
                 onConfirm={(fields) => {
-                    setFormData(prev => ({ ...prev, ...fields }));
+                    setFormData((prev) => ({ ...prev, ...fields }));
                     ocr.setShowOcrConfirm(false);
                     showNotification(t('addCard.notify.ocrApplied'), 'success');
                 }}
@@ -1133,9 +1726,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
             />
 
             {/* Logo Kırpma Modalı */}
-            {
-                showLogoCrop && (
-                    <div style={{
+            {showLogoCrop && (
+                <div
+                    style={{
                         position: 'fixed',
                         top: 0,
                         left: 0,
@@ -1148,32 +1741,55 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        padding: '20px'
-                    }}>
-                        <div style={{ background: 'var(--bg-card)', padding: '25px', borderRadius: '24px', border: '1px solid var(--glass-border)', maxWidth: '90%', maxHeight: '90%', overflow: 'auto', boxShadow: 'var(--glass-shadow-hover)' }}>
-                            <h4 style={{ color: 'var(--text-primary)', marginTop: 0 }}>{t('addCard.logoCrop.title')}</h4>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>{t('addCard.logoCrop.hint')}</p>
-                            <PerspectiveCropper
-                                src={logoTempSrc}
-                                onCropComplete={async (points, image) => {
-                                    const canvas = warpPerspective(image, points, 400, 400); // Logo için 400x400
-                                    canvas.toBlob((blob) => {
-                                        setLogoBlob(blob);
-                                        revokePreview(logoPreview);
-                                        setLogoPreview(URL.createObjectURL(blob));
-                                        setShowLogoCrop(false);
-                                    }, 'image/png');
-                                }}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowLogoCrop(false)}
-                                style={{ marginTop: '15px', padding: '10px 20px', background: 'var(--glass-bg)', color: 'var(--text-primary)', border: '1px solid var(--glass-border)', borderRadius: '12px', cursor: 'pointer' }}
-                            >{t('common:cancel')}</button>
-                        </div>
+                        padding: '20px',
+                    }}
+                >
+                    <div
+                        style={{
+                            background: 'var(--bg-card)',
+                            padding: '25px',
+                            borderRadius: '24px',
+                            border: '1px solid var(--glass-border)',
+                            maxWidth: '90%',
+                            maxHeight: '90%',
+                            overflow: 'auto',
+                            boxShadow: 'var(--glass-shadow-hover)',
+                        }}
+                    >
+                        <h4 style={{ color: 'var(--text-primary)', marginTop: 0 }}>{t('addCard.logoCrop.title')}</h4>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '15px' }}>
+                            {t('addCard.logoCrop.hint')}
+                        </p>
+                        <PerspectiveCropper
+                            src={logoTempSrc}
+                            onCropComplete={async (points, image) => {
+                                const canvas = warpPerspective(image, points, 400, 400); // Logo için 400x400
+                                canvas.toBlob((blob) => {
+                                    setLogoBlob(blob);
+                                    revokePreview(logoPreview);
+                                    setLogoPreview(URL.createObjectURL(blob));
+                                    setShowLogoCrop(false);
+                                }, 'image/png');
+                            }}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowLogoCrop(false)}
+                            style={{
+                                marginTop: '15px',
+                                padding: '10px 20px',
+                                background: 'var(--glass-bg)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--glass-border)',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            {t('common:cancel')}
+                        </button>
                     </div>
-                )
-            }
+                </div>
+            )}
             {/* Mükerrer Kayıt Uyarısı */}
             <DuplicateAlertModal
                 isOpen={showDuplicateAlert}
@@ -1205,7 +1821,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 fallbackToFileInput={camera.fallbackToFileInput}
                 t={t}
             />
-        </div >
+        </div>
     );
 };
 

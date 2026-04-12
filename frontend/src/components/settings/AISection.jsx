@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
@@ -12,7 +12,7 @@ const inputStyle = {
     borderRadius: '8px',
     color: 'var(--text-primary)',
     fontSize: '1rem',
-    marginTop: '8px'
+    marginTop: '8px',
 };
 
 const AISection = () => {
@@ -23,7 +23,7 @@ const AISection = () => {
     const [aiSettings, setAiSettings] = useState({
         aiOcrEnabled: false,
         aiOcrProvider: 'openai',
-        aiOcrApiKey: ''
+        aiOcrApiKey: '',
     });
 
     useEffect(() => {
@@ -31,7 +31,7 @@ const AISection = () => {
             setAiSettings({
                 aiOcrEnabled: user.aiOcrEnabled || false,
                 aiOcrProvider: user.aiOcrProvider || 'openai',
-                aiOcrApiKey: ''
+                aiOcrApiKey: '',
             });
         }
     }, [user]);
@@ -45,17 +45,39 @@ const AISection = () => {
             }
         } catch (error) {
             console.error('AI Settings save error:', error);
-            showNotification(t('notify.aiSaveFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(
+                t('notify.aiSaveFailed', { error: error.response?.data?.error || error.message }),
+                'error',
+            );
         }
     };
 
     return (
         <div>
-            <div style={{ marginBottom: '25px', padding: '15px', background: 'var(--glass-bg)', borderRadius: '12px', border: '1px solid var(--accent-primary)' }}>
+            <div
+                style={{
+                    marginBottom: '25px',
+                    padding: '15px',
+                    background: 'var(--glass-bg)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--accent-primary)',
+                }}
+            >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                        <label style={{ display: 'block', color: 'var(--accent-primary)', marginBottom: '5px', fontWeight: '600' }}>{t('ai.ocrLabel')}</label>
-                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', margin: 0 }}>{t('ai.ocrDescription')}</p>
+                        <label
+                            style={{
+                                display: 'block',
+                                color: 'var(--accent-primary)',
+                                marginBottom: '5px',
+                                fontWeight: '600',
+                            }}
+                        >
+                            {t('ai.ocrLabel')}
+                        </label>
+                        <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', margin: 0 }}>
+                            {t('ai.ocrDescription')}
+                        </p>
                     </div>
                     <div style={{ position: 'relative', width: '50px', height: '26px' }}>
                         <input
@@ -68,16 +90,30 @@ const AISection = () => {
                         <label
                             htmlFor="ai-toggle"
                             style={{
-                                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                position: 'absolute',
+                                cursor: 'pointer',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
                                 backgroundColor: aiSettings.aiOcrEnabled ? 'var(--accent-primary)' : 'var(--bg-input)',
-                                transition: '0.4s', borderRadius: '34px'
+                                transition: '0.4s',
+                                borderRadius: '34px',
                             }}
                         >
-                            <span style={{
-                                position: 'absolute', height: '20px', width: '20px', left: '3px', bottom: '3px',
-                                backgroundColor: 'white', transition: '0.4s', borderRadius: '50%',
-                                transform: aiSettings.aiOcrEnabled ? 'translateX(24px)' : 'translateX(0)'
-                            }}></span>
+                            <span
+                                style={{
+                                    position: 'absolute',
+                                    height: '20px',
+                                    width: '20px',
+                                    left: '3px',
+                                    bottom: '3px',
+                                    backgroundColor: 'white',
+                                    transition: '0.4s',
+                                    borderRadius: '50%',
+                                    transform: aiSettings.aiOcrEnabled ? 'translateX(24px)' : 'translateX(0)',
+                                }}
+                            ></span>
                         </label>
                     </div>
                 </div>
@@ -86,7 +122,9 @@ const AISection = () => {
             {aiSettings.aiOcrEnabled && (
                 <div className="fade-in">
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('ai.providerLabel')}</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {t('ai.providerLabel')}
+                        </label>
                         <select
                             value={aiSettings.aiOcrProvider}
                             onChange={(e) => setAiSettings({ ...aiSettings, aiOcrProvider: e.target.value })}
@@ -98,7 +136,9 @@ const AISection = () => {
                         </select>
                     </div>
                     <div style={{ marginBottom: '30px' }}>
-                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('ai.apiKeyLabel')}</label>
+                        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                            {t('ai.apiKeyLabel')}
+                        </label>
                         <input
                             type="password"
                             placeholder={user?.hasAiApiKey ? '••••••••••••••••' : t('ai.apiKeyPlaceholder')}
@@ -123,7 +163,7 @@ const AISection = () => {
                         fontWeight: '600',
                         cursor: 'pointer',
                         boxShadow: 'var(--glass-shadow)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                     }}
                 >
                     {t('ai.saveBtn')}

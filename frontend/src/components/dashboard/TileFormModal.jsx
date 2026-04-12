@@ -1,4 +1,3 @@
-import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../shared/Modal';
 import { hexToRgba, rgbaToHex } from '../../utils/helpers';
@@ -25,7 +24,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                             background: 'var(--bg-input)',
                             border: '1px solid var(--glass-border)',
                             borderRadius: '8px',
-                            color: 'var(--text-primary)'
+                            color: 'var(--text-primary)',
                         }}
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -42,7 +41,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                             background: 'var(--bg-input)',
                             border: '1px solid var(--glass-border)',
                             borderRadius: '8px',
-                            color: 'var(--text-primary)'
+                            color: 'var(--text-primary)',
                         }}
                         value={formData.subtitle}
                         onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
@@ -58,7 +57,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                             background: 'var(--bg-input)',
                             border: '1px solid var(--glass-border)',
                             borderRadius: '8px',
-                            color: 'var(--text-primary)'
+                            color: 'var(--text-primary)',
                         }}
                         value={formData.url}
                         onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -77,14 +76,16 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
-                                color: 'var(--text-primary)'
+                                color: 'var(--text-primary)',
                             }}
                             value={formData.icon}
                             onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                         />
                     </div>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.color')}</label>
+                        <label style={{ display: 'block', marginBottom: '5px' }}>
+                            {t('dashboard:tile.form.color')}
+                        </label>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                             <input
                                 type="color"
@@ -95,13 +96,15 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                                     border: 'none',
                                     borderRadius: '8px',
                                     background: 'transparent',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
                                 }}
                                 value={rgbaToHex(formData.backgroundColor)}
-                                onChange={(e) => setFormData({
-                                    ...formData,
-                                    backgroundColor: hexToRgba(e.target.value)
-                                })}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        backgroundColor: hexToRgba(e.target.value),
+                                    })
+                                }
                             />
                             <input
                                 type="text"
@@ -112,7 +115,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                                     border: '1px solid var(--glass-border)',
                                     borderRadius: '8px',
                                     color: 'var(--text-primary)',
-                                    fontSize: '0.85rem'
+                                    fontSize: '0.85rem',
                                 }}
                                 value={formData.backgroundColor}
                                 onChange={(e) => setFormData({ ...formData, backgroundColor: e.target.value })}
@@ -122,7 +125,9 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
                     <div>
-                        <label style={{ display: 'block', marginBottom: '5px' }}>{t('dashboard:tile.form.order')}</label>
+                        <label style={{ display: 'block', marginBottom: '5px' }}>
+                            {t('dashboard:tile.form.order')}
+                        </label>
                         <input
                             type="number"
                             style={{
@@ -131,7 +136,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 borderRadius: '8px',
-                                color: 'var(--text-primary)'
+                                color: 'var(--text-primary)',
                             }}
                             value={formData.order}
                             onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
@@ -158,7 +163,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                             color: 'var(--text-primary)',
                             border: '1px solid var(--glass-border)',
                             borderRadius: '8px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                         }}
                     >
                         {t('common:cancel')}
@@ -172,7 +177,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                             border: 'none',
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            fontWeight: '600'
+                            fontWeight: '600',
                         }}
                     >
                         {currentTile ? t('common:update') : t('common:add')}

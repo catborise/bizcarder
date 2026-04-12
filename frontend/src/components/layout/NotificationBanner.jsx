@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNotification } from '../../context/NotificationContext';
 
 const NotificationBanner = () => {
@@ -22,13 +21,13 @@ const NotificationBanner = () => {
         alignItems: 'center',
         gap: '15px',
         animation: 'slideIn 0.3s ease-out',
-        minWidth: '300px'
+        minWidth: '300px',
     };
 
     const typeStyles = {
         success: { backgroundColor: 'var(--accent-success)' },
         error: { backgroundColor: 'var(--accent-error)' },
-        info: { backgroundColor: 'var(--accent-primary)' }
+        info: { backgroundColor: 'var(--accent-primary)' },
     }[notification.type] || { backgroundColor: 'var(--bg-card)' };
 
     return (
@@ -47,7 +46,7 @@ const NotificationBanner = () => {
                     color: 'var(--bg-card)',
                     cursor: 'pointer',
                     fontSize: '18px',
-                    opacity: 0.8
+                    opacity: 0.8,
                 }}
             >
                 ✕

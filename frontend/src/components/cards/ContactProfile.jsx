@@ -1,10 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router';
 import api, { API_URL } from '../../api/axios';
 import { downloadFile } from '../../utils/downloadHelper';
 import { useNotification } from '../../context/NotificationContext';
-import { FaEnvelope, FaPhone, FaGlobe, FaMapMarkerAlt, FaDownload, FaBuilding, FaUserCircle, FaQrcode } from 'react-icons/fa';
+import {
+    FaEnvelope,
+    FaPhone,
+    FaGlobe,
+    FaMapMarkerAlt,
+    FaDownload,
+    FaBuilding,
+    FaUserCircle,
+    FaQrcode,
+} from 'react-icons/fa';
 import QRCodeOverlay from '../shared/QRCodeOverlay';
 import { generateVCardString } from '../../utils/vcardHelper';
 
@@ -32,6 +41,7 @@ const ContactProfile = () => {
         };
 
         fetchPublicCard();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const handleDownloadVCard = async () => {
@@ -40,7 +50,7 @@ const ContactProfile = () => {
             showNotification(t('pages:contactProfile.vcardPreparing'), 'info');
             // Public vCF endpoint'ini kullan (sharingToken ile)
             const response = await api.get(`/api/cards/public/${card.sharingToken}/vcf`, {
-                responseType: 'blob'
+                responseType: 'blob',
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
             showNotification(t('pages:contactProfile.vcardDownloaded'), 'success');
@@ -51,7 +61,15 @@ const ContactProfile = () => {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh', color: 'var(--text-primary)' }}>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '80vh',
+                    color: 'var(--text-primary)',
+                }}
+            >
                 <div className="loader">{t('common:loading')}</div>
             </div>
         );
@@ -70,102 +88,235 @@ const ContactProfile = () => {
 
     return (
         <div className="fade-in" style={{ maxWidth: '600px', margin: '0 auto', padding: '20px' }}>
-            <div style={{
-                background: 'var(--bg-card)',
-                backdropFilter: 'blur(30px)',
-                borderRadius: '32px',
-                border: '1px solid var(--glass-border)',
-                overflow: 'hidden',
-                boxShadow: 'var(--glass-shadow)',
-                position: 'relative'
-            }}>
+            <div
+                style={{
+                    background: 'var(--bg-card)',
+                    backdropFilter: 'blur(30px)',
+                    borderRadius: '32px',
+                    border: '1px solid var(--glass-border)',
+                    overflow: 'hidden',
+                    boxShadow: 'var(--glass-shadow)',
+                    position: 'relative',
+                }}
+            >
                 {/* Header Gradient */}
-                <div style={{
-                    height: '160px',
-                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                    position: 'relative'
-                }}>
+                <div
+                    style={{
+                        height: '160px',
+                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                        position: 'relative',
+                    }}
+                >
                     {card.logoUrl && (
-                        <div style={{
-                            position: 'absolute',
-                            top: '20px',
-                            right: '25px',
-                            width: '70px',
-                            height: '70px',
-                            background: 'var(--bg-input)',
-                            backdropFilter: 'blur(10px)',
-                            borderRadius: '12px',
-                            padding: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: '1px solid var(--glass-border)'
-                        }}>
-                            <img src={`${API_URL}${card.logoUrl}`} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '20px',
+                                right: '25px',
+                                width: '70px',
+                                height: '70px',
+                                background: 'var(--bg-input)',
+                                backdropFilter: 'blur(10px)',
+                                borderRadius: '12px',
+                                padding: '10px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: '1px solid var(--glass-border)',
+                            }}
+                        >
+                            <img
+                                src={`${API_URL}${card.logoUrl}`}
+                                alt="Logo"
+                                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                            />
                         </div>
                     )}
                 </div>
 
                 <div style={{ padding: '0 40px 40px', marginTop: '-80px', position: 'relative', textAlign: 'center' }}>
                     {/* Profile Picture / Avatar */}
-                    <div style={{
-                        width: '160px',
-                        height: '160px',
-                        background: 'var(--bg-card)',
-                        borderRadius: '40px',
-                        border: '6px solid var(--glass-border)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '4rem',
-                        color: 'var(--text-primary)',
-                        margin: '0 auto 25px',
-                        overflow: 'hidden',
-                        boxShadow: 'var(--glass-shadow-hover)'
-                    }}>
+                    <div
+                        style={{
+                            width: '160px',
+                            height: '160px',
+                            background: 'var(--bg-card)',
+                            borderRadius: '40px',
+                            border: '6px solid var(--glass-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '4rem',
+                            color: 'var(--text-primary)',
+                            margin: '0 auto 25px',
+                            overflow: 'hidden',
+                            boxShadow: 'var(--glass-shadow-hover)',
+                        }}
+                    >
                         {card.frontImageUrl ? (
-                            <img src={`${API_URL}${card.frontImageUrl}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img
+                                src={`${API_URL}${card.frontImageUrl}`}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
                         ) : (
                             <FaUserCircle size={100} opacity={0.3} />
                         )}
                     </div>
 
-                    <h1 style={{ color: 'var(--text-primary)', fontSize: '2.5rem', margin: '0 0 10px 0', fontWeight: '800' }}>
+                    <h1
+                        style={{
+                            color: 'var(--text-primary)',
+                            fontSize: '2.5rem',
+                            margin: '0 0 10px 0',
+                            fontWeight: '800',
+                        }}
+                    >
                         {card.firstName} {card.lastName}
                     </h1>
-                    <p style={{ color: 'var(--accent-primary)', fontSize: '1.25rem', margin: '0 0 10px 0', fontWeight: '600' }}>{card.title}</p>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', marginBottom: '35px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <p
+                        style={{
+                            color: 'var(--accent-primary)',
+                            fontSize: '1.25rem',
+                            margin: '0 0 10px 0',
+                            fontWeight: '600',
+                        }}
+                    >
+                        {card.title}
+                    </p>
+                    <div
+                        style={{
+                            color: 'var(--text-secondary)',
+                            fontSize: '1.1rem',
+                            marginBottom: '35px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                        }}
+                    >
                         <FaBuilding opacity={0.5} /> {card.company}
                     </div>
 
                     <div style={{ display: 'grid', gap: '20px', textAlign: 'left', marginBottom: '40px' }}>
                         {card.email && (
-                            <a href={`mailto:${card.email}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'var(--bg-input)', borderRadius: '16px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                                <div style={{ width: '40px', height: '40px', background: 'rgba(var(--accent-primary-rgb), 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <a
+                                href={`mailto:${card.email}`}
+                                style={{
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '15px',
+                                    padding: '15px',
+                                    background: 'var(--bg-input)',
+                                    borderRadius: '16px',
+                                    border: '1px solid var(--glass-border)',
+                                    color: 'var(--text-primary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(var(--accent-primary-rgb), 0.1)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <FaEnvelope color="var(--accent-primary)" />
                                 </div>
                                 <span>{card.email}</span>
                             </a>
                         )}
                         {card.phone && (
-                            <a href={`tel:${card.phone}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'var(--bg-input)', borderRadius: '16px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                                <div style={{ width: '40px', height: '40px', background: 'rgba(var(--accent-secondary-rgb), 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <a
+                                href={`tel:${card.phone}`}
+                                style={{
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '15px',
+                                    padding: '15px',
+                                    background: 'var(--bg-input)',
+                                    borderRadius: '16px',
+                                    border: '1px solid var(--glass-border)',
+                                    color: 'var(--text-primary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(var(--accent-secondary-rgb), 0.1)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <FaPhone color="var(--accent-secondary)" />
                                 </div>
                                 <span>{card.phone}</span>
                             </a>
                         )}
                         {card.website && (
-                            <a href={card.website.startsWith('http') ? card.website : `https://${card.website}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'var(--bg-input)', borderRadius: '16px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                                <div style={{ width: '40px', height: '40px', background: 'rgba(var(--accent-success-rgb), 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <a
+                                href={card.website.startsWith('http') ? card.website : `https://${card.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{
+                                    textDecoration: 'none',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '15px',
+                                    padding: '15px',
+                                    background: 'var(--bg-input)',
+                                    borderRadius: '16px',
+                                    border: '1px solid var(--glass-border)',
+                                    color: 'var(--text-primary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(var(--accent-success-rgb), 0.1)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <FaGlobe color="var(--accent-success)" />
                                 </div>
                                 <span>{card.website}</span>
                             </a>
                         )}
                         {(card.city || card.country) && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px', background: 'var(--bg-input)', borderRadius: '16px', border: '1px solid var(--glass-border)', color: 'var(--text-primary)' }}>
-                                <div style={{ width: '40px', height: '40px', background: 'rgba(var(--accent-error-rgb), 0.1)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '15px',
+                                    padding: '15px',
+                                    background: 'var(--bg-input)',
+                                    borderRadius: '16px',
+                                    border: '1px solid var(--glass-border)',
+                                    color: 'var(--text-primary)',
+                                }}
+                            >
+                                <div
+                                    style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        background: 'rgba(var(--accent-error-rgb), 0.1)',
+                                        borderRadius: '12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
                                     <FaMapMarkerAlt color="var(--accent-error)" />
                                 </div>
                                 <span>{[card.city, card.country].filter(Boolean).join(', ')}</span>
@@ -190,7 +341,7 @@ const ContactProfile = () => {
                                 justifyContent: 'center',
                                 gap: '10px',
                                 fontSize: '1.1rem',
-                                boxShadow: 'var(--glass-shadow)'
+                                boxShadow: 'var(--glass-shadow)',
                             }}
                         >
                             <FaDownload /> {t('pages:contactProfile.addToContacts')}
@@ -207,7 +358,7 @@ const ContactProfile = () => {
                                 cursor: 'pointer',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
                             }}
                             title={t('pages:contactProfile.showQrCode')}
                         >

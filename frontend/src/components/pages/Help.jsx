@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    FaSearch, FaQuestionCircle, FaIdCard, FaQrcode, FaBell,
-    FaMobileAlt, FaShieldAlt, FaChevronRight, FaChevronDown,
-    FaLightbulb, FaSync, FaTrashAlt, FaDatabase
+    FaSearch,
+    FaQuestionCircle,
+    FaIdCard,
+    FaQrcode,
+    FaBell,
+    FaShieldAlt,
+    FaChevronRight,
+    FaChevronDown,
+    FaLightbulb,
+    FaSync,
+    FaDatabase,
 } from 'react-icons/fa';
 
 const Help = () => {
@@ -21,13 +29,13 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.whatIsBizcarder.q'),
-                    a: t('faq.whatIsBizcarder.a')
+                    a: t('faq.whatIsBizcarder.a'),
                 },
                 {
                     q: t('faq.howToInstall.q'),
-                    a: t('faq.howToInstall.a')
-                }
-            ]
+                    a: t('faq.howToInstall.a'),
+                },
+            ],
         },
         {
             id: 'card-management',
@@ -36,13 +44,13 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.howToAddCard.q'),
-                    a: t('faq.howToAddCard.a')
+                    a: t('faq.howToAddCard.a'),
                 },
                 {
                     q: t('faq.howToExport.q'),
-                    a: t('faq.howToExport.a')
-                }
-            ]
+                    a: t('faq.howToExport.a'),
+                },
+            ],
         },
         {
             id: 'digital-card',
@@ -51,13 +59,13 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.howToShare.q'),
-                    a: t('faq.howToShare.a')
+                    a: t('faq.howToShare.a'),
                 },
                 {
                     q: t('faq.whatIsVcard.q'),
-                    a: t('faq.whatIsVcard.a')
-                }
-            ]
+                    a: t('faq.whatIsVcard.a'),
+                },
+            ],
         },
         {
             id: 'crm-features',
@@ -66,13 +74,13 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.howReminders.q'),
-                    a: t('faq.howReminders.a')
+                    a: t('faq.howReminders.a'),
                 },
                 {
                     q: t('faq.howToLogNotes.q'),
-                    a: t('faq.howToLogNotes.a')
-                }
-            ]
+                    a: t('faq.howToLogNotes.a'),
+                },
+            ],
         },
         {
             id: 'offline-mode',
@@ -81,9 +89,9 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.offlineUsage.q'),
-                    a: t('faq.offlineUsage.a')
-                }
-            ]
+                    a: t('faq.offlineUsage.a'),
+                },
+            ],
         },
         {
             id: 'security',
@@ -92,9 +100,9 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.dataSecurity.q'),
-                    a: t('faq.dataSecurity.a')
-                }
-            ]
+                    a: t('faq.dataSecurity.a'),
+                },
+            ],
         },
         {
             id: 'admin-backup',
@@ -103,36 +111,39 @@ const Help = () => {
             items: [
                 {
                     q: t('faq.howToBackup.q'),
-                    a: t('faq.howToBackup.a')
+                    a: t('faq.howToBackup.a'),
                 },
                 {
                     q: t('faq.howToRestore.q'),
-                    a: t('faq.howToRestore.a')
+                    a: t('faq.howToRestore.a'),
                 },
                 {
                     q: t('faq.howToResetAdmin.q'),
-                    a: t('faq.howToResetAdmin.a')
+                    a: t('faq.howToResetAdmin.a'),
                 },
                 {
                     q: t('faq.howToEnable2FA.q'),
-                    a: t('faq.howToEnable2FA.a')
+                    a: t('faq.howToEnable2FA.a'),
                 },
                 {
                     q: t('faq.howToAutoBackup.q'),
-                    a: t('faq.howToAutoBackup.a')
-                }
-            ]
-        }
+                    a: t('faq.howToAutoBackup.a'),
+                },
+            ],
+        },
     ];
 
     const filteredSections = searchTerm
-        ? helpSections.map(s => ({
-            ...s,
-            items: s.items.filter(i =>
-                i.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                i.a.toLowerCase().includes(searchTerm.toLowerCase())
-            )
-        })).filter(s => s.items.length > 0)
+        ? helpSections
+              .map((s) => ({
+                  ...s,
+                  items: s.items.filter(
+                      (i) =>
+                          i.q.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          i.a.toLowerCase().includes(searchTerm.toLowerCase()),
+                  ),
+              }))
+              .filter((s) => s.items.length > 0)
         : helpSections;
 
     return (
@@ -143,30 +154,36 @@ const Help = () => {
             style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}
         >
             <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                <h1 style={{
-                    fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-                    fontWeight: '900',
-                    color: 'var(--text-primary)',
-                    marginBottom: '20px',
-                    letterSpacing: '-0.04em'
-                }}>
+                <h1
+                    style={{
+                        fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                        fontWeight: '900',
+                        color: 'var(--text-primary)',
+                        marginBottom: '20px',
+                        letterSpacing: '-0.04em',
+                    }}
+                >
                     {t('heading')}
                 </h1>
 
                 {/* Search Bar */}
-                <div style={{
-                    maxWidth: '600px',
-                    margin: '0 auto',
-                    position: 'relative',
-                    transform: 'translateY(10px)'
-                }}>
-                    <FaSearch style={{
-                        position: 'absolute',
-                        left: '20px',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        color: 'var(--text-tertiary)'
-                    }} />
+                <div
+                    style={{
+                        maxWidth: '600px',
+                        margin: '0 auto',
+                        position: 'relative',
+                        transform: 'translateY(10px)',
+                    }}
+                >
+                    <FaSearch
+                        style={{
+                            position: 'absolute',
+                            left: '20px',
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            color: 'var(--text-tertiary)',
+                        }}
+                    />
                     <input
                         type="text"
                         placeholder={t('searchPlaceholder')}
@@ -183,27 +200,31 @@ const Help = () => {
                             color: 'var(--text-primary)',
                             boxShadow: 'var(--glass-shadow)',
                             outline: 'none',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
                         }}
                     />
                 </div>
             </div>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(250px, 300px) 1fr',
-                gap: '40px',
-                alignItems: 'start'
-            }}>
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(250px, 300px) 1fr',
+                    gap: '40px',
+                    alignItems: 'start',
+                }}
+            >
                 {/* Sidebar Navigation */}
-                <aside style={{
-                    position: 'sticky',
-                    top: '100px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px'
-                }}>
-                    {helpSections.map(section => (
+                <aside
+                    style={{
+                        position: 'sticky',
+                        top: '100px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px',
+                    }}
+                >
+                    {helpSections.map((section) => (
                         <button
                             key={section.id}
                             onClick={() => setActiveSection(section.id)}
@@ -221,7 +242,10 @@ const Help = () => {
                                 cursor: 'pointer',
                                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                                 textAlign: 'left',
-                                boxShadow: activeSection === section.id ? '0 8px 20px rgba(var(--accent-primary-rgb), 0.3)' : 'none'
+                                boxShadow:
+                                    activeSection === section.id
+                                        ? '0 8px 20px rgba(var(--accent-primary-rgb), 0.3)'
+                                        : 'none',
                             }}
                         >
                             <span style={{ fontSize: '1.2rem' }}>{section.icon}</span>
@@ -232,17 +256,19 @@ const Help = () => {
                 </aside>
 
                 {/* Content Area */}
-                <main style={{
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid var(--glass-border)',
-                    borderRadius: '24px',
-                    padding: '40px',
-                    minHeight: '600px',
-                    boxShadow: 'var(--glass-shadow)'
-                }}>
+                <main
+                    style={{
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'blur(20px)',
+                        border: '1px solid var(--glass-border)',
+                        borderRadius: '24px',
+                        padding: '40px',
+                        minHeight: '600px',
+                        boxShadow: 'var(--glass-shadow)',
+                    }}
+                >
                     <AnimatePresence mode="wait">
-                        {filteredSections.map(section => (
+                        {filteredSections.map((section) =>
                             activeSection === section.id || searchTerm ? (
                                 <motion.div
                                     key={section.id}
@@ -251,17 +277,28 @@ const Help = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-                                        <div style={{
-                                            padding: '12px',
-                                            background: 'rgba(var(--accent-primary-rgb), 0.1)',
-                                            borderRadius: '12px',
-                                            color: 'var(--accent-primary)',
-                                            fontSize: '1.5rem'
-                                        }}>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '15px',
+                                            marginBottom: '30px',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                padding: '12px',
+                                                background: 'rgba(var(--accent-primary-rgb), 0.1)',
+                                                borderRadius: '12px',
+                                                color: 'var(--accent-primary)',
+                                                fontSize: '1.5rem',
+                                            }}
+                                        >
                                             {section.icon}
                                         </div>
-                                        <h2 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-primary)' }}>{section.title}</h2>
+                                        <h2 style={{ margin: 0, fontSize: '1.8rem', color: 'var(--text-primary)' }}>
+                                            {section.title}
+                                        </h2>
                                     </div>
 
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -277,7 +314,7 @@ const Help = () => {
                                                         border: '1px solid var(--glass-border)',
                                                         borderRadius: '15px',
                                                         overflow: 'hidden',
-                                                        transition: 'all 0.3s ease'
+                                                        transition: 'all 0.3s ease',
                                                     }}
                                                 >
                                                     <button
@@ -294,11 +331,15 @@ const Help = () => {
                                                             fontSize: '1.1rem',
                                                             fontWeight: '600',
                                                             textAlign: 'left',
-                                                            cursor: 'pointer'
+                                                            cursor: 'pointer',
                                                         }}
                                                     >
                                                         {item.q}
-                                                        {isExpanded ? <FaChevronDown color="var(--accent-primary)" /> : <FaChevronRight color="var(--text-tertiary)" />}
+                                                        {isExpanded ? (
+                                                            <FaChevronDown color="var(--accent-primary)" />
+                                                        ) : (
+                                                            <FaChevronRight color="var(--text-tertiary)" />
+                                                        )}
                                                     </button>
 
                                                     <AnimatePresence>
@@ -309,18 +350,23 @@ const Help = () => {
                                                                 exit={{ height: 0, opacity: 0 }}
                                                                 transition={{ duration: 0.3 }}
                                                             >
-                                                                <div style={{
-                                                                    padding: '0 20px 20px 20px',
-                                                                    color: 'var(--text-secondary)',
-                                                                    lineHeight: '1.7',
-                                                                    fontSize: '1rem'
-                                                                }}>
-                                                                    <div style={{
-                                                                        padding: '20px',
-                                                                        background: 'var(--bg-input)',
-                                                                        borderRadius: '12px',
-                                                                        borderLeft: '4px solid var(--accent-primary)'
-                                                                    }}>
+                                                                <div
+                                                                    style={{
+                                                                        padding: '0 20px 20px 20px',
+                                                                        color: 'var(--text-secondary)',
+                                                                        lineHeight: '1.7',
+                                                                        fontSize: '1rem',
+                                                                    }}
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            padding: '20px',
+                                                                            background: 'var(--bg-input)',
+                                                                            borderRadius: '12px',
+                                                                            borderLeft:
+                                                                                '4px solid var(--accent-primary)',
+                                                                        }}
+                                                                    >
                                                                         {item.a}
                                                                     </div>
                                                                 </div>
@@ -332,8 +378,8 @@ const Help = () => {
                                         })}
                                     </div>
                                 </motion.div>
-                            ) : null
-                        ))}
+                            ) : null,
+                        )}
                     </AnimatePresence>
 
                     {filteredSections.length === 0 && (
@@ -347,35 +393,48 @@ const Help = () => {
             </div>
 
             {/* Quick Contact Footer */}
-            <div style={{
-                marginTop: '60px',
-                padding: '40px',
-                background: 'linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.1), rgba(var(--accent-secondary-rgb), 0.1))',
-                borderRadius: '24px',
-                border: '1px solid var(--glass-border)',
-                textAlign: 'center'
-            }}>
+            <div
+                style={{
+                    marginTop: '60px',
+                    padding: '40px',
+                    background:
+                        'linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.1), rgba(var(--accent-secondary-rgb), 0.1))',
+                    borderRadius: '24px',
+                    border: '1px solid var(--glass-border)',
+                    textAlign: 'center',
+                }}
+            >
                 <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>{t('contactTitle')}</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '25px' }}>{t('contactDescription')}</p>
                 <div style={{ display: 'flex', gap: '20px', justifyContent: 'center' }}>
-                    <a href="mailto:destek@bizcarder.com" style={{
-                        padding: '12px 25px',
-                        background: 'var(--accent-primary)',
-                        color: '#fff',
-                        borderRadius: '12px',
-                        textDecoration: 'none',
-                        fontWeight: '600',
-                        boxShadow: '0 8px 20px rgba(var(--accent-primary-rgb), 0.2)'
-                    }}>{t('sendEmail')}</a>
-                    <a href="/about" style={{
-                        padding: '12px 25px',
-                        background: 'var(--glass-bg)',
-                        color: 'var(--text-primary)',
-                        borderRadius: '12px',
-                        textDecoration: 'none',
-                        border: '1px solid var(--glass-border)',
-                        fontWeight: '600'
-                    }}>{t('devTeam')}</a>
+                    <a
+                        href="mailto:destek@bizcarder.com"
+                        style={{
+                            padding: '12px 25px',
+                            background: 'var(--accent-primary)',
+                            color: '#fff',
+                            borderRadius: '12px',
+                            textDecoration: 'none',
+                            fontWeight: '600',
+                            boxShadow: '0 8px 20px rgba(var(--accent-primary-rgb), 0.2)',
+                        }}
+                    >
+                        {t('sendEmail')}
+                    </a>
+                    <a
+                        href="/about"
+                        style={{
+                            padding: '12px 25px',
+                            background: 'var(--glass-bg)',
+                            color: 'var(--text-primary)',
+                            borderRadius: '12px',
+                            textDecoration: 'none',
+                            border: '1px solid var(--glass-border)',
+                            fontWeight: '600',
+                        }}
+                    >
+                        {t('devTeam')}
+                    </a>
                 </div>
             </div>
         </motion.div>

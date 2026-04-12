@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
@@ -16,7 +16,7 @@ const Settings = () => {
     const [profileData, setProfileData] = useState({
         displayName: '',
         email: '',
-        trashRetentionDays: 30
+        trashRetentionDays: 30,
     });
 
     useEffect(() => {
@@ -24,7 +24,7 @@ const Settings = () => {
             setProfileData({
                 displayName: user.displayName || '',
                 email: user.email || '',
-                trashRetentionDays: user.trashRetentionDays || 30
+                trashRetentionDays: user.trashRetentionDays || 30,
             });
         }
     }, [user]);
@@ -38,7 +38,10 @@ const Settings = () => {
             }
         } catch (error) {
             console.error('Profile save error:', error);
-            showNotification(t('settings:notify.profileUpdateFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(
+                t('settings:notify.profileUpdateFailed', { error: error.response?.data?.error || error.message }),
+                'error',
+            );
         }
     };
 
@@ -50,7 +53,7 @@ const Settings = () => {
         border: '1px solid var(--glass-border)',
         boxShadow: 'var(--glass-shadow)',
         maxWidth: '700px',
-        marginBottom: '30px'
+        marginBottom: '30px',
     };
 
     const inputStyle = {
@@ -61,7 +64,7 @@ const Settings = () => {
         borderRadius: '8px',
         color: 'var(--text-primary)',
         fontSize: '1rem',
-        marginTop: '8px'
+        marginTop: '8px',
     };
 
     const sectionTitleStyle = {
@@ -71,16 +74,23 @@ const Settings = () => {
         color: 'var(--text-primary)',
         display: 'flex',
         alignItems: 'center',
-        gap: '12px'
+        gap: '12px',
     };
 
     return (
         <div className="fade-in" style={{ paddingBottom: '50px' }}>
-            <h2 style={{
-                marginBottom: '40px', fontWeight: '700', fontSize: '2.5rem',
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '15px'
-            }}>
+            <h2
+                style={{
+                    marginBottom: '40px',
+                    fontWeight: '700',
+                    fontSize: '2.5rem',
+                    color: 'var(--text-primary)',
+                    letterSpacing: '-0.02em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px',
+                }}
+            >
                 <span style={{ fontSize: '2rem' }}>⚙️</span> {t('settings:title')}
             </h2>
 
@@ -90,18 +100,30 @@ const Settings = () => {
                     <span style={{ fontSize: '1.5rem' }}>👤</span> {t('settings:section.profile')}
                 </h3>
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:profile.username')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('settings:profile.username')}
+                    </label>
                     <input
                         type="text"
                         value={user?.username || ''}
-                        style={{ ...inputStyle, background: 'var(--bg-input)', opacity: 0.6, cursor: 'not-allowed', color: 'var(--text-tertiary)' }}
+                        style={{
+                            ...inputStyle,
+                            background: 'var(--bg-input)',
+                            opacity: 0.6,
+                            cursor: 'not-allowed',
+                            color: 'var(--text-tertiary)',
+                        }}
                         disabled
                     />
-                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>{t('settings:profile.usernameHint')}</small>
+                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>
+                        {t('settings:profile.usernameHint')}
+                    </small>
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:profile.displayName')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('settings:profile.displayName')}
+                    </label>
                     <input
                         type="text"
                         value={profileData.displayName}
@@ -112,7 +134,9 @@ const Settings = () => {
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:profile.email')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('settings:profile.email')}
+                    </label>
                     <input
                         type="email"
                         value={profileData.email}
@@ -123,16 +147,22 @@ const Settings = () => {
                 </div>
 
                 <div style={{ marginBottom: '30px' }}>
-                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>{t('settings:profile.trashRetention')}</label>
+                    <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+                        {t('settings:profile.trashRetention')}
+                    </label>
                     <input
                         type="number"
                         min="1"
                         max="365"
                         value={profileData.trashRetentionDays}
-                        onChange={(e) => setProfileData({ ...profileData, trashRetentionDays: parseInt(e.target.value) || 1 })}
+                        onChange={(e) =>
+                            setProfileData({ ...profileData, trashRetentionDays: parseInt(e.target.value) || 1 })
+                        }
                         style={inputStyle}
                     />
-                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>{t('settings:profile.trashRetentionHint')}</small>
+                    <small style={{ color: 'var(--text-tertiary)', marginTop: '4px', display: 'block' }}>
+                        {t('settings:profile.trashRetentionHint')}
+                    </small>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -147,7 +177,7 @@ const Settings = () => {
                             fontWeight: '600',
                             cursor: 'pointer',
                             boxShadow: 'var(--glass-shadow)',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
                         }}
                     >
                         {t('settings:profile.updateBtn')}
@@ -161,7 +191,15 @@ const Settings = () => {
                     <span style={{ fontSize: '1.5rem' }}>🔐</span> {t('settings:section.account')}
                 </h3>
                 {user?.shibbolethId ? (
-                    <div style={{ padding: '15px', background: 'var(--glass-bg)', borderRadius: '8px', border: '1px solid var(--accent-primary)', color: 'var(--accent-primary)' }}>
+                    <div
+                        style={{
+                            padding: '15px',
+                            background: 'var(--glass-bg)',
+                            borderRadius: '8px',
+                            border: '1px solid var(--accent-primary)',
+                            color: 'var(--accent-primary)',
+                        }}
+                    >
                         <p style={{ margin: 0 }}>{t('settings:account.ssoMessage')}</p>
                     </div>
                 ) : (

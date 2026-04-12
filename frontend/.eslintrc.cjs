@@ -7,7 +7,7 @@ module.exports = {
         'plugin:react/jsx-runtime',
         'plugin:react-hooks/recommended',
     ],
-    ignorePatterns: ['**/__tests__/**'],
+    ignorePatterns: ['**/__tests__/**', 'dist/**'],
     parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
     settings: { react: { version: 'detect' } },
     plugins: ['react-refresh'],

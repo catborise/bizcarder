@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -8,14 +7,16 @@ const ProtectedRoute = ({ children }) => {
 
     if (loading) {
         return (
-            <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '60vh',
-                fontSize: '18px',
-                color: '#aaa'
-            }}>
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    minHeight: '60vh',
+                    fontSize: '18px',
+                    color: '#aaa',
+                }}
+            >
                 Yükleniyor...
             </div>
         );

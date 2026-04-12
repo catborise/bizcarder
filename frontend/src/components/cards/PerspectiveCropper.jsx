@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { detectCard } from '../../utils/rectDetector';
 
 const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
@@ -18,9 +18,11 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
     const isPointInPolygon = (x, y, poly) => {
         let inside = false;
         for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-            const xi = poly[i].x, yi = poly[i].y;
-            const xj = poly[j].x, yj = poly[j].y;
-            const intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            const xi = poly[i].x,
+                yi = poly[i].y;
+            const xj = poly[j].x,
+                yj = poly[j].y;
+            const intersect = yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
             if (intersect) inside = !inside;
         }
         return inside;
@@ -47,10 +49,12 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
 
             // AI tarafından belirlenmiş noktalar varsa onları kullan
             if (initialPoints && Array.isArray(initialPoints) && initialPoints.length === 4) {
-                setPoints(initialPoints.map(p => ({
-                    x: p.x * (width / 100), // AI 0-100 arası verir
-                    y: p.y * (height / 100)
-                })));
+                setPoints(
+                    initialPoints.map((p) => ({
+                        x: p.x * (width / 100), // AI 0-100 arası verir
+                        y: p.y * (height / 100),
+                    })),
+                );
                 return;
             }
 
@@ -60,9 +64,9 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                 const scaleX = width / imgRef.current.naturalWidth;
                 const scaleY = height / imgRef.current.naturalHeight;
 
-                const displayPoints = detectedNaturalPoints.map(p => ({
+                const displayPoints = detectedNaturalPoints.map((p) => ({
                     x: p.x * scaleX,
-                    y: p.y * scaleY
+                    y: p.y * scaleY,
                 }));
 
                 setPoints(displayPoints);
@@ -73,7 +77,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                     { x: padding, y: padding },
                     { x: width - padding, y: padding },
                     { x: width - padding, y: height - padding },
-                    { x: padding, y: height - padding }
+                    { x: padding, y: height - padding },
                 ]);
             }
         }, 100);
@@ -113,14 +117,14 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         ctx.clearRect(0, 0, size, size);
         ctx.drawImage(
             imgRef.current,
-            centerX - (size / (2 * zoom)),
-            centerY - (size / (2 * zoom)),
+            centerX - size / (2 * zoom),
+            centerY - size / (2 * zoom),
             size / zoom,
             size / zoom,
             0,
             0,
             size,
-            size
+            size,
         );
 
         // Draw crosshair
@@ -128,8 +132,10 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         ctx.lineWidth = 1;
 
         ctx.beginPath();
-        ctx.moveTo(size / 2, 0); ctx.lineTo(size / 2, size);
-        ctx.moveTo(0, size / 2); ctx.lineTo(size, size / 2);
+        ctx.moveTo(size / 2, 0);
+        ctx.lineTo(size / 2, size);
+        ctx.moveTo(0, size / 2);
+        ctx.lineTo(size, size / 2);
         ctx.stroke();
     };
 
@@ -212,11 +218,11 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
             const newPoints = [...points];
             newPoints[idx1] = {
                 x: Math.max(0, Math.min(newPoints[idx1].x + dx, imgSize.width)),
-                y: Math.max(0, Math.min(newPoints[idx1].y + dy, imgSize.height))
+                y: Math.max(0, Math.min(newPoints[idx1].y + dy, imgSize.height)),
             };
             newPoints[idx2] = {
                 x: Math.max(0, Math.min(newPoints[idx2].x + dx, imgSize.width)),
-                y: Math.max(0, Math.min(newPoints[idx2].y + dy, imgSize.height))
+                y: Math.max(0, Math.min(newPoints[idx2].y + dy, imgSize.height)),
             };
 
             setPoints(newPoints);
@@ -225,13 +231,15 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
             const dx = x - dragStartPos.x;
             const dy = y - dragStartPos.y;
 
-            const newPoints = points.map(p => ({
+            const newPoints = points.map((p) => ({
                 x: Math.max(0, Math.min(p.x + dx, imgSize.width)),
-                y: Math.max(0, Math.min(p.y + dy, imgSize.height))
+                y: Math.max(0, Math.min(p.y + dy, imgSize.height)),
             }));
 
             // Boundary checks for the whole polygon
-            const outOfBounds = newPoints.some(p => p.x < 0 || p.x > imgSize.width || p.y < 0 || p.y > imgSize.height);
+            const outOfBounds = newPoints.some(
+                (p) => p.x < 0 || p.x > imgSize.width || p.y < 0 || p.y > imgSize.height,
+            );
             if (!outOfBounds) {
                 setPoints(newPoints);
                 setDragStartPos({ x, y });
@@ -250,17 +258,21 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
         const scaleX = imgRef.current.naturalWidth / imgSize.width;
         const scaleY = imgRef.current.naturalHeight / imgSize.height;
 
-        const naturalPoints = points.map(p => ({
+        const naturalPoints = points.map((p) => ({
             x: p.x * scaleX,
-            y: p.y * scaleY
+            y: p.y * scaleY,
         }));
 
         onCropComplete(naturalPoints, imgRef.current);
     };
 
-    const aspect = points.length === 4 ?
-        (Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) /
-            Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y)).toFixed(2) : 0;
+    const aspect =
+        points.length === 4
+            ? (
+                  Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y) /
+                  Math.hypot(points[3].x - points[0].x, points[3].y - points[0].y)
+              ).toFixed(2)
+            : 0;
 
     return (
         <div style={{ position: 'relative', userSelect: 'none', display: 'inline-block', touchAction: 'none' }}>
@@ -271,10 +283,16 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                     display: 'inline-block',
                     overflow: 'visible', // Ensure handles are visible at edges
                     touchAction: 'none', // Prevent browser touch gestures (pull-to-refresh, scroll)
-                    cursor: draggingIdx !== null ? 'grabbing' :
-                        (draggingEdgeIdx !== null || isDraggingArea ? 'move' :
-                            (hoverState === 'edge' ? 'move' :
-                                (hoverState === 'area' ? 'move' : 'default')))
+                    cursor:
+                        draggingIdx !== null
+                            ? 'grabbing'
+                            : draggingEdgeIdx !== null || isDraggingArea
+                              ? 'move'
+                              : hoverState === 'edge'
+                                ? 'move'
+                                : hoverState === 'area'
+                                  ? 'move'
+                                  : 'default',
                 }}
                 onMouseDown={handleContainerMouseDown}
                 onMouseMove={handleMouseMove}
@@ -331,7 +349,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', overflow: 'visible' }}
                     >
                         <polygon
-                            points={points.map(p => `${p.x},${p.y}`).join(' ')}
+                            points={points.map((p) => `${p.x},${p.y}`).join(' ')}
                             fill="rgba(74, 222, 128, 0.2)"
                             stroke="var(--accent-success)"
                             strokeWidth="3"
@@ -339,29 +357,29 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                             strokeLinejoin="round"
                             style={{ pointerEvents: 'auto', cursor: 'move' }}
                         />
-
                     </svg>
                 )}
 
                 {/* Magnifier */}
                 {showMagnifier && (
-                    <div style={{
-                        position: 'absolute',
-                        left: magnifierPos.x - 60,
-                        top: magnifierPos.y - 60,
-                        width: 120,
-                        height: 120,
-                        borderRadius: '60px',
-                        border: '3px solid var(--accent-success)',
-                        overflow: 'hidden',
-                        zIndex: 100,
-                        pointerEvents: 'none',
-                        boxShadow: 'var(--glass-shadow-hover)',
-                        background: 'var(--bg-card)'
-                    }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            left: magnifierPos.x - 60,
+                            top: magnifierPos.y - 60,
+                            width: 120,
+                            height: 120,
+                            borderRadius: '60px',
+                            border: '3px solid var(--accent-success)',
+                            overflow: 'hidden',
+                            zIndex: 100,
+                            pointerEvents: 'none',
+                            boxShadow: 'var(--glass-shadow-hover)',
+                            background: 'var(--bg-card)',
+                        }}
+                    >
                         <canvas ref={magnifierCanvasRef} width={120} height={120} />
                     </div>
-
                 )}
 
                 {/* Handles */}
@@ -371,7 +389,11 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         onMouseDown={handleMouseDown(idx)}
                         onTouchStart={(e) => {
                             e.preventDefault();
-                            handleMouseDown(idx)({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY, preventDefault: () => { } });
+                            handleMouseDown(idx)({
+                                clientX: e.touches[0].clientX,
+                                clientY: e.touches[0].clientY,
+                                preventDefault: () => {},
+                            });
                         }}
                         style={{
                             position: 'absolute',
@@ -388,25 +410,28 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                             boxShadow: 'var(--glass-shadow)',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center'
+                            justifyContent: 'center',
                         }}
                     >
-                        <div style={{ width: 6, height: 6, background: 'var(--accent-success)', borderRadius: '50%' }} />
-
+                        <div
+                            style={{ width: 6, height: 6, background: 'var(--accent-success)', borderRadius: '50%' }}
+                        />
                     </div>
                 ))}
             </div>
 
-            <div style={{
-                marginTop: '15px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: 'var(--glass-bg)',
-                padding: '10px 15px',
-                borderRadius: '12px',
-                border: '1px solid var(--glass-border)'
-            }}>
+            <div
+                style={{
+                    marginTop: '15px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: 'var(--glass-bg)',
+                    padding: '10px 15px',
+                    borderRadius: '12px',
+                    border: '1px solid var(--glass-border)',
+                }}
+            >
                 <div style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
                     Oran: <span style={{ color: 'var(--accent-success)', fontWeight: 'bold' }}>{aspect}</span>
                 </div>
@@ -422,10 +447,9 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         borderRadius: '10px',
                         cursor: 'pointer',
                         fontWeight: 'bold',
-                        boxShadow: 'var(--glass-shadow-hover)'
+                        boxShadow: 'var(--glass-shadow-hover)',
                     }}
                 >
-
                     Alan Seçildi
                 </button>
             </div>
@@ -434,4 +458,3 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
 };
 
 export default PerspectiveCropper;
-

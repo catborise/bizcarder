@@ -1,35 +1,38 @@
-import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { FaTimes, FaDownload, FaUserPlus, FaQrcode } from 'react-icons/fa';
+import { FaTimes, FaUserPlus, FaQrcode } from 'react-icons/fa';
 
-const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = null, onDownloadVCard = null }) => {
+const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = null, onDownloadVCard = null }) => {
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.85)',
-            backdropFilter: 'blur(15px)',
-            zIndex: 5000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-        }}>
-            <div style={{
-                background: 'var(--bg-card)',
-                backdropFilter: 'blur(30px)',
-                border: '1px solid var(--glass-border)',
-                borderRadius: '24px',
-                width: '100%',
-                maxWidth: '420px',
-                padding: '40px 30px',
-                boxShadow: 'var(--glass-shadow)',
-                textAlign: 'center',
-                position: 'relative'
-            }}>
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                backdropFilter: 'blur(15px)',
+                zIndex: 5000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+            }}
+        >
+            <div
+                style={{
+                    background: 'var(--bg-card)',
+                    backdropFilter: 'blur(30px)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: '24px',
+                    width: '100%',
+                    maxWidth: '420px',
+                    padding: '40px 30px',
+                    boxShadow: 'var(--glass-shadow)',
+                    textAlign: 'center',
+                    position: 'relative',
+                }}
+            >
                 <button
                     onClick={onClose}
                     style={{
@@ -46,46 +49,54 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                         alignItems: 'center',
                         justifyContent: 'center',
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
                     }}
                 >
                     <FaTimes />
                 </button>
 
-                <div style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '60px',
-                    height: '60px',
-                    borderRadius: '16px',
-                    background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
-                    marginBottom: '20px',
-                    boxShadow: 'var(--glass-shadow)'
-                }}>
+                <div
+                    style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '16px',
+                        background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)',
+                        marginBottom: '20px',
+                        boxShadow: 'var(--glass-shadow)',
+                    }}
+                >
                     <FaQrcode size={30} color="var(--bg-card)" />
                 </div>
 
-                <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '1.6rem', fontWeight: '700' }}>{title}</h3>
+                <h3
+                    style={{
+                        color: 'var(--text-primary)',
+                        marginBottom: '10px',
+                        fontSize: '1.6rem',
+                        fontWeight: '700',
+                    }}
+                >
+                    {title}
+                </h3>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginBottom: '30px' }}>
                     Dijital kartvizit bilgileri
                 </p>
 
-                <div style={{
-                    background: 'white',
-                    padding: '20px',
-                    borderRadius: '20px',
-                    display: 'inline-block',
-                    marginBottom: '30px',
-                    boxShadow: 'var(--glass-shadow)',
-                    border: '8px solid white'
-                }}>
-                    <QRCodeSVG
-                        value={vCardData || url}
-                        size={240}
-                        level="M"
-                        includeMargin={false}
-                    />
+                <div
+                    style={{
+                        background: 'white',
+                        padding: '20px',
+                        borderRadius: '20px',
+                        display: 'inline-block',
+                        marginBottom: '30px',
+                        boxShadow: 'var(--glass-shadow)',
+                        border: '8px solid white',
+                    }}
+                >
+                    <QRCodeSVG value={vCardData || url} size={240} level="M" includeMargin={false} />
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -106,7 +117,7 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                                 justifyContent: 'center',
                                 gap: '10px',
                                 boxShadow: 'var(--glass-shadow)',
-                                fontSize: '1rem'
+                                fontSize: '1rem',
                             }}
                         >
                             <FaUserPlus /> Rehbere Ekle (vCard)
@@ -134,7 +145,7 @@ const QRCodeOverlay = ({ url, onClose, title = "Dijital Kartvizit", vCardData = 
                             fontWeight: '600',
                             width: '100%',
                             transition: 'all 0.2s',
-                            fontSize: '0.9rem'
+                            fontSize: '0.9rem',
                         }}
                     >
                         Profil Bağlantısını Aç

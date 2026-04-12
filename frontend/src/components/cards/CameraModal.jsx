@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * CameraModal
  *
@@ -16,35 +14,39 @@ export default function CameraModal({
     onCapture,
     cameraSide,
     fallbackToFileInput,
-    t
+    t,
 }) {
     if (!isOpen) return null;
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.95)',
-            zIndex: 5000,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px'
-        }}>
-            <div style={{
-                position: 'relative',
-                width: '100%',
-                maxWidth: '640px',
-                aspectRatio: '4/3',
-                background: 'black',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                border: '2px solid var(--accent-primary)'
-            }}>
+        <div
+            style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.95)',
+                zIndex: 5000,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px',
+            }}
+        >
+            <div
+                style={{
+                    position: 'relative',
+                    width: '100%',
+                    maxWidth: '640px',
+                    aspectRatio: '4/3',
+                    background: 'black',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    border: '2px solid var(--accent-primary)',
+                }}
+            >
                 {/* Video element - muted gerekli (iOS autoplay policy) */}
                 <video
                     ref={videoRef}
@@ -55,21 +57,23 @@ export default function CameraModal({
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        display: cameraReady ? 'block' : 'none'
+                        display: cameraReady ? 'block' : 'none',
                     }}
                 />
 
                 {/* Kamera yüklenirken göster */}
                 {!cameraReady && !cameraError && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
-                    }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                        }}
+                    >
                         <div className="spinner" style={{ marginBottom: '12px' }}></div>
                         <p style={{ fontSize: '14px', fontWeight: '500' }}>{t('addCard.camera.starting')}</p>
                     </div>
@@ -77,17 +81,19 @@ export default function CameraModal({
 
                 {/* Kamera hatası göster */}
                 {cameraError && (
-                    <div style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        padding: '20px',
-                        textAlign: 'center'
-                    }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            padding: '20px',
+                            textAlign: 'center',
+                        }}
+                    >
                         <p style={{ fontSize: '40px', marginBottom: '10px' }}>
                             {cameraError === 'permission' ? '🔒' : cameraError === 'not-found' ? '📷' : '⚠️'}
                         </p>
@@ -114,36 +120,42 @@ export default function CameraModal({
                                 fontWeight: 'bold',
                                 border: 'none',
                                 cursor: 'pointer',
-                                fontSize: '14px'
+                                fontSize: '14px',
                             }}
-                        >{t('addCard.btn.selectFromFile')}</button>
+                        >
+                            {t('addCard.btn.selectFromFile')}
+                        </button>
                     </div>
                 )}
 
                 {/* Vizör Çerçevesi - sadece kamera hazırken göster */}
                 {cameraReady && (
-                    <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '85%',
-                        height: '60%',
-                        border: '2px dashed var(--accent-primary)',
-                        borderRadius: '12px',
-                        pointerEvents: 'none',
-                        boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)'
-                    }}>
-                        <div style={{
+                    <div
+                        style={{
                             position: 'absolute',
-                            top: '-30px',
-                            left: 0,
-                            right: 0,
-                            textAlign: 'center',
-                            color: 'var(--accent-primary)',
-                            fontSize: '14px',
-                            fontWeight: 'bold'
-                        }}>
+                            top: '50%',
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: '85%',
+                            height: '60%',
+                            border: '2px dashed var(--accent-primary)',
+                            borderRadius: '12px',
+                            pointerEvents: 'none',
+                            boxShadow: '0 0 0 9999px rgba(0,0,0,0.5)',
+                        }}
+                    >
+                        <div
+                            style={{
+                                position: 'absolute',
+                                top: '-30px',
+                                left: 0,
+                                right: 0,
+                                textAlign: 'center',
+                                color: 'var(--accent-primary)',
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                            }}
+                        >
                             {t('addCard.camera.alignCard')}
                         </div>
                     </div>
@@ -161,9 +173,11 @@ export default function CameraModal({
                         borderRadius: '12px',
                         fontWeight: 'bold',
                         border: 'none',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
                     }}
-                >{t('common:cancel')}</button>
+                >
+                    {t('common:cancel')}
+                </button>
                 <button
                     type="button"
                     onClick={onCapture}
@@ -180,9 +194,11 @@ export default function CameraModal({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '10px',
-                        opacity: cameraReady ? 1 : 0.5
+                        opacity: cameraReady ? 1 : 0.5,
                     }}
-                >{t('addCard.btn.takePhoto')}</button>
+                >
+                    {t('addCard.btn.takePhoto')}
+                </button>
             </div>
         </div>
     );
