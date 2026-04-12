@@ -98,7 +98,7 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
             if (err) console.error('Logout error:', err);
         });
         return res.status(403).json({
-            error: 'Yerel giriş yetkiniz bulunmuyor. Lütfen kurumsal giriş (SSO) kullanın.',
+            errorCode: 'LOCAL_LOGIN_FORBIDDEN',
         });
     }
 
@@ -108,7 +108,7 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
             if (err) console.error('Logout error:', err);
         });
         return res.status(403).json({
-            error: 'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen onay bekleyin.',
+            errorCode: 'ACCOUNT_NOT_APPROVED',
         });
     }
 
@@ -120,7 +120,7 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
             req.logout((err) => {});
             return res.status(206).json({
                 requires2FA: true,
-                message: 'Two-factor authentication required.',
+                errorCode: 'REQUIRES_2FA',
             });
         }
 
@@ -128,7 +128,7 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
         const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token: totpToken, window: 1 });
         if (!isValid) {
             req.logout((err) => {});
-            return res.status(401).json({ error: 'Invalid 2FA token.' });
+            return res.status(401).json({ errorCode: 'INVALID_2FA_TOKEN' });
         }
     }
 
@@ -137,12 +137,12 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
     req.session.regenerate((err) => {
         if (err) {
             console.error('Session regenerate error:', err);
-            return res.status(500).json({ error: 'Oturum oluşturulamadı.' });
+            return res.status(500).json({ errorCode: 'SESSION_CREATE_FAILED' });
         }
         req.logIn(user, (err) => {
             if (err) {
                 console.error('Re-login error:', err);
-                return res.status(500).json({ error: 'Oturum oluşturulamadı.' });
+                return res.status(500).json({ errorCode: 'SESSION_CREATE_FAILED' });
             }
             req.session.save((err) => {
                 if (err) console.error('Session save error:', err);
@@ -167,18 +167,18 @@ router.post(
     '/local/register',
     authLimiter,
     [
-        body('username').trim().isLength({ min: 3 }).withMessage('Kullanıcı adı en az 3 karakter olmalıdır.'),
-        body('email').isEmail().withMessage('Geçerli bir e-posta adresi giriniz.'),
+        body('username').trim().isLength({ min: 3 }).withMessage('USERNAME_TOO_SHORT'),
+        body('email').isEmail().withMessage('INVALID_EMAIL'),
         body('password')
             .isLength({ min: 8 })
-            .withMessage('Şifre en az 8 karakter olmalıdır.')
+            .withMessage('PASSWORD_TOO_SHORT')
             .matches(/[A-Z]/)
-            .withMessage('Şifre en az bir büyük harf içermelidir.')
+            .withMessage('PASSWORD_NEEDS_UPPERCASE')
             .matches(/[a-z]/)
-            .withMessage('Şifre en az bir küçük harf içermelidir.')
+            .withMessage('PASSWORD_NEEDS_LOWERCASE')
             .matches(/[0-9]/)
-            .withMessage('Şifre en az bir rakam içermelidir.'),
-        body('displayName').optional().trim().isLength({ max: 50 }).withMessage('Görünen ad çok uzun.'),
+            .withMessage('PASSWORD_NEEDS_DIGIT'),
+        body('displayName').optional().trim().isLength({ max: 50 }).withMessage('DISPLAY_NAME_TOO_LONG'),
     ],
     validate,
     async (req, res) => {
@@ -189,7 +189,7 @@ router.post(
 
             if (!isRegistrationAllowed) {
                 return res.status(403).json({
-                    error: 'Yeni kullanıcı kaydı şu an için kapalıdır. Lütfen sistem yöneticisi ile iletişime geçin.',
+                    errorCode: 'REGISTRATION_DISABLED',
                 });
             }
 
@@ -198,7 +198,7 @@ router.post(
             // Gerekli alanları kontrol et
             if (!username || !email || !password) {
                 return res.status(400).json({
-                    error: 'Kullanıcı adı, e-posta ve şifre gereklidir.',
+                    errorCode: 'MISSING_REQUIRED_FIELDS',
                 });
             }
 
@@ -211,7 +211,7 @@ router.post(
 
             if (existingUser) {
                 return res.status(400).json({
-                    error: 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.',
+                    errorCode: 'USER_ALREADY_EXISTS',
                 });
             }
 
@@ -236,7 +236,7 @@ router.post(
             });
         } catch (error) {
             console.error('Kayıt hatası:', error);
-            res.status(500).json({ error: 'Kayıt sırasında bir hata oluştu.' });
+            res.status(500).json({ errorCode: 'REGISTRATION_FAILED' });
         }
     },
 );
@@ -267,7 +267,7 @@ router.post('/logout', (req, res) => {
 // Şifre Değiştirme (Kullanıcı Kendi Şifresini Değiştirir)
 router.put('/change-password', async (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'Oturum açmanız gerekiyor.' });
+        return res.status(401).json({ errorCode: 'AUTH_REQUIRED' });
     }
 
     try {
@@ -275,38 +275,36 @@ router.put('/change-password', async (req, res) => {
         const user = await User.findByPk(req.user.id);
 
         if (!user) {
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         // Mevcut şifreyi doğrula
         // Not: Shibboleth kullanıcılarının şifresi olmayabilir, onlara bu işlemi yaptırmamalıyız.
         if (!user.password) {
-            return res.status(400).json({ error: 'Harici kimlik doğrulama kullanan hesaplar şifre değiştiremez.' });
+            return res.status(400).json({ errorCode: 'EXTERNAL_AUTH_NO_PASSWORD' });
         }
 
         const isValid = await user.validatePassword(currentPassword);
         if (!isValid) {
-            return res.status(400).json({ error: 'Mevcut şifre hatalı.' });
+            return res.status(400).json({ errorCode: 'CURRENT_PASSWORD_WRONG' });
         }
 
         // Şifre politikası kontrolü
         if (!newPassword || newPassword.length < 8) {
-            return res.status(400).json({ error: 'Yeni şifre en az 8 karakter olmalıdır.' });
+            return res.status(400).json({ errorCode: 'PASSWORD_TOO_SHORT' });
         }
         if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-            return res
-                .status(400)
-                .json({ error: 'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.' });
+            return res.status(400).json({ errorCode: 'PASSWORD_COMPLEXITY_FAILED' });
         }
 
         // Yeni şifreyi kaydet (Model hook'u hashleyecek)
         user.password = newPassword;
         await user.save();
 
-        res.json({ success: true, message: 'Şifreniz başarıyla değiştirildi.' });
+        res.json({ success: true, messageCode: 'PASSWORD_CHANGED' });
     } catch (error) {
         console.error('Password change error:', error);
-        res.status(500).json({ error: 'Şifre değiştirilirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'PASSWORD_CHANGE_FAILED' });
     }
 });
 
@@ -341,7 +339,7 @@ router.get('/me', (req, res) => {
 // Kullanıcı Bilgilerini Güncelle (AI Ayarları Dahil)
 router.put('/profile', async (req, res) => {
     if (!req.isAuthenticated()) {
-        return res.status(401).json({ error: 'Oturum açmanız gerekiyor.' });
+        return res.status(401).json({ errorCode: 'AUTH_REQUIRED' });
     }
 
     try {
@@ -349,7 +347,7 @@ router.put('/profile', async (req, res) => {
         const user = await User.findByPk(req.user.id);
 
         if (!user) {
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         const updateData = {};
@@ -360,12 +358,12 @@ router.put('/profile', async (req, res) => {
             // Basit e-posta doğrulama
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                return res.status(400).json({ error: 'Geçersiz e-posta adresi.' });
+                return res.status(400).json({ errorCode: 'INVALID_EMAIL' });
             }
 
             const existingUser = await User.findOne({ where: { email } });
             if (existingUser) {
-                return res.status(400).json({ error: 'Bu e-posta adresi zaten kullanımda.' });
+                return res.status(400).json({ errorCode: 'EMAIL_ALREADY_EXISTS' });
             }
             updateData.email = email;
         }
@@ -373,7 +371,7 @@ router.put('/profile', async (req, res) => {
         if (trashRetentionDays !== undefined) {
             const days = parseInt(trashRetentionDays);
             if (isNaN(days) || days < 1 || days > 365) {
-                return res.status(400).json({ error: 'Çöp kutusu saklama süresi 1-365 gün arasında olmalıdır.' });
+                return res.status(400).json({ errorCode: 'INVALID_RETENTION_DAYS' });
             }
             updateData.trashRetentionDays = days;
         }
@@ -390,7 +388,7 @@ router.put('/profile', async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Profil güncellendi.',
+            messageCode: 'PROFILE_UPDATED',
             user: {
                 id: user.id,
                 username: user.username,
@@ -404,7 +402,7 @@ router.put('/profile', async (req, res) => {
         });
     } catch (error) {
         console.error('Profile update error:', error);
-        res.status(500).json({ error: 'Profil güncellenirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'PROFILE_UPDATE_FAILED' });
     }
 });
 

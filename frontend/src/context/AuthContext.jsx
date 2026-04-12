@@ -1,10 +1,18 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useContext, useEffect } from 'react';
 import api from '../api/axios';
 import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+    const resolveErrorMessage = (responseData, fallbackKey) => {
+        const code = responseData?.errorCode;
+        if (code) {
+            const translated = i18n.t(`auth:errors.${code}`);
+            if (translated !== `errors.${code}`) return translated;
+        }
+        return responseData?.error || i18n.t(fallbackKey);
+    };
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -38,7 +46,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post('/auth/local/login', {
                 username,
-                password
+                password,
             });
 
             if (response.data.success) {
@@ -49,7 +57,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.error || i18n.t('auth:loginFailed')
+                error: resolveErrorMessage(error.response?.data, 'auth:loginFailed'),
             };
         }
     };
@@ -61,7 +69,7 @@ export const AuthProvider = ({ children }) => {
                 username,
                 email,
                 password,
-                displayName
+                displayName,
             });
 
             if (response.data.success) {
@@ -70,7 +78,7 @@ export const AuthProvider = ({ children }) => {
                     return {
                         success: true,
                         pendingApproval: true,
-                        message: response.data.message
+                        message: response.data.message,
                     };
                 }
 
@@ -84,7 +92,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
             return {
                 success: false,
-                error: error.response?.data?.error || i18n.t('auth:registrationFailed')
+                error: resolveErrorMessage(error.response?.data, 'auth:registrationFailed'),
             };
         }
     };
@@ -112,16 +120,13 @@ export const AuthProvider = ({ children }) => {
         loginLocal,
         registerLocal,
         logout,
-        checkAuth
+        checkAuth,
     };
 
-    return (
-        <AuthContext.Provider value={value}>
-            {children}
-        </AuthContext.Provider>
-    );
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
