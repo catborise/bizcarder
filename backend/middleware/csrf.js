@@ -12,8 +12,8 @@ function csrfProtection(req, res, next) {
     if (!req.cookies[CSRF_COOKIE]) {
         const token = crypto.randomBytes(32).toString('hex');
         res.cookie(CSRF_COOKIE, token, {
-            httpOnly: false,  // JS must read this
-            sameSite: 'lax',  // 'strict' blocks cookie on SAML callback redirects
+            httpOnly: false, // JS must read this
+            sameSite: 'lax', // 'strict' blocks cookie on SAML callback redirects
             secure: process.env.SESSION_SECURE === 'true',
             path: '/',
         });
@@ -30,13 +30,18 @@ function csrfProtection(req, res, next) {
     // - Register: same as login
     // - Logout: session destruction, no state change risk
     const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/register', '/auth/logout'];
-    if (authExempt.some(p => req.originalUrl.startsWith(p))) return next();
+    if (authExempt.some((p) => req.originalUrl.startsWith(p))) return next();
 
     // Validate: compare cookie with header
     const cookieToken = req.cookies[CSRF_COOKIE];
     const headerToken = req.headers[CSRF_HEADER];
 
-    if (!cookieToken || !headerToken || cookieToken !== headerToken) {
+    if (
+        !cookieToken ||
+        !headerToken ||
+        cookieToken.length !== headerToken.length ||
+        !crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))
+    ) {
         return res.status(403).json({ error: 'CSRF token mismatch.' });
     }
 

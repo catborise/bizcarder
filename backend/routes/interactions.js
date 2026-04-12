@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Interaction, User, BusinessCard } = require('../models');
 const { requireAuth } = require('../middleware/auth');
+const { logger } = require('../utils/logger');
 
 // All interaction routes require authentication
 router.use(requireAuth);
@@ -15,12 +16,13 @@ router.get('/:cardId', async (req, res) => {
             include: [{ model: User, as: 'author', attributes: ['displayName'] }],
             order: [
                 ['isPinned', 'DESC'],
-                ['date', 'DESC']
-            ]
+                ['date', 'DESC'],
+            ],
         });
         res.json(interactions);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Interactions list error:', error);
+        res.status(500).json({ error: 'Etkileşimler alınırken hata oluştu.' });
     }
 });
 
@@ -35,18 +37,16 @@ router.post('/:cardId', async (req, res) => {
             type,
             notes,
             date: date || new Date(),
-            authorId: req.user ? req.user.id : null
+            authorId: req.user ? req.user.id : null,
         });
 
         // Nurturing: Kartın son etkileşim tarihini güncelle
-        await BusinessCard.update(
-            { lastInteractionDate: interaction.date },
-            { where: { id: cardId } }
-        );
+        await BusinessCard.update({ lastInteractionDate: interaction.date }, { where: { id: cardId } });
 
         res.status(201).json(interaction);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Interaction create error:', error);
+        res.status(500).json({ error: 'Etkileşim eklenirken hata oluştu.' });
     }
 });
 
@@ -67,7 +67,8 @@ router.put('/:id', async (req, res) => {
         await interaction.update({ type, notes, date: date || interaction.date });
         res.json(interaction);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Interaction update error:', error);
+        res.status(500).json({ error: 'Etkileşim güncellenirken hata oluştu.' });
     }
 });
 
@@ -86,7 +87,8 @@ router.delete('/:id', async (req, res) => {
         await interaction.destroy();
         res.json({ message: 'Kayıt silindi.' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Interaction delete error:', error);
+        res.status(500).json({ error: 'Etkileşim silinirken hata oluştu.' });
     }
 });
 
@@ -106,7 +108,8 @@ router.put('/:id/pin', async (req, res) => {
         await interaction.update({ isPinned: !interaction.isPinned });
         res.json(interaction);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Interaction pin toggle error:', error);
+        res.status(500).json({ error: 'Etkileşim sabitleme işleminde hata oluştu.' });
     }
 });
 

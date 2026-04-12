@@ -28,20 +28,27 @@ router.get('/login', authLimiter, (req, res, next) => {
 
 // IdP'den Dönüş (ACS URL)
 // Başarılı girişten sonra IdP buraya POST isteği atar.
-router.post('/login/callback',
+router.post(
+    '/login/callback',
     passport.authenticate('saml', {
         failureRedirect: '/auth/login/fail',
-        failureFlash: true
+        failureFlash: true,
     }),
     (req, res) => {
-        // Başarılı giriş
-        // Race condition'ı önlemek için session'ın veritabanına yazılmasını bekle, sonra yönlendir
-        req.session.save((err) => {
-            if (err) console.error("SAML callback session save error:", err);
-            const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-            res.redirect(`${frontendUrl}/`);
+        // Session fixation koruması: login sonrası session ID'yi yenile
+        const user = req.user;
+        req.session.regenerate((err) => {
+            if (err) console.error('SAML session regenerate error:', err);
+            req.logIn(user, (err) => {
+                if (err) console.error('SAML re-login error:', err);
+                req.session.save((err) => {
+                    if (err) console.error('SAML callback session save error:', err);
+                    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+                    res.redirect(`${frontendUrl}/`);
+                });
+            });
         });
-    }
+    },
 );
 
 // Giriş Başarısızlığı Durumu
@@ -70,7 +77,7 @@ router.get('/metadata.xml', (req, res) => {
 
         const metadata = strategy.generateServiceProviderMetadata(
             process.env.SAML_DECRYPTION_CERT || null,
-            process.env.SAML_SIGNING_CERT || null
+            process.env.SAML_SIGNING_CERT || null,
         );
 
         res.type('application/xml');
@@ -84,136 +91,155 @@ router.get('/metadata.xml', (req, res) => {
 // ============== LOCAL AUTHENTICATION ==============
 
 // Yerel Kullanıcı Girişi
-router.post('/local/login',
-    authLimiter,
-    passport.authenticate('local', { failureMessage: true }),
-    (req, res) => {
-        // Sadece adminler yerel giriş yapabilir
-        if (req.user.role !== 'admin') {
-            req.logout((err) => {
-                if (err) console.error('Logout error:', err);
-            });
-            return res.status(403).json({
-                error: 'Yerel giriş yetkiniz bulunmuyor. Lütfen kurumsal giriş (SSO) kullanın.'
-            });
-        }
-
-        // Onay durumunu kontrol et
-        if (req.user.isApproved === false) {
-            req.logout((err) => {
-                if (err) console.error('Logout error:', err);
-            });
-            return res.status(403).json({
-                error: 'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen onay bekleyin.'
-            });
-        }
-
-        // 2FA kontrolü
-        if (req.user.twoFactorEnabled) {
-            const { token: totpToken } = req.body;
-            if (!totpToken) {
-                // Don't complete login yet — tell client to ask for TOTP
-                req.logout((err) => {});
-                return res.status(206).json({
-                    requires2FA: true,
-                    message: 'Two-factor authentication required.'
-                });
-            }
-
-            const secret = decrypt(req.user.twoFactorSecret);
-            const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token: totpToken, window: 1 });
-            if (!isValid) {
-                req.logout((err) => {});
-                return res.status(401).json({ error: 'Invalid 2FA token.' });
-            }
-        }
-
-        // Başarılı giriş
-        res.json({
-            success: true,
-            message: 'Giriş başarılı',
-            user: {
-                id: req.user.id,
-                username: req.user.username,
-                email: req.user.email,
-                displayName: req.user.displayName,
-                role: req.user.role
-            }
+router.post('/local/login', authLimiter, passport.authenticate('local', { failureMessage: true }), (req, res) => {
+    // Sadece adminler yerel giriş yapabilir
+    if (req.user.role !== 'admin') {
+        req.logout((err) => {
+            if (err) console.error('Logout error:', err);
+        });
+        return res.status(403).json({
+            error: 'Yerel giriş yetkiniz bulunmuyor. Lütfen kurumsal giriş (SSO) kullanın.',
         });
     }
-);
+
+    // Onay durumunu kontrol et
+    if (req.user.isApproved === false) {
+        req.logout((err) => {
+            if (err) console.error('Logout error:', err);
+        });
+        return res.status(403).json({
+            error: 'Hesabınız henüz yönetici tarafından onaylanmamış. Lütfen onay bekleyin.',
+        });
+    }
+
+    // 2FA kontrolü
+    if (req.user.twoFactorEnabled) {
+        const { token: totpToken } = req.body;
+        if (!totpToken) {
+            // Don't complete login yet — tell client to ask for TOTP
+            req.logout((err) => {});
+            return res.status(206).json({
+                requires2FA: true,
+                message: 'Two-factor authentication required.',
+            });
+        }
+
+        const secret = decrypt(req.user.twoFactorSecret);
+        const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token: totpToken, window: 1 });
+        if (!isValid) {
+            req.logout((err) => {});
+            return res.status(401).json({ error: 'Invalid 2FA token.' });
+        }
+    }
+
+    // Session fixation koruması: login sonrası session ID'yi yenile
+    const user = req.user;
+    req.session.regenerate((err) => {
+        if (err) {
+            console.error('Session regenerate error:', err);
+            return res.status(500).json({ error: 'Oturum oluşturulamadı.' });
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                console.error('Re-login error:', err);
+                return res.status(500).json({ error: 'Oturum oluşturulamadı.' });
+            }
+            req.session.save((err) => {
+                if (err) console.error('Session save error:', err);
+                res.json({
+                    success: true,
+                    message: 'Giriş başarılı',
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        displayName: user.displayName,
+                        role: user.role,
+                    },
+                });
+            });
+        });
+    });
+});
 
 // Yerel Kullanıcı Kaydı
-router.post('/local/register', 
+router.post(
+    '/local/register',
     authLimiter,
     [
         body('username').trim().isLength({ min: 3 }).withMessage('Kullanıcı adı en az 3 karakter olmalıdır.'),
         body('email').isEmail().withMessage('Geçerli bir e-posta adresi giriniz.'),
-        body('password').isLength({ min: 6 }).withMessage('Şifre en az 6 karakter olmalıdır.'),
-        body('displayName').optional().trim().isLength({ max: 50 }).withMessage('Görünen ad çok uzun.')
+        body('password')
+            .isLength({ min: 8 })
+            .withMessage('Şifre en az 8 karakter olmalıdır.')
+            .matches(/[A-Z]/)
+            .withMessage('Şifre en az bir büyük harf içermelidir.')
+            .matches(/[a-z]/)
+            .withMessage('Şifre en az bir küçük harf içermelidir.')
+            .matches(/[0-9]/)
+            .withMessage('Şifre en az bir rakam içermelidir.'),
+        body('displayName').optional().trim().isLength({ max: 50 }).withMessage('Görünen ad çok uzun.'),
     ],
     validate,
     async (req, res) => {
-    try {
-        // Kayıt yeteneği kontrolü
-        const regSetting = await SystemSetting.findByPk('allowPublicRegistration');
-        const isRegistrationAllowed = regSetting ? regSetting.value === 'true' : true; // Varsayılan true
+        try {
+            // Kayıt yeteneği kontrolü
+            const regSetting = await SystemSetting.findByPk('allowPublicRegistration');
+            const isRegistrationAllowed = regSetting ? regSetting.value === 'true' : true; // Varsayılan true
 
-        if (!isRegistrationAllowed) {
-            return res.status(403).json({
-                error: 'Yeni kullanıcı kaydı şu an için kapalıdır. Lütfen sistem yöneticisi ile iletişime geçin.'
-            });
-        }
-
-        const { username, email, password, displayName } = req.body;
-
-        // Gerekli alanları kontrol et
-        if (!username || !email || !password) {
-            return res.status(400).json({
-                error: 'Kullanıcı adı, e-posta ve şifre gereklidir.'
-            });
-        }
-
-        // Kullanıcı zaten var mı kontrol et
-        const existingUser = await User.findOne({
-            where: {
-                [require('sequelize').Op.or]: [
-                    { username: username },
-                    { email: email }
-                ]
+            if (!isRegistrationAllowed) {
+                return res.status(403).json({
+                    error: 'Yeni kullanıcı kaydı şu an için kapalıdır. Lütfen sistem yöneticisi ile iletişime geçin.',
+                });
             }
-        });
 
-        if (existingUser) {
-            return res.status(400).json({
-                error: 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.'
+            const { username, email, password, displayName } = req.body;
+
+            // Gerekli alanları kontrol et
+            if (!username || !email || !password) {
+                return res.status(400).json({
+                    error: 'Kullanıcı adı, e-posta ve şifre gereklidir.',
+                });
+            }
+
+            // Kullanıcı zaten var mı kontrol et
+            const existingUser = await User.findOne({
+                where: {
+                    [require('sequelize').Op.or]: [{ username: username }, { email: email }],
+                },
             });
+
+            if (existingUser) {
+                return res.status(400).json({
+                    error: 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.',
+                });
+            }
+
+            // Yeni kullanıcı oluştur (isApproved varsayılan olarak false)
+            const user = await User.create({
+                username,
+                email,
+                password,
+                displayName: displayName || username,
+                role: 'user',
+                isApproved: false,
+            });
+
+            // Send welcome email (non-blocking)
+            sendWelcomeEmail(user).catch(() => {});
+
+            // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
+            res.status(201).json({
+                success: true,
+                message: 'Kayıt başarılı. Hesabınız yönetici onayı bekliyor.',
+                pendingApproval: true,
+            });
+        } catch (error) {
+            console.error('Kayıt hatası:', error);
+            res.status(500).json({ error: 'Kayıt sırasında bir hata oluştu.' });
         }
-
-        // Yeni kullanıcı oluştur (isApproved varsayılan olarak false)
-        const user = await User.create({
-            username,
-            email,
-            password,
-            displayName: displayName || username,
-            role: 'user',
-            isApproved: false
-        });
-
-        // Send welcome email (non-blocking)
-        sendWelcomeEmail(user).catch(() => {});
-
-        // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
-        res.status(201).json({
-            success: true,
-            message: 'Kayıt başarılı. Hesabınız yönetici onayı bekliyor.',
-            pendingApproval: true
-        });
-    } catch (error) {
-        console.error('Kayıt hatası:', error);
-        res.status(500).json({ error: 'Kayıt sırasında bir hata oluştu.' });
-    }
-});
+    },
+);
 
 // ============== COMMON ROUTES ==============
 
@@ -230,7 +256,7 @@ router.post('/logout', (req, res) => {
             return res.json({
                 success: true,
                 message: 'Başarıyla çıkış yapıldı.',
-                logoutUrl: process.env.SAML_LOGOUT_URL
+                logoutUrl: process.env.SAML_LOGOUT_URL,
             });
         }
 
@@ -261,6 +287,16 @@ router.put('/change-password', async (req, res) => {
         const isValid = await user.validatePassword(currentPassword);
         if (!isValid) {
             return res.status(400).json({ error: 'Mevcut şifre hatalı.' });
+        }
+
+        // Şifre politikası kontrolü
+        if (!newPassword || newPassword.length < 8) {
+            return res.status(400).json({ error: 'Yeni şifre en az 8 karakter olmalıdır.' });
+        }
+        if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+            return res
+                .status(400)
+                .json({ error: 'Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.' });
         }
 
         // Yeni şifreyi kaydet (Model hook'u hashleyecek)
@@ -294,8 +330,8 @@ router.get('/me', (req, res) => {
                 hasAiApiKey: !!req.user.aiOcrApiKey,
                 isApproved: req.user.isApproved,
                 trashRetentionDays: req.user.trashRetentionDays,
-                twoFactorEnabled: req.user.twoFactorEnabled || false
-            }
+                twoFactorEnabled: req.user.twoFactorEnabled || false,
+            },
         });
     } else {
         res.status(401).json({ isAuthenticated: false });
@@ -363,8 +399,8 @@ router.put('/profile', async (req, res) => {
                 trashRetentionDays: user.trashRetentionDays,
                 aiOcrEnabled: user.aiOcrEnabled,
                 aiOcrProvider: user.aiOcrProvider,
-                hasAiApiKey: !!user.aiOcrApiKey
-            }
+                hasAiApiKey: !!user.aiOcrApiKey,
+            },
         });
     } catch (error) {
         console.error('Profile update error:', error);
@@ -383,12 +419,12 @@ router.get('/config', async (req, res) => {
 
         res.json({
             allowPublicRegistration: isRegistrationAllowed,
-            samlEnabled: samlEnabled
+            samlEnabled: samlEnabled,
         });
     } catch (error) {
         res.json({
             allowPublicRegistration: true,
-            samlEnabled: false
+            samlEnabled: false,
         }); // Hata durumunda varsayılan değerler
     }
 });

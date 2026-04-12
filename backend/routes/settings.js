@@ -5,10 +5,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { requireAdmin } = require('../middleware/auth');
-const { logAction } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 
 // Multer Ayarları (Branding Dosyaları)
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/x-icon'];
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/x-icon'];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB for branding assets
 
 const storage = multer.diskStorage({
@@ -20,9 +20,9 @@ const storage = multer.diskStorage({
         cb(null, dir);
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         cb(null, 'branding-' + uniqueSuffix + path.extname(file.originalname));
-    }
+    },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -53,12 +53,12 @@ router.get('/', async (req, res) => {
             companyLogo: '',
             companyIcon: '',
             appBanner: '',
-            footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.'
+            footerText: '© 2026 BizCarder. Tüm Hakları Saklıdır.',
         };
 
         // DB'den gelenleri objeye çevir
         const settingsMap = {};
-        settings.forEach(s => {
+        settings.forEach((s) => {
             settingsMap[s.key] = s.value;
         });
 
@@ -82,14 +82,15 @@ router.get('/', async (req, res) => {
                 appBanner: result.appBanner,
                 footerText: result.footerText,
                 allowPublicRegistration: result.allowPublicRegistration,
-                samlEnabled: samlEnabled
+                samlEnabled: samlEnabled,
             });
         }
 
         res.json(result);
     } catch (error) {
         console.error('Settings fetch error:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Settings fetch error:', error);
+        res.status(500).json({ error: 'Ayarlar alınırken hata oluştu.' });
     }
 });
 
@@ -108,7 +109,7 @@ router.put('/', requireAdmin, async (req, res) => {
             companyLogo,
             companyIcon,
             appBanner,
-            footerText
+            footerText,
         } = req.body;
 
         // Validasyon
@@ -126,7 +127,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'logRetentionLimit',
                 value: String(logRetentionLimit),
-                description: 'Maksimum log kayıt sayısı'
+                description: 'Maksimum log kayıt sayısı',
             });
         }
 
@@ -134,7 +135,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'trashRetentionDays',
                 value: String(trashRetentionDays),
-                description: 'Silinen kartların saklanma süresi (gün)'
+                description: 'Silinen kartların saklanma süresi (gün)',
             });
         }
 
@@ -142,7 +143,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'allowPublicRegistration',
                 value: String(allowPublicRegistration),
-                description: 'Yeni kullanıcı kaydı açık mı?'
+                description: 'Yeni kullanıcı kaydı açık mı?',
             });
         }
 
@@ -150,7 +151,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'developerName',
                 value: String(developerName),
-                description: 'Hakkında sayfasında görünen geliştirici adı'
+                description: 'Hakkında sayfasında görünen geliştirici adı',
             });
         }
 
@@ -158,7 +159,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'developerEmail',
                 value: String(developerEmail),
-                description: 'Hakkında sayfasında görünen geliştirici e-postası'
+                description: 'Hakkında sayfasında görünen geliştirici e-postası',
             });
         }
 
@@ -166,7 +167,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'developerGithub',
                 value: String(developerGithub),
-                description: 'Hakkında sayfasında görünen GitHub linki'
+                description: 'Hakkında sayfasında görünen GitHub linki',
             });
         }
 
@@ -174,7 +175,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'developerLinkedin',
                 value: String(developerLinkedin),
-                description: 'Hakkında sayfasında görünen LinkedIn linki'
+                description: 'Hakkında sayfasında görünen LinkedIn linki',
             });
         }
 
@@ -182,7 +183,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'companyName',
                 value: String(companyName),
-                description: 'Şirket/Uygulama adı'
+                description: 'Şirket/Uygulama adı',
             });
         }
 
@@ -190,7 +191,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'companyLogo',
                 value: String(companyLogo),
-                description: 'Uygulama logosu URL'
+                description: 'Uygulama logosu URL',
             });
         }
 
@@ -198,7 +199,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'companyIcon',
                 value: String(companyIcon),
-                description: 'Uygulama simgesi (favicon) URL'
+                description: 'Uygulama simgesi (favicon) URL',
             });
         }
 
@@ -206,7 +207,7 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'appBanner',
                 value: String(appBanner),
-                description: 'Dashboard banner görseli URL'
+                description: 'Dashboard banner görseli URL',
             });
         }
 
@@ -214,22 +215,23 @@ router.put('/', requireAdmin, async (req, res) => {
             await SystemSetting.upsert({
                 key: 'footerText',
                 value: String(footerText),
-                description: 'Sayfa altı (footer) trademark metni'
+                description: 'Sayfa altı (footer) trademark metni',
             });
         }
 
         // Collect which fields were actually changed for the audit log
-        const changedFields = Object.keys(req.body).filter(k => req.body[k] !== undefined);
+        const changedFields = Object.keys(req.body).filter((k) => req.body[k] !== undefined);
         await logAction({
             action: 'SETTINGS_UPDATE',
             details: `Admin updated system settings: ${changedFields.join(', ')}`,
-            req
+            req,
         });
 
         res.json({ message: 'Ayarlar güncellendi.', settings: req.body });
     } catch (error) {
         console.error('Settings update error:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Settings update error:', error);
+        res.status(500).json({ error: 'Ayarlar güncellenirken hata oluştu.' });
     }
 });
 
@@ -244,12 +246,13 @@ router.post('/upload-branding', requireAdmin, upload.single('file'), async (req,
         await logAction({
             action: 'BRANDING_UPLOAD',
             details: `Admin uploaded branding asset: ${req.file.originalname} -> ${fileUrl}`,
-            req
+            req,
         });
 
         res.json({ url: fileUrl });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Branding upload error:', error);
+        res.status(500).json({ error: 'Dosya yüklenirken hata oluştu.' });
     }
 });
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { User, BusinessCard } = require('../models');
 const sequelize = require('../config/database');
-const { logAction } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const { sendApprovalEmail } = require('../utils/mailer');
 
@@ -14,11 +14,12 @@ router.get('/', async (req, res) => {
     try {
         const users = await User.findAll({
             attributes: ['id', 'username', 'email', 'displayName', 'role', 'isApproved', 'createdAt'],
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
         res.json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Users list error:', error);
+        res.status(500).json({ error: 'Kullanıcılar listelenirken hata oluştu.' });
     }
 });
 
@@ -47,18 +48,19 @@ router.put('/:id/role', async (req, res) => {
         await logAction({
             action: 'USER_ROLE_UPDATE',
             details: `Kullanıcı rolü güncellendi: ${user.username} (${oldRole} -> ${role})`,
-            req
+            req,
         });
 
         res.json({ message: 'Kullanıcı rolü güncellendi.', user });
     } catch (error) {
         await t.rollback();
+        logger.error('User role update error:', error);
         await logAction({
             action: 'USER_ROLE_UPDATE_ERROR',
-            details: error.message,
-            req
+            details: 'Kullanıcı rolü güncellenirken hata oluştu.',
+            req,
         });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Kullanıcı rolü güncellenirken hata oluştu.' });
     }
 });
 
@@ -93,7 +95,7 @@ router.put('/:id/password', async (req, res) => {
         await logAction({
             action: 'ADMIN_PASSWORD_RESET',
             details: `Admin ${req.user.username}, ${user.username} kullanıcısının şifresini sıfırladı.`,
-            req
+            req,
         });
 
         res.json({ message: 'Kullanıcı şifresi başarıyla güncellendi.' });
@@ -134,7 +136,7 @@ router.put('/:id/approve', async (req, res) => {
         await logAction({
             action: 'USER_APPROVAL_UPDATE',
             details: `Admin ${req.user.username}, ${user.username} kullanıcısının onay durumunu güncelledi: ${isApproved}`,
-            req
+            req,
         });
 
         // Send approval email when account is approved (non-blocking)
@@ -147,8 +149,8 @@ router.put('/:id/approve', async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
-                isApproved: user.isApproved
-            }
+                isApproved: user.isApproved,
+            },
         });
     } catch (error) {
         await t.rollback();
@@ -184,14 +186,11 @@ router.delete('/:id', async (req, res) => {
 
         if (transferCards === true) {
             // Kartları admin'e aktar
-            await BusinessCard.update(
-                { ownerId: req.user.id },
-                { where: { ownerId: id }, transaction: t }
-            );
+            await BusinessCard.update({ ownerId: req.user.id }, { where: { ownerId: id }, transaction: t });
             await logAction({
                 action: 'USER_DELETE_TRANSFER',
                 details: `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını sildi ve ${cardCount} kartviziti devraldı.`,
-                req
+                req,
             });
         } else {
             // Kartları soft delete yap ve admin'e ata (çöp kutusunda admin görsün diye)
@@ -199,14 +198,14 @@ router.delete('/:id', async (req, res) => {
                 {
                     ownerId: req.user.id,
                     deletedAt: new Date(),
-                    deletedBy: req.user.id
+                    deletedBy: req.user.id,
                 },
-                { where: { ownerId: id }, transaction: t }
+                { where: { ownerId: id }, transaction: t },
             );
             await logAction({
                 action: 'USER_DELETE_WITH_CARDS',
                 details: `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını ve ${cardCount} kartvizitini sildi.`,
-                req
+                req,
             });
         }
 
@@ -215,7 +214,6 @@ router.delete('/:id', async (req, res) => {
         await t.commit();
 
         res.json({ message: 'Kullanıcı başarıyla silindi.' });
-
     } catch (error) {
         await t.rollback();
         console.error('User delete error:', error);

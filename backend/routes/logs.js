@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { AuditLog, User } = require('../models');
+const { logger } = require('../utils/logger');
 
 // Tüm logları getir (Sadece Admin yetkisi olmalı - Şimdilik herkese açık ama filtreli)
 router.get('/', async (req, res) => {
@@ -19,13 +20,14 @@ router.get('/', async (req, res) => {
             where: whereClause,
             include: [{ model: User, as: 'user', attributes: ['id', 'username', 'displayName', 'email'] }],
             order: [['createdAt', 'DESC']],
-            limit: 500 // Client tarafında filtreleme için daha fazla veri çekiyoruz
+            limit: 500, // Client tarafında filtreleme için daha fazla veri çekiyoruz
         });
 
         res.json(logs);
     } catch (error) {
-        console.error("Logs API Error:", error);
-        res.status(500).json({ error: error.message });
+        console.error('Logs API Error:', error);
+        logger.error('Logs list error:', error);
+        res.status(500).json({ error: 'Loglar alınırken hata oluştu.' });
     }
 });
 
@@ -45,7 +47,7 @@ router.get('/rate-limits', async (req, res) => {
         const violations = await AuditLog.findAll({
             where: {
                 action: 'RATE_LIMIT_EXCEEDED',
-                createdAt: { [Op.gte]: since }
+                createdAt: { [Op.gte]: since },
             },
             order: [['createdAt', 'DESC']],
             limit: 100,
@@ -58,7 +60,7 @@ router.get('/rate-limits', async (req, res) => {
             byPath: {},
         };
 
-        violations.forEach(v => {
+        violations.forEach((v) => {
             const ipMatch = v.details?.match(/IP: ([^,]+)/);
             const pathMatch = v.details?.match(/Path: (.+)/);
             const ip = ipMatch?.[1] || 'unknown';
@@ -69,7 +71,8 @@ router.get('/rate-limits', async (req, res) => {
 
         res.json({ summary, violations });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Rate limits fetch error:', error);
+        res.status(500).json({ error: 'Rate limit verileri alınırken hata oluştu.' });
     }
 });
 

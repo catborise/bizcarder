@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Tag, BusinessCard, sequelize } = require('../models');
 const { requireAuth } = require('../middleware/auth');
-const { logAction } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 
 // All tag routes require authentication
 router.use(requireAuth);
@@ -11,11 +11,12 @@ router.use(requireAuth);
 router.get('/', async (req, res) => {
     try {
         const tags = await Tag.findAll({
-            order: [['name', 'ASC']]
+            order: [['name', 'ASC']],
         });
         res.json(tags);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Tags list error:', error);
+        res.status(500).json({ error: 'Etiketler alınırken hata oluştu.' });
     }
 });
 
@@ -24,29 +25,27 @@ router.get('/stats', async (req, res) => {
     try {
         // BusinessCardTags tablosu üzerinden sayıları al
         const stats = await Tag.findAll({
-            attributes: [
-                'id', 
-                'name', 
-                'color',
-                [sequelize.fn('COUNT', sequelize.col('cards.id')), 'cardCount']
+            attributes: ['id', 'name', 'color', [sequelize.fn('COUNT', sequelize.col('cards.id')), 'cardCount']],
+            include: [
+                {
+                    model: BusinessCard,
+                    as: 'cards',
+                    attributes: [],
+                    through: { attributes: [] },
+                    where: { deletedAt: null },
+                    required: false,
+                },
             ],
-            include: [{
-                model: BusinessCard,
-                as: 'cards',
-                attributes: [],
-                through: { attributes: [] },
-                where: { deletedAt: null },
-                required: false
-            }],
             group: ['Tag.id'],
             order: [[sequelize.literal('"cardCount"'), 'DESC']],
             subQuery: false,
-            limit: 10
+            limit: 10,
         });
         res.json(stats);
     } catch (error) {
         console.error('Tag stats error:', error);
-        res.status(500).json({ error: error.message });
+        logger.error('Tag stats error:', error);
+        res.status(500).json({ error: 'Etiket istatistikleri alınırken hata oluştu.' });
     }
 });
 
@@ -61,18 +60,19 @@ router.post('/', async (req, res) => {
         const newTag = await Tag.create({
             name,
             color: color || '#3b82f6',
-            ownerId: req.user.id
+            ownerId: req.user.id,
         });
 
         await logAction({
             action: 'TAG_CREATE',
             details: `Tag created: "${name}" (color: ${color || '#3b82f6'})`,
-            req
+            req,
         });
 
         res.status(201).json(newTag);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Tag create error:', error);
+        res.status(500).json({ error: 'Etiket oluşturulurken hata oluştu.' });
     }
 });
 
@@ -102,13 +102,14 @@ router.put('/:id', async (req, res) => {
         await logAction({
             action: 'TAG_UPDATE',
             details: `Tag updated: "${oldName}" -> "${name || oldName}" (color: ${oldColor} -> ${color || oldColor})`,
-            req
+            req,
         });
 
         res.json(tag);
     } catch (error) {
         await t.rollback();
-        res.status(500).json({ error: error.message });
+        logger.error('Tag update error:', error);
+        res.status(500).json({ error: 'Etiket güncellenirken hata oluştu.' });
     }
 });
 
@@ -135,13 +136,14 @@ router.delete('/:id', async (req, res) => {
         await logAction({
             action: 'TAG_DELETE',
             details: `Tag deleted: "${tagName}" (id: ${req.params.id})`,
-            req
+            req,
         });
 
         res.json({ message: 'Etiket başarıyla silindi.' });
     } catch (error) {
         await t.rollback();
-        res.status(500).json({ error: error.message });
+        logger.error('Tag delete error:', error);
+        res.status(500).json({ error: 'Etiket silinirken hata oluştu.' });
     }
 });
 

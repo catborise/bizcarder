@@ -2,16 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { DashboardTile } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
+const { logger } = require('../utils/logger');
 
 // Tüm tile'ları getir (Herkes görebilir)
 router.get('/', async (req, res) => {
     try {
         const tiles = await DashboardTile.findAll({
-            order: [['order', 'ASC']]
+            order: [['order', 'ASC']],
         });
         res.json(tiles);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Dashboard tiles list error:', error);
+        res.status(500).json({ error: 'Dashboard verileri alınırken hata oluştu.' });
     }
 });
 
@@ -22,7 +24,8 @@ router.post('/', requireAdmin, async (req, res) => {
         const tile = await DashboardTile.create({ title, subtitle, url, icon, backgroundColor, order, isInternal });
         res.status(201).json(tile);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Dashboard tile create error:', error);
+        res.status(500).json({ error: 'Tile oluşturulurken hata oluştu.' });
     }
 });
 
@@ -36,7 +39,8 @@ router.put('/:id', requireAdmin, async (req, res) => {
         await tile.update({ title, subtitle, url, icon, backgroundColor, order, isInternal });
         res.json(tile);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Dashboard tile update error:', error);
+        res.status(500).json({ error: 'Tile güncellenirken hata oluştu.' });
     }
 });
 
@@ -49,7 +53,8 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         await tile.destroy();
         res.json({ message: 'Tile silindi' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Dashboard tile delete error:', error);
+        res.status(500).json({ error: 'Tile silinirken hata oluştu.' });
     }
 });
 

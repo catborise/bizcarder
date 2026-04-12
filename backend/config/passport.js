@@ -4,7 +4,6 @@ const LocalStrategy = require('passport-local').Strategy;
 const { User } = require('../models');
 const { Op } = require('sequelize');
 
-
 // Serileştirme: Kullanıcı oturuma nasıl kaydedilecek
 passport.serializeUser((user, done) => {
     done(null, user.id);
@@ -14,6 +13,9 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
     try {
         const user = await User.findByPk(id);
+        if (!user || user.isApproved === false) {
+            return done(null, false);
+        }
         done(null, user);
     } catch (err) {
         done(err);
@@ -48,7 +50,7 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
             digestAlgorithm: 'sha256',
 
             // Timeout ve Saat Farkı (Opsiyonel)
-            acceptedClockSkewMs: 10000
+            acceptedClockSkewMs: 10000,
         },
         async (profile, done) => {
             try {
@@ -74,26 +76,32 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                 };
 
                 // 1. Benzersiz ID Yakalama
-                const shibbolethId = profile.nameID ||
+                const shibbolethId =
+                    profile.nameID ||
                     getAttr('uid') ||
                     getAttr('eduPersonPrincipalName') ||
                     getAttr('urn:oid:0.9.2342.19200300.100.1.1') ||
                     getAttr('urn:oid:1.3.6.1.4.1.5923.1.1.1.6');
 
                 // 2. E-Posta Yakalama
-                const email = getAttr('mail') ||
-                    getAttr('email') ||
-                    getAttr('urn:oid:0.9.2342.19200300.100.1.3');
+                const email = getAttr('mail') || getAttr('email') || getAttr('urn:oid:0.9.2342.19200300.100.1.3');
 
                 // 3. İsim Soyisim Yakalama
-                let displayName = getAttr('displayName') ||
+                let displayName =
+                    getAttr('displayName') ||
                     getAttr('cn') ||
                     getAttr('commonName') ||
                     getAttr('urn:oid:2.16.840.1.113730.3.1.241') || // Kullanıcının IdP'sinden gelen özel OID
                     getAttr('urn:oid:2.5.4.3');
 
-                const firstName = getAttr('givenName') || getAttr('first_name') || getAttr('ad') || getAttr('urn:oid:2.5.4.42');
-                const lastName = getAttr('sn') || getAttr('surname') || getAttr('last_name') || getAttr('soyad') || getAttr('urn:oid:2.5.4.4');
+                const firstName =
+                    getAttr('givenName') || getAttr('first_name') || getAttr('ad') || getAttr('urn:oid:2.5.4.42');
+                const lastName =
+                    getAttr('sn') ||
+                    getAttr('surname') ||
+                    getAttr('last_name') ||
+                    getAttr('soyad') ||
+                    getAttr('urn:oid:2.5.4.4');
 
                 if (!displayName && firstName && lastName) {
                     displayName = `${firstName} ${lastName}`;
@@ -108,15 +116,19 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                 const allowedOrgUnits = process.env.SAML_ALLOWED_ORG_UNITS;
 
                 if (allowedOrgUnits) {
-                    const allowedList = allowedOrgUnits.split(',').map(item => item.trim());
-                    const isAllowed = allowedList.some(item => {
+                    const allowedList = allowedOrgUnits.split(',').map((item) => item.trim());
+                    const isAllowed = allowedList.some((item) => {
                         // Tam eşleşme veya DN içinde geçme kontrolü
                         return orgUnitDN && (orgUnitDN === item || orgUnitDN.includes(item));
                     });
 
                     if (!isAllowed) {
-                        console.warn(`[SAML ACCESS DENIED] User ${shibbolethId} rejected. OrgUnit: ${orgUnitDN || 'Eksik'}`);
-                        return done(null, false, { message: 'Bu uygulamaya giriş yetkiniz bulunmamaktadır (Organizasyon kısıtlaması).' });
+                        console.warn(
+                            `[SAML ACCESS DENIED] User ${shibbolethId} rejected. OrgUnit: ${orgUnitDN || 'Eksik'}`,
+                        );
+                        return done(null, false, {
+                            message: 'Bu uygulamaya giriş yetkiniz bulunmamaktadır (Organizasyon kısıtlaması).',
+                        });
                     }
                 }
 
@@ -141,15 +153,16 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                         email: email || `${cleanUsername}@sso.local`,
                         displayName: displayName,
                         role: 'user',
-                        isApproved: true
-                    }
+                        isApproved: true,
+                    },
                 });
 
                 // Mevcut kullanıcıda eksik veya değişmiş bilgileri güncelle
                 const updates = {};
 
                 // Username güncelleme (hash ise veya boşsa)
-                const currentUsernameIsHash = user.username && user.username.length > 20 && !user.username.includes('@');
+                const currentUsernameIsHash =
+                    user.username && user.username.length > 20 && !user.username.includes('@');
                 if ((!user.username || currentUsernameIsHash) && cleanUsername && cleanUsername !== user.username) {
                     updates.username = cleanUsername;
                 }
@@ -173,7 +186,7 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                 console.error('SAML Auth Error:', err);
                 return done(err);
             }
-        }
+        },
     );
 
     passport.use(samlStrategy);
@@ -183,42 +196,43 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
     console.warn('SAML Yapılandırması Eksik: SAML_ENTRY_POINT veya SAML_CERT bulunamadı.');
     console.log('Mevcut Değerler:', {
         SAML_ENTRY_POINT: samlEntryPoint ? 'Tanımlı' : 'Eksik',
-        SAML_CERT: samlCert ? 'Tanımlı' : 'Eksik'
+        SAML_CERT: samlCert ? 'Tanımlı' : 'Eksik',
     });
 }
 
 // Local Stratejisi (Kullanıcı Adı ve Şifre)
-passport.use(new LocalStrategy(
-    {
-        usernameField: 'username',
-        passwordField: 'password'
-    },
-    async (username, password, done) => {
-        try {
-            const user = await User.findOne({
-                where: {
-                    [Op.or]: [
-                        { username: username },
-                        { email: username }
-                    ]
+passport.use(
+    new LocalStrategy(
+        {
+            usernameField: 'username',
+            passwordField: 'password',
+        },
+        async (username, password, done) => {
+            try {
+                const user = await User.findOne({
+                    where: {
+                        [Op.or]: [{ username: username }, { email: username }],
+                    },
+                });
+
+                if (!user || !user.password) {
+                    return done(null, false, {
+                        message: 'Kullanıcı adı veya şifre hatalı veya bu hesap sadece kurumsal giriş destekliyor.',
+                    });
                 }
-            });
 
-            if (!user || !user.password) {
-                return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı veya bu hesap sadece kurumsal giriş destekliyor.' });
+                // Şifreyi doğrula
+                const isValid = await user.validatePassword(password);
+                if (!isValid) {
+                    return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı.' });
+                }
+
+                return done(null, user);
+            } catch (err) {
+                return done(err);
             }
-
-            // Şifreyi doğrula
-            const isValid = await user.validatePassword(password);
-            if (!isValid) {
-                return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı.' });
-            }
-
-            return done(null, user);
-        } catch (err) {
-            return done(err);
-        }
-    }
-));
+        },
+    ),
+);
 
 module.exports = passport;

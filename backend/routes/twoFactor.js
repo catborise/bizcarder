@@ -5,6 +5,7 @@ const QRCode = require('qrcode');
 const { User } = require('../models');
 const { requireAuth } = require('../middleware/auth');
 const { encrypt, decrypt } = require('../utils/encryption');
+const { logger } = require('../utils/logger');
 
 router.use(requireAuth);
 
@@ -27,7 +28,8 @@ router.post('/setup', async (req, res) => {
 
         res.json({ qrCodeUrl, secret: secretObj.base32 });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('2FA setup error:', error);
+        res.status(500).json({ error: '2FA kurulumu sırasında hata oluştu.' });
     }
 });
 
@@ -47,7 +49,8 @@ router.post('/verify', async (req, res) => {
         await user.update({ twoFactorEnabled: true });
         res.json({ message: '2FA enabled successfully.' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('2FA verify error:', error);
+        res.status(500).json({ error: '2FA doğrulama sırasında hata oluştu.' });
     }
 });
 
@@ -66,7 +69,8 @@ router.post('/disable', async (req, res) => {
         await user.update({ twoFactorEnabled: false, twoFactorSecret: null });
         res.json({ message: '2FA disabled.' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('2FA disable error:', error);
+        res.status(500).json({ error: '2FA devre dışı bırakılırken hata oluştu.' });
     }
 });
 

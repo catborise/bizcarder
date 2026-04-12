@@ -8,7 +8,7 @@ const multer = require('multer');
 const path = require('path');
 const { BusinessCard, User, BusinessCardHistory, Tag } = require('../models');
 const { toTitleCase } = require('../utils/helpers');
-const { logAction } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 const { generateVCard } = require('../utils/vcard');
 const importController = require('../controllers/importController');
 const ocrController = require('../controllers/ocrController');
@@ -31,9 +31,9 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
+    },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -59,32 +59,26 @@ router.get('/due-reminders', async (req, res) => {
         const whereClause = {
             deletedAt: null,
             reminderDate: {
-                [Op.between]: [new Date(0), endOfDay]
-            }
+                [Op.between]: [new Date(0), endOfDay],
+            },
         };
 
         // Yetki kontrolü
         if (req.user && req.user.role !== 'admin') {
-            whereClause[Op.or] = [
-                { ownerId: req.user.id },
-                { visibility: 'public' }
-            ];
+            whereClause[Op.or] = [{ ownerId: req.user.id }, { visibility: 'public' }];
         }
-
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
-            include: [
-                { model: User, as: 'owner', attributes: ['displayName'] }
-            ],
+            include: [{ model: User, as: 'owner', attributes: ['displayName'] }],
             distinct: true,
             order: [['reminderDate', 'ASC']],
-            limit: 50
+            limit: 50,
         });
 
         res.json(cards);
     } catch (error) {
-        console.error("[ERROR] due-reminders error:", error);
+        console.error('[ERROR] due-reminders error:', error);
         res.status(500).json({ error: 'Hatırlatıcılar yüklenirken bir hata oluştu.' });
     }
 });
@@ -99,8 +93,8 @@ router.get('/personal', async (req, res) => {
             where: {
                 ownerId: req.user.id,
                 isPersonal: true,
-                deletedAt: null
-            }
+                deletedAt: null,
+            },
         });
         res.json(card);
     } catch (error) {
@@ -120,8 +114,8 @@ router.get('/check-duplicate', async (req, res) => {
             conditions.push({
                 [Op.and]: [
                     { firstName: { [Op.iLike]: firstName.trim() } },
-                    { lastName: { [Op.iLike]: lastName.trim() } }
-                ]
+                    { lastName: { [Op.iLike]: lastName.trim() } },
+                ],
             });
         }
 
@@ -140,9 +134,9 @@ router.get('/check-duplicate', async (req, res) => {
         const existingCard = await BusinessCard.findOne({
             where: {
                 [Op.or]: conditions,
-                deletedAt: null
+                deletedAt: null,
             },
-            include: [{ model: User, as: 'owner', attributes: ['displayName'] }]
+            include: [{ model: User, as: 'owner', attributes: ['displayName'] }],
         });
 
         res.json(existingCard);
@@ -159,25 +153,42 @@ router.get('/cities', async (req, res) => {
             attributes: [[fn('DISTINCT', col('city')), 'city']],
             where: {
                 city: { [Op.ne]: null },
-                deletedAt: null
-            }
+                deletedAt: null,
+            },
         });
-        res.json(cities.map(c => c.city).filter(Boolean).sort());
+        res.json(
+            cities
+                .map((c) => c.city)
+                .filter(Boolean)
+                .sort(),
+        );
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Cities list error:', error);
+        res.status(500).json({ error: 'Şehirler alınırken hata oluştu.' });
     }
 });
 
 // Helper: Sorgu Oluşturucu
 const buildCardsQuery = (req) => {
-    const { 
-        remindersOnly, hasReminder, search, city, cities, 
-        tagId, tagIds, sort, dateStart, dateEnd, 
-        leadStatus, statuses, source, priority 
+    const {
+        remindersOnly,
+        hasReminder,
+        search,
+        city,
+        cities,
+        tagId,
+        tagIds,
+        sort,
+        dateStart,
+        dateEnd,
+        leadStatus,
+        statuses,
+        source,
+        priority,
     } = req.query;
 
     const whereClause = {
-        deletedAt: null
+        deletedAt: null,
     };
 
     // Filtreleme: Sadece Hatırlırıcalar
@@ -189,10 +200,7 @@ const buildCardsQuery = (req) => {
     if (req.user && req.user.role !== 'admin') {
         whereClause[Op.and] = whereClause[Op.and] || [];
         whereClause[Op.and].push({
-            [Op.or]: [
-                { ownerId: req.user.id },
-                { visibility: 'public' }
-            ]
+            [Op.or]: [{ ownerId: req.user.id }, { visibility: 'public' }],
         });
     }
 
@@ -209,8 +217,8 @@ const buildCardsQuery = (req) => {
                 { title: { [Op.iLike]: `%${searchTerm}%` } },
                 { city: { [Op.iLike]: `%${searchTerm}%` } },
                 { phone: { [Op.iLike]: `%${searchTerm}%` } },
-                { source: { [Op.iLike]: `%${searchTerm}%` } }
-            ]
+                { source: { [Op.iLike]: `%${searchTerm}%` } },
+            ],
         });
     }
 
@@ -255,13 +263,27 @@ const buildCardsQuery = (req) => {
     let order = [['createdAt', 'DESC']]; // Varsayılan
     if (sort) {
         switch (sort) {
-            case 'oldest': order = [['createdAt', 'ASC']]; break;
-            case 'nameAsc': order = [['firstName', 'ASC']]; break;
-            case 'nameDesc': order = [['firstName', 'DESC']]; break;
-            case 'companyAsc': order = [['company', 'ASC']]; break;
-            case 'newest': order = [['createdAt', 'DESC']]; break;
-            case 'priorityDesc': order = [['priority', 'DESC']]; break;
-            case 'lastInteraction': order = [['lastInteractionDate', 'DESC']]; break;
+            case 'oldest':
+                order = [['createdAt', 'ASC']];
+                break;
+            case 'nameAsc':
+                order = [['firstName', 'ASC']];
+                break;
+            case 'nameDesc':
+                order = [['firstName', 'DESC']];
+                break;
+            case 'companyAsc':
+                order = [['company', 'ASC']];
+                break;
+            case 'newest':
+                order = [['createdAt', 'DESC']];
+                break;
+            case 'priorityDesc':
+                order = [['priority', 'DESC']];
+                break;
+            case 'lastInteraction':
+                order = [['lastInteractionDate', 'DESC']];
+                break;
         }
     }
 
@@ -279,26 +301,32 @@ router.get('/', async (req, res) => {
         // Include Logic for Tags
         const include = [
             { model: User, as: 'owner', attributes: ['displayName', 'email'] },
-            { 
-                model: Tag, 
-                as: 'tags', 
+            {
+                model: Tag,
+                as: 'tags',
                 through: { attributes: [] },
-                required: (req.query.tagId || req.query.tagIds) ? true : false,
-                where: req.query.tagId 
-                    ? { id: req.query.tagId } 
-                    : (req.query.tagIds 
-                        ? { id: { [Op.in]: Array.isArray(req.query.tagIds) ? req.query.tagIds : req.query.tagIds.split(',') } } 
-                        : undefined)
-            }
+                required: req.query.tagId || req.query.tagIds ? true : false,
+                where: req.query.tagId
+                    ? { id: req.query.tagId }
+                    : req.query.tagIds
+                      ? {
+                            id: {
+                                [Op.in]: Array.isArray(req.query.tagIds)
+                                    ? req.query.tagIds
+                                    : req.query.tagIds.split(','),
+                            },
+                        }
+                      : undefined,
+            },
         ];
-        
+
         const { count, rows } = await BusinessCard.findAndCountAll({
             where: whereClause,
             include,
             order,
             limit,
             offset,
-            distinct: true // findAndCountAll with include and limit needs distinct for correct count
+            distinct: true, // findAndCountAll with include and limit needs distinct for correct count
         });
 
         res.json({
@@ -307,8 +335,8 @@ router.get('/', async (req, res) => {
                 totalItems: count,
                 totalPages: Math.ceil(count / limit),
                 currentPage: page,
-                limit: limit
-            }
+                limit: limit,
+            },
         });
     } catch (error) {
         console.error('Cards list error:', error);
@@ -324,14 +352,18 @@ router.get('/export/excel', async (req, res) => {
 
         // Eğer ID listesi geldiyse sadece onları çek (max 500)
         if (req.query.ids) {
-            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
+            const ids = req.query.ids
+                .split(',')
+                .slice(0, 500)
+                .map((id) => parseInt(id))
+                .filter((id) => id > 0 && !isNaN(id));
             whereClause.id = { [Op.in]: ids };
         }
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
             include: [{ model: User, as: 'owner', attributes: ['displayName'] }],
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
 
         const workbook = new ExcelJS.Workbook();
@@ -350,10 +382,10 @@ router.get('/export/excel', async (req, res) => {
             { header: 'Web', key: 'website', width: 20 },
             { header: 'Görünürlük', key: 'visibility', width: 10 },
             { header: 'Ekleyen', key: 'ownerName', width: 15 },
-            { header: 'Oluşturulma Tarihi', key: 'createdAt', width: 20 }
+            { header: 'Oluşturulma Tarihi', key: 'createdAt', width: 20 },
         ];
 
-        cards.forEach(card => {
+        cards.forEach((card) => {
             worksheet.addRow({
                 firstName: sanitizeForExcel(card.firstName),
                 lastName: sanitizeForExcel(card.lastName),
@@ -367,7 +399,7 @@ router.get('/export/excel', async (req, res) => {
                 website: sanitizeForExcel(card.website),
                 visibility: card.visibility === 'public' ? 'Herkese Açık' : 'Özel',
                 ownerName: sanitizeForExcel(card.owner ? card.owner.displayName : '-'),
-                createdAt: card.createdAt.toLocaleString('tr-TR')
+                createdAt: card.createdAt.toLocaleString('tr-TR'),
             });
         });
 
@@ -381,11 +413,11 @@ router.get('/export/excel', async (req, res) => {
         res.setHeader('Content-Length', buffer.length);
 
         res.send(buffer);
-
     } catch (error) {
         console.error('[EXPORT ERROR] Excel Export Failed:', error);
+        logger.error('Excel export error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Excel oluşturulurken bir hata meydana geldi: ' + error.message });
+            res.status(500).json({ error: 'Excel oluşturulurken bir hata meydana geldi.' });
         }
     }
 });
@@ -397,13 +429,17 @@ router.get('/export/pdf', async (req, res) => {
 
         // Eğer ID listesi geldiyse sadece onları çek (max 500)
         if (req.query.ids) {
-            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
+            const ids = req.query.ids
+                .split(',')
+                .slice(0, 500)
+                .map((id) => parseInt(id))
+                .filter((id) => id > 0 && !isNaN(id));
             whereClause.id = { [Op.in]: ids };
         }
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
-            order: [['createdAt', 'DESC']]
+            order: [['createdAt', 'DESC']],
         });
 
         const fs = require('fs');
@@ -439,30 +475,30 @@ router.get('/export/pdf', async (req, res) => {
 
         // Tablo Verisi
         const table = {
-            title: "Tüm İletişim Bilgileri",
-            headers: ["Ad Soyad", "Şirket", "Ünvan", "Telefon", "E-Posta", "Şehir"],
-            rows: cards.map(c => [
+            title: 'Tüm İletişim Bilgileri',
+            headers: ['Ad Soyad', 'Şirket', 'Ünvan', 'Telefon', 'E-Posta', 'Şehir'],
+            rows: cards.map((c) => [
                 `${c.firstName} ${c.lastName}`,
                 c.company || '-',
                 c.title || '-',
                 c.phone || '-',
                 c.email || '-',
-                c.city || '-'
-            ])
+                c.city || '-',
+            ]),
         };
 
         // Tabloyu Çiz - await kullanarak bekle (pdfkit-table async çalışabilir)
         await doc.table(table, {
-            prepareHeader: () => doc.font("Roboto-Bold").fontSize(10),
-            prepareRow: (row, i) => doc.font("Roboto-Regular").fontSize(10)
+            prepareHeader: () => doc.font('Roboto-Bold').fontSize(10),
+            prepareRow: (row, i) => doc.font('Roboto-Regular').fontSize(10),
         });
 
         doc.end();
-
     } catch (error) {
         console.error('[EXPORT ERROR] PDF Export Error:', error);
+        logger.error('PDF export error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'PDF oluşturulurken bir hata meydana geldi: ' + error.message });
+            res.status(500).json({ error: 'PDF oluşturulurken bir hata meydana geldi.' });
         }
     }
 });
@@ -471,7 +507,7 @@ router.get('/export/pdf', async (req, res) => {
 const uploadFields = upload.fields([
     { name: 'frontImage', maxCount: 1 },
     { name: 'backImage', maxCount: 1 },
-    { name: 'logoImage', maxCount: 1 }
+    { name: 'logoImage', maxCount: 1 },
 ]);
 
 const cardValidationRules = [
@@ -484,7 +520,26 @@ const cardValidationRules = [
 router.post('/', uploadFields, cardValidationRules, validate, async (req, res) => {
     const t = await sequelize.transaction();
     try {
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags, leadStatus, priority, source } = req.body;
+        const {
+            firstName,
+            lastName,
+            company,
+            title,
+            email,
+            phone,
+            address,
+            city,
+            country,
+            website,
+            ocrText,
+            notes,
+            visibility,
+            reminderDate,
+            tags,
+            leadStatus,
+            priority,
+            source,
+        } = req.body;
 
         const frontImageUrl = req.files['frontImage'] ? `/uploads/${req.files['frontImage'][0].filename}` : null;
         const backImageUrl = req.files['backImage'] ? `/uploads/${req.files['backImage'][0].filename}` : null;
@@ -521,7 +576,7 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
             leadStatus: leadStatus || 'Cold',
             priority: priority ? parseInt(priority, 10) : 0,
             source: source === '' ? null : source,
-            ownerId: req.user.id // Kart sahibini kaydet
+            ownerId: req.user.id, // Kart sahibini kaydet
         };
 
         const newCard = await BusinessCard.create(cleanData, { transaction: t });
@@ -536,22 +591,22 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
         await logAction({
             action: 'CARD_CREATE',
             details: `Yeni kart eklendi: ${firstName} ${lastName}`,
-            req
+            req,
         });
 
         await t.commit();
         res.status(201).json(newCard);
     } catch (error) {
         await t.rollback();
-        console.error("CARD_CREATE_ERROR Stack:", error.stack);
+        console.error('CARD_CREATE_ERROR Stack:', error.stack);
         // LOG: Hata
         await logAction({
             action: 'CARD_CREATE_ERROR',
-            details: error.message,
-            req
+            details: 'Kart eklenirken sunucu hatası oluştu.',
+            req,
         });
         res.status(500).json({
-            error: 'Kart eklenirken bir sunucu hatası oluştu.'
+            error: 'Kart eklenirken bir sunucu hatası oluştu.',
         });
     }
 });
@@ -576,38 +631,65 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
             return res.status(403).json({ error: 'Bu kartviziti güncelleme yetkiniz bulunmuyor.' });
         }
 
-        const { firstName, lastName, company, title, email, phone, address, city, country, website, ocrText, notes, visibility, reminderDate, tags, leadStatus, priority, source } = req.body;
+        const {
+            firstName,
+            lastName,
+            company,
+            title,
+            email,
+            phone,
+            address,
+            city,
+            country,
+            website,
+            ocrText,
+            notes,
+            visibility,
+            reminderDate,
+            tags,
+            leadStatus,
+            priority,
+            source,
+        } = req.body;
 
         // Resim güncelleme varsa (req.files undefined olabilir - JSON request durumunda)
-        const frontImageUrl = (req.files && req.files['frontImage']) ? `/uploads/${req.files['frontImage'][0].filename}` : card.frontImageUrl;
-        const backImageUrl = (req.files && req.files['backImage']) ? `/uploads/${req.files['backImage'][0].filename}` : card.backImageUrl;
-        const logoUrl = (req.files && req.files['logoImage']) ? `/uploads/${req.files['logoImage'][0].filename}` : card.logoUrl;
+        const frontImageUrl =
+            req.files && req.files['frontImage']
+                ? `/uploads/${req.files['frontImage'][0].filename}`
+                : card.frontImageUrl;
+        const backImageUrl =
+            req.files && req.files['backImage'] ? `/uploads/${req.files['backImage'][0].filename}` : card.backImageUrl;
+        const logoUrl =
+            req.files && req.files['logoImage'] ? `/uploads/${req.files['logoImage'][0].filename}` : card.logoUrl;
 
         // Veri Temizleme ve Güncelleme
 
-        await card.update({
-            firstName: firstName ? toTitleCase(firstName.trim()) : card.firstName,
-            lastName: lastName ? lastName.trim().toUpperCase() : card.lastName,
-            company: company || card.company,
-            title: title || card.title,
-            email: email || card.email,
-            phone: phone || card.phone,
-            address: address || card.address,
-            city: city ? city.trim().toUpperCase() : card.city,
-            country: country ? country.trim().toUpperCase() : card.country,
-            website: website || card.website,
-            frontImageUrl,
-            backImageUrl,
-            logoUrl,
-            ocrText: ocrText || card.ocrText,
-            notes: notes !== undefined ? notes : card.notes,
-            visibility: visibility || card.visibility,
-            reminderDate: reminderDate !== undefined ? (reminderDate || null) : card.reminderDate,
-            leadStatus: leadStatus || card.leadStatus,
-            priority: priority !== undefined ? parseInt(priority, 10) : card.priority,
-            source: source !== undefined ? source : card.source,
-            isPersonal: req.body.isPersonal !== undefined ? (req.body.isPersonal === 'true') : card.isPersonal
-        }, { transaction: t });
+        await card.update(
+            {
+                firstName: firstName ? toTitleCase(firstName.trim()) : card.firstName,
+                lastName: lastName ? lastName.trim().toUpperCase() : card.lastName,
+                company: company || card.company,
+                title: title || card.title,
+                email: email || card.email,
+                phone: phone || card.phone,
+                address: address || card.address,
+                city: city ? city.trim().toUpperCase() : card.city,
+                country: country ? country.trim().toUpperCase() : card.country,
+                website: website || card.website,
+                frontImageUrl,
+                backImageUrl,
+                logoUrl,
+                ocrText: ocrText || card.ocrText,
+                notes: notes !== undefined ? notes : card.notes,
+                visibility: visibility || card.visibility,
+                reminderDate: reminderDate !== undefined ? reminderDate || null : card.reminderDate,
+                leadStatus: leadStatus || card.leadStatus,
+                priority: priority !== undefined ? parseInt(priority, 10) : card.priority,
+                source: source !== undefined ? source : card.source,
+                isPersonal: req.body.isPersonal !== undefined ? req.body.isPersonal === 'true' : card.isPersonal,
+            },
+            { transaction: t },
+        );
 
         // Etiket Güncelleme
         if (tags) {
@@ -619,18 +701,18 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
         await logAction({
             action: 'CARD_UPDATE',
             details: `Kart güncellendi: ${card.firstName} ${card.lastName}`,
-            req
+            req,
         });
 
         await t.commit();
         res.json(card);
     } catch (error) {
         await t.rollback();
-        console.error("CARD_UPDATE_ERROR Stack:", error.stack);
+        console.error('CARD_UPDATE_ERROR Stack:', error.stack);
         await logAction({
             action: 'CARD_UPDATE_ERROR',
-            details: error.message,
-            req
+            details: 'Kart güncellenirken sunucu hatası oluştu.',
+            req,
         });
         res.status(500).json({ error: 'Kart güncellenirken bir sunucu hatası oluştu.' });
     }
@@ -658,10 +740,10 @@ router.get('/:id/history', async (req, res) => {
                 {
                     model: User,
                     as: 'editor',
-                    attributes: ['id', 'displayName', 'username', 'email']
-                }
+                    attributes: ['id', 'displayName', 'username', 'email'],
+                },
             ],
-            order: [['version', 'DESC']]
+            order: [['version', 'DESC']],
         });
 
         res.json(history);
@@ -678,14 +760,34 @@ router.get('/export/vcf', async (req, res) => {
 
         // Optional: export only selected IDs
         if (req.query.ids) {
-            const ids = req.query.ids.split(',').slice(0, 500).map(id => parseInt(id)).filter(id => id > 0 && !isNaN(id));
+            const ids = req.query.ids
+                .split(',')
+                .slice(0, 500)
+                .map((id) => parseInt(id))
+                .filter((id) => id > 0 && !isNaN(id));
             whereClause.id = { [Op.in]: ids };
         }
 
         const cards = await BusinessCard.findAll({
             where: whereClause,
-            attributes: ['id', 'firstName', 'lastName', 'company', 'title', 'email', 'phone', 'website', 'address', 'city', 'country', 'notes'],
-            order: [['firstName', 'ASC'], ['lastName', 'ASC']],
+            attributes: [
+                'id',
+                'firstName',
+                'lastName',
+                'company',
+                'title',
+                'email',
+                'phone',
+                'website',
+                'address',
+                'city',
+                'country',
+                'notes',
+            ],
+            order: [
+                ['firstName', 'ASC'],
+                ['lastName', 'ASC'],
+            ],
             limit: 2000,
         });
 
@@ -694,16 +796,19 @@ router.get('/export/vcf', async (req, res) => {
         }
 
         // Concatenate all vCards into one file
-        const vcfContent = cards.map(card => generateVCard(card)).join('\r\n');
+        const vcfContent = cards.map((card) => generateVCard(card)).join('\r\n');
 
         res.setHeader('Content-Type', 'text/vcard');
-        res.setHeader('Content-Disposition', `attachment; filename="contacts_${new Date().toISOString().slice(0, 10)}.vcf"`);
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="contacts_${new Date().toISOString().slice(0, 10)}.vcf"`,
+        );
         res.send(vcfContent);
 
         await logAction({
             action: 'CARD_BULK_VCF_EXPORT',
             details: `Bulk vCard export: ${cards.length} cards`,
-            req
+            req,
         });
     } catch (error) {
         console.error('Bulk VCF export error:', error);
@@ -736,7 +841,7 @@ router.get('/:id/vcf', async (req, res) => {
         await logAction({
             action: 'CARD_VCF_EXPORT',
             details: `vCard indirildi: ${card.firstName} ${card.lastName}`,
-            req
+            req,
         });
     } catch (error) {
         console.error('vcf download error:', error);
@@ -769,15 +874,18 @@ router.delete('/:id', async (req, res) => {
         }
 
         // Soft delete: deletedAt ve deletedBy ayarla
-        await card.update({
-            deletedAt: new Date(),
-            deletedBy: req.user.id
-        }, { transaction: t });
+        await card.update(
+            {
+                deletedAt: new Date(),
+                deletedBy: req.user.id,
+            },
+            { transaction: t },
+        );
 
         await logAction({
             action: 'CARD_SOFT_DELETE',
             details: `Kart çöp kutusuna taşındı: ${card.firstName} ${card.lastName}`,
-            req
+            req,
         });
 
         await t.commit();
@@ -787,8 +895,8 @@ router.delete('/:id', async (req, res) => {
         console.error('Soft delete error:', error);
         await logAction({
             action: 'CARD_DELETE_ERROR',
-            details: error.message,
-            req
+            details: 'Kart silinirken sunucu hatası oluştu.',
+            req,
         });
         res.status(500).json({ error: 'Kart silinirken bir hata oluştu.' });
     }
@@ -813,15 +921,18 @@ router.post('/bulk-delete', async (req, res) => {
             whereClause.ownerId = req.user.id;
         }
 
-        const [updatedCount] = await BusinessCard.update({
-            deletedAt: new Date(),
-            deletedBy: req.user.id
-        }, { where: whereClause, transaction: t });
+        const [updatedCount] = await BusinessCard.update(
+            {
+                deletedAt: new Date(),
+                deletedBy: req.user.id,
+            },
+            { where: whereClause, transaction: t },
+        );
 
         await logAction({
             action: 'CARD_BULK_DELETE',
             details: `${updatedCount} adet kart çöp kutusuna taşındı.`,
-            req
+            req,
         });
 
         await t.commit();
@@ -853,7 +964,7 @@ router.post('/bulk-visibility', async (req, res) => {
         await logAction({
             action: 'CARD_BULK_VISIBILITY',
             details: `${updatedCount} adet kartın görünürlüğü ${visibility} yapıldı.`,
-            req
+            req,
         });
 
         await t.commit();
@@ -870,7 +981,7 @@ router.post('/bulk-tags', async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { ids, tagIds, mode = 'add' } = req.body; // mode: 'add' (mevcutlara ekle) veya 'replace' (temizle ve yenilerini ekle)
-        
+
         if (!ids || !Array.isArray(ids) || !tagIds || !Array.isArray(tagIds)) {
             return res.status(400).json({ error: 'Geçersiz parametreler.' });
         }
@@ -881,7 +992,7 @@ router.post('/bulk-tags', async (req, res) => {
         }
 
         const cards = await BusinessCard.findAll({ where: whereClause, transaction: t });
-        
+
         for (const card of cards) {
             if (mode === 'add') {
                 await card.addTags(tagIds, { transaction: t });
@@ -893,7 +1004,7 @@ router.post('/bulk-tags', async (req, res) => {
         await logAction({
             action: 'CARD_BULK_TAGS',
             details: `${cards.length} adet karta toplu etiket işlemi yapıldı.`,
-            req
+            req,
         });
 
         await t.commit();
@@ -910,14 +1021,14 @@ router.get('/trash', async (req, res) => {
     try {
         const { Op } = require('sequelize');
         const whereClause = {
-            deletedAt: { [Op.not]: null } // Sadece silinmiş kartları getir
+            deletedAt: { [Op.not]: null }, // Sadece silinmiş kartları getir
         };
 
         if (req.user && req.user.role !== 'admin') {
             // Admin değilse: (Kendi sildiği kartlar) VEYA (Public kartları silmiş olanlar)
             whereClause[Op.or] = [
                 { deletedBy: req.user.id }, // Kendisinin sildiği
-                { visibility: 'public' }    // Herkese açık kartlar
+                { visibility: 'public' }, // Herkese açık kartlar
             ];
         }
 
@@ -925,9 +1036,9 @@ router.get('/trash', async (req, res) => {
             where: whereClause,
             include: [
                 { model: User, as: 'owner', attributes: ['displayName', 'email'] },
-                { model: User, as: 'deleter', foreignKey: 'deletedBy', attributes: ['displayName', 'username'] }
+                { model: User, as: 'deleter', foreignKey: 'deletedBy', attributes: ['displayName', 'username'] },
             ],
-            order: [['deletedAt', 'DESC']]
+            order: [['deletedAt', 'DESC']],
         });
 
         res.json(cards);
@@ -960,15 +1071,18 @@ router.post('/:id/restore', async (req, res) => {
             return res.status(403).json({ error: 'Bu kartı geri yükleme yetkiniz yok.' });
         }
 
-        await card.update({
-            deletedAt: null,
-            deletedBy: null
-        }, { transaction: t });
+        await card.update(
+            {
+                deletedAt: null,
+                deletedBy: null,
+            },
+            { transaction: t },
+        );
 
         await logAction({
             action: 'CARD_RESTORE',
             details: `Kart geri yüklendi: ${card.firstName} ${card.lastName}`,
-            req
+            req,
         });
 
         await t.commit();
@@ -1004,7 +1118,7 @@ router.delete('/:id/permanent', async (req, res) => {
         await logAction({
             action: 'CARD_PERMANENT_DELETE',
             details: `Kart kalıcı olarak silindi: ${cardInfo}`,
-            req
+            req,
         });
 
         await t.commit();
@@ -1021,7 +1135,7 @@ router.delete('/trash/empty', async (req, res) => {
     try {
         const { Op } = require('sequelize');
         const whereClause = {
-            deletedAt: { [Op.not]: null }
+            deletedAt: { [Op.not]: null },
         };
 
         if (req.user.role !== 'admin') {
@@ -1030,13 +1144,13 @@ router.delete('/trash/empty', async (req, res) => {
         }
 
         const deletedCount = await BusinessCard.destroy({
-            where: whereClause
+            where: whereClause,
         });
 
         await logAction({
             action: 'TRASH_EMPTY',
             details: `Çöp kutusu boşaltıldı. ${deletedCount} kart kalıcı olarak silindi.`,
-            req
+            req,
         });
 
         res.json({ message: `${deletedCount} kartvizit kalıcı olarak silindi.` });
