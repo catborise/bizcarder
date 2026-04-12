@@ -1,6 +1,7 @@
 const passport = require('passport');
 const { Strategy: SamlStrategy } = require('@node-saml/passport-saml');
 const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { Op } = require('sequelize');
 
@@ -216,6 +217,8 @@ passport.use(
                 });
 
                 if (!user || !user.password) {
+                    // Timing attack koruması: kullanıcı bulunamasa bile bcrypt çalıştır
+                    await bcrypt.compare(password, '$2a$12$dummyhashtopreventtimingattack000000000000000000000');
                     return done(null, false, {
                         message: 'Kullanıcı adı veya şifre hatalı veya bu hesap sadece kurumsal giriş destekliyor.',
                     });

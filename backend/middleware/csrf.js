@@ -29,7 +29,7 @@ function csrfProtection(req, res, next) {
     // - Local login: first POST before CSRF cookie is set in browser
     // - Register: same as login
     // - Logout: session destruction, no state change risk
-    const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/register', '/auth/logout'];
+    const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/logout'];
     if (authExempt.some((p) => req.originalUrl.startsWith(p))) return next();
 
     // Validate: compare cookie with header

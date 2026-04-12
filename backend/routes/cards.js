@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const { Op, fn, col } = require('sequelize');
 const sequelize = require('../config/database');
 const { body } = require('express-validator');
@@ -16,6 +17,10 @@ const { ocrLimiter } = require('../middleware/rateLimiter');
 const ExcelJS = require('exceljs');
 const PDFDocument = require('pdfkit-table');
 
+function escapeLikeWildcards(str) {
+    return str.replace(/[%_\\]/g, '\\$&');
+}
+
 function sanitizeForExcel(value) {
     if (typeof value !== 'string') return value;
     if (/^[=+\-@\t\r]/.test(value)) return "'" + value;
@@ -31,8 +36,7 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
+        cb(null, crypto.randomUUID() + path.extname(file.originalname));
     },
 });
 
@@ -124,7 +128,7 @@ router.get('/check-duplicate', async (req, res) => {
         }
 
         if (phone && phone.trim()) {
-            conditions.push({ phone: { [Op.like]: `%${phone.trim()}%` } });
+            conditions.push({ phone: { [Op.like]: `%${escapeLikeWildcards(phone.trim())}%` } });
         }
 
         if (conditions.length === 0) {
@@ -206,7 +210,7 @@ const buildCardsQuery = (req) => {
 
     // Arama filtresi
     if (search) {
-        const searchTerm = search.toLowerCase();
+        const searchTerm = escapeLikeWildcards(search.toLowerCase());
         whereClause[Op.and] = whereClause[Op.and] || [];
         whereClause[Op.and].push({
             [Op.or]: [
@@ -240,7 +244,7 @@ const buildCardsQuery = (req) => {
 
     // Kaynak filtresi
     if (source) {
-        whereClause.source = { [Op.iLike]: `%${source}%` };
+        whereClause.source = { [Op.iLike]: `%${escapeLikeWildcards(source)}%` };
     }
 
     // Öncelik filtresi
