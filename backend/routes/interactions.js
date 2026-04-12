@@ -22,7 +22,7 @@ router.get('/:cardId', async (req, res) => {
         res.json(interactions);
     } catch (error) {
         logger.error('Interactions list error:', error);
-        res.status(500).json({ error: 'Etkileşimler alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'INTERACTIONS_LOAD_FAILED' });
     }
 });
 
@@ -46,7 +46,7 @@ router.post('/:cardId', async (req, res) => {
         res.status(201).json(interaction);
     } catch (error) {
         logger.error('Interaction create error:', error);
-        res.status(500).json({ error: 'Etkileşim eklenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'INTERACTION_ADD_FAILED' });
     }
 });
 
@@ -55,12 +55,12 @@ router.put('/:id', async (req, res) => {
     try {
         const interaction = await Interaction.findByPk(req.params.id);
         if (!interaction) {
-            return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+            return res.status(404).json({ errorCode: 'RECORD_NOT_FOUND' });
         }
 
         // Yetki kontrolü: Sadece admin veya kaydı oluşturan kişi
         if (req.user.role !== 'admin' && interaction.authorId !== req.user.id) {
-            return res.status(403).json({ error: 'Bu kaydı düzenleme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'EDIT_FORBIDDEN' });
         }
 
         const { type, notes, date } = req.body;
@@ -68,7 +68,7 @@ router.put('/:id', async (req, res) => {
         res.json(interaction);
     } catch (error) {
         logger.error('Interaction update error:', error);
-        res.status(500).json({ error: 'Etkileşim güncellenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'INTERACTION_UPDATE_FAILED' });
     }
 });
 
@@ -77,18 +77,18 @@ router.delete('/:id', async (req, res) => {
     try {
         const interaction = await Interaction.findByPk(req.params.id);
         if (!interaction) {
-            return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+            return res.status(404).json({ errorCode: 'RECORD_NOT_FOUND' });
         }
 
         if (req.user.role !== 'admin' && interaction.authorId !== req.user.id) {
-            return res.status(403).json({ error: 'Bu kaydı silme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'DELETE_FORBIDDEN' });
         }
 
         await interaction.destroy();
         res.json({ message: 'Kayıt silindi.' });
     } catch (error) {
         logger.error('Interaction delete error:', error);
-        res.status(500).json({ error: 'Etkileşim silinirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'INTERACTION_DELETE_FAILED' });
     }
 });
 
@@ -97,19 +97,19 @@ router.put('/:id/pin', async (req, res) => {
     try {
         const interaction = await Interaction.findByPk(req.params.id);
         if (!interaction) {
-            return res.status(404).json({ error: 'Kayıt bulunamadı.' });
+            return res.status(404).json({ errorCode: 'RECORD_NOT_FOUND' });
         }
 
         // Yetki kontrolü: Sadece admin veya kaydı oluşturan kişi
         if (req.user.role !== 'admin' && interaction.authorId !== req.user.id) {
-            return res.status(403).json({ error: 'Bu kaydı sabitleme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'PIN_FORBIDDEN' });
         }
 
         await interaction.update({ isPinned: !interaction.isPinned });
         res.json(interaction);
     } catch (error) {
         logger.error('Interaction pin toggle error:', error);
-        res.status(500).json({ error: 'Etkileşim sabitleme işleminde hata oluştu.' });
+        res.status(500).json({ errorCode: 'INTERACTION_PIN_FAILED' });
     }
 });
 

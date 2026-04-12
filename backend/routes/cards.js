@@ -83,7 +83,7 @@ router.get('/due-reminders', async (req, res) => {
         res.json(cards);
     } catch (error) {
         console.error('[ERROR] due-reminders error:', error);
-        res.status(500).json({ error: 'Hatırlatıcılar yüklenirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'REMINDERS_LOAD_FAILED' });
     }
 });
 
@@ -103,7 +103,7 @@ router.get('/personal', async (req, res) => {
         res.json(card);
     } catch (error) {
         console.error('Personal card fetch error:', error);
-        res.status(500).json({ error: 'Kişisel kartvizit yüklenemedi.' });
+        res.status(500).json({ errorCode: 'PERSONAL_CARD_LOAD_FAILED' });
     }
 });
 
@@ -146,7 +146,7 @@ router.get('/check-duplicate', async (req, res) => {
         res.json(existingCard);
     } catch (error) {
         console.error('Duplicate check error:', error);
-        res.status(500).json({ error: 'Kayıt kontrolü sırasında bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'DUPLICATE_CHECK_FAILED' });
     }
 });
 
@@ -168,7 +168,7 @@ router.get('/cities', async (req, res) => {
         );
     } catch (error) {
         logger.error('Cities list error:', error);
-        res.status(500).json({ error: 'Şehirler alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'CITIES_LOAD_FAILED' });
     }
 });
 
@@ -344,7 +344,7 @@ router.get('/', async (req, res) => {
         });
     } catch (error) {
         console.error('Cards list error:', error);
-        res.status(500).json({ error: 'Kartvizitler listelenirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'CARDS_LIST_FAILED' });
     }
 });
 
@@ -421,7 +421,7 @@ router.get('/export/excel', async (req, res) => {
         console.error('[EXPORT ERROR] Excel Export Failed:', error);
         logger.error('Excel export error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'Excel oluşturulurken bir hata meydana geldi.' });
+            res.status(500).json({ errorCode: 'EXCEL_EXPORT_FAILED' });
         }
     }
 });
@@ -502,7 +502,7 @@ router.get('/export/pdf', async (req, res) => {
         console.error('[EXPORT ERROR] PDF Export Error:', error);
         logger.error('PDF export error:', error);
         if (!res.headersSent) {
-            res.status(500).json({ error: 'PDF oluşturulurken bir hata meydana geldi.' });
+            res.status(500).json({ errorCode: 'PDF_EXPORT_FAILED' });
         }
     }
 });
@@ -551,10 +551,10 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
 
         // Validasyonlar
         if (!firstName || !lastName) {
-            return res.status(400).json({ error: 'Ad ve Soyad alanları zorunludur.' });
+            return res.status(400).json({ errorCode: 'FIRST_LAST_NAME_REQUIRED' });
         }
         if ((!email || email.trim() === '') && (!phone || phone.trim() === '')) {
-            return res.status(400).json({ error: 'E-posta veya Telefon bilgisinden en az biri girilmelidir.' });
+            return res.status(400).json({ errorCode: 'EMAIL_OR_PHONE_REQUIRED' });
         }
 
         // Veri Formatlama ve Temizleme
@@ -610,7 +610,7 @@ router.post('/', uploadFields, cardValidationRules, validate, async (req, res) =
             req,
         });
         res.status(500).json({
-            error: 'Kart eklenirken bir sunucu hatası oluştu.',
+            errorCode: 'CARD_CREATE_FAILED',
         });
     }
 });
@@ -626,13 +626,13 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
 
         if (!card) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'CARD_NOT_FOUND' });
         }
 
         // Yetki kontrolü: Sadece sahibi veya admin güncelleyebilir
         if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu kartviziti güncelleme yetkiniz bulunmuyor.' });
+            return res.status(403).json({ errorCode: 'CARD_UPDATE_FORBIDDEN' });
         }
 
         const {
@@ -718,7 +718,7 @@ router.put('/:id', uploadFields, cardValidationRules, validate, async (req, res)
             details: 'Kart güncellenirken sunucu hatası oluştu.',
             req,
         });
-        res.status(500).json({ error: 'Kart güncellenirken bir sunucu hatası oluştu.' });
+        res.status(500).json({ errorCode: 'CARD_UPDATE_FAILED' });
     }
 });
 
@@ -730,12 +730,12 @@ router.get('/:id/history', async (req, res) => {
         // Önce kartın varlığını ve yetkiyi kontrol et
         const card = await BusinessCard.findByPk(id);
         if (!card) {
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'CARD_NOT_FOUND' });
         }
 
         // Yetki kontrolü (Normal GET endpoint ile aynı mantık)
         if (card.visibility === 'private' && card.ownerId !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Bu kartın geçmişini görüntüleme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'CARD_HISTORY_FORBIDDEN' });
         }
 
         const history = await BusinessCardHistory.findAll({
@@ -753,7 +753,7 @@ router.get('/:id/history', async (req, res) => {
         res.json(history);
     } catch (error) {
         console.error('History fetch error:', error);
-        res.status(500).json({ error: 'Geçmiş kayıtları yüklenemedi.' });
+        res.status(500).json({ errorCode: 'CARD_HISTORY_FAILED' });
     }
 });
 
@@ -796,7 +796,7 @@ router.get('/export/vcf', async (req, res) => {
         });
 
         if (cards.length === 0) {
-            return res.status(404).json({ error: 'No cards to export.' });
+            return res.status(404).json({ errorCode: 'VCARD_NOT_FOUND' });
         }
 
         // Concatenate all vCards into one file
@@ -816,7 +816,7 @@ router.get('/export/vcf', async (req, res) => {
         });
     } catch (error) {
         console.error('Bulk VCF export error:', error);
-        res.status(500).json({ error: 'vCard export failed.' });
+        res.status(500).json({ errorCode: 'VCARD_EXPORT_FAILED' });
     }
 });
 
@@ -827,12 +827,12 @@ router.get('/:id/vcf', async (req, res) => {
         const card = await BusinessCard.findByPk(id);
 
         if (!card) {
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'VCARD_NOT_FOUND' });
         }
 
         // Yetki kontrolü
         if (card.visibility === 'private' && card.ownerId !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Bu kartın vCard dosyasını indirme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'VCARD_DOWNLOAD_FORBIDDEN' });
         }
 
         const vCardContent = generateVCard(card);
@@ -849,7 +849,7 @@ router.get('/:id/vcf', async (req, res) => {
         });
     } catch (error) {
         console.error('vcf download error:', error);
-        res.status(500).json({ error: 'vCard oluşturulamadı.' });
+        res.status(500).json({ errorCode: 'VCARD_EXPORT_FAILED' });
     }
 });
 
@@ -863,18 +863,18 @@ router.delete('/:id', async (req, res) => {
 
         if (!card) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'CARD_NOT_FOUND' });
         }
 
         // Yetki kontrolü: Sadece sahibi veya admin silebilir
         if (card.ownerId !== req.user.id && req.user.role !== 'admin') {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu kartviziti silme yetkiniz bulunmuyor.' });
+            return res.status(403).json({ errorCode: 'CARD_DELETE_FORBIDDEN' });
         }
 
         if (card.deletedAt) {
             await t.rollback();
-            return res.status(400).json({ error: 'Bu kartvizit zaten silinmiş.' });
+            return res.status(400).json({ errorCode: 'CARD_ALREADY_DELETED' });
         }
 
         // Soft delete: deletedAt ve deletedBy ayarla
@@ -893,7 +893,7 @@ router.delete('/:id', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: 'Kartvizit çöp kutusuna taşındı.' });
+        res.json({ messageCode: 'CARD_SOFT_DELETED' });
     } catch (error) {
         await t.rollback();
         console.error('Soft delete error:', error);
@@ -902,7 +902,7 @@ router.delete('/:id', async (req, res) => {
             details: 'Kart silinirken sunucu hatası oluştu.',
             req,
         });
-        res.status(500).json({ error: 'Kart silinirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'CARD_DELETE_FAILED' });
     }
 });
 
@@ -915,7 +915,7 @@ router.post('/bulk-delete', async (req, res) => {
         const { ids } = req.body;
         if (!ids || !Array.isArray(ids) || ids.length === 0) {
             await t.rollback();
-            return res.status(400).json({ error: 'ID listesi eksik.' });
+            return res.status(400).json({ errorCode: 'BULK_IDS_REQUIRED' });
         }
 
         const whereClause = { id: { [Op.in]: ids } };
@@ -940,11 +940,11 @@ router.post('/bulk-delete', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: `${updatedCount} adet kart vizit başarıyla silindi.`, count: updatedCount });
+        res.json({ messageCode: 'BULK_DELETE_SUCCESS', count: updatedCount });
     } catch (error) {
         await t.rollback();
         console.error('Bulk delete error:', error);
-        res.status(500).json({ error: 'Toplu silme sırasında bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'BULK_DELETE_FAILED' });
     }
 });
 
@@ -955,7 +955,7 @@ router.post('/bulk-visibility', async (req, res) => {
         const { ids, visibility } = req.body;
         if (!ids || !Array.isArray(ids) || !['public', 'private'].includes(visibility)) {
             await t.rollback();
-            return res.status(400).json({ error: 'Geçersiz parametreler.' });
+            return res.status(400).json({ errorCode: 'INVALID_PARAMS' });
         }
 
         const whereClause = { id: { [Op.in]: ids } };
@@ -972,11 +972,11 @@ router.post('/bulk-visibility', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: 'Görünürlük başarıyla güncellendi.', count: updatedCount });
+        res.json({ messageCode: 'BULK_UPDATE_SUCCESS', count: updatedCount });
     } catch (error) {
         await t.rollback();
         console.error('Bulk visibility error:', error);
-        res.status(500).json({ error: 'Toplu güncelleme sırasında bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'BULK_UPDATE_FAILED' });
     }
 });
 
@@ -987,7 +987,7 @@ router.post('/bulk-tags', async (req, res) => {
         const { ids, tagIds, mode = 'add' } = req.body; // mode: 'add' (mevcutlara ekle) veya 'replace' (temizle ve yenilerini ekle)
 
         if (!ids || !Array.isArray(ids) || !tagIds || !Array.isArray(tagIds)) {
-            return res.status(400).json({ error: 'Geçersiz parametreler.' });
+            return res.status(400).json({ errorCode: 'INVALID_PARAMS' });
         }
 
         const whereClause = { id: { [Op.in]: ids } };
@@ -1012,11 +1012,11 @@ router.post('/bulk-tags', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: 'Etiketler başarıyla güncellendi.', count: cards.length });
+        res.json({ messageCode: 'BULK_TAG_SUCCESS', count: cards.length });
     } catch (error) {
         await t.rollback();
         console.error('Bulk tags error:', error);
-        res.status(500).json({ error: 'Toplu etiketleme sırasında bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'BULK_TAG_FAILED' });
     }
 });
 
@@ -1048,7 +1048,7 @@ router.get('/trash', async (req, res) => {
         res.json(cards);
     } catch (error) {
         console.error('Trash list error:', error);
-        res.status(500).json({ error: 'Çöp kutusu listelenirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'TRASH_LIST_FAILED' });
     }
 });
 
@@ -1061,18 +1061,18 @@ router.post('/:id/restore', async (req, res) => {
 
         if (!card) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'CARD_NOT_FOUND' });
         }
 
         if (!card.deletedAt) {
             await t.rollback();
-            return res.status(400).json({ error: 'Bu kartvizit silinmemiş.' });
+            return res.status(400).json({ errorCode: 'CARD_RESTORE_NOT_DELETED' });
         }
 
         // Yetki kontrolü: Sadece admin veya silme işlemini yapan kullanıcı geri yükleyebilir
         if (req.user.role !== 'admin' && card.deletedBy !== req.user.id) {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu kartı geri yükleme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'CARD_RESTORE_FORBIDDEN' });
         }
 
         await card.update(
@@ -1090,11 +1090,11 @@ router.post('/:id/restore', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: 'Kartvizit geri yüklendi.', card });
+        res.json({ messageCode: 'CARD_RESTORED', card });
     } catch (error) {
         await t.rollback();
         console.error('Restore error:', error);
-        res.status(500).json({ error: 'Kart geri yüklenirken bir hata oluştu.' });
+        res.status(500).json({ errorCode: 'CARD_RESTORE_FAILED' });
     }
 });
 
@@ -1107,13 +1107,13 @@ router.delete('/:id/permanent', async (req, res) => {
 
         if (!card) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kartvizit bulunamadı.' });
+            return res.status(404).json({ errorCode: 'CARD_NOT_FOUND' });
         }
 
         // Yetki kontrolü: Sadece admin veya silme işlemini yapan kullanıcı kalıcı silebilir
         if (req.user.role !== 'admin' && card.deletedBy !== req.user.id) {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu kartı kalıcı olarak silme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'CARD_PERMANENT_DELETE_FORBIDDEN' });
         }
 
         const cardInfo = `${card.firstName} ${card.lastName}`;
@@ -1126,11 +1126,11 @@ router.delete('/:id/permanent', async (req, res) => {
         });
 
         await t.commit();
-        res.json({ message: 'Kartvizit kalıcı olarak silindi.' });
+        res.json({ messageCode: 'CARD_PERMANENT_DELETED' });
     } catch (error) {
         await t.rollback();
         console.error('Permanent delete error:', error);
-        res.status(500).json({ error: 'Kart kalıcı olarak silinemedi.' });
+        res.status(500).json({ errorCode: 'CARD_PERMANENT_DELETE_FAILED' });
     }
 });
 
@@ -1157,10 +1157,10 @@ router.delete('/trash/empty', async (req, res) => {
             req,
         });
 
-        res.json({ message: `${deletedCount} kartvizit kalıcı olarak silindi.` });
+        res.json({ messageCode: 'TRASH_EMPTIED', count: deletedCount });
     } catch (error) {
         console.error('Trash empty error:', error);
-        res.status(500).json({ error: 'Çöp kutusu boşaltılamadı.' });
+        res.status(500).json({ errorCode: 'TRASH_EMPTY_FAILED' });
     }
 });
 

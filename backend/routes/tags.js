@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         res.json(tags);
     } catch (error) {
         logger.error('Tags list error:', error);
-        res.status(500).json({ error: 'Etiketler alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TAGS_LOAD_FAILED' });
     }
 });
 
@@ -45,7 +45,7 @@ router.get('/stats', async (req, res) => {
     } catch (error) {
         console.error('Tag stats error:', error);
         logger.error('Tag stats error:', error);
-        res.status(500).json({ error: 'Etiket istatistikleri alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TAG_STATS_FAILED' });
     }
 });
 
@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
     try {
         const { name, color } = req.body;
         if (!name) {
-            return res.status(400).json({ error: 'Etiket ismi zorunludur.' });
+            return res.status(400).json({ errorCode: 'TAG_NAME_REQUIRED' });
         }
 
         const newTag = await Tag.create({
@@ -72,7 +72,7 @@ router.post('/', async (req, res) => {
         res.status(201).json(newTag);
     } catch (error) {
         logger.error('Tag create error:', error);
-        res.status(500).json({ error: 'Etiket oluşturulurken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TAG_CREATE_FAILED' });
     }
 });
 
@@ -85,13 +85,13 @@ router.put('/:id', async (req, res) => {
 
         if (!tag) {
             await t.rollback();
-            return res.status(404).json({ error: 'Etiket bulunamadı.' });
+            return res.status(404).json({ errorCode: 'TAG_NOT_FOUND' });
         }
 
         // Sadece admin veya sahibinin düzenlemesine izin ver (ownerId null ise sistem etiketidir, admin düzenleyebilir)
         if (req.user.role !== 'admin' && tag.ownerId && tag.ownerId !== req.user.id) {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu etiketi düzenleme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'TAG_EDIT_FORBIDDEN' });
         }
 
         const oldName = tag.name;
@@ -109,7 +109,7 @@ router.put('/:id', async (req, res) => {
     } catch (error) {
         await t.rollback();
         logger.error('Tag update error:', error);
-        res.status(500).json({ error: 'Etiket güncellenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TAG_UPDATE_FAILED' });
     }
 });
 
@@ -121,12 +121,12 @@ router.delete('/:id', async (req, res) => {
 
         if (!tag) {
             await t.rollback();
-            return res.status(404).json({ error: 'Etiket bulunamadı.' });
+            return res.status(404).json({ errorCode: 'TAG_NOT_FOUND' });
         }
 
         if (req.user.role !== 'admin' && tag.ownerId && tag.ownerId !== req.user.id) {
             await t.rollback();
-            return res.status(403).json({ error: 'Bu etiketi silme yetkiniz yok.' });
+            return res.status(403).json({ errorCode: 'TAG_DELETE_FORBIDDEN' });
         }
 
         const tagName = tag.name;
@@ -143,7 +143,7 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         await t.rollback();
         logger.error('Tag delete error:', error);
-        res.status(500).json({ error: 'Etiket silinirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TAG_DELETE_FAILED' });
     }
 });
 

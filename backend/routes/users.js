@@ -19,7 +19,7 @@ router.get('/', async (req, res) => {
         res.json(users);
     } catch (error) {
         logger.error('Users list error:', error);
-        res.status(500).json({ error: 'Kullanıcılar listelenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'USERS_LIST_FAILED' });
     }
 });
 
@@ -29,7 +29,7 @@ router.put('/:id/role', async (req, res) => {
     const { role } = req.body;
 
     if (!['user', 'admin'].includes(role)) {
-        return res.status(400).json({ error: 'Geçersiz rol.' });
+        return res.status(400).json({ errorCode: 'INVALID_ROLE' });
     }
 
     const t = await sequelize.transaction();
@@ -37,7 +37,7 @@ router.put('/:id/role', async (req, res) => {
         const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         const oldRole = user.role;
@@ -60,7 +60,7 @@ router.put('/:id/role', async (req, res) => {
             details: 'Kullanıcı rolü güncellenirken hata oluştu.',
             req,
         });
-        res.status(500).json({ error: 'Kullanıcı rolü güncellenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'ROLE_UPDATE_FAILED' });
     }
 });
 
@@ -68,14 +68,14 @@ router.put('/:id/role', async (req, res) => {
 router.put('/:id/password', async (req, res) => {
     // Sadece admin yapabilir (Middleware olmadığı için manuel kontrol - normalde middleware kullanılmalı)
     if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+        return res.status(403).json({ errorCode: 'FORBIDDEN' });
     }
 
     const { id } = req.params;
     const { newPassword } = req.body;
 
     if (!newPassword) {
-        return res.status(400).json({ error: 'Yeni şifre gereklidir.' });
+        return res.status(400).json({ errorCode: 'PASSWORD_REQUIRED' });
     }
 
     const t = await sequelize.transaction();
@@ -83,7 +83,7 @@ router.put('/:id/password', async (req, res) => {
         const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         // Şifreyi güncelle (Model hook'u hashleyecek)
@@ -102,7 +102,7 @@ router.put('/:id/password', async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('Admin password reset error:', error);
-        res.status(500).json({ error: 'Şifre sıfırlanırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'PASSWORD_RESET_FAILED' });
     }
 });
 
@@ -110,14 +110,14 @@ router.put('/:id/password', async (req, res) => {
 router.put('/:id/approve', async (req, res) => {
     // Sadece admin yapabilir
     if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+        return res.status(403).json({ errorCode: 'FORBIDDEN' });
     }
 
     const { id } = req.params;
     const { isApproved } = req.body;
 
     if (typeof isApproved !== 'boolean') {
-        return res.status(400).json({ error: 'isApproved boolean değeri olmalıdır.' });
+        return res.status(400).json({ errorCode: 'INVALID_APPROVAL_VALUE' });
     }
 
     const t = await sequelize.transaction();
@@ -125,7 +125,7 @@ router.put('/:id/approve', async (req, res) => {
         const user = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!user) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         // Onay durumunu güncelle
@@ -155,7 +155,7 @@ router.put('/:id/approve', async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('User approval error:', error);
-        res.status(500).json({ error: 'Onay işlemi sırasında hata oluştu.' });
+        res.status(500).json({ errorCode: 'APPROVAL_FAILED' });
     }
 });
 
@@ -163,7 +163,7 @@ router.put('/:id/approve', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     // Sadece admin yapabilir
     if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'Bu işlem için yetkiniz yok.' });
+        return res.status(403).json({ errorCode: 'FORBIDDEN' });
     }
 
     const { id } = req.params;
@@ -171,7 +171,7 @@ router.delete('/:id', async (req, res) => {
 
     // Kendini silmeyi engelle
     if (parseInt(id) === req.user.id) {
-        return res.status(400).json({ error: 'Kendinizi silemezsiniz.' });
+        return res.status(400).json({ errorCode: 'CANNOT_DELETE_SELF' });
     }
 
     const t = await sequelize.transaction();
@@ -179,7 +179,7 @@ router.delete('/:id', async (req, res) => {
         const userToDelete = await User.findByPk(id, { transaction: t, lock: t.LOCK.UPDATE });
         if (!userToDelete) {
             await t.rollback();
-            return res.status(404).json({ error: 'Kullanıcı bulunamadı.' });
+            return res.status(404).json({ errorCode: 'USER_NOT_FOUND' });
         }
 
         const cardCount = await BusinessCard.count({ where: { ownerId: id }, transaction: t });
@@ -217,7 +217,7 @@ router.delete('/:id', async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('User delete error:', error);
-        res.status(500).json({ error: 'Kullanıcı silinirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'USER_DELETE_FAILED' });
     }
 });
 

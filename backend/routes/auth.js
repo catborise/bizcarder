@@ -18,9 +18,9 @@ router.get('/login', authLimiter, (req, res, next) => {
 
     if (!isSamlConfigured) {
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const message = 'Kurumsal giriş (SAML) şu anda aktif değil. Lütfen yönetici hesabınızla yerel giriş yapın.';
+        const errorCode = 'SAML_NOT_CONFIGURED';
         console.warn('[AUTH] SAML login attempted but strategy not configured. Redirecting to login with error.');
-        return res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(message)}`);
+        return res.redirect(`${frontendUrl}/login?errorCode=${encodeURIComponent(errorCode)}`);
     }
 
     return passport.authenticate('saml', { failureRedirect: '/auth/login/fail' })(req, res, next);
@@ -54,16 +54,16 @@ router.post(
 // Giriş Başarısızlığı Durumu
 router.get('/login/fail', (req, res) => {
     const messages = req.flash('error');
-    const message = messages.length > 0 ? messages[0] : 'Kurumsal giriş başarısız oldu.';
+    const message = messages.length > 0 ? messages[0] : 'SAML_LOGIN_FAILED';
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     console.warn('[SAML AUTH FAIL] Redirecting to frontend with error:', message);
 
     // Organizasyon kısıtlaması nedeniyle reddedildiyse, özel sayfaya yönlendir
-    if (message.includes('Organizasyon kısıtlaması') || message.includes('giriş yetkiniz')) {
-        return res.redirect(`${frontendUrl}/access-denied?message=${encodeURIComponent(message)}`);
+    if (message === 'SAML_ORG_ACCESS_DENIED') {
+        return res.redirect(`${frontendUrl}/access-denied?errorCode=${encodeURIComponent(message)}`);
     }
 
-    res.redirect(`${frontendUrl}/login?error=${encodeURIComponent(message)}`);
+    res.redirect(`${frontendUrl}/login?errorCode=${encodeURIComponent(message)}`);
 });
 
 // SAML Metadata Endpoint (IdP yetkilendirmesi için)
@@ -72,7 +72,7 @@ router.get('/metadata.xml', (req, res) => {
     try {
         const strategy = passport.samlStrategy || (passport._strategies && passport._strategies.saml);
         if (!strategy) {
-            return res.status(404).send('SAML stratejisi aktif değil.');
+            return res.status(404).json({ errorCode: 'SAML_NOT_CONFIGURED' });
         }
 
         const metadata = strategy.generateServiceProviderMetadata(
@@ -84,7 +84,7 @@ router.get('/metadata.xml', (req, res) => {
         res.status(200).send(metadata);
     } catch (err) {
         console.error('SAML Metadata Error:', err);
-        res.status(500).send('Metadata oluşturulamadı.');
+        res.status(500).json({ errorCode: 'SAML_METADATA_FAILED' });
     }
 });
 
@@ -148,7 +148,7 @@ router.post('/local/login', authLimiter, passport.authenticate('local', { failur
                 if (err) console.error('Session save error:', err);
                 res.json({
                     success: true,
-                    message: 'Giriş başarılı',
+                    messageCode: 'LOGIN_SUCCESS',
                     user: {
                         id: user.id,
                         username: user.username,
@@ -231,7 +231,7 @@ router.post(
             // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
             res.status(201).json({
                 success: true,
-                message: 'Kayıt başarılı. Hesabınız yönetici onayı bekliyor.',
+                messageCode: 'REGISTRATION_PENDING',
                 pendingApproval: true,
             });
         } catch (error) {
@@ -248,19 +248,19 @@ router.post('/logout', (req, res) => {
     const isSamlUser = !!req.user?.shibbolethId;
     req.logout((err) => {
         if (err) {
-            return res.status(500).json({ error: 'Çıkış yapılırken hata oluştu.' });
+            return res.status(500).json({ errorCode: 'LOGOUT_FAILED' });
         }
 
         // Eğer SAML kullanıcısı ise ve bir logout URL tanımlanmışsa, frontend'e bildir
         if (isSamlUser && process.env.SAML_LOGOUT_URL) {
             return res.json({
                 success: true,
-                message: 'Başarıyla çıkış yapıldı.',
+                messageCode: 'LOGOUT_SUCCESS',
                 logoutUrl: process.env.SAML_LOGOUT_URL,
             });
         }
 
-        res.json({ success: true, message: 'Başarıyla çıkış yapıldı.' });
+        res.json({ success: true, messageCode: 'LOGOUT_SUCCESS' });
     });
 });
 

@@ -89,7 +89,7 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('Settings fetch error:', error);
         logger.error('Settings fetch error:', error);
-        res.status(500).json({ error: 'Ayarlar alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'SETTINGS_LOAD_FAILED' });
     }
 });
 
@@ -113,10 +113,10 @@ router.put('/', requireAdmin, async (req, res) => {
 
         // Validasyon
         if (logRetentionLimit && (isNaN(logRetentionLimit) || logRetentionLimit < 10)) {
-            return res.status(400).json({ error: 'Geçersiz log limiti.' });
+            return res.status(400).json({ errorCode: 'INVALID_LOG_LIMIT' });
         }
         if (trashRetentionDays && (isNaN(trashRetentionDays) || trashRetentionDays < 1)) {
-            return res.status(400).json({ error: 'Geçersiz çöp kutusu süresi.' });
+            return res.status(400).json({ errorCode: 'INVALID_RETENTION_DAYS' });
         }
 
         // Upsert - Varsa güncelle, yoksa oluştur
@@ -230,7 +230,7 @@ router.put('/', requireAdmin, async (req, res) => {
     } catch (error) {
         console.error('Settings update error:', error);
         logger.error('Settings update error:', error);
-        res.status(500).json({ error: 'Ayarlar güncellenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'SETTINGS_UPDATE_FAILED' });
     }
 });
 
@@ -238,7 +238,7 @@ router.put('/', requireAdmin, async (req, res) => {
 router.post('/upload-branding', requireAdmin, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ error: 'Dosya yüklenemedi.' });
+            return res.status(400).json({ errorCode: 'FILE_UPLOAD_EMPTY' });
         }
         const fileUrl = `/uploads/branding/${req.file.filename}`;
 
@@ -251,7 +251,7 @@ router.post('/upload-branding', requireAdmin, upload.single('file'), async (req,
         res.json({ url: fileUrl });
     } catch (error) {
         logger.error('Branding upload error:', error);
-        res.status(500).json({ error: 'Dosya yüklenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'FILE_UPLOAD_FAILED' });
     }
 });
 

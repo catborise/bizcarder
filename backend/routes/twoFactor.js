@@ -14,7 +14,7 @@ router.post('/setup', async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id);
         if (user.twoFactorEnabled) {
-            return res.status(400).json({ error: '2FA is already enabled.' });
+            return res.status(400).json({ errorCode: 'TWO_FACTOR_SETUP_FAILED' });
         }
 
         const secretObj = speakeasy.generateSecret({
@@ -29,7 +29,7 @@ router.post('/setup', async (req, res) => {
         res.json({ qrCodeUrl, secret: secretObj.base32 });
     } catch (error) {
         logger.error('2FA setup error:', error);
-        res.status(500).json({ error: '2FA kurulumu sırasında hata oluştu.' });
+        res.status(500).json({ errorCode: 'TWO_FACTOR_SETUP_FAILED' });
     }
 });
 
@@ -37,20 +37,20 @@ router.post('/setup', async (req, res) => {
 router.post('/verify', async (req, res) => {
     try {
         const { token } = req.body;
-        if (!token) return res.status(400).json({ error: 'Token is required.' });
+        if (!token) return res.status(400).json({ errorCode: 'TOKEN_REQUIRED' });
 
         const user = await User.findByPk(req.user.id);
         const secret = decrypt(user.twoFactorSecret);
-        if (!secret) return res.status(400).json({ error: '2FA setup not initiated.' });
+        if (!secret) return res.status(400).json({ errorCode: 'TWO_FACTOR_SETUP_FAILED' });
 
         const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token, window: 1 });
-        if (!isValid) return res.status(400).json({ error: 'Invalid token.' });
+        if (!isValid) return res.status(400).json({ errorCode: 'INVALID_TOKEN' });
 
         await user.update({ twoFactorEnabled: true });
         res.json({ message: '2FA enabled successfully.' });
     } catch (error) {
         logger.error('2FA verify error:', error);
-        res.status(500).json({ error: '2FA doğrulama sırasında hata oluştu.' });
+        res.status(500).json({ errorCode: 'TWO_FACTOR_VERIFY_FAILED' });
     }
 });
 
@@ -58,19 +58,19 @@ router.post('/verify', async (req, res) => {
 router.post('/disable', async (req, res) => {
     try {
         const { token } = req.body;
-        if (!token) return res.status(400).json({ error: 'Token required to disable 2FA.' });
+        if (!token) return res.status(400).json({ errorCode: 'TOKEN_REQUIRED' });
 
         const user = await User.findByPk(req.user.id);
         const secret = decrypt(user.twoFactorSecret);
 
         const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token, window: 1 });
-        if (!isValid) return res.status(400).json({ error: 'Invalid token.' });
+        if (!isValid) return res.status(400).json({ errorCode: 'INVALID_TOKEN' });
 
         await user.update({ twoFactorEnabled: false, twoFactorSecret: null });
         res.json({ message: '2FA disabled.' });
     } catch (error) {
         logger.error('2FA disable error:', error);
-        res.status(500).json({ error: '2FA devre dışı bırakılırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TWO_FACTOR_DISABLE_FAILED' });
     }
 });
 

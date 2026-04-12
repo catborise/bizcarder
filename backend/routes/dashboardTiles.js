@@ -13,7 +13,7 @@ router.get('/', async (req, res) => {
         res.json(tiles);
     } catch (error) {
         logger.error('Dashboard tiles list error:', error);
-        res.status(500).json({ error: 'Dashboard verileri alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TILES_LOAD_FAILED' });
     }
 });
 
@@ -25,7 +25,7 @@ router.post('/', requireAdmin, async (req, res) => {
         res.status(201).json(tile);
     } catch (error) {
         logger.error('Dashboard tile create error:', error);
-        res.status(500).json({ error: 'Tile oluşturulurken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TILE_CREATE_FAILED' });
     }
 });
 
@@ -34,13 +34,13 @@ router.put('/:id', requireAdmin, async (req, res) => {
     try {
         const { title, subtitle, url, icon, backgroundColor, order, isInternal } = req.body;
         const tile = await DashboardTile.findByPk(req.params.id);
-        if (!tile) return res.status(404).json({ message: 'Tile bulunamadı' });
+        if (!tile) return res.status(404).json({ errorCode: 'TILE_UPDATE_FAILED' });
 
         await tile.update({ title, subtitle, url, icon, backgroundColor, order, isInternal });
         res.json(tile);
     } catch (error) {
         logger.error('Dashboard tile update error:', error);
-        res.status(500).json({ error: 'Tile güncellenirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TILE_UPDATE_FAILED' });
     }
 });
 
@@ -48,13 +48,13 @@ router.put('/:id', requireAdmin, async (req, res) => {
 router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const tile = await DashboardTile.findByPk(req.params.id);
-        if (!tile) return res.status(404).json({ message: 'Tile bulunamadı' });
+        if (!tile) return res.status(404).json({ errorCode: 'TILE_DELETE_FAILED' });
 
         await tile.destroy();
         res.json({ message: 'Tile silindi' });
     } catch (error) {
         logger.error('Dashboard tile delete error:', error);
-        res.status(500).json({ error: 'Tile silinirken hata oluştu.' });
+        res.status(500).json({ errorCode: 'TILE_DELETE_FAILED' });
     }
 });
 

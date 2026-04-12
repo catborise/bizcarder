@@ -128,7 +128,7 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                             `[SAML ACCESS DENIED] User ${shibbolethId} rejected. OrgUnit: ${orgUnitDN || 'Eksik'}`,
                         );
                         return done(null, false, {
-                            message: 'Bu uygulamaya giriş yetkiniz bulunmamaktadır (Organizasyon kısıtlaması).',
+                            message: 'SAML_ORG_ACCESS_DENIED',
                         });
                     }
                 }
@@ -220,14 +220,14 @@ passport.use(
                     // Timing attack koruması: kullanıcı bulunamasa bile bcrypt çalıştır
                     await bcrypt.compare(password, '$2a$12$dummyhashtopreventtimingattack000000000000000000000');
                     return done(null, false, {
-                        message: 'Kullanıcı adı veya şifre hatalı veya bu hesap sadece kurumsal giriş destekliyor.',
+                        message: 'INVALID_CREDENTIALS',
                     });
                 }
 
                 // Şifreyi doğrula
                 const isValid = await user.validatePassword(password);
                 if (!isValid) {
-                    return done(null, false, { message: 'Kullanıcı adı veya şifre hatalı.' });
+                    return done(null, false, { message: 'INVALID_CREDENTIALS' });
                 }
 
                 return done(null, user);

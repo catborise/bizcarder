@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
     } catch (error) {
         console.error('Logs API Error:', error);
         logger.error('Logs list error:', error);
-        res.status(500).json({ error: 'Loglar alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'LOGS_LOAD_FAILED' });
     }
 });
 
@@ -36,7 +36,7 @@ router.get('/rate-limits', async (req, res) => {
     try {
         // Enforce admin-only access
         if (!req.user || req.user.role !== 'admin') {
-            return res.status(403).json({ error: 'Admin access required.' });
+            return res.status(403).json({ errorCode: 'ADMIN_REQUIRED' });
         }
 
         const { AuditLog } = require('../models');
@@ -72,7 +72,7 @@ router.get('/rate-limits', async (req, res) => {
         res.json({ summary, violations });
     } catch (error) {
         logger.error('Rate limits fetch error:', error);
-        res.status(500).json({ error: 'Rate limit verileri alınırken hata oluştu.' });
+        res.status(500).json({ errorCode: 'RATE_LIMITS_LOAD_FAILED' });
     }
 });
 
