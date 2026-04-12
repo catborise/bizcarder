@@ -1,56 +1,93 @@
 {
-  "title": "Dashboard",
-  "search": {
-    "placeholder": "Kişi, şirket veya e-posta ara...",
-    "allContacts": "Tüm Rehber",
-    "searching": "Aranıyor...",
-    "noResults": "Sonuç bulunamadı",
-    "viewAll": "Tüm sonuçları gör →"
-  },
-  "banner": {
-    "subtitle": "Kurumsal Kartvizit Yönetim Sistemi"
-  },
-  "editMode": {
-    "close": "Düzenlemeyi Kapat",
-    "open": "Düzenleme Modu"
-  },
-  "stats": {
-    "registeredCards": "Kayıtlı Kartlar",
-    "totalNetwork": "Toplam bağlantı ağınız",
-    "frequentTags": "Sık Kullanılan Etiketler",
-    "viewAll": "Tümünü Gör",
-    "noTags": "İstatistik oluşturacak etiket yok.",
-    "thisWeek": "Bu Hafta",
-    "newCards": "Yeni Kartlar",
-    "reminders": "Hatırlatmalar",
-    "dueToday": "Bugün Vadesi Dolan",
-    "followUps": "Takipler",
-    "activeFollowUps": "Aktif Takipler"
-  },
-  "quickAddCard": "Kart Ekle",
-  "quickReminders": "Hatırlatmalar",
-  "quickRecent": "Son Eklenenler",
-  "tile": {
-    "saved": "Kutucuk başarıyla kaydedildi.",
-    "saveError": "Kaydedilirken hata oluştu: {{error}}",
-    "deleted": "Kutucuk silindi.",
-    "deleteError": "Silinirken hata oluştu: {{error}}",
-    "add": "Kutucuk Ekle",
-    "edit": "Düzenle",
-    "delete": "Sil",
-    "editTitle": "Kutucuk Düzenle",
-    "addTitle": "Yeni Kutucuk Ekle",
-    "deleteConfirmTitle": "Kutucuğu Sil",
-    "deleteConfirmMessage": "Bu kutucuğu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
-    "form": {
-      "title": "Başlık",
-      "subtitle": "Alt Başlık",
-      "url": "Link (URL)",
-      "urlPlaceholder": "/contacts veya https://google.com",
-      "icon": "İkon (FaName)",
-      "color": "Renk Seçimi",
-      "order": "Sıralama",
-      "isInternal": "Dahili Sayfa mı?"
+    "title": "Dashboard",
+    "search": {
+        "placeholder": "Kişi, şirket veya e-posta ara...",
+        "allContacts": "Tüm Rehber",
+        "searching": "Aranıyor...",
+        "noResults": "Sonuç bulunamadı",
+        "viewAll": "Tüm sonuçları gör →"
+    },
+    "banner": {
+        "subtitle": "Kurumsal Kartvizit Yönetim Sistemi"
+    },
+    "editMode": {
+        "close": "Düzenlemeyi Kapat",
+        "open": "Düzenleme Modu"
+    },
+    "stats": {
+        "registeredCards": "Kayıtlı Kartlar",
+        "totalNetwork": "Toplam bağlantı ağınız",
+        "frequentTags": "Sık Kullanılan Etiketler",
+        "viewAll": "Tümünü Gör",
+        "noTags": "İstatistik oluşturacak etiket yok.",
+        "thisWeek": "Bu Hafta",
+        "newCards": "Yeni Kartlar",
+        "reminders": "Hatırlatmalar",
+        "dueToday": "Bugün Vadesi Dolan",
+        "followUps": "Takipler",
+        "activeFollowUps": "Aktif Takipler"
+    },
+    "customizeWidgets": "Dashboard'u Özelleştir",
+    "widgetSettings": "Widget Ayarları",
+    "reset": "Sıfırla",
+    "quickAddCard": "Kart Ekle",
+    "quickReminders": "Hatırlatmalar",
+    "quickRecent": "Son Eklenenler",
+    "tile": {
+        "saved": "Kutucuk başarıyla kaydedildi.",
+        "saveError": "Kaydedilirken hata oluştu: {{error}}",
+        "deleted": "Kutucuk silindi.",
+        "deleteError": "Silinirken hata oluştu: {{error}}",
+        "add": "Kutucuk Ekle",
+        "edit": "Düzenle",
+        "delete": "Sil",
+        "editTitle": "Kutucuk Düzenle",
+        "addTitle": "Yeni Kutucuk Ekle",
+        "deleteConfirmTitle": "Kutucuğu Sil",
+        "deleteConfirmMessage": "Bu kutucuğu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+        "form": {
+            "title": "Başlık",
+            "subtitle": "Alt Başlık",
+            "url": "Link (URL)",
+            "urlPlaceholder": "/contacts veya https://google.com",
+            "icon": "İkon (FaName)",
+            "color": "Renk Seçimi",
+            "order": "Sıralama",
+            "isInternal": "Dahili Sayfa mı?"
+        }
+    },
+    "tiles": {
+        "contacts": {
+            "title": "Kartvizitler",
+            "subtitle": "Kişi listesini yönet"
+        },
+        "logs": {
+            "title": "İşlem Kayıtları",
+            "subtitle": "Sistem loglarını incele"
+        },
+        "hrPortal": {
+            "title": "İK Portalı",
+            "subtitle": "İzin ve bordro işlemleri"
+        },
+        "staffList": {
+            "title": "Personel Listesi",
+            "subtitle": "Dahili rehber"
+        },
+        "intranet": {
+            "title": "Intranet",
+            "subtitle": "Kurumsal duyurular"
+        },
+        "itSupport": {
+            "title": "IT Destek",
+            "subtitle": "Talep oluştur"
+        },
+        "import": {
+            "title": "Toplu İçe Aktar",
+            "subtitle": "CSV/XLSX ile toplu veri"
+        },
+        "about": {
+            "title": "Hakkında",
+            "subtitle": "Sistem yetenekleri ve iletişim"
+        }
     }
-  }
 }

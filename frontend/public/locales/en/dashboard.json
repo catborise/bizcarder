@@ -1,56 +1,93 @@
 {
-  "title": "Dashboard",
-  "search": {
-    "placeholder": "Search people, companies or emails...",
-    "allContacts": "All Contacts",
-    "searching": "Searching...",
-    "noResults": "No results found",
-    "viewAll": "View all results →"
-  },
-  "banner": {
-    "subtitle": "Corporate Business Card Management System"
-  },
-  "editMode": {
-    "close": "Close Editing",
-    "open": "Edit Mode"
-  },
-  "stats": {
-    "registeredCards": "Registered Cards",
-    "totalNetwork": "Your total network",
-    "frequentTags": "Frequently Used Tags",
-    "viewAll": "View All",
-    "noTags": "No tags to show statistics.",
-    "thisWeek": "This Week",
-    "newCards": "New Cards",
-    "reminders": "Reminders",
-    "dueToday": "Due Today",
-    "followUps": "Follow-ups",
-    "activeFollowUps": "Active Follow-ups"
-  },
-  "quickAddCard": "Add Card",
-  "quickReminders": "Reminders",
-  "quickRecent": "Recent",
-  "tile": {
-    "saved": "Tile saved successfully.",
-    "saveError": "Save failed: {{error}}",
-    "deleted": "Tile deleted.",
-    "deleteError": "Delete failed: {{error}}",
-    "add": "Add Tile",
-    "edit": "Edit",
-    "delete": "Delete",
-    "editTitle": "Edit Tile",
-    "addTitle": "Add New Tile",
-    "deleteConfirmTitle": "Delete Tile",
-    "deleteConfirmMessage": "Are you sure you want to delete this tile? This action cannot be undone.",
-    "form": {
-      "title": "Title",
-      "subtitle": "Subtitle",
-      "url": "Link (URL)",
-      "urlPlaceholder": "/contacts or https://google.com",
-      "icon": "Icon (FaName)",
-      "color": "Color",
-      "order": "Order",
-      "isInternal": "Internal Page?"
+    "title": "Dashboard",
+    "search": {
+        "placeholder": "Search people, companies or emails...",
+        "allContacts": "All Contacts",
+        "searching": "Searching...",
+        "noResults": "No results found",
+        "viewAll": "View all results →"
+    },
+    "banner": {
+        "subtitle": "Corporate Business Card Management System"
+    },
+    "editMode": {
+        "close": "Close Editing",
+        "open": "Edit Mode"
+    },
+    "stats": {
+        "registeredCards": "Registered Cards",
+        "totalNetwork": "Your total network",
+        "frequentTags": "Frequently Used Tags",
+        "viewAll": "View All",
+        "noTags": "No tags to show statistics.",
+        "thisWeek": "This Week",
+        "newCards": "New Cards",
+        "reminders": "Reminders",
+        "dueToday": "Due Today",
+        "followUps": "Follow-ups",
+        "activeFollowUps": "Active Follow-ups"
+    },
+    "customizeWidgets": "Customize Dashboard",
+    "widgetSettings": "Widget Settings",
+    "reset": "Reset",
+    "quickAddCard": "Add Card",
+    "quickReminders": "Reminders",
+    "quickRecent": "Recent",
+    "tile": {
+        "saved": "Tile saved successfully.",
+        "saveError": "Save failed: {{error}}",
+        "deleted": "Tile deleted.",
+        "deleteError": "Delete failed: {{error}}",
+        "add": "Add Tile",
+        "edit": "Edit",
+        "delete": "Delete",
+        "editTitle": "Edit Tile",
+        "addTitle": "Add New Tile",
+        "deleteConfirmTitle": "Delete Tile",
+        "deleteConfirmMessage": "Are you sure you want to delete this tile? This action cannot be undone.",
+        "form": {
+            "title": "Title",
+            "subtitle": "Subtitle",
+            "url": "Link (URL)",
+            "urlPlaceholder": "/contacts or https://google.com",
+            "icon": "Icon (FaName)",
+            "color": "Color",
+            "order": "Order",
+            "isInternal": "Internal Page?"
+        }
+    },
+    "tiles": {
+        "contacts": {
+            "title": "Contacts",
+            "subtitle": "Manage all your business cards"
+        },
+        "logs": {
+            "title": "Activity Logs",
+            "subtitle": "System activity history"
+        },
+        "hrPortal": {
+            "title": "HR Portal",
+            "subtitle": "Leave and payroll management"
+        },
+        "staffList": {
+            "title": "Staff Directory",
+            "subtitle": "Internal directory"
+        },
+        "intranet": {
+            "title": "Intranet",
+            "subtitle": "Corporate announcements"
+        },
+        "itSupport": {
+            "title": "IT Support",
+            "subtitle": "Create a support ticket"
+        },
+        "import": {
+            "title": "Bulk Import",
+            "subtitle": "Upload via Excel/CSV"
+        },
+        "about": {
+            "title": "About",
+            "subtitle": "System capabilities and contact"
+        }
     }
-  }
 }

@@ -41,8 +41,8 @@ module.exports = {
             'DashboardTiles',
             [
                 {
-                    title: 'Kartvizitler',
-                    subtitle: 'Kişi listesini yönet',
+                    title: 'tiles.contacts.title',
+                    subtitle: 'tiles.contacts.subtitle',
                     url: '/contacts',
                     icon: 'FaIdCard',
                     backgroundColor: 'rgba(96, 60, 186, 0.3)',
@@ -52,8 +52,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'İşlem Kayıtları',
-                    subtitle: 'Sistem loglarını incele',
+                    title: 'tiles.logs.title',
+                    subtitle: 'tiles.logs.subtitle',
                     url: '/logs',
                     icon: 'FaHistory',
                     backgroundColor: 'rgba(218, 83, 44, 0.3)',
@@ -63,8 +63,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'İK Portalı',
-                    subtitle: 'İzin ve bordro işlemleri',
+                    title: 'tiles.hrPortal.title',
+                    subtitle: 'tiles.hrPortal.subtitle',
                     url: '#',
                     icon: 'FaBuilding',
                     backgroundColor: 'rgba(0, 163, 0, 0.3)',
@@ -74,8 +74,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'Personel Listesi',
-                    subtitle: 'Dahili rehber',
+                    title: 'tiles.staffList.title',
+                    subtitle: 'tiles.staffList.subtitle',
                     url: '#',
                     icon: 'FaUsers',
                     backgroundColor: 'rgba(43, 87, 151, 0.3)',
@@ -85,8 +85,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'Intranet',
-                    subtitle: 'Kurumsal duyurular',
+                    title: 'tiles.intranet.title',
+                    subtitle: 'tiles.intranet.subtitle',
                     url: '#',
                     icon: 'FaGlobe',
                     backgroundColor: 'rgba(227, 162, 26, 0.3)',
@@ -96,8 +96,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'IT Destek',
-                    subtitle: 'Talep oluştur',
+                    title: 'tiles.itSupport.title',
+                    subtitle: 'tiles.itSupport.subtitle',
                     url: '#',
                     icon: 'FaLifeRing',
                     backgroundColor: 'rgba(159, 0, 167, 0.3)',
@@ -107,8 +107,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'Toplu İçe Aktar',
-                    subtitle: 'CSV/XLSX ile toplu veri',
+                    title: 'tiles.import.title',
+                    subtitle: 'tiles.import.subtitle',
                     url: '/import',
                     icon: 'FaFileImport',
                     backgroundColor: 'rgba(59, 130, 246, 0.3)',
@@ -118,8 +118,8 @@ module.exports = {
                     updatedAt: new Date(),
                 },
                 {
-                    title: 'Hakkında',
-                    subtitle: 'Sistem yetenekleri ve iletişim',
+                    title: 'tiles.about.title',
+                    subtitle: 'tiles.about.subtitle',
                     url: '/about',
                     icon: 'FaInfoCircle',
                     backgroundColor: 'rgba(32, 201, 151, 0.3)',
