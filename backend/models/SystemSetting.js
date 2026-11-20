@@ -6,16 +6,16 @@ const SystemSetting = sequelize.define('SystemSetting', {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        primaryKey: true
+        primaryKey: true,
     },
     value: {
         type: DataTypes.STRING, // JSON string or simple value
-        allowNull: false
+        allowNull: false,
     },
     description: {
         type: DataTypes.STRING,
-        allowNull: true
-    }
+        allowNull: true,
+    },
 });
 
 module.exports = SystemSetting;

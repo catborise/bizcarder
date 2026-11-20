@@ -205,7 +205,7 @@ app.get('/health', async (req, res) => {
 });
 
 // Merkezi Hata Yönetimi (Error Handler)
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
     logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
 
     // Üretim ortamında detaylı stack trace gönderme

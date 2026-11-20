@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const app = require('../../server');
-const { createTestUser, createTestAdmin, setupSuite, getAuthAgent } = require('../helpers');
+const { createTestUser, createTestAdmin, getAuthAgent } = require('../helpers');
 
 const P = 'authmw'; // unique prefix for this suite
 
@@ -49,7 +49,7 @@ describe('Auth Middleware', () => {
 
     describe('session persistence', () => {
         test('session persists across multiple requests', async () => {
-            const admin = await createTestAdmin({ username: `${P}_persist`, email: `${P}_persist@test.com` });
+            await createTestAdmin({ username: `${P}_persist`, email: `${P}_persist@test.com` });
             const agent = supertest.agent(app);
 
             // Login
@@ -75,7 +75,7 @@ describe('Auth Middleware', () => {
         });
 
         test('session is destroyed after logout', async () => {
-            const admin = await createTestAdmin({ username: `${P}_destroy`, email: `${P}_destroy@test.com` });
+            await createTestAdmin({ username: `${P}_destroy`, email: `${P}_destroy@test.com` });
             const agent = supertest.agent(app);
 
             await agent

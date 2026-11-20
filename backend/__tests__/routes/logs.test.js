@@ -32,7 +32,7 @@ describe('GET /api/logs', () => {
     test('logs include user association', async () => {
         const res = await agent.get('/api/logs').expect(200);
 
-        const withUser = res.body.find(l => l.user);
+        const withUser = res.body.find((l) => l.user);
         expect(withUser).toBeTruthy();
         expect(withUser.user).toHaveProperty('username');
         expect(withUser.user).toHaveProperty('displayName');
@@ -52,7 +52,7 @@ describe('GET /api/logs', () => {
     test('admin can filter by userId', async () => {
         const res = await agent.get(`/api/logs?userId=${admin.id}`).expect(200);
 
-        res.body.forEach(log => {
+        res.body.forEach((log) => {
             expect(log.userId).toBe(admin.id);
         });
     });
@@ -71,7 +71,7 @@ describe('GET /api/logs', () => {
         const res = await userAgent.get('/api/logs').expect(200);
 
         // Should only see own logs
-        res.body.forEach(log => {
+        res.body.forEach((log) => {
             expect(log.userId).toBe(user.id);
         });
     });
@@ -88,8 +88,16 @@ describe('GET /api/logs/rate-limits', () => {
     beforeAll(async () => {
         // Seed rate limit violations
         await AuditLog.bulkCreate([
-            { action: 'RATE_LIMIT_EXCEEDED', details: 'IP: 192.168.1.1, Path: /api/auth/login', ipAddress: '192.168.1.1' },
-            { action: 'RATE_LIMIT_EXCEEDED', details: 'IP: 192.168.1.1, Path: /api/auth/login', ipAddress: '192.168.1.1' },
+            {
+                action: 'RATE_LIMIT_EXCEEDED',
+                details: 'IP: 192.168.1.1, Path: /api/auth/login',
+                ipAddress: '192.168.1.1',
+            },
+            {
+                action: 'RATE_LIMIT_EXCEEDED',
+                details: 'IP: 192.168.1.1, Path: /api/auth/login',
+                ipAddress: '192.168.1.1',
+            },
             { action: 'RATE_LIMIT_EXCEEDED', details: 'IP: 10.0.0.5, Path: /api/cards', ipAddress: '10.0.0.5' },
         ]);
     });
@@ -127,7 +135,7 @@ describe('GET /api/logs/rate-limits', () => {
         const ipKeys = Object.keys(res.body.summary.byIP);
         expect(ipKeys.length).toBeGreaterThanOrEqual(1);
         // Each IP count should be a positive number
-        ipKeys.forEach(ip => {
+        ipKeys.forEach((ip) => {
             expect(res.body.summary.byIP[ip]).toBeGreaterThanOrEqual(1);
         });
     });
@@ -138,7 +146,7 @@ describe('GET /api/logs/rate-limits', () => {
         expect(typeof res.body.summary.byPath).toBe('object');
         const pathKeys = Object.keys(res.body.summary.byPath);
         expect(pathKeys.length).toBeGreaterThanOrEqual(1);
-        pathKeys.forEach(p => {
+        pathKeys.forEach((p) => {
             expect(res.body.summary.byPath[p]).toBeGreaterThanOrEqual(1);
         });
     });

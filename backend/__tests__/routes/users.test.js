@@ -35,7 +35,10 @@ describe('Users Routes', () => {
         });
 
         test('non-admin gets 403', async () => {
-            const user = await createTestUser({ username: `${P}_regular_listtest`, email: `${P}_regular_listtest@test.com` });
+            const user = await createTestUser({
+                username: `${P}_regular_listtest`,
+                email: `${P}_regular_listtest@test.com`,
+            });
             const userAgent = await getAuthAgent(user);
             const res = await userAgent.get('/api/users');
             expect(res.status).toBe(403);
@@ -52,42 +55,36 @@ describe('Users Routes', () => {
     describe('PUT /api/users/:id/role', () => {
         test('admin promotes user to admin role', async () => {
             const user = await createTestUser({ username: `${P}_roletest`, email: `${P}_role@test.com` });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/role`)
-                .send({ role: 'admin' });
+            const res = await adminAgent.put(`/api/users/${user.id}/role`).send({ role: 'admin' });
             expect(res.status).toBe(200);
             expect(res.body.message).toBeDefined();
         });
 
         test('admin demotes admin back to user role', async () => {
-            const user = await createTestUser({ username: `${P}_demote`, email: `${P}_demote@test.com`, role: 'admin' });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/role`)
-                .send({ role: 'user' });
+            const user = await createTestUser({
+                username: `${P}_demote`,
+                email: `${P}_demote@test.com`,
+                role: 'admin',
+            });
+            const res = await adminAgent.put(`/api/users/${user.id}/role`).send({ role: 'user' });
             expect(res.status).toBe(200);
         });
 
         test('rejects invalid role value', async () => {
             const user = await createTestUser({ username: `${P}_badrole`, email: `${P}_bad@test.com` });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/role`)
-                .send({ role: 'superuser' });
+            const res = await adminAgent.put(`/api/users/${user.id}/role`).send({ role: 'superuser' });
             expect(res.status).toBe(400);
         });
 
         test('returns 404 for non-existent user', async () => {
-            const res = await adminAgent
-                .put('/api/users/999999/role')
-                .send({ role: 'user' });
+            const res = await adminAgent.put('/api/users/999999/role').send({ role: 'user' });
             expect(res.status).toBe(404);
         });
 
         test('non-admin gets 403', async () => {
             const user = await createTestUser({ username: `${P}_nonadmin`, email: `${P}_na@test.com` });
             const userAgent = await getAuthAgent(user);
-            const res = await userAgent
-                .put(`/api/users/${user.id}/role`)
-                .send({ role: 'admin' });
+            const res = await userAgent.put(`/api/users/${user.id}/role`).send({ role: 'admin' });
             expect(res.status).toBe(403);
         });
     });
@@ -96,35 +93,35 @@ describe('Users Routes', () => {
 
     describe('PUT /api/users/:id/approve', () => {
         test('admin approves a pending user', async () => {
-            const user = await createTestUser({ username: `${P}_pending`, email: `${P}_pend@test.com`, isApproved: false });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/approve`)
-                .send({ isApproved: true });
+            const user = await createTestUser({
+                username: `${P}_pending`,
+                email: `${P}_pend@test.com`,
+                isApproved: false,
+            });
+            const res = await adminAgent.put(`/api/users/${user.id}/approve`).send({ isApproved: true });
             expect(res.status).toBe(200);
             expect(res.body.user.isApproved).toBe(true);
         });
 
         test('admin revokes approval', async () => {
-            const user = await createTestUser({ username: `${P}_revoke`, email: `${P}_revoke@test.com`, isApproved: true });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/approve`)
-                .send({ isApproved: false });
+            const user = await createTestUser({
+                username: `${P}_revoke`,
+                email: `${P}_revoke@test.com`,
+                isApproved: true,
+            });
+            const res = await adminAgent.put(`/api/users/${user.id}/approve`).send({ isApproved: false });
             expect(res.status).toBe(200);
             expect(res.body.user.isApproved).toBe(false);
         });
 
         test('rejects non-boolean isApproved value', async () => {
             const user = await createTestUser({ username: `${P}_badapprove`, email: `${P}_bap@test.com` });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/approve`)
-                .send({ isApproved: 'yes' });
+            const res = await adminAgent.put(`/api/users/${user.id}/approve`).send({ isApproved: 'yes' });
             expect(res.status).toBe(400);
         });
 
         test('returns 404 for non-existent user', async () => {
-            const res = await adminAgent
-                .put('/api/users/999999/approve')
-                .send({ isApproved: true });
+            const res = await adminAgent.put('/api/users/999999/approve').send({ isApproved: true });
             expect(res.status).toBe(404);
         });
     });
@@ -142,25 +139,19 @@ describe('Users Routes', () => {
 
         test('rejects missing newPassword', async () => {
             const user = await createTestUser({ username: `${P}_nopw`, email: `${P}_nopw@test.com` });
-            const res = await adminAgent
-                .put(`/api/users/${user.id}/password`)
-                .send({});
+            const res = await adminAgent.put(`/api/users/${user.id}/password`).send({});
             expect(res.status).toBe(400);
         });
 
         test('returns 404 for non-existent user', async () => {
-            const res = await adminAgent
-                .put('/api/users/999999/password')
-                .send({ newPassword: 'NewSecurePass123!' });
+            const res = await adminAgent.put('/api/users/999999/password').send({ newPassword: 'NewSecurePass123!' });
             expect(res.status).toBe(404);
         });
 
         test('non-admin gets 403', async () => {
             const user = await createTestUser({ username: `${P}_notadmin`, email: `${P}_notadmin@test.com` });
             const userAgent = await getAuthAgent(user);
-            const res = await userAgent
-                .put(`/api/users/${user.id}/password`)
-                .send({ newPassword: 'NewPass456!' });
+            const res = await userAgent.put(`/api/users/${user.id}/password`).send({ newPassword: 'NewPass456!' });
             expect(res.status).toBe(403);
         });
     });
@@ -171,32 +162,24 @@ describe('Users Routes', () => {
         test('admin deletes a user and transfers cards to self', async () => {
             const user = await createTestUser({ username: `${P}_todelete`, email: `${P}_del@test.com` });
             await createTestCard(user.id, { email: `${P}_del_card@test.com` });
-            const res = await adminAgent
-                .delete(`/api/users/${user.id}`)
-                .send({ transferCards: true });
+            const res = await adminAgent.delete(`/api/users/${user.id}`).send({ transferCards: true });
             expect(res.status).toBe(200);
         });
 
         test('admin deletes a user and soft-deletes their cards', async () => {
             const user = await createTestUser({ username: `${P}_deletecards`, email: `${P}_dc@test.com` });
             await createTestCard(user.id, { email: `${P}_dc_card@test.com` });
-            const res = await adminAgent
-                .delete(`/api/users/${user.id}`)
-                .send({ transferCards: false });
+            const res = await adminAgent.delete(`/api/users/${user.id}`).send({ transferCards: false });
             expect(res.status).toBe(200);
         });
 
         test('blocks admin from deleting themselves', async () => {
-            const res = await adminAgent
-                .delete(`/api/users/${admin.id}`)
-                .send({ transferCards: false });
+            const res = await adminAgent.delete(`/api/users/${admin.id}`).send({ transferCards: false });
             expect(res.status).toBe(400);
         });
 
         test('returns 404 for non-existent user', async () => {
-            const res = await adminAgent
-                .delete('/api/users/999999')
-                .send({ transferCards: false });
+            const res = await adminAgent.delete('/api/users/999999').send({ transferCards: false });
             expect(res.status).toBe(404);
         });
 
@@ -204,9 +187,7 @@ describe('Users Routes', () => {
             const user = await createTestUser({ username: `${P}_notadmin2`, email: `${P}_na2@test.com` });
             const userAgent = await getAuthAgent(user);
             const target = await createTestUser({ username: `${P}_victim`, email: `${P}_victim@test.com` });
-            const res = await userAgent
-                .delete(`/api/users/${target.id}`)
-                .send({ transferCards: false });
+            const res = await userAgent.delete(`/api/users/${target.id}`).send({ transferCards: false });
             expect(res.status).toBe(403);
         });
     });

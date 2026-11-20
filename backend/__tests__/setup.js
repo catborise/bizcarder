@@ -13,7 +13,9 @@ module.exports = async () => {
 
     // Connect without a specific DB to create the test database if it doesn't exist
     const rootSeq = new Sequelize('postgres', dbUser, dbPass, {
-        host: dbHost, dialect: 'postgres', logging: false,
+        host: dbHost,
+        dialect: 'postgres',
+        logging: false,
     });
 
     try {

@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,11 +9,11 @@ export default defineConfig({
         host: true,
         port: 5173,
         watch: {
-            usePolling: true
+            usePolling: true,
         },
         hmr: {
-            clientPort: 5173
-        }
+            clientPort: 5173,
+        },
     },
     test: {
         globals: true,
@@ -28,4 +28,4 @@ export default defineConfig({
             exclude: ['src/__tests__/**', 'src/main.jsx'],
         },
     },
-})
+});

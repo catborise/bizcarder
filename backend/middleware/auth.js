@@ -10,7 +10,7 @@ const requireAuth = (req, res, next) => {
     if (req.originalUrl.startsWith('/api/') || req.originalUrl.startsWith('/auth/')) {
         return res.status(401).json({
             error: 'Unauthorized',
-            message: 'Bu işlem için oturum açmanız gerekiyor.'
+            message: 'Bu işlem için oturum açmanız gerekiyor.',
         });
     }
 
@@ -24,14 +24,14 @@ const requireRole = (role) => {
         if (!req.isAuthenticated()) {
             return res.status(401).json({
                 error: 'Unauthorized',
-                message: 'Bu işlem için oturum açmanız gerekiyor.'
+                message: 'Bu işlem için oturum açmanız gerekiyor.',
             });
         }
 
         if (req.user.role !== role) {
             return res.status(403).json({
                 error: 'Forbidden',
-                message: 'Bu işlem için yetkiniz bulunmuyor.'
+                message: 'Bu işlem için yetkiniz bulunmuyor.',
             });
         }
 
@@ -45,5 +45,5 @@ const requireAdmin = requireRole('admin');
 module.exports = {
     requireAuth,
     requireRole,
-    requireAdmin
+    requireAdmin,
 };

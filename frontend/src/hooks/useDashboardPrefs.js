@@ -18,8 +18,8 @@ function loadPrefs() {
         if (!saved) return DEFAULT_WIDGETS;
         const parsed = JSON.parse(saved);
         // Merge with defaults to handle new widgets added after user saved prefs
-        return DEFAULT_WIDGETS.map(dw => {
-            const found = parsed.find(p => p.id === dw.id);
+        return DEFAULT_WIDGETS.map((dw) => {
+            const found = parsed.find((p) => p.id === dw.id);
             return found ? { ...dw, visible: found.visible, order: found.order } : dw;
         }).sort((a, b) => (a.order ?? 99) - (b.order ?? 99));
     } catch {
@@ -31,16 +31,16 @@ export default function useDashboardPrefs() {
     const [widgets, setWidgets] = useState(loadPrefs);
 
     const toggleWidget = useCallback((id) => {
-        setWidgets(prev => {
-            const updated = prev.map(w => w.id === id ? { ...w, visible: !w.visible } : w);
+        setWidgets((prev) => {
+            const updated = prev.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w));
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
             return updated;
         });
     }, []);
 
     const moveWidget = useCallback((id, direction) => {
-        setWidgets(prev => {
-            const idx = prev.findIndex(w => w.id === id);
+        setWidgets((prev) => {
+            const idx = prev.findIndex((w) => w.id === id);
             if (idx < 0) return prev;
             const newIdx = direction === 'up' ? Math.max(0, idx - 1) : Math.min(prev.length - 1, idx + 1);
             if (idx === newIdx) return prev;
@@ -57,9 +57,12 @@ export default function useDashboardPrefs() {
         setWidgets(DEFAULT_WIDGETS);
     }, []);
 
-    const isVisible = useCallback((id) => {
-        return widgets.find(w => w.id === id)?.visible ?? true;
-    }, [widgets]);
+    const isVisible = useCallback(
+        (id) => {
+            return widgets.find((w) => w.id === id)?.visible ?? true;
+        },
+        [widgets],
+    );
 
     return { widgets, toggleWidget, moveWidget, resetPrefs, isVisible };
 }

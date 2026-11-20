@@ -7,25 +7,25 @@ const Interaction = sequelize.define('Interaction', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
-        primaryKey: true
+        primaryKey: true,
     },
     type: {
         type: DataTypes.STRING, // Örn: 'Arama', 'Toplantı', 'E-posta', 'Satınalma'
-        defaultValue: 'Not'
+        defaultValue: 'Not',
     },
     date: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        defaultValue: DataTypes.NOW,
     },
     notes: {
         type: DataTypes.TEXT,
-        allowNull: false
+        allowNull: false,
     },
     isPinned: {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
-        allowNull: false
-    }
+        allowNull: false,
+    },
 });
 
 // İlişkiler

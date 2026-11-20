@@ -1,48 +1,48 @@
 {
-  "title": "About",
-  "subtitle": "CRM & Smart Business Card Management Platform — Bold Premium Edition",
-  "capabilities": "System Capabilities",
-  "contactDeveloper": "Contact & Developer",
-  "devRole": "Full Stack Developer & System Administrator",
-  "githubAccount": "GitHub Account",
-  "digitalCard": "Digital Business Card",
-  "copyright": "© {{year}} BizCarder CRM. All rights reserved.",
-  "cap": {
-    "scanning": {
-      "title": "Fast Card Scanning",
-      "desc": "Digitize business cards in seconds with AI-powered OCR technology."
-    },
-    "crm": {
-      "title": "Advanced CRM",
-      "desc": "Log meetings, track relationship statuses, and set reminders."
-    },
-    "vcard": {
-      "title": "Digital Business Card (vCard)",
-      "desc": "Create your digital business card and share via QR code or link."
-    },
-    "security": {
-      "title": "Enterprise Security",
-      "desc": "AES-256-GCM encryption, CSRF protection, two-factor authentication (TOTP), corporate SSO/SAML, role-based access control, and distributed rate limiting."
-    },
-    "pwa": {
-      "title": "PWA Support",
-      "desc": "Install the app on your phone and continue using it even offline."
-    },
-    "notifications": {
-      "title": "Email Notifications",
-      "desc": "Automatic reminder emails for follow-ups, welcome emails for new users, and approval notifications. Fully optional — works without SMTP configuration."
-    },
-    "backup": {
-      "title": "Backup & Restore",
-      "desc": "One-command database and file backup with automatic daily scheduling via cron. Restore to any point with timestamp-based recovery. Last 7 backups retained."
-    },
-    "design": {
-      "title": "Customizable Dashboard",
-      "desc": "Bold Premium design with gradient accents, dark/light themes, and user-customizable dashboard widgets. Toggle and reorder widgets to fit your workflow."
-    },
-    "i18n": {
-      "title": "Multilingual Support",
-      "desc": "Full Turkish and English language support with real-time switching and lazy-loaded translations for fast page loads."
+    "title": "About",
+    "subtitle": "CRM & Smart Business Card Management Platform — Bold Premium Edition",
+    "capabilities": "System Capabilities",
+    "contactDeveloper": "Contact & Developer",
+    "devRole": "Full Stack Developer & System Administrator",
+    "githubAccount": "GitHub Account",
+    "digitalCard": "Digital Business Card",
+    "copyright": "© {{year}} BizCarder CRM. All rights reserved.",
+    "cap": {
+        "scanning": {
+            "title": "Fast Card Scanning",
+            "desc": "Digitize business cards in seconds with AI-powered OCR technology."
+        },
+        "crm": {
+            "title": "Advanced CRM",
+            "desc": "Log meetings, track relationship statuses, and set reminders."
+        },
+        "vcard": {
+            "title": "Digital Business Card (vCard)",
+            "desc": "Create your digital business card and share via QR code or link."
+        },
+        "security": {
+            "title": "Enterprise Security",
+            "desc": "AES-256-GCM encryption, CSRF protection, two-factor authentication (TOTP), corporate SSO/SAML, role-based access control, and distributed rate limiting."
+        },
+        "pwa": {
+            "title": "PWA Support",
+            "desc": "Install the app on your phone and continue using it even offline."
+        },
+        "notifications": {
+            "title": "Email Notifications",
+            "desc": "Automatic reminder emails for follow-ups, welcome emails for new users, and approval notifications. Fully optional — works without SMTP configuration."
+        },
+        "backup": {
+            "title": "Backup & Restore",
+            "desc": "One-command database and file backup with automatic daily scheduling via cron. Restore to any point with timestamp-based recovery. Last 7 backups retained."
+        },
+        "design": {
+            "title": "Customizable Dashboard",
+            "desc": "Bold Premium design with gradient accents, dark/light themes, and user-customizable dashboard widgets. Toggle and reorder widgets to fit your workflow."
+        },
+        "i18n": {
+            "title": "Multilingual Support",
+            "desc": "Full Turkish and English language support with real-time switching and lazy-loaded translations for fast page loads."
+        }
     }
-  }
 }

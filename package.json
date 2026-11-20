@@ -3,7 +3,7 @@
     "private": true,
     "description": "Bizcarder CRM — monorepo tooling",
     "scripts": {
-        "lint": "cd frontend && npm run lint",
+        "lint": "cd backend && npm run lint && cd ../frontend && npm run lint",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "prepare": "husky"
@@ -19,6 +19,7 @@
             "./frontend/node_modules/.bin/eslint --config frontend/.eslintrc.cjs --fix --max-warnings 0"
         ],
         "backend/**/*.js": [
+            "./backend/node_modules/.bin/eslint --config backend/.eslintrc.cjs --fix --max-warnings 0",
             "prettier --write"
         ],
         "*.{json,md,css}": [

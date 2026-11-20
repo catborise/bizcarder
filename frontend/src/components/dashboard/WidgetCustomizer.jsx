@@ -20,45 +20,98 @@ export default function WidgetCustomizer({ widgets, onToggle, onMove, onReset })
             {isOpen && (
                 <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 998 }} onClick={() => setIsOpen(false)} />
-                    <div style={{
-                        position: 'absolute', right: 0, top: '100%', marginTop: '8px',
-                        background: 'var(--bg-card)', border: '1px solid var(--glass-border)',
-                        borderRadius: '12px', padding: 'var(--space-4)', minWidth: '260px',
-                        boxShadow: 'var(--glass-shadow)', zIndex: 999, animation: 'fadeIn 0.2s ease',
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-3)' }}>
+                    <div
+                        style={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '100%',
+                            marginTop: '8px',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--glass-border)',
+                            borderRadius: '12px',
+                            padding: 'var(--space-4)',
+                            minWidth: '260px',
+                            boxShadow: 'var(--glass-shadow)',
+                            zIndex: 999,
+                            animation: 'fadeIn 0.2s ease',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginBottom: 'var(--space-3)',
+                            }}
+                        >
                             <h4 style={{ margin: 0, fontSize: '0.9rem' }}>{t('widgetSettings', 'Widget Settings')}</h4>
-                            <button onClick={onReset} className="glass-button-small" style={{ fontSize: '0.7rem', gap: '4px' }}>
+                            <button
+                                onClick={onReset}
+                                className="glass-button-small"
+                                style={{ fontSize: '0.7rem', gap: '4px' }}
+                            >
                                 <FaUndo size={10} /> {t('reset', 'Reset')}
                             </button>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
                             {widgets.map((widget, idx) => (
-                                <div key={widget.id} style={{
-                                    display: 'flex', alignItems: 'center', gap: 'var(--space-2)',
-                                    padding: '6px 8px', borderRadius: '8px',
-                                    background: widget.visible ? 'rgba(var(--accent-secondary-rgb), 0.05)' : 'transparent',
-                                }}>
+                                <div
+                                    key={widget.id}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: 'var(--space-2)',
+                                        padding: '6px 8px',
+                                        borderRadius: '8px',
+                                        background: widget.visible
+                                            ? 'rgba(var(--accent-secondary-rgb), 0.05)'
+                                            : 'transparent',
+                                    }}
+                                >
                                     <label className="switch" style={{ transform: 'scale(0.7)', flexShrink: 0 }}>
-                                        <input type="checkbox" checked={widget.visible} onChange={() => onToggle(widget.id)} />
+                                        <input
+                                            type="checkbox"
+                                            checked={widget.visible}
+                                            onChange={() => onToggle(widget.id)}
+                                        />
                                         <span className="slider"></span>
                                     </label>
-                                    <span style={{ flex: 1, fontSize: '0.8rem', color: widget.visible ? 'var(--text-primary)' : 'var(--text-tertiary)' }}>
+                                    <span
+                                        style={{
+                                            flex: 1,
+                                            fontSize: '0.8rem',
+                                            color: widget.visible ? 'var(--text-primary)' : 'var(--text-tertiary)',
+                                        }}
+                                    >
                                         {widget.label}
                                     </span>
                                     <div style={{ display: 'flex', gap: '2px' }}>
                                         <button
                                             onClick={() => onMove(widget.id, 'up')}
                                             disabled={idx === 0}
-                                            style={{ background: 'none', border: 'none', cursor: idx === 0 ? 'default' : 'pointer', padding: '2px', color: 'var(--text-tertiary)', opacity: idx === 0 ? 0.3 : 1 }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: idx === 0 ? 'default' : 'pointer',
+                                                padding: '2px',
+                                                color: 'var(--text-tertiary)',
+                                                opacity: idx === 0 ? 0.3 : 1,
+                                            }}
                                         >
                                             <FaArrowUp size={10} />
                                         </button>
                                         <button
                                             onClick={() => onMove(widget.id, 'down')}
                                             disabled={idx === widgets.length - 1}
-                                            style={{ background: 'none', border: 'none', cursor: idx === widgets.length - 1 ? 'default' : 'pointer', padding: '2px', color: 'var(--text-tertiary)', opacity: idx === widgets.length - 1 ? 0.3 : 1 }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: idx === widgets.length - 1 ? 'default' : 'pointer',
+                                                padding: '2px',
+                                                color: 'var(--text-tertiary)',
+                                                opacity: idx === widgets.length - 1 ? 0.3 : 1,
+                                            }}
                                         >
                                             <FaArrowDown size={10} />
                                         </button>

@@ -1,7 +1,7 @@
 /**
  * Metni Title Case formatına dönüştürür (Her kelimenin ilk harfi büyük).
  * Örn: "muhammet sağ" -> "Muhammet Sağ"
- * @param {string} str 
+ * @param {string} str
  * @returns {string}
  */
 const toTitleCase = (str) => {
@@ -12,5 +12,5 @@ const toTitleCase = (str) => {
 };
 
 module.exports = {
-    toTitleCase
+    toTitleCase,
 };

@@ -1,11 +1,6 @@
 const STATIC_CACHE = 'bizcard-static-v2';
 
-const urlsToCache = [
-    '/manifest.json',
-    '/favicon.ico',
-    '/logo192.png',
-    '/logo512.png',
-];
+const urlsToCache = ['/manifest.json', '/favicon.ico', '/logo192.png', '/logo512.png'];
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -53,9 +48,7 @@ self.addEventListener('fetch', (event) => {
 
     // Network-first for HTML navigation so deploys never serve stale index.html chunk references
     if (event.request.mode === 'navigate') {
-        event.respondWith(
-            fetch(event.request).catch(() => caches.match('/index.html')),
-        );
+        event.respondWith(fetch(event.request).catch(() => caches.match('/index.html')));
         return;
     }
 
@@ -65,11 +58,7 @@ self.addEventListener('fetch', (event) => {
                 // Stale-While-Revalidate for static assets only
                 fetch(event.request)
                     .then((networkResponse) => {
-                        if (
-                            networkResponse &&
-                            networkResponse.status === 200 &&
-                            networkResponse.type === 'basic'
-                        ) {
+                        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
                             caches.open(STATIC_CACHE).then((cache) => cache.put(event.request, networkResponse));
                         }
                     })

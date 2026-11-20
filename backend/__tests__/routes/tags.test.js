@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const app = require('../../server');
-const { createTestUser, createTestTag, setupSuite, getAuthAgent } = require('../helpers');
+const { createTestUser, createTestTag, getAuthAgent } = require('../helpers');
 
 const P = 'tags'; // unique prefix for this suite
 
@@ -34,7 +34,7 @@ describe('Tags Routes', () => {
             await createTestTag(user.id, { name: `${P}_AppleTag` });
             const res = await agent.get('/api/tags');
             expect(res.status).toBe(200);
-            const names = res.body.map(t => t.name);
+            const names = res.body.map((t) => t.name);
             const sorted = [...names].sort();
             expect(names).toEqual(sorted);
         });
@@ -73,27 +73,21 @@ describe('Tags Routes', () => {
 
     describe('POST /api/tags', () => {
         test('creates a new tag with name and color', async () => {
-            const res = await agent
-                .post('/api/tags')
-                .send({ name: `${P}_NewTag`, color: '#00ff00' });
+            const res = await agent.post('/api/tags').send({ name: `${P}_NewTag`, color: '#00ff00' });
             expect(res.status).toBe(201);
             expect(res.body.name).toBe(`${P}_NewTag`);
             expect(res.body.color).toBe('#00ff00');
         });
 
         test('creates a tag with default color when color is omitted', async () => {
-            const res = await agent
-                .post('/api/tags')
-                .send({ name: `${P}_DefaultColor` });
+            const res = await agent.post('/api/tags').send({ name: `${P}_DefaultColor` });
             expect(res.status).toBe(201);
             expect(res.body.name).toBe(`${P}_DefaultColor`);
             expect(res.body.color).toBe('#3b82f6');
         });
 
         test('rejects tag without name', async () => {
-            const res = await agent
-                .post('/api/tags')
-                .send({ color: '#ff0000' });
+            const res = await agent.post('/api/tags').send({ color: '#ff0000' });
             expect(res.status).toBe(400);
         });
 
@@ -110,27 +104,24 @@ describe('Tags Routes', () => {
     describe('PUT /api/tags/:id', () => {
         test('owner can update their own tag', async () => {
             const tag = await createTestTag(user.id, { name: `${P}_TagToUpdate` });
-            const res = await agent
-                .put(`/api/tags/${tag.id}`)
-                .send({ name: `${P}_Updated`, color: '#0000ff' });
+            const res = await agent.put(`/api/tags/${tag.id}`).send({ name: `${P}_Updated`, color: '#0000ff' });
             expect(res.status).toBe(200);
             expect(res.body.name).toBe(`${P}_Updated`);
             expect(res.body.color).toBe('#0000ff');
         });
 
         test('returns 404 for non-existent tag', async () => {
-            const res = await agent
-                .put('/api/tags/999999')
-                .send({ name: `${P}_Ghost` });
+            const res = await agent.put('/api/tags/999999').send({ name: `${P}_Ghost` });
             expect(res.status).toBe(404);
         });
 
         test('rejects update of another users tag with 403', async () => {
-            const other = await createTestUser({ username: `${P}_otherupdatetag`, email: `${P}_otherupdatetag@test.com` });
+            const other = await createTestUser({
+                username: `${P}_otherupdatetag`,
+                email: `${P}_otherupdatetag@test.com`,
+            });
             const tag = await createTestTag(other.id, { name: `${P}_OtherTag` });
-            const res = await agent
-                .put(`/api/tags/${tag.id}`)
-                .send({ name: `${P}_Hacked` });
+            const res = await agent.put(`/api/tags/${tag.id}`).send({ name: `${P}_Hacked` });
             expect(res.status).toBe(403);
         });
 

@@ -28,6 +28,6 @@ describe('parseCSV', () => {
     });
     test('handles trailing newline', () => {
         const rows = parseCSV('a,b\n1,2\n');
-        expect(rows.filter(r => r.length > 1 || r[0] !== '')).toHaveLength(2);
+        expect(rows.filter((r) => r.length > 1 || r[0] !== '')).toHaveLength(2);
     });
 });

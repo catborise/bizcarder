@@ -9,7 +9,7 @@ async function approveAllUsers() {
         console.log('Approving all existing users...');
         const [updatedRows] = await User.update(
             { isApproved: true },
-            { where: {} } // Tüm kullanıcıları güncelle
+            { where: {} }, // Tüm kullanıcıları güncelle
         );
 
         console.log(`Successfully approved ${updatedRows} users.`);

@@ -14,10 +14,10 @@ BusinessCard.belongsToMany(Tag, { through: BusinessCardTag, foreignKey: 'cardId'
 Tag.belongsToMany(BusinessCard, { through: BusinessCardTag, foreignKey: 'tagId', as: 'cards' });
 Tag.belongsTo(User, { as: 'owner', foreignKey: 'ownerId' });
 
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
- * Bağlantıyı test eder. 
+ * Bağlantıyı test eder.
  * Not: Migrasyonlar artık CLI üzerinden yönetilmektedir.
  */
 const connectDatabase = async (retries = 5, interval = 5000) => {
@@ -49,5 +49,5 @@ module.exports = {
     SystemSetting,
     DashboardTile,
     Tag,
-    BusinessCardTag
+    BusinessCardTag,
 };

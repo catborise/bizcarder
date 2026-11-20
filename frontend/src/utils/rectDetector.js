@@ -42,14 +42,7 @@ export function detectCard(imageElement) {
 
     // Strategy 1: Blob segmentation (most reliable)
     const otsuT = otsuThreshold(blobBlur, w, h);
-    const thresholds = [
-        otsuT,
-        otsuT * 0.6,
-        otsuT * 0.8,
-        otsuT * 1.2,
-        otsuT * 1.4,
-        128,
-    ];
+    const thresholds = [otsuT, otsuT * 0.6, otsuT * 0.8, otsuT * 1.2, otsuT * 1.4, 128];
 
     for (const t of thresholds) {
         // Try both polarities: card brighter or darker than background
@@ -81,7 +74,7 @@ export function detectCard(imageElement) {
     }
 
     if (best && bestScore > 0.05) {
-        return best.map(p => ({ x: p.x / scale, y: p.y / scale }));
+        return best.map((p) => ({ x: p.x / scale, y: p.y / scale }));
     }
 
     return fallbackRect(natW, natH);
@@ -105,11 +98,11 @@ function blobQuad(gray, w, h, threshold, invert) {
 
     // Add all border pixels that are "white" (background)
     for (let x = 0; x < w; x++) {
-        if (binary[x] === 1) stack.push(x);                      // top row
+        if (binary[x] === 1) stack.push(x); // top row
         if (binary[(h - 1) * w + x] === 1) stack.push((h - 1) * w + x); // bottom row
     }
     for (let y = 0; y < h; y++) {
-        if (binary[y * w] === 1) stack.push(y * w);              // left col
+        if (binary[y * w] === 1) stack.push(y * w); // left col
         if (binary[y * w + (w - 1)] === 1) stack.push(y * w + (w - 1)); // right col
     }
 
@@ -181,8 +174,12 @@ function blobQuad(gray, w, h, threshold, invert) {
             if (labels[idx] !== bestLabel) continue;
 
             // Is it a boundary pixel? (has a neighbor that's not in the blob)
-            if (labels[idx - 1] !== bestLabel || labels[idx + 1] !== bestLabel ||
-                labels[idx - w] !== bestLabel || labels[idx + w] !== bestLabel) {
+            if (
+                labels[idx - 1] !== bestLabel ||
+                labels[idx + 1] !== bestLabel ||
+                labels[idx - w] !== bestLabel ||
+                labels[idx + w] !== bestLabel
+            ) {
                 boundary.push({ x, y });
             }
         }
@@ -222,7 +219,8 @@ function edgeDistributionQuad(edges, w, h) {
     ey.sort((a, b) => a - b);
 
     // 5th and 95th percentiles (tighter than v1.4's 10/90)
-    const p05 = 0.05, p95 = 0.95;
+    const p05 = 0.05,
+        p95 = 0.95;
     const minX = ex[Math.floor(ex.length * p05)];
     const maxX = ex[Math.floor(ex.length * p95)];
     const minY = ey[Math.floor(ey.length * p05)];
@@ -319,12 +317,19 @@ function sobelEdges(gray, w, h) {
     for (let y = 1; y < h - 1; y++) {
         for (let x = 1; x < w - 1; x++) {
             const sx =
-                -gray[(y - 1) * w + (x - 1)] + gray[(y - 1) * w + (x + 1)]
-                - 2 * gray[y * w + (x - 1)] + 2 * gray[y * w + (x + 1)]
-                - gray[(y + 1) * w + (x - 1)] + gray[(y + 1) * w + (x + 1)];
+                -gray[(y - 1) * w + (x - 1)] +
+                gray[(y - 1) * w + (x + 1)] -
+                2 * gray[y * w + (x - 1)] +
+                2 * gray[y * w + (x + 1)] -
+                gray[(y + 1) * w + (x - 1)] +
+                gray[(y + 1) * w + (x + 1)];
             const sy =
-                -gray[(y - 1) * w + (x - 1)] - 2 * gray[(y - 1) * w + x] - gray[(y - 1) * w + (x + 1)]
-                + gray[(y + 1) * w + (x - 1)] + 2 * gray[(y + 1) * w + x] + gray[(y + 1) * w + (x + 1)];
+                -gray[(y - 1) * w + (x - 1)] -
+                2 * gray[(y - 1) * w + x] -
+                gray[(y - 1) * w + (x + 1)] +
+                gray[(y + 1) * w + (x - 1)] +
+                2 * gray[(y + 1) * w + x] +
+                gray[(y + 1) * w + (x + 1)];
             mag[y * w + x] = Math.sqrt(sx * sx + sy * sy);
         }
     }
@@ -357,7 +362,10 @@ function otsuThreshold(gray, w, h) {
     let sumAll = 0;
     for (let i = 0; i < 256; i++) sumAll += i * hist[i];
 
-    let sumBg = 0, wBg = 0, maxVar = 0, bestT = 128;
+    let sumBg = 0,
+        wBg = 0,
+        maxVar = 0,
+        bestT = 128;
 
     for (let t = 0; t < 256; t++) {
         wBg += hist[t];
@@ -388,8 +396,7 @@ function convexHull(points) {
     // Find bottom-most point (then left-most)
     let pivot = 0;
     for (let i = 1; i < points.length; i++) {
-        if (points[i].y > points[pivot].y ||
-            (points[i].y === points[pivot].y && points[i].x < points[pivot].x)) {
+        if (points[i].y > points[pivot].y || (points[i].y === points[pivot].y && points[i].x < points[pivot].x)) {
             pivot = i;
         }
     }
@@ -434,7 +441,7 @@ function hullToQuad(hull) {
 
     // Strategy: iteratively remove the vertex that causes the least area loss
     // until exactly 4 remain.
-    let pts = hull.map(p => ({ x: p.x, y: p.y }));
+    let pts = hull.map((p) => ({ x: p.x, y: p.y }));
 
     while (pts.length > 4) {
         let minLoss = Infinity;
@@ -447,7 +454,7 @@ function hullToQuad(hull) {
 
             // Area of triangle formed by removing this vertex
             const triArea = Math.abs(
-                (prev.x * (curr.y - next.y) + curr.x * (next.y - prev.y) + next.x * (prev.y - curr.y)) / 2
+                (prev.x * (curr.y - next.y) + curr.x * (next.y - prev.y) + next.x * (prev.y - curr.y)) / 2,
             );
 
             if (triArea < minLoss) {
@@ -483,10 +490,13 @@ function orderPoints(pts) {
     // Sort by x+y sum → TL has the smallest, BR has the largest
     // Sort by x-y diff → TR has the largest, BL has the smallest
     const sorted = pts.slice();
-    const sums = sorted.map(p => p.x + p.y);
-    const diffs = sorted.map(p => p.x - p.y);
+    const sums = sorted.map((p) => p.x + p.y);
+    const diffs = sorted.map((p) => p.x - p.y);
 
-    let tlIdx = 0, brIdx = 0, trIdx = 0, blIdx = 0;
+    let tlIdx = 0,
+        brIdx = 0,
+        trIdx = 0,
+        blIdx = 0;
     for (let i = 1; i < sorted.length; i++) {
         if (sums[i] < sums[tlIdx]) tlIdx = i;
         if (sums[i] > sums[brIdx]) brIdx = i;
@@ -523,8 +533,8 @@ function scoreQuad(quad, imgW, imgH) {
     const aspectScore = Math.max(0, 1 - Math.abs(aspect - 1.586) / 1.2);
 
     // Rectangularity: quad area vs bounding box area (1.0 = perfect rectangle)
-    const xs = quad.map(p => p.x);
-    const ys = quad.map(p => p.y);
+    const xs = quad.map((p) => p.x);
+    const ys = quad.map((p) => p.y);
     const bboxArea = (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
     const rectScore = bboxArea > 0 ? area / bboxArea : 0;
 
@@ -534,12 +544,7 @@ function scoreQuad(quad, imgW, imgH) {
     const parallelScore = (widthRatio + heightRatio) / 2;
 
     // Combined score
-    return (
-        areaRatio * 0.35 +
-        aspectScore * 0.20 +
-        rectScore * 0.25 +
-        parallelScore * 0.20
-    );
+    return areaRatio * 0.35 + aspectScore * 0.2 + rectScore * 0.25 + parallelScore * 0.2;
 }
 
 function refineCorner(edges, w, h, estX, estY, dirX, dirY) {
@@ -577,10 +582,14 @@ function refineCorner(edges, w, h, estX, estY, dirX, dirY) {
 function smooth(arr, radius) {
     const out = new Float32Array(arr.length);
     for (let i = 0; i < arr.length; i++) {
-        let sum = 0, count = 0;
+        let sum = 0,
+            count = 0;
         for (let j = -radius; j <= radius; j++) {
             const idx = i + j;
-            if (idx >= 0 && idx < arr.length) { sum += arr[idx]; count++; }
+            if (idx >= 0 && idx < arr.length) {
+                sum += arr[idx];
+                count++;
+            }
         }
         out[i] = sum / count;
     }

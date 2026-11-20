@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 
 const IV_LENGTH = 12; // GCM recommended: 12 bytes
-const AUTH_TAG_LENGTH = 16; // 128-bit auth tag
 
 // Derive a proper 32-byte key using SHA-256 hash of the secret
 function deriveKey(secret) {

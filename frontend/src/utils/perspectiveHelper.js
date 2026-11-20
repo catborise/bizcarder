@@ -69,12 +69,12 @@ export function warpPerspective(srcImg, srcPoints, width, height) {
         { x: 0, y: 0 },
         { x: width, y: 0 },
         { x: width, y: height },
-        { x: 0, y: height }
+        { x: 0, y: height },
     ];
 
     // To warp correctly, we usually use the inverse mapping (dst -> src)
     // for each pixel in output, find where it comes from in input.
-    // However, JS Canvas doesn't have a direct native way to do this pixel by pixel efficiently 
+    // However, JS Canvas doesn't have a direct native way to do this pixel by pixel efficiently
     // without using ImageData or WebGL.
 
     // Simpler hack for high-level JS: Split into triangles and use clipping/transform.

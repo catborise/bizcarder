@@ -2,149 +2,153 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const User = require('./User');
 
-const BusinessCard = sequelize.define('BusinessCard', {
-    id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true
+const BusinessCard = sequelize.define(
+    'BusinessCard',
+    {
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+        firstName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        lastName: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        company: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        title: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            validate: {
+                isEmail: true,
+            },
+        },
+        phone: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        address: {
+            type: DataTypes.TEXT, // Tam açık adres
+            allowNull: true,
+        },
+        city: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        country: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        website: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        frontImageUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        backImageUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        logoUrl: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        ocrText: {
+            type: DataTypes.TEXT /* OCR'dan dönen ham metin */,
+            allowNull: true,
+        },
+        notes: {
+            type: DataTypes.TEXT /* Kartvizit ile ilgili genel notlar */,
+            allowNull: true,
+        },
+        visibility: {
+            type: DataTypes.ENUM('public', 'private'),
+            defaultValue: 'private',
+        },
+        reminderDate: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        leadStatus: {
+            type: DataTypes.ENUM('Cold', 'Warm', 'Hot', 'Following-up', 'Converted'),
+            defaultValue: 'Cold',
+            allowNull: true,
+        },
+        priority: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+            allowNull: true,
+        },
+        lastInteractionDate: {
+            type: DataTypes.DATE,
+            allowNull: true,
+        },
+        source: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        deletedAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            defaultValue: null,
+        },
+        deletedBy: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'Users',
+                key: 'id',
+            },
+        },
+        version: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+            allowNull: false,
+        },
+        isPersonal: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+        },
+        ownerId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            references: {
+                model: 'Users',
+                key: 'id',
+            },
+        },
+        sharingToken: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV4,
+            unique: true,
+        },
     },
-    firstName: {
-        type: DataTypes.STRING,
-        allowNull: false
+    {
+        indexes: [
+            { fields: ['firstName'] },
+            { fields: ['lastName'] },
+            { fields: ['company'] },
+            { fields: ['email'] },
+            { fields: ['ownerId'] },
+            { fields: ['deletedAt'] },
+            { fields: ['visibility'] },
+            { fields: ['sharingToken'] },
+        ],
     },
-    lastName: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    company: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    title: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    email: {
-        type: DataTypes.STRING,
-        allowNull: true,
-        validate: {
-            isEmail: true
-        }
-    },
-    phone: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    address: {
-        type: DataTypes.TEXT, // Tam açık adres
-        allowNull: true
-    },
-    city: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    country: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    website: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    frontImageUrl: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    backImageUrl: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    logoUrl: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    ocrText: {
-        type: DataTypes.TEXT, /* OCR'dan dönen ham metin */
-        allowNull: true
-    },
-    notes: {
-        type: DataTypes.TEXT, /* Kartvizit ile ilgili genel notlar */
-        allowNull: true
-    },
-    visibility: {
-        type: DataTypes.ENUM('public', 'private'),
-        defaultValue: 'private'
-    },
-    reminderDate: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    leadStatus: {
-        type: DataTypes.ENUM('Cold', 'Warm', 'Hot', 'Following-up', 'Converted'),
-        defaultValue: 'Cold',
-        allowNull: true
-    },
-    priority: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: true
-    },
-    lastInteractionDate: {
-        type: DataTypes.DATE,
-        allowNull: true
-    },
-    source: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    deletedAt: {
-        type: DataTypes.DATE,
-        allowNull: true,
-        defaultValue: null
-    },
-    deletedBy: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-            model: 'Users',
-            key: 'id'
-        }
-    },
-    version: {
-        type: DataTypes.INTEGER,
-        defaultValue: 1,
-        allowNull: false
-    },
-    isPersonal: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false,
-        allowNull: false
-    },
-    ownerId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-        references: {
-            model: 'Users',
-            key: 'id'
-        }
-    },
-    sharingToken: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
-        unique: true
-    }
-}, {
-    indexes: [
-        { fields: ['firstName'] },
-        { fields: ['lastName'] },
-        { fields: ['company'] },
-        { fields: ['email'] },
-        { fields: ['ownerId'] },
-        { fields: ['deletedAt'] },
-        { fields: ['visibility'] },
-        { fields: ['sharingToken'] }
-    ]
-});
+);
 
 // Hooks Helper
 const createHistory = async (card, options, type, snapshotData = null) => {
@@ -164,13 +168,16 @@ const createHistory = async (card, options, type, snapshotData = null) => {
             historyOptions.transaction = options.transaction;
         }
 
-        await BusinessCardHistory.create({
-            cardId: card.id,
-            changedBy: changedBy,
-            changeType: type,
-            version: card.version,
-            snapshot: data
-        }, historyOptions);
+        await BusinessCardHistory.create(
+            {
+                cardId: card.id,
+                changedBy: changedBy,
+                changeType: type,
+                version: card.version,
+                snapshot: data,
+            },
+            historyOptions,
+        );
     } catch (error) {
         console.error('History creation failed:', error);
     }
@@ -181,7 +188,7 @@ BusinessCard.afterCreate(async (card, options) => {
     await createHistory(card, options, 'CREATE');
 });
 
-BusinessCard.beforeUpdate(async (card, options) => {
+BusinessCard.beforeUpdate(async (card) => {
     // Version'ı artır
     card.version = (card.version || 1) + 1;
 });

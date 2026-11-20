@@ -28,7 +28,6 @@ module.exports = {
                     trashRetentionDays: 30,
                     aiOcrEnabled: false,
                     aiOcrProvider: 'openai',
-                    isApproved: true,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                 },

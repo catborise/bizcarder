@@ -54,10 +54,7 @@ async function getAuthAgent(user) {
         await user.update({ role: 'admin' });
     }
 
-    await agent
-        .post('/auth/local/login')
-        .send({ username: user.username, password: 'Test1234!' })
-        .expect(200);
+    await agent.post('/auth/local/login').send({ username: user.username, password: 'Test1234!' }).expect(200);
 
     if (originalRole !== 'admin') {
         await user.update({ role: originalRole });
@@ -68,12 +65,18 @@ async function getAuthAgent(user) {
 
 async function cleanDatabase() {
     const sequelize = require('../config/database');
-    await sequelize.query(`
+    await sequelize
+        .query(
+            `
         TRUNCATE TABLE "BusinessCardTags", "BusinessCardHistories", "Interactions",
         "BusinessCards", "Tags", "AuditLogs", "DashboardTiles", "SystemSettings", "Users"
         RESTART IDENTITY CASCADE
-    `).catch(() => {});
-    try { await sequelize.query('TRUNCATE TABLE "Sessions" RESTART IDENTITY CASCADE'); } catch(e) {}
+    `,
+        )
+        .catch(() => {});
+    try {
+        await sequelize.query('TRUNCATE TABLE "Sessions" RESTART IDENTITY CASCADE');
+    } catch (e) {}
 }
 
 /**
@@ -91,11 +94,16 @@ async function setupSuite(prefix) {
         isApproved: true,
     });
     const agent = supertest.agent(app);
-    await agent
-        .post('/auth/local/login')
-        .send({ username: admin.username, password: 'Test1234!' })
-        .expect(200);
+    await agent.post('/auth/local/login').send({ username: admin.username, password: 'Test1234!' }).expect(200);
     return { admin, agent };
 }
 
-module.exports = { createTestUser, createTestAdmin, createTestCard, createTestTag, getAuthAgent, cleanDatabase, setupSuite };
+module.exports = {
+    createTestUser,
+    createTestAdmin,
+    createTestCard,
+    createTestTag,
+    getAuthAgent,
+    cleanDatabase,
+    setupSuite,
+};

@@ -47,8 +47,12 @@ describe('AuthContext', () => {
         let capturedAuth;
         render(
             <AuthProvider>
-                <AuthConsumer onRender={(auth) => { capturedAuth = auth; }} />
-            </AuthProvider>
+                <AuthConsumer
+                    onRender={(auth) => {
+                        capturedAuth = auth;
+                    }}
+                />
+            </AuthProvider>,
         );
 
         await waitFor(() => {
@@ -76,8 +80,12 @@ describe('AuthContext', () => {
         let capturedAuth;
         render(
             <AuthProvider>
-                <AuthConsumer onRender={(auth) => { capturedAuth = auth; }} />
-            </AuthProvider>
+                <AuthConsumer
+                    onRender={(auth) => {
+                        capturedAuth = auth;
+                    }}
+                />
+            </AuthProvider>,
         );
 
         // Wait for initial checkAuth to complete
@@ -112,8 +120,12 @@ describe('AuthContext', () => {
         let capturedAuth;
         render(
             <AuthProvider>
-                <AuthConsumer onRender={(auth) => { capturedAuth = auth; }} />
-            </AuthProvider>
+                <AuthConsumer
+                    onRender={(auth) => {
+                        capturedAuth = auth;
+                    }}
+                />
+            </AuthProvider>,
         );
 
         // Wait for initial checkAuth to complete and user to be set
@@ -139,8 +151,12 @@ describe('AuthContext', () => {
         let capturedAuth;
         render(
             <AuthProvider>
-                <AuthConsumer onRender={(auth) => { capturedAuth = auth; }} />
-            </AuthProvider>
+                <AuthConsumer
+                    onRender={(auth) => {
+                        capturedAuth = auth;
+                    }}
+                />
+            </AuthProvider>,
         );
 
         await waitFor(() => {
@@ -157,8 +173,6 @@ describe('AuthContext', () => {
             return null;
         };
 
-        expect(() => render(<BadComponent />)).toThrow(
-            'useAuth must be used within an AuthProvider'
-        );
+        expect(() => render(<BadComponent />)).toThrow('useAuth must be used within an AuthProvider');
     });
 });

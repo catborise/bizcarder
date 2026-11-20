@@ -18,9 +18,15 @@ describe('Encryption Utils', () => {
         expect(decrypt(encrypted)).toBe(original);
     });
 
-    test('encrypt(null) returns null', () => { expect(encrypt(null)).toBeNull(); });
-    test('encrypt empty string returns null', () => { expect(encrypt('')).toBeNull(); });
-    test('decrypt(null) returns null', () => { expect(decrypt(null)).toBeNull(); });
+    test('encrypt(null) returns null', () => {
+        expect(encrypt(null)).toBeNull();
+    });
+    test('encrypt empty string returns null', () => {
+        expect(encrypt('')).toBeNull();
+    });
+    test('decrypt(null) returns null', () => {
+        expect(decrypt(null)).toBeNull();
+    });
 
     test('auth tag tampering causes decryption to return null', () => {
         const encrypted = encrypt('sensitive-data');

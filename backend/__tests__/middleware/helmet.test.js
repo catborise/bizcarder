@@ -1,8 +1,6 @@
 const supertest = require('supertest');
 const app = require('../../server');
 
-const P = 'helm'; // unique prefix for this suite
-
 describe('Helmet Security Headers', () => {
     // Use a public endpoint that does not require authentication
     const PUBLIC_PATH = '/';
@@ -30,9 +28,9 @@ describe('Helmet Security Headers', () => {
         const res = await supertest(app).get(PUBLIC_PATH);
         const csp = res.headers['content-security-policy'];
         expect(csp).toBeDefined();
-        expect(csp).toContain("default-src");
-        expect(csp).toContain("script-src");
-        expect(csp).toContain("style-src");
+        expect(csp).toContain('default-src');
+        expect(csp).toContain('script-src');
+        expect(csp).toContain('style-src');
     });
 
     test('CSP includes self directive for default-src', async () => {

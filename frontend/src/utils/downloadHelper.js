@@ -1,4 +1,4 @@
- /**
+/**
  * Tarayıcılar arası dosya indirme işlemini yönetir.
  * Chrome'daki 'blob' olarak inme sorununu gidermek için zamanlama ve MIME tipi kontrolü eklenmiştir.
  */
@@ -23,7 +23,7 @@ export const downloadFile = (data, filename, mimeType) => {
         const clickEvent = new MouseEvent('click', {
             view: window,
             bubbles: true,
-            cancelable: true
+            cancelable: true,
         });
         link.dispatchEvent(clickEvent);
     }

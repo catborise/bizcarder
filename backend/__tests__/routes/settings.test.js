@@ -6,11 +6,10 @@ const { setupSuite, createTestUser, getAuthAgent } = require('../helpers');
 const { SystemSetting } = require('../../models');
 
 const P = 'sett';
-let admin, agent;
+let agent;
 
 beforeAll(async () => {
     const ctx = await setupSuite(P);
-    admin = ctx.admin;
     agent = ctx.agent;
 
     // Clean any previous test settings

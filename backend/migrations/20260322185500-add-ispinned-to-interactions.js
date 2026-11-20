@@ -2,15 +2,15 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn('Interactions', 'isPinned', {
-      type: Sequelize.BOOLEAN,
-      defaultValue: false,
-      allowNull: false
-    });
-  },
+    async up(queryInterface, Sequelize) {
+        await queryInterface.addColumn('Interactions', 'isPinned', {
+            type: Sequelize.BOOLEAN,
+            defaultValue: false,
+            allowNull: false,
+        });
+    },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Interactions', 'isPinned');
-  }
+    async down(queryInterface, Sequelize) {
+        await queryInterface.removeColumn('Interactions', 'isPinned');
+    },
 };

@@ -152,7 +152,7 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                 }
 
                 // Kullanıcıyı bul veya oluştur
-                let [user, created] = await User.findOrCreate({
+                let [user] = await User.findOrCreate({
                     where: { shibbolethId: shibbolethId },
                     defaults: {
                         username: cleanUsername,

@@ -38,13 +38,29 @@ describe('offlineStore (Dexie)', () => {
 
     it('db has correct table schema', () => {
         // Verify the Dexie database has the expected tables
-        expect(db.tables.map(t => t.name).sort()).toEqual(['cards', 'pendingSync']);
+        expect(db.tables.map((t) => t.name).sort()).toEqual(['cards', 'pendingSync']);
     });
 
     it('saveCardsToOffline stores cards and getOfflineCards retrieves them', async () => {
         const cards = [
-            { id: 1, firstName: 'Alice', lastName: 'Smith', company: 'Acme', email: 'a@test.com', phone: '555', city: 'NY' },
-            { id: 2, firstName: 'Bob', lastName: 'Jones', company: 'Beta', email: 'b@test.com', phone: '666', city: 'LA' },
+            {
+                id: 1,
+                firstName: 'Alice',
+                lastName: 'Smith',
+                company: 'Acme',
+                email: 'a@test.com',
+                phone: '555',
+                city: 'NY',
+            },
+            {
+                id: 2,
+                firstName: 'Bob',
+                lastName: 'Jones',
+                company: 'Beta',
+                email: 'b@test.com',
+                phone: '666',
+                city: 'LA',
+            },
         ];
 
         await saveCardsToOffline(cards);

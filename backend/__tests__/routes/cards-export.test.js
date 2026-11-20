@@ -8,7 +8,7 @@ describe('Cards Export — Bulk VCF', () => {
     let user, agent;
 
     beforeAll(async () => {
-        const ctx = await setupSuite(P);
+        await setupSuite(P);
         user = await createTestUser({ username: `${P}_user`, email: `${P}_user@test.com` });
         agent = await getAuthAgent(user);
     });

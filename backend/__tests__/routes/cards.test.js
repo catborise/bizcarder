@@ -8,7 +8,7 @@ describe('Cards Routes', () => {
     let user, agent;
 
     beforeAll(async () => {
-        const ctx = await setupSuite(P);
+        await setupSuite(P);
         // setupSuite creates an admin; for card tests we want a regular user
         user = await createTestUser({ username: `${P}_user`, email: `${P}_user@test.com` });
         agent = await getAuthAgent(user);
@@ -68,10 +68,7 @@ describe('Cards Routes', () => {
         });
 
         test('rejects card without both email and phone', async () => {
-            const res = await agent
-                .post('/api/cards')
-                .field('firstName', `${P}_Missing`)
-                .field('lastName', 'Contact');
+            const res = await agent.post('/api/cards').field('firstName', `${P}_Missing`).field('lastName', 'Contact');
             expect(res.status).toBe(400);
         });
     });
@@ -116,7 +113,10 @@ describe('Cards Routes', () => {
 
     describe('DELETE /api/cards/:id', () => {
         test('soft deletes own card', async () => {
-            const card = await createTestCard(user.id, { firstName: `${P}_ToSoftDelete`, email: `${P}_softdelete@test.com` });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_ToSoftDelete`,
+                email: `${P}_softdelete@test.com`,
+            });
             const res = await agent.delete(`/api/cards/${card.id}`);
             expect(res.status).toBe(200);
             await card.reload();
@@ -149,7 +149,10 @@ describe('Cards Routes', () => {
         });
 
         test('POST /api/cards/:id/restore restores a soft-deleted card', async () => {
-            const card = await createTestCard(user.id, { firstName: `${P}_ToRestore`, email: `${P}_torestore@test.com` });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_ToRestore`,
+                email: `${P}_torestore@test.com`,
+            });
             await card.update({ deletedAt: new Date(), deletedBy: user.id });
             const res = await agent.post(`/api/cards/${card.id}/restore`);
             expect(res.status).toBe(200);
@@ -158,14 +161,20 @@ describe('Cards Routes', () => {
         });
 
         test('DELETE /api/cards/:id/permanent hard deletes a card', async () => {
-            const card = await createTestCard(user.id, { firstName: `${P}_HardDelete`, email: `${P}_harddelete@test.com` });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_HardDelete`,
+                email: `${P}_harddelete@test.com`,
+            });
             await card.update({ deletedAt: new Date(), deletedBy: user.id });
             const res = await agent.delete(`/api/cards/${card.id}/permanent`);
             expect(res.status).toBe(200);
         });
 
         test('DELETE /api/cards/trash/empty empties the trash', async () => {
-            const card = await createTestCard(user.id, { firstName: `${P}_EmptyTrash`, email: `${P}_emptytrash@test.com` });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_EmptyTrash`,
+                email: `${P}_emptytrash@test.com`,
+            });
             await card.update({ deletedAt: new Date(), deletedBy: user.id });
             const res = await agent.delete('/api/cards/trash/empty');
             expect(res.status).toBe(200);
@@ -178,32 +187,27 @@ describe('Cards Routes', () => {
         test('POST /api/cards/bulk-delete soft-deletes multiple cards', async () => {
             const c1 = await createTestCard(user.id, { firstName: `${P}_Bulk1`, email: `${P}_bulk1@test.com` });
             const c2 = await createTestCard(user.id, { firstName: `${P}_Bulk2`, email: `${P}_bulk2@test.com` });
-            const res = await agent
-                .post('/api/cards/bulk-delete')
-                .send({ ids: [c1.id, c2.id] });
+            const res = await agent.post('/api/cards/bulk-delete').send({ ids: [c1.id, c2.id] });
             expect(res.status).toBe(200);
         });
 
         test('POST /api/cards/bulk-delete rejects missing ids', async () => {
-            const res = await agent
-                .post('/api/cards/bulk-delete')
-                .send({});
+            const res = await agent.post('/api/cards/bulk-delete').send({});
             expect(res.status).toBe(400);
         });
 
         test('POST /api/cards/bulk-visibility updates visibility to public', async () => {
             const card = await createTestCard(user.id, { firstName: `${P}_BulkVis`, email: `${P}_bulkvis@test.com` });
-            const res = await agent
-                .post('/api/cards/bulk-visibility')
-                .send({ ids: [card.id], visibility: 'public' });
+            const res = await agent.post('/api/cards/bulk-visibility').send({ ids: [card.id], visibility: 'public' });
             expect(res.status).toBe(200);
         });
 
         test('POST /api/cards/bulk-visibility rejects invalid visibility value', async () => {
-            const card = await createTestCard(user.id, { firstName: `${P}_BulkVisInvalid`, email: `${P}_bulkvisinvalid@test.com` });
-            const res = await agent
-                .post('/api/cards/bulk-visibility')
-                .send({ ids: [card.id], visibility: 'invalid' });
+            const card = await createTestCard(user.id, {
+                firstName: `${P}_BulkVisInvalid`,
+                email: `${P}_bulkvisinvalid@test.com`,
+            });
+            const res = await agent.post('/api/cards/bulk-visibility').send({ ids: [card.id], visibility: 'invalid' });
             expect(res.status).toBe(400);
         });
     });
@@ -212,7 +216,11 @@ describe('Cards Routes', () => {
 
     describe('GET /api/cards/due-reminders', () => {
         test('returns cards with past-due reminders', async () => {
-            await createTestCard(user.id, { firstName: `${P}_PastDue`, email: `${P}_pastdue@test.com`, reminderDate: new Date('2020-01-01') });
+            await createTestCard(user.id, {
+                firstName: `${P}_PastDue`,
+                email: `${P}_pastdue@test.com`,
+                reminderDate: new Date('2020-01-01'),
+            });
             const res = await agent.get('/api/cards/due-reminders');
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
@@ -220,11 +228,15 @@ describe('Cards Routes', () => {
         });
 
         test('future reminders are not returned as due', async () => {
-            await createTestCard(user.id, { firstName: `${P}_FutureReminder`, email: `${P}_futurereminder@test.com`, reminderDate: new Date('2099-12-31') });
+            await createTestCard(user.id, {
+                firstName: `${P}_FutureReminder`,
+                email: `${P}_futurereminder@test.com`,
+                reminderDate: new Date('2099-12-31'),
+            });
             const res = await agent.get('/api/cards/due-reminders');
             expect(res.status).toBe(200);
             expect(Array.isArray(res.body)).toBe(true);
-            const futureCards = res.body.filter(c => c.firstName === `${P}_FutureReminder`);
+            const futureCards = res.body.filter((c) => c.firstName === `${P}_FutureReminder`);
             expect(futureCards).toHaveLength(0);
         });
     });
@@ -233,7 +245,10 @@ describe('Cards Routes', () => {
 
     describe('GET /api/cards/personal', () => {
         test('returns null when user has no personal card', async () => {
-            const freshUser = await createTestUser({ username: `${P}_nopersonalcard`, email: `${P}_nopersonalcard@test.com` });
+            const freshUser = await createTestUser({
+                username: `${P}_nopersonalcard`,
+                email: `${P}_nopersonalcard@test.com`,
+            });
             const freshAgent = await getAuthAgent(freshUser);
             const res = await freshAgent.get('/api/cards/personal');
             expect(res.status).toBe(200);
@@ -241,7 +256,11 @@ describe('Cards Routes', () => {
         });
 
         test('returns the personal card when it exists', async () => {
-            await createTestCard(user.id, { firstName: `${P}_PersonalCard`, email: `${P}_personalcard@test.com`, isPersonal: true });
+            await createTestCard(user.id, {
+                firstName: `${P}_PersonalCard`,
+                email: `${P}_personalcard@test.com`,
+                isPersonal: true,
+            });
             const res = await agent.get('/api/cards/personal');
             expect(res.status).toBe(200);
             expect(res.body).not.toBeNull();

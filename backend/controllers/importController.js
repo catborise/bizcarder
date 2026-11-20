@@ -140,12 +140,10 @@ exports.importCards = async (req, res) => {
             await workbook.xlsx.readFile(filePath);
             const worksheet = workbook.getWorksheet(1);
             if (!worksheet) {
-                return res
-                    .status(400)
-                    .json({
-                        errorCode: 'IMPORT_EMPTY_WORKBOOK',
-                        error: 'Excel dosyasında çalışma sayfası bulunamadı.',
-                    });
+                return res.status(400).json({
+                    errorCode: 'IMPORT_EMPTY_WORKBOOK',
+                    error: 'Excel dosyasında çalışma sayfası bulunamadı.',
+                });
             }
 
             worksheet.eachRow((row, rowNumber) => {

@@ -9,7 +9,11 @@ vi.mock('framer-motion', () => ({
 
 describe('PageTransition', () => {
     it('renders children', () => {
-        render(<PageTransition><p>Content</p></PageTransition>);
+        render(
+            <PageTransition>
+                <p>Content</p>
+            </PageTransition>,
+        );
         expect(screen.getByText('Content')).toBeInTheDocument();
     });
 });

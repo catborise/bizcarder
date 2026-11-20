@@ -1,5 +1,3 @@
-const supertest = require('supertest');
-const app = require('../../server');
 const { createTestUser, setupSuite, getAuthAgent } = require('../helpers');
 const { removeCardImages } = require('../../utils/fileSecurity');
 
