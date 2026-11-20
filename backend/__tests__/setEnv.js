@@ -4,3 +4,4 @@
 process.env.NODE_ENV = 'test';
 // Use a separate database for tests so production data is never touched.
 process.env.DB_NAME = process.env.DB_NAME_TEST || 'crm_db_test';
+process.env.CRM_API_ENCRYPTION_KEY = process.env.CRM_API_ENCRYPTION_KEY || 'test-encryption-key-32chars!!!ab';
