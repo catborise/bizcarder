@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { detectCard } from '../../utils/rectDetector';
 
 const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
+    const { t } = useTranslation('cards');
     const containerRef = useRef(null);
     const imgRef = useRef(null);
     const magnifierCanvasRef = useRef(null);
@@ -433,7 +435,8 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                 }}
             >
                 <div style={{ fontSize: '14px', color: 'var(--text-tertiary)' }}>
-                    Oran: <span style={{ color: 'var(--accent-success)', fontWeight: 'bold' }}>{aspect}</span>
+                    {t('addCard.cropper.ratio')}:{' '}
+                    <span style={{ color: 'var(--accent-success)', fontWeight: 'bold' }}>{aspect}</span>
                 </div>
 
                 <button
@@ -450,7 +453,7 @@ const PerspectiveCropper = ({ src, onCropComplete, initialPoints = null }) => {
                         boxShadow: 'var(--glass-shadow-hover)',
                     }}
                 >
-                    Alan Seçildi
+                    {t('addCard.cropper.confirm')}
                 </button>
             </div>
         </div>

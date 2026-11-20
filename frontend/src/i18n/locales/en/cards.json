@@ -31,6 +31,10 @@
             "error": "An error occurred during OCR processing.",
             "reading": "Reading OCR..."
         },
+        "cropper": {
+            "ratio": "Ratio",
+            "confirm": "Area Selected"
+        },
         "notify": {
             "updated": "Business card updated successfully!",
             "created": "Business card added successfully!",

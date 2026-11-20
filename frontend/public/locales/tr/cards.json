@@ -31,6 +31,10 @@
             "error": "OCR işlemi sırasında bir hata oluştu.",
             "reading": "OCR Okunuyor..."
         },
+        "cropper": {
+            "ratio": "Oran",
+            "confirm": "Alan Seçildi"
+        },
         "notify": {
             "updated": "Kartvizit başarıyla güncellendi!",
             "created": "Kartvizit başarıyla eklendi!",

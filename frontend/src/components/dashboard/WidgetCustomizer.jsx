@@ -84,7 +84,7 @@ export default function WidgetCustomizer({ widgets, onToggle, onMove, onReset })
                                             color: widget.visible ? 'var(--text-primary)' : 'var(--text-tertiary)',
                                         }}
                                     >
-                                        {widget.label}
+                                        {t(`widgets.${widget.id}`, widget.label)}
                                     </span>
                                     <div style={{ display: 'flex', gap: '2px' }}>
                                         <button

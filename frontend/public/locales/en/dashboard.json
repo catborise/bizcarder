@@ -30,6 +30,15 @@
     "customizeWidgets": "Customize Dashboard",
     "widgetSettings": "Widget Settings",
     "reset": "Reset",
+    "widgets": {
+        "banner": "Banner",
+        "quickActions": "Quick Actions",
+        "search": "Quick Search",
+        "stats": "Statistics",
+        "tags": "Frequent Tags",
+        "coreTiles": "Navigation Shortcuts",
+        "customTiles": "Custom Tiles"
+    },
     "quickAddCard": "Add Card",
     "quickReminders": "Reminders",
     "quickRecent": "Recent",
