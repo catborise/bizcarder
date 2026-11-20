@@ -1,32 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import api, { API_URL } from '../../api/axios';
+import { motion } from 'framer-motion';
+import { FaFileExcel, FaFilePdf, FaDownload, FaAddressCard } from 'react-icons/fa';
+import api from '../../api/axios';
 import { resolveApiError } from '../../utils/apiError';
 import { useNotification } from '../../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../../utils/offlineStore';
 import { downloadFile } from '../../utils/downloadHelper';
-import {
-    FaIdCard,
-    FaEnvelope,
-    FaPhone,
-    FaMapMarkerAlt,
-    FaCity,
-    FaGlobe,
-    FaStickyNote,
-    FaChevronDown,
-    FaChevronUp,
-    FaTrash,
-    FaClock,
-    FaFileExcel,
-    FaFilePdf,
-    FaDownload,
-    FaCalendarCheck,
-    FaQrcode,
-    FaStar,
-    FaWhatsapp,
-    FaAddressCard,
-} from 'react-icons/fa';
+import { generateVCardString } from '../../utils/vcardHelper';
 import EmptyState from '../shared/EmptyState';
 import SearchBar from './SearchBar';
 import Modal from '../shared/Modal';
@@ -34,10 +16,8 @@ import ConfirmModal from '../shared/ConfirmModal';
 import QRCodeOverlay from '../shared/QRCodeOverlay';
 import HistoryTimeline from './HistoryTimeline';
 import AddCard from './AddCard';
-import InteractionLog from './InteractionLog';
-import { generateVCardString } from '../../utils/vcardHelper';
-
-import { motion, AnimatePresence } from 'framer-motion';
+import ContactCardItem from './ContactCardItem';
+import ContactsBulkBar, { CardImageModal } from './ContactsBulkBar';
 
 const Contacts = () => {
     const { t, i18n } = useTranslation(['cards', 'common']);
@@ -62,7 +42,6 @@ const Contacts = () => {
         };
     });
 
-    // React to URL query param changes (e.g., clicking a tag chip, QuickSearch, or UserMenu reminders)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const urlSearch = params.get('search');
@@ -99,7 +78,7 @@ const Contacts = () => {
     const [deleteConfirmCard, setDeleteConfirmCard] = useState(null);
     const [selectedIds, setSelectedIds] = useState([]);
     const [isBulkTagModalOpen, setIsBulkTagModalOpen] = useState(false);
-    const [bulkTagAction, setBulkTagAction] = useState('add'); // 'add' or 'replace'
+    const [bulkTagAction, setBulkTagAction] = useState('add');
     const [selectedBulkTags, setSelectedBulkTags] = useState([]);
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const [isVcfExportConfirmOpen, setIsVcfExportConfirmOpen] = useState(false);
@@ -166,7 +145,7 @@ const Contacts = () => {
                 setCards([]);
                 setError(t('cards:contacts.error.unexpectedFormat'));
             }
-        } catch (err) {
+        } catch {
             const cachedCards = await getOfflineCards();
             if (cachedCards.length > 0) {
                 setCards(cachedCards);
@@ -181,16 +160,15 @@ const Contacts = () => {
 
     useEffect(() => {
         fetchAvailableFilters();
-    }, []); // Sadece bir kez yükle
+    }, []);
 
-    // Filtreleri veya Arama Terimini Takip Eden Tek Bir Effect
     useEffect(() => {
         const delayDebounceFn = setTimeout(
             () => {
                 fetchCards(1);
             },
             searchTerm ? 500 : 0,
-        ); // Boş aramada anında çek, yazarken bekle
+        );
 
         return () => clearTimeout(delayDebounceFn);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -212,9 +190,9 @@ const Contacts = () => {
             showNotification(t('cards:contacts.notify.deleted'), 'success');
             fetchCards(pagination.currentPage);
             setDeleteConfirmCard(null);
-        } catch (error) {
+        } catch (err) {
             showNotification(
-                t('cards:contacts.notify.deleteFailed', { error: resolveApiError(error, '') || error.message }),
+                t('cards:contacts.notify.deleteFailed', { error: resolveApiError(err, '') || err.message }),
                 'error',
             );
         }
@@ -261,7 +239,7 @@ const Contacts = () => {
             const response = await api.get('/api/cards/export/vcf', { responseType: 'blob' });
             downloadFile(response.data, `contacts_${new Date().toISOString().slice(0, 10)}.vcf`, 'text/vcard');
             showNotification(t('cards:contacts.notify.vcardDownloaded'), 'success');
-        } catch (err) {
+        } catch {
             showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
         }
     };
@@ -273,7 +251,7 @@ const Contacts = () => {
             setSelectedIds([]);
             setIsBulkDeleteConfirmOpen(false);
             fetchCards(pagination.currentPage);
-        } catch (error) {
+        } catch {
             showNotification(t('cards:contacts.notify.bulkDeleteFailed'), 'error');
         }
     };
@@ -290,7 +268,7 @@ const Contacts = () => {
             );
             setSelectedIds([]);
             fetchCards(pagination.currentPage);
-        } catch (error) {
+        } catch {
             showNotification(t('cards:contacts.notify.visibilityFailed'), 'error');
         }
     };
@@ -307,7 +285,7 @@ const Contacts = () => {
             setIsBulkTagModalOpen(false);
             setSelectedBulkTags([]);
             fetchCards(pagination.currentPage);
-        } catch (error) {
+        } catch {
             showNotification(t('cards:contacts.notify.tagsFailed'), 'error');
         }
     };
@@ -328,7 +306,7 @@ const Contacts = () => {
             });
             downloadFile(response.data, fileName, mimeType);
             showNotification(t('cards:contacts.notify.fileDownloaded'), 'success');
-        } catch (error) {
+        } catch {
             showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
         }
     };
@@ -341,7 +319,7 @@ const Contacts = () => {
             });
             downloadFile(response.data, `${card.firstName}_${card.lastName}.vcf`, 'text/vcard');
             showNotification(t('cards:contacts.notify.vcardDownloaded'), 'success');
-        } catch (error) {
+        } catch {
             showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
         }
     };
@@ -410,6 +388,21 @@ const Contacts = () => {
         }
     };
 
+    const headerIconBtnStyle = (color) => ({
+        width: '44px',
+        height: '44px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'var(--glass-bg)',
+        border: '1px solid var(--glass-border)',
+        borderRadius: '12px',
+        cursor: 'pointer',
+        color,
+        transition: 'all 0.2s ease',
+        backdropFilter: 'blur(10px)',
+    });
+
     if (error) {
         return (
             <div style={{ textAlign: 'center', padding: '100px 20px', color: 'var(--accent-error)' }}>
@@ -435,6 +428,17 @@ const Contacts = () => {
         );
     }
 
+    const hasActiveFilters = Boolean(
+        searchTerm ||
+        advancedFilters.tagId ||
+        advancedFilters.city ||
+        advancedFilters.hasReminder ||
+        advancedFilters.leadStatus ||
+        advancedFilters.source ||
+        advancedFilters.dateStart ||
+        advancedFilters.dateEnd,
+    );
+
     return (
         <div className="fade-in">
             <div className="contacts-header">
@@ -455,25 +459,12 @@ const Contacts = () => {
                                     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                 );
                                 showNotification(t('cards:contacts.notify.excelDownloaded'), 'success');
-                            } catch (error) {
+                            } catch {
                                 showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
                             }
                         }}
                         title={t('cards:contacts.titleAttr.downloadExcel')}
-                        style={{
-                            width: '44px',
-                            height: '44px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'var(--glass-bg)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            color: 'var(--accent-success)',
-                            transition: 'all 0.2s ease',
-                            backdropFilter: 'blur(10px)',
-                        }}
+                        style={headerIconBtnStyle('var(--accent-success)')}
                     >
                         <FaFileExcel size={20} />
                     </button>
@@ -487,25 +478,12 @@ const Contacts = () => {
                                 });
                                 downloadFile(response.data, 'kartvizitler.pdf', 'application/pdf');
                                 showNotification(t('cards:contacts.notify.pdfDownloaded'), 'success');
-                            } catch (error) {
+                            } catch {
                                 showNotification(t('cards:contacts.notify.downloadFailed'), 'error');
                             }
                         }}
                         title={t('cards:contacts.titleAttr.downloadPdf')}
-                        style={{
-                            width: '44px',
-                            height: '44px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'var(--glass-bg)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            color: 'var(--accent-error)',
-                            transition: 'all 0.2s ease',
-                            backdropFilter: 'blur(10px)',
-                        }}
+                        style={headerIconBtnStyle('var(--accent-error)')}
                     >
                         <FaFilePdf size={20} />
                     </button>
@@ -513,20 +491,7 @@ const Contacts = () => {
                     <button
                         onClick={() => setIsVcfExportConfirmOpen(true)}
                         title={t('cards:contacts.titleAttr.downloadVcf')}
-                        style={{
-                            width: '44px',
-                            height: '44px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: 'var(--glass-bg)',
-                            border: '1px solid var(--glass-border)',
-                            borderRadius: '12px',
-                            cursor: 'pointer',
-                            color: 'var(--accent-secondary)',
-                            transition: 'all 0.2s ease',
-                            backdropFilter: 'blur(10px)',
-                        }}
+                        style={headerIconBtnStyle('var(--accent-secondary)')}
                     >
                         <FaDownload size={20} />
                     </button>
@@ -629,14 +594,7 @@ const Contacts = () => {
             )}
 
             {!loading && cards.length === 0 ? (
-                searchTerm ||
-                advancedFilters.tagId ||
-                advancedFilters.city ||
-                advancedFilters.hasReminder ||
-                advancedFilters.leadStatus ||
-                advancedFilters.source ||
-                advancedFilters.dateStart ||
-                advancedFilters.dateEnd ? (
+                hasActiveFilters ? (
                     <EmptyState
                         icon={FaAddressCard}
                         title={t('cards:contacts.noResults', 'Sonuç bulunamadı')}
@@ -669,516 +627,29 @@ const Contacts = () => {
                 )
             ) : !loading ? (
                 <div className="my-card-layout" style={{ marginTop: '30px' }}>
-                    {cards.length > 0 ? (
-                        cards.map((card, index) => (
-                            <motion.div
-                                key={card.id}
-                                className="card-wrapper"
-                                data-priority={card.priority || ''}
-                                data-lead={card.leadStatus || ''}
-                                initial={{ opacity: 0, y: 16 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{
-                                    duration: 0.3,
-                                    delay: index * 0.04,
-                                    ease: 'easeOut',
-                                }}
-                            >
-                                <div
-                                    className="glass-container"
-                                    style={{
-                                        border: selectedIds.includes(card.id)
-                                            ? '1px solid var(--accent-primary)'
-                                            : '1px solid var(--glass-border)',
-                                        backgroundColor: selectedIds.includes(card.id)
-                                            ? 'var(--accent-primary-transparent)'
-                                            : 'var(--glass-bg)',
-                                        padding: '20px',
-                                    }}
-                                >
-                                    <div className="contact-card">
-                                        {/* Row Checkbox */}
-                                        <div className="checkbox-container">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedIds.includes(card.id)}
-                                                onChange={() => handleSelectCard(card.id)}
-                                                style={{
-                                                    width: '18px',
-                                                    height: '18px',
-                                                    cursor: 'pointer',
-                                                    accentColor: 'var(--accent-primary)',
-                                                }}
-                                            />
-                                        </div>
-
-                                        {/* Image + Status Badges Column */}
-                                        <div
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                gap: '8px',
-                                                flexShrink: 0,
-                                            }}
-                                        >
-                                            {(() => {
-                                                const hasImage = !!card.frontImageUrl;
-                                                const statusStyle = card.leadStatus
-                                                    ? getStatusStyle(card.leadStatus)
-                                                    : null;
-                                                return (
-                                                    <div
-                                                        className="card-image-container"
-                                                        onClick={
-                                                            hasImage ? () => setSelectedImageCard(card) : undefined
-                                                        }
-                                                    >
-                                                        {hasImage ? (
-                                                            <img
-                                                                src={`${API_URL}${card.frontImageUrl}`}
-                                                                alt={card.firstName}
-                                                                style={{
-                                                                    maxWidth: '100%',
-                                                                    maxHeight: '100%',
-                                                                    objectFit: 'contain',
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            <FaIdCard size={64} style={{ opacity: 0.5 }} />
-                                                        )}
-                                                        {card.priority > 0 && (
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: '6px',
-                                                                    left: '8px',
-                                                                    display: 'flex',
-                                                                    gap: '1px',
-                                                                }}
-                                                            >
-                                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                                    <FaStar
-                                                                        key={star}
-                                                                        size={10}
-                                                                        color={
-                                                                            card.priority >= star
-                                                                                ? 'var(--accent-warning)'
-                                                                                : 'rgba(128,128,128,0.4)'
-                                                                        }
-                                                                        style={
-                                                                            hasImage
-                                                                                ? {
-                                                                                      filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
-                                                                                  }
-                                                                                : undefined
-                                                                        }
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                        <div
-                                                            style={{
-                                                                position: 'absolute',
-                                                                bottom: '6px',
-                                                                left: '8px',
-                                                                right: '8px',
-                                                                display: 'flex',
-                                                                alignItems: 'center',
-                                                                justifyContent: 'space-between',
-                                                            }}
-                                                        >
-                                                            <span
-                                                                style={{
-                                                                    color: 'var(--text-tertiary)',
-                                                                    fontSize: '10px',
-                                                                    fontWeight: 'bold',
-                                                                    opacity: hasImage ? 0.8 : 0.5,
-                                                                    ...(hasImage && {
-                                                                        filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))',
-                                                                    }),
-                                                                }}
-                                                            >
-                                                                v{card.version || 1}
-                                                            </span>
-                                                            {statusStyle && (
-                                                                <span
-                                                                    style={{
-                                                                        padding: '2px 6px',
-                                                                        borderRadius: '6px',
-                                                                        fontSize: '9px',
-                                                                        fontWeight: 'bold',
-                                                                        lineHeight: 1.2,
-                                                                        background: statusStyle.bg,
-                                                                        color: statusStyle.color,
-                                                                        border: `1px solid ${statusStyle.color}33`,
-                                                                        ...(hasImage && {
-                                                                            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))',
-                                                                        }),
-                                                                    }}
-                                                                >
-                                                                    {statusStyle.icon} {statusStyle.label}
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            {/* Tags — below the image */}
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                                {card.tags && card.tags.length > 0 && (
-                                                    <div
-                                                        style={{
-                                                            display: 'flex',
-                                                            flexWrap: 'wrap',
-                                                            gap: '4px',
-                                                            justifyContent: 'center',
-                                                        }}
-                                                    >
-                                                        {card.tags.map((tag) => {
-                                                            const isLight = (color) => {
-                                                                if (!color || color.length < 7) return true;
-                                                                const hex = color.replace('#', '');
-                                                                const r = parseInt(hex.substring(0, 2), 16);
-                                                                const g = parseInt(hex.substring(2, 4), 16);
-                                                                const b = parseInt(hex.substring(4, 6), 16);
-                                                                return (r * 299 + g * 587 + b * 114) / 1000 > 155;
-                                                            };
-                                                            return (
-                                                                <span
-                                                                    key={tag.id}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        navigate(`/contacts?tagId=${tag.id}`);
-                                                                    }}
-                                                                    style={{
-                                                                        padding: '2px 8px',
-                                                                        borderRadius: '12px',
-                                                                        fontSize: '0.7rem',
-                                                                        fontWeight: '700',
-                                                                        background:
-                                                                            tag.color || 'var(--accent-primary)',
-                                                                        color: isLight(tag.color) ? '#000' : '#fff',
-                                                                        cursor: 'pointer',
-                                                                    }}
-                                                                >
-                                                                    {tag.name}
-                                                                </span>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="card-info">
-                                            <h3>
-                                                {card.firstName} {card.lastName}
-                                            </h3>
-                                            <p className="company-line">
-                                                {card.logoUrl && (
-                                                    <img
-                                                        src={`${API_URL}${card.logoUrl}`}
-                                                        alt={card.company ? `${card.company} logo` : 'Company logo'}
-                                                        style={{
-                                                            width: '20px',
-                                                            height: '20px',
-                                                            objectFit: 'contain',
-                                                            borderRadius: '4px',
-                                                            background: 'var(--bg-card)',
-                                                            padding: '2px',
-                                                            border: '1px solid var(--glass-border)',
-                                                        }}
-                                                    />
-                                                )}
-                                                {card.company} {card.title && `- ${card.title}`}
-                                            </p>
-
-                                            {card.lastInteraction && (
-                                                <div
-                                                    style={{
-                                                        fontSize: '0.75rem',
-                                                        color: 'var(--text-tertiary)',
-                                                        marginTop: '4px',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '4px',
-                                                    }}
-                                                >
-                                                    <FaClock size={10} />
-                                                    {t('cards:contacts.lastInteraction')}: {card.lastInteraction.type} —{' '}
-                                                    {new Date(card.lastInteraction.date).toLocaleDateString()}
-                                                </div>
-                                            )}
-
-                                            <div
-                                                style={{
-                                                    display: 'grid',
-                                                    gridTemplateColumns: '1fr',
-                                                    gap: '8px',
-                                                    fontSize: '0.9em',
-                                                }}
-                                            >
-                                                {card.reminderDate && (
-                                                    <div
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '8px',
-                                                            padding: '6px 10px',
-                                                            background: 'var(--glass-bg)',
-                                                            borderRadius: '8px',
-                                                            border: '1px solid var(--accent-warning)',
-                                                            marginBottom: '5px',
-                                                        }}
-                                                    >
-                                                        <FaCalendarCheck color="var(--accent-warning)" />
-                                                        <strong style={{ color: 'var(--text-primary)' }}>
-                                                            {t('cards:contacts.field.reminder')}
-                                                        </strong>
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {(() => {
-                                                                const d = new Date(card.reminderDate);
-                                                                return isNaN(d.getTime())
-                                                                    ? t('cards:contacts.field.noDate')
-                                                                    : d.toLocaleDateString(
-                                                                          i18n.language === 'tr' ? 'tr-TR' : 'en-US',
-                                                                      );
-                                                            })()}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.lastInteractionDate && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaClock color="var(--accent-primary)" size={12} />
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.lastInteraction')}
-                                                        </strong>
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {new Date(card.lastInteractionDate).toLocaleDateString(
-                                                                i18n.language === 'tr' ? 'tr-TR' : 'en-US',
-                                                            )}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.email && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaEnvelope color="var(--accent-warning)" />{' '}
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.email')}
-                                                        </strong>{' '}
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {card.email}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.phone && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaPhone color="var(--accent-success)" />{' '}
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.phone')}
-                                                        </strong>{' '}
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {card.phone}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.website && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaGlobe color="var(--accent-primary)" />{' '}
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.web')}
-                                                        </strong>{' '}
-                                                        <a
-                                                            href={
-                                                                card.website.startsWith('http')
-                                                                    ? card.website
-                                                                    : `https://${card.website}`
-                                                            }
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            style={{ color: 'var(--accent-secondary)' }}
-                                                        >
-                                                            {card.website}
-                                                        </a>
-                                                    </div>
-                                                )}
-                                                {(card.city || card.country) && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaCity color="var(--accent-error)" />{' '}
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.location')}
-                                                        </strong>{' '}
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {card.city}
-                                                            {card.city && card.country && ', '}
-                                                            {card.country}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.address && (
-                                                    <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                                                        <FaMapMarkerAlt
-                                                            color="var(--accent-error)"
-                                                            style={{ marginTop: '3px' }}
-                                                        />
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.address')}
-                                                        </strong>{' '}
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {card.address}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                                {card.source && (
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <FaIdCard color="var(--accent-primary)" size={12} />{' '}
-                                                        <strong style={{ color: 'var(--text-tertiary)' }}>
-                                                            {t('cards:contacts.field.source')}
-                                                        </strong>{' '}
-                                                        <span style={{ color: 'var(--text-secondary)' }}>
-                                                            {card.source}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="card-actions">
-                                            <button
-                                                onClick={() => toggleDetails(card.id)}
-                                                className="glass-button-block"
-                                                style={{
-                                                    color: 'var(--accent-warning)',
-                                                    padding: '10px 12px',
-                                                    fontSize: '0.9rem',
-                                                    border: '1px solid var(--accent-warning)',
-                                                    background:
-                                                        expandedCardId === card.id
-                                                            ? 'var(--glass-bg-hover)'
-                                                            : 'transparent',
-                                                }}
-                                            >
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <FaStickyNote /> {t('cards:contacts.btn.activityNotes')}
-                                                </span>
-                                                {expandedCardId === card.id ? (
-                                                    <FaChevronUp size={12} />
-                                                ) : (
-                                                    <FaChevronDown size={12} />
-                                                )}
-                                            </button>
-
-                                            {/* Hızlı Takip Butonları */}
-                                            <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                                                {card.phone && (
-                                                    <button
-                                                        onClick={() => handleWhatsAppFollowUp(card)}
-                                                        className="glass-button-square"
-                                                        title={t('cards:contacts.titleAttr.whatsappFollow')}
-                                                        style={{
-                                                            color: '#25D366',
-                                                            borderColor: 'rgba(37, 211, 102, 0.3)',
-                                                        }}
-                                                    >
-                                                        <FaWhatsapp size={20} />
-                                                    </button>
-                                                )}
-                                                {card.email && (
-                                                    <button
-                                                        onClick={() => handleEmailFollowUp(card)}
-                                                        className="glass-button-square"
-                                                        title={t('cards:contacts.titleAttr.emailFollow')}
-                                                        style={{
-                                                            color: 'var(--accent-warning)',
-                                                            borderColor: 'rgba(255, 193, 7, 0.3)',
-                                                        }}
-                                                    >
-                                                        <FaEnvelope size={18} />
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            <div
-                                                style={{
-                                                    height: '1px',
-                                                    background: 'var(--glass-border)',
-                                                    margin: '4px 0',
-                                                }}
-                                            ></div>
-
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button
-                                                    onClick={() => setQrModalCard(card)}
-                                                    className="glass-button-square"
-                                                    title={t('cards:contacts.titleAttr.qrVcard')}
-                                                    aria-label={t('cards:contacts.titleAttr.qrVcard')}
-                                                >
-                                                    <FaQrcode size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDownloadVCard(card)}
-                                                    className="glass-button-square"
-                                                    title={t('cards:contacts.titleAttr.downloadVcard')}
-                                                    aria-label={t('cards:contacts.titleAttr.downloadVcard')}
-                                                >
-                                                    <FaDownload size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setHistoryCard(card)}
-                                                    className="glass-button-square"
-                                                    title={t('cards:contacts.titleAttr.history')}
-                                                    aria-label={t('cards:contacts.titleAttr.history')}
-                                                >
-                                                    <FaClock size={16} />
-                                                </button>
-                                            </div>
-
-                                            <div style={{ display: 'flex', gap: '8px' }}>
-                                                <button
-                                                    onClick={() => handleEdit(card)}
-                                                    className="glass-button-small"
-                                                    style={{ flex: 1 }}
-                                                >
-                                                    {t('cards:contacts.btn.edit')}
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(card)}
-                                                    className="glass-button-small"
-                                                    aria-label={t('cards:contacts.modal.deleteTitle', {
-                                                        firstName: card.firstName,
-                                                        lastName: card.lastName,
-                                                    })}
-                                                    style={{ color: 'var(--accent-error)', width: '40px' }}
-                                                >
-                                                    <FaTrash size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {expandedCardId === card.id && (
-                                        <div
-                                            style={{
-                                                marginTop: '15px',
-                                                padding: '20px',
-                                                background: 'var(--bg-input)',
-                                                borderRadius: '12px',
-                                                border: '1px solid var(--glass-border)',
-                                            }}
-                                        >
-                                            <InteractionLog cardId={card.id} />
-                                        </div>
-                                    )}
-                                </div>
-                            </motion.div>
-                        ))
-                    ) : (
-                        <div style={{ padding: '50px', textAlign: 'center', opacity: 0.3 }}>
-                            <FaIdCard size={64} style={{ marginBottom: '20px' }} />
-                            <h3>{t('cards:contacts.empty')}</h3>
-                        </div>
-                    )}
+                    {cards.map((card, index) => (
+                        <ContactCardItem
+                            key={card.id}
+                            card={card}
+                            index={index}
+                            t={t}
+                            i18n={i18n}
+                            navigate={navigate}
+                            isSelected={selectedIds.includes(card.id)}
+                            isExpanded={expandedCardId === card.id}
+                            getStatusStyle={getStatusStyle}
+                            onSelectCard={handleSelectCard}
+                            onSelectImage={setSelectedImageCard}
+                            onToggleDetails={toggleDetails}
+                            onWhatsAppFollowUp={handleWhatsAppFollowUp}
+                            onEmailFollowUp={handleEmailFollowUp}
+                            onOpenQr={setQrModalCard}
+                            onDownloadVCard={handleDownloadVCard}
+                            onOpenHistory={setHistoryCard}
+                            onEdit={handleEdit}
+                            onDeleteClick={handleDeleteClick}
+                        />
+                    ))}
                 </div>
             ) : null}
 
@@ -1229,60 +700,7 @@ const Contacts = () => {
                 </div>
             )}
 
-            <Modal
-                title={
-                    selectedImageCard
-                        ? `${selectedImageCard.firstName} ${selectedImageCard.lastName}`
-                        : t('cards:contacts.modal.image')
-                }
-                isOpen={!!selectedImageCard}
-                onClose={() => setSelectedImageCard(null)}
-            >
-                {selectedImageCard && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                        <div>
-                            <h4 style={{ color: 'var(--accent-primary)', textAlign: 'center', marginBottom: '10px' }}>
-                                {t('cards:contacts.modal.frontSide')}
-                            </h4>
-                            <img
-                                src={`${API_URL}${selectedImageCard.frontImageUrl}`}
-                                alt={t('cards:contacts.modal.frontSide')}
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '60vh',
-                                    borderRadius: '8px',
-                                    border: '1px solid var(--glass-border)',
-                                    boxShadow: 'var(--glass-shadow)',
-                                }}
-                            />
-                        </div>
-                        {selectedImageCard.backImageUrl && (
-                            <div>
-                                <h4
-                                    style={{
-                                        color: 'var(--accent-warning)',
-                                        textAlign: 'center',
-                                        marginBottom: '10px',
-                                    }}
-                                >
-                                    {t('cards:contacts.modal.backSide')}
-                                </h4>
-                                <img
-                                    src={`${API_URL}${selectedImageCard.backImageUrl}`}
-                                    alt={t('cards:contacts.modal.backSide')}
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '60vh',
-                                        borderRadius: '8px',
-                                        border: '1px solid var(--glass-border)',
-                                        boxShadow: 'var(--glass-shadow)',
-                                    }}
-                                />
-                            </div>
-                        )}
-                    </div>
-                )}
-            </Modal>
+            <CardImageModal t={t} selectedImageCard={selectedImageCard} onClose={() => setSelectedImageCard(null)} />
 
             <Modal
                 title={t('cards:contacts.modal.history')}
@@ -1328,223 +746,26 @@ const Contacts = () => {
                 <AddCard onCardAdded={handleCardAddedOrUpdated} activeCard={editingCard} />
             </Modal>
 
-            {/* Bulk Tag Modal */}
-            <Modal
-                title={t('cards:contacts.modal.bulkTagTitle')}
-                isOpen={isBulkTagModalOpen}
-                onClose={() => setIsBulkTagModalOpen(false)}
-            >
-                <div style={{ padding: '10px' }}>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
-                            {t('cards:contacts.modal.actionType')}
-                        </label>
-                        <div style={{ display: 'flex', gap: '15px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <input
-                                    type="radio"
-                                    name="bulkTagAction"
-                                    value="add"
-                                    checked={bulkTagAction === 'add'}
-                                    onChange={(e) => setBulkTagAction(e.target.value)}
-                                />
-                                {t('cards:contacts.bulkTag.addToExisting')}
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <input
-                                    type="radio"
-                                    name="bulkTagAction"
-                                    value="replace"
-                                    checked={bulkTagAction === 'replace'}
-                                    onChange={(e) => setBulkTagAction(e.target.value)}
-                                />
-                                {t('cards:contacts.bulkTag.replaceAll')}
-                            </label>
-                        </div>
-                    </div>
-
-                    <div style={{ marginBottom: '25px' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 'bold' }}>
-                            {t('cards:contacts.modal.tags')}
-                        </label>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {availableTags.map((tag) => (
-                                <button
-                                    key={tag.id}
-                                    onClick={() =>
-                                        setSelectedBulkTags((prev) =>
-                                            prev.includes(tag.id)
-                                                ? prev.filter((i) => i !== tag.id)
-                                                : [...prev, tag.id],
-                                        )
-                                    }
-                                    style={{
-                                        padding: '5px 12px',
-                                        borderRadius: '20px',
-                                        border: '1px solid var(--glass-border)',
-                                        background: selectedBulkTags.includes(tag.id)
-                                            ? tag.color || 'var(--accent-primary)'
-                                            : 'var(--glass-bg)',
-                                        color: selectedBulkTags.includes(tag.id)
-                                            ? 'var(--bg-card)'
-                                            : 'var(--text-primary)',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem',
-                                        fontWeight: '600',
-                                        transition: 'all 0.2s ease',
-                                    }}
-                                >
-                                    {tag.name}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                        <button
-                            onClick={() => setIsBulkTagModalOpen(false)}
-                            className="glass-button"
-                            style={{ padding: '8px 20px' }}
-                        >
-                            {t('common:cancel')}
-                        </button>
-                        <button
-                            onClick={handleBulkTags}
-                            disabled={selectedBulkTags.length === 0}
-                            style={{
-                                padding: '8px 25px',
-                                background: 'var(--accent-primary)',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '10px',
-                                fontWeight: 'bold',
-                                opacity: selectedBulkTags.length === 0 ? 0.5 : 1,
-                                cursor: selectedBulkTags.length === 0 ? 'not-allowed' : 'pointer',
-                            }}
-                        >
-                            {t('cards:contacts.btn.apply')}
-                        </button>
-                    </div>
-                </div>
-            </Modal>
-
-            <ConfirmModal
-                isOpen={isBulkDeleteConfirmOpen}
-                onClose={() => setIsBulkDeleteConfirmOpen(false)}
-                onConfirm={handleBulkDelete}
-                title={t('cards:contacts.modal.bulkDeleteTitle')}
-                message={t('cards:contacts.modal.bulkDeleteMessage', { count: selectedIds.length })}
-            />
-
-            {/* Floating Bulk Action Bar */}
-            <AnimatePresence>
-                {selectedIds.length > 0 && (
-                    <motion.div
-                        initial={{ y: 100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: 100, opacity: 0 }}
-                        className="bulk-bar"
-                    >
-                        <div className="bulk-bar-count">
-                            <div
-                                style={{
-                                    width: '28px',
-                                    height: '28px',
-                                    background: 'var(--accent-primary)',
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    color: 'white',
-                                    fontWeight: 'bold',
-                                    fontSize: '12px',
-                                    flexShrink: 0,
-                                }}
-                            >
-                                {selectedIds.length}
-                            </div>
-                            <span
-                                style={{
-                                    color: 'var(--text-primary)',
-                                    fontWeight: '600',
-                                    fontSize: '0.85rem',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {t('cards:contacts.selectedLabel')}
-                            </span>
-                        </div>
-
-                        <div className="bulk-bar-actions">
-                            <button
-                                onClick={() => setIsBulkTagModalOpen(true)}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.tag')}
-                                style={{ color: 'var(--accent-warning)' }}
-                            >
-                                <FaStar size={12} /> {t('cards:contacts.btn.tag')}
-                            </button>
-                            <button
-                                onClick={() => handleBulkVisibility('public')}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.makePublic')}
-                                style={{ color: 'var(--accent-success)' }}
-                            >
-                                <FaGlobe size={12} />
-                            </button>
-                            <button
-                                onClick={() => handleBulkVisibility('private')}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.makePrivate')}
-                                style={{ color: 'var(--text-tertiary)' }}
-                            >
-                                <FaIdCard size={12} />
-                            </button>
-                            <button
-                                onClick={() => handleBulkExport('excel')}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.exportExcel')}
-                                style={{ color: '#27ae60' }}
-                            >
-                                <FaFileExcel size={12} />
-                            </button>
-                            <button
-                                onClick={() => handleBulkExport('pdf')}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.exportPdf')}
-                                style={{ color: '#e74c3c' }}
-                            >
-                                <FaFilePdf size={12} />
-                            </button>
-                            <button
-                                onClick={() => setIsBulkDeleteConfirmOpen(true)}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.delete')}
-                                style={{ background: 'var(--accent-error)', color: 'white', border: 'none' }}
-                            >
-                                <FaTrash size={12} />
-                            </button>
-                            <button
-                                onClick={() => setSelectedIds([])}
-                                className="glass-button-small"
-                                title={t('cards:contacts.bulk.deselect')}
-                                style={{ color: 'var(--text-tertiary)' }}
-                            >
-                                ✕
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            <ConfirmModal
-                isOpen={isVcfExportConfirmOpen}
-                onClose={() => setIsVcfExportConfirmOpen(false)}
-                onConfirm={handleBulkVcfExport}
-                title={t('cards:contacts.vcfExport.title')}
-                message={t('cards:contacts.vcfExport.message')}
-                confirmLabel={t('cards:contacts.titleAttr.downloadVcf')}
-                variant="primary"
+            <ContactsBulkBar
+                t={t}
+                selectedIds={selectedIds}
+                setSelectedIds={setSelectedIds}
+                availableTags={availableTags}
+                isBulkTagModalOpen={isBulkTagModalOpen}
+                setIsBulkTagModalOpen={setIsBulkTagModalOpen}
+                bulkTagAction={bulkTagAction}
+                setBulkTagAction={setBulkTagAction}
+                selectedBulkTags={selectedBulkTags}
+                setSelectedBulkTags={setSelectedBulkTags}
+                onBulkTags={handleBulkTags}
+                onBulkVisibility={handleBulkVisibility}
+                onBulkExport={handleBulkExport}
+                isBulkDeleteConfirmOpen={isBulkDeleteConfirmOpen}
+                setIsBulkDeleteConfirmOpen={setIsBulkDeleteConfirmOpen}
+                onBulkDelete={handleBulkDelete}
+                isVcfExportConfirmOpen={isVcfExportConfirmOpen}
+                setIsVcfExportConfirmOpen={setIsVcfExportConfirmOpen}
+                onBulkVcfExport={handleBulkVcfExport}
             />
         </div>
     );
