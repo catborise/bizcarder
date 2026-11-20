@@ -117,11 +117,16 @@ if (samlEntryPoint && samlCert && !isDummyCert) {
                 const allowedOrgUnits = process.env.SAML_ALLOWED_ORG_UNITS;
 
                 if (allowedOrgUnits) {
-                    const allowedList = allowedOrgUnits.split(',').map((item) => item.trim());
-                    const isAllowed = allowedList.some((item) => {
-                        // Tam eşleşme veya DN içinde geçme kontrolü
-                        return orgUnitDN && (orgUnitDN === item || orgUnitDN.includes(item));
-                    });
+                    const allowedList = allowedOrgUnits
+                        .split(',')
+                        .map((item) => item.trim())
+                        .filter(Boolean);
+                    const isAllowed =
+                        allowedList.length > 0 &&
+                        allowedList.some((item) => {
+                            // Exact match or OU DN component match
+                            return orgUnitDN && (orgUnitDN === item || orgUnitDN.includes(item));
+                        });
 
                     if (!isAllowed) {
                         console.warn(
@@ -217,8 +222,8 @@ passport.use(
                 });
 
                 if (!user || !user.password) {
-                    // Timing attack koruması: kullanıcı bulunamasa bile bcrypt çalıştır
-                    await bcrypt.compare(password, '$2a$12$dummyhashtopreventtimingattack000000000000000000000');
+                    // Timing attack mitigation: valid 60-char cost-12 bcrypt hash
+                    await bcrypt.compare(password, '$2b$12$gNHD8Pbx8T3KCUCVhLQCRevmaur15CNiVr5lj6uOyIggiGlRNjBTG');
                     return done(null, false, {
                         message: 'INVALID_CREDENTIALS',
                     });

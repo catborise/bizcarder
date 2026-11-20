@@ -7,6 +7,9 @@
  * Or:    docker exec crm_backend node scripts/seed.js
  */
 
+const path = require('path');
+const crypto = require('crypto');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 const { User, DashboardTile, sequelize } = require('../models');
 
 async function seed() {
@@ -14,26 +17,63 @@ async function seed() {
         await sequelize.authenticate();
         console.log('DB connected.');
 
+        // Read admin password from env or generate a strong one-time password
+        const envPassword = process.env.ADMIN_DEFAULT_PASSWORD;
+        const generatedPassword = !envPassword ? crypto.randomBytes(12).toString('base64url') : null;
+        const adminPassword = envPassword || generatedPassword;
+
         // Seed admin user
-        const [admin, adminCreated] = await User.findOrCreate({
+        const [, adminCreated] = await User.findOrCreate({
             where: { username: 'admin' },
             defaults: {
-                email: 'admin@bizcarder.local',
-                password: 'admin',
+                email: process.env.ADMIN_DEFAULT_EMAIL || 'admin@bizcarder.local',
+                password: adminPassword,
                 displayName: 'Admin',
                 role: 'admin',
                 isApproved: true,
             },
         });
-        console.log(adminCreated ? 'Admin user created.' : 'Admin user already exists.');
+        if (adminCreated) {
+            console.log('Admin user created.');
+            if (generatedPassword) {
+                console.log(`[SEED] Generated one-time admin password: ${generatedPassword}`);
+                console.log('[SEED] Please change this password immediately after first login.');
+            }
+        } else {
+            console.log('Admin user already exists.');
+        }
 
         // Seed default tiles
         // Tile titles use i18n keys (dashboard:tiles.<key>.title / .subtitle).
         // The frontend resolves these via t() for proper multilingual support.
         const defaultTiles = [
-            { title: 'tiles.contacts.title', subtitle: 'tiles.contacts.subtitle', url: '/contacts', icon: 'FaIdCard', backgroundColor: 'rgba(59, 130, 246, 0.3)', order: 1, isInternal: true },
-            { title: 'tiles.logs.title', subtitle: 'tiles.logs.subtitle', url: '/logs', icon: 'FaClipboardList', backgroundColor: 'rgba(245, 158, 11, 0.3)', order: 2, isInternal: true },
-            { title: 'tiles.import.title', subtitle: 'tiles.import.subtitle', url: '/import', icon: 'FaFileImport', backgroundColor: 'rgba(16, 185, 129, 0.3)', order: 3, isInternal: true },
+            {
+                title: 'tiles.contacts.title',
+                subtitle: 'tiles.contacts.subtitle',
+                url: '/contacts',
+                icon: 'FaIdCard',
+                backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                order: 1,
+                isInternal: true,
+            },
+            {
+                title: 'tiles.logs.title',
+                subtitle: 'tiles.logs.subtitle',
+                url: '/logs',
+                icon: 'FaClipboardList',
+                backgroundColor: 'rgba(245, 158, 11, 0.3)',
+                order: 2,
+                isInternal: true,
+            },
+            {
+                title: 'tiles.import.title',
+                subtitle: 'tiles.import.subtitle',
+                url: '/import',
+                icon: 'FaFileImport',
+                backgroundColor: 'rgba(16, 185, 129, 0.3)',
+                order: 3,
+                isInternal: true,
+            },
         ];
 
         let tilesCreated = 0;

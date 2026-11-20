@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { Op } = require('sequelize');
 const { Tag, BusinessCard, sequelize } = require('../models');
 const { requireAuth } = require('../middleware/auth');
 const { logger, logAction } = require('../utils/logger');
@@ -23,6 +24,11 @@ router.get('/', async (req, res) => {
 // Etiket İstatistiklerini Getir (En çok kullanılanlar)
 router.get('/stats', async (req, res) => {
     try {
+        const cardWhere = { deletedAt: null };
+        if (req.user && req.user.role !== 'admin') {
+            cardWhere[Op.or] = [{ ownerId: req.user.id }, { visibility: 'public' }];
+        }
+
         // BusinessCardTags tablosu üzerinden sayıları al
         const stats = await Tag.findAll({
             attributes: ['id', 'name', 'color', [sequelize.fn('COUNT', sequelize.col('cards.id')), 'cardCount']],
@@ -32,7 +38,7 @@ router.get('/stats', async (req, res) => {
                     as: 'cards',
                     attributes: [],
                     through: { attributes: [] },
-                    where: { deletedAt: null },
+                    where: cardWhere,
                     required: false,
                 },
             ],
@@ -52,7 +58,7 @@ router.get('/stats', async (req, res) => {
 // Yeni Etiket Oluştur
 router.post('/', async (req, res) => {
     try {
-        const { name, color } = req.body;
+        const { name, color } = req.body || {};
         if (!name) {
             return res.status(400).json({ errorCode: 'TAG_NAME_REQUIRED' });
         }
@@ -78,7 +84,7 @@ router.post('/', async (req, res) => {
 
 // Etiket Güncelle
 router.put('/:id', async (req, res) => {
-    const { name, color } = req.body;
+    const { name, color } = req.body || {};
     const t = await sequelize.transaction();
     try {
         const tag = await Tag.findByPk(req.params.id, { transaction: t, lock: t.LOCK.UPDATE });
@@ -88,8 +94,8 @@ router.put('/:id', async (req, res) => {
             return res.status(404).json({ errorCode: 'TAG_NOT_FOUND' });
         }
 
-        // Sadece admin veya sahibinin düzenlemesine izin ver (ownerId null ise sistem etiketidir, admin düzenleyebilir)
-        if (req.user.role !== 'admin' && tag.ownerId && tag.ownerId !== req.user.id) {
+        // Sadece admin veya sahibinin düzenlemesine izin ver (ownerId null ise sistem etiketidir, sadece admin düzenleyebilir)
+        if (req.user.role !== 'admin' && tag.ownerId !== req.user.id) {
             await t.rollback();
             return res.status(403).json({ errorCode: 'TAG_EDIT_FORBIDDEN' });
         }
@@ -124,7 +130,7 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ errorCode: 'TAG_NOT_FOUND' });
         }
 
-        if (req.user.role !== 'admin' && tag.ownerId && tag.ownerId !== req.user.id) {
+        if (req.user.role !== 'admin' && tag.ownerId !== req.user.id) {
             await t.rollback();
             return res.status(403).json({ errorCode: 'TAG_DELETE_FORBIDDEN' });
         }

@@ -1,10 +1,12 @@
 const express = require('express');
 const passport = require('passport');
+const speakeasy = require('speakeasy');
 const { User, SystemSetting } = require('../models');
 const { authLimiter } = require('../middleware/rateLimiter');
 const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { sendWelcomeEmail } = require('../utils/mailer');
+const { encrypt, decrypt } = require('../utils/encryption');
 const router = express.Router();
 
 // ============== SHIBBOLETH (SAML) AUTHENTICATION ==============
@@ -91,75 +93,84 @@ router.get('/metadata.xml', (req, res) => {
 // ============== LOCAL AUTHENTICATION ==============
 
 // Yerel Kullanıcı Girişi
-router.post('/local/login', authLimiter, passport.authenticate('local', { failureMessage: true }), (req, res) => {
-    // Sadece adminler yerel giriş yapabilir
-    if (req.user.role !== 'admin') {
-        req.logout((err) => {
-            if (err) console.error('Logout error:', err);
-        });
-        return res.status(403).json({
-            errorCode: 'LOCAL_LOGIN_FORBIDDEN',
-        });
-    }
+// Verify role, approval, and 2FA BEFORE establishing a session to prevent async req.logout() race bypasses.
+router.post('/local/login', authLimiter, (req, res, next) => {
+    passport.authenticate('local', (authErr, user) => {
+        if (authErr) {
+            return next(authErr);
+        }
+        if (!user) {
+            return res.status(401).json({ errorCode: 'INVALID_CREDENTIALS' });
+        }
 
-    // Onay durumunu kontrol et
-    if (req.user.isApproved === false) {
-        req.logout((err) => {
-            if (err) console.error('Logout error:', err);
-        });
-        return res.status(403).json({
-            errorCode: 'ACCOUNT_NOT_APPROVED',
-        });
-    }
-
-    // 2FA kontrolü
-    if (req.user.twoFactorEnabled) {
-        const { token: totpToken } = req.body;
-        if (!totpToken) {
-            // Don't complete login yet — tell client to ask for TOTP
-            req.logout((err) => {});
-            return res.status(206).json({
-                requires2FA: true,
-                errorCode: 'REQUIRES_2FA',
+        // Sadece adminler yerel giriş yapabilir
+        if (user.role !== 'admin') {
+            return res.status(403).json({
+                errorCode: 'LOCAL_LOGIN_FORBIDDEN',
             });
         }
 
-        const secret = decrypt(req.user.twoFactorSecret);
-        const isValid = speakeasy.totp.verify({ secret, encoding: 'base32', token: totpToken, window: 1 });
-        if (!isValid) {
-            req.logout((err) => {});
-            return res.status(401).json({ errorCode: 'INVALID_2FA_TOKEN' });
+        // Onay durumunu kontrol et
+        if (user.isApproved === false) {
+            return res.status(403).json({
+                errorCode: 'ACCOUNT_NOT_APPROVED',
+            });
         }
-    }
 
-    // Session fixation koruması: login sonrası session ID'yi yenile
-    const user = req.user;
-    req.session.regenerate((err) => {
-        if (err) {
-            console.error('Session regenerate error:', err);
-            return res.status(500).json({ errorCode: 'SESSION_CREATE_FAILED' });
+        // 2FA kontrolü — session kurulmadan önce doğrula
+        if (user.twoFactorEnabled) {
+            const { token: totpToken } = req.body || {};
+            if (!totpToken) {
+                return res.status(206).json({
+                    requires2FA: true,
+                    errorCode: 'REQUIRES_2FA',
+                });
+            }
+
+            const secret = decrypt(user.twoFactorSecret);
+            if (!secret) {
+                return res.status(500).json({ errorCode: 'TWO_FACTOR_VERIFY_FAILED' });
+            }
+
+            const isValid = speakeasy.totp.verify({
+                secret,
+                encoding: 'base32',
+                token: String(totpToken),
+                window: 1,
+            });
+            if (!isValid) {
+                return res.status(401).json({ errorCode: 'INVALID_2FA_TOKEN' });
+            }
         }
-        req.logIn(user, (err) => {
+
+        // Session fixation koruması: login sonrası session ID'yi yenile
+        req.session.regenerate((err) => {
             if (err) {
-                console.error('Re-login error:', err);
+                console.error('Session regenerate error:', err);
                 return res.status(500).json({ errorCode: 'SESSION_CREATE_FAILED' });
             }
-            req.session.save((err) => {
-                if (err) console.error('Session save error:', err);
-                res.json({
-                    success: true,
-                    messageCode: 'LOGIN_SUCCESS',
-                    user: {
-                        id: user.id,
-                        username: user.username,
-                        email: user.email,
-                        displayName: user.displayName,
-                        role: user.role,
-                    },
+            req.logIn(user, (loginErr) => {
+                if (loginErr) {
+                    console.error('Re-login error:', loginErr);
+                    return res.status(500).json({ errorCode: 'SESSION_CREATE_FAILED' });
+                }
+                req.session.save((saveErr) => {
+                    if (saveErr) console.error('Session save error:', saveErr);
+                    res.json({
+                        success: true,
+                        messageCode: 'LOGIN_SUCCESS',
+                        user: {
+                            id: user.id,
+                            username: user.username,
+                            email: user.email,
+                            displayName: user.displayName,
+                            role: user.role,
+                        },
+                    });
                 });
             });
         });
-    });
+    })(req, res, next);
 });
 
 // Yerel Kullanıcı Kaydı
@@ -251,27 +262,34 @@ router.post('/logout', (req, res) => {
             return res.status(500).json({ errorCode: 'LOGOUT_FAILED' });
         }
 
-        // Eğer SAML kullanıcısı ise ve bir logout URL tanımlanmışsa, frontend'e bildir
-        if (isSamlUser && process.env.SAML_LOGOUT_URL) {
-            return res.json({
-                success: true,
-                messageCode: 'LOGOUT_SUCCESS',
-                logoutUrl: process.env.SAML_LOGOUT_URL,
-            });
-        }
+        const finishLogout = () => {
+            res.clearCookie('bizcarder.sid', { path: '/' });
+            if (isSamlUser && process.env.SAML_LOGOUT_URL) {
+                return res.json({
+                    success: true,
+                    messageCode: 'LOGOUT_SUCCESS',
+                    logoutUrl: process.env.SAML_LOGOUT_URL,
+                });
+            }
+            return res.json({ success: true, messageCode: 'LOGOUT_SUCCESS' });
+        };
 
-        res.json({ success: true, messageCode: 'LOGOUT_SUCCESS' });
+        if (req.session) {
+            req.session.destroy(() => finishLogout());
+        } else {
+            finishLogout();
+        }
     });
 });
 
 // Şifre Değiştirme (Kullanıcı Kendi Şifresini Değiştirir)
-router.put('/change-password', async (req, res) => {
+router.put('/change-password', authLimiter, async (req, res) => {
     if (!req.isAuthenticated()) {
         return res.status(401).json({ errorCode: 'AUTH_REQUIRED' });
     }
 
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { currentPassword, newPassword } = req.body || {};
         const user = await User.findByPk(req.user.id);
 
         if (!user) {
@@ -284,13 +302,17 @@ router.put('/change-password', async (req, res) => {
             return res.status(400).json({ errorCode: 'EXTERNAL_AUTH_NO_PASSWORD' });
         }
 
+        if (typeof currentPassword !== 'string' || !currentPassword) {
+            return res.status(400).json({ errorCode: 'CURRENT_PASSWORD_WRONG' });
+        }
+
         const isValid = await user.validatePassword(currentPassword);
         if (!isValid) {
             return res.status(400).json({ errorCode: 'CURRENT_PASSWORD_WRONG' });
         }
 
         // Şifre politikası kontrolü
-        if (!newPassword || newPassword.length < 8) {
+        if (typeof newPassword !== 'string' || newPassword.length < 8) {
             return res.status(400).json({ errorCode: 'PASSWORD_TOO_SHORT' });
         }
         if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
@@ -307,9 +329,6 @@ router.put('/change-password', async (req, res) => {
         res.status(500).json({ errorCode: 'PASSWORD_CHANGE_FAILED' });
     }
 });
-
-const { encrypt, decrypt } = require('../utils/encryption');
-const speakeasy = require('speakeasy');
 
 // Kullanıcı Bilgisi (Frontend'in oturum kontrolü için)
 router.get('/me', (req, res) => {

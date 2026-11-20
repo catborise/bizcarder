@@ -1,9 +1,19 @@
 const ExcelJS = require('exceljs');
-const { BusinessCard } = require('../models');
+const { BusinessCard, sequelize } = require('../models');
 const vCard = require('vcf');
 const { logAction } = require('../utils/logger');
+const { toTitleCase } = require('../utils/helpers');
 const fs = require('fs');
 const path = require('path');
+
+const MAX_IMPORT_ROWS = 2000;
+
+function firstVcfValue(prop) {
+    if (!prop) return '';
+    const item = Array.isArray(prop) ? prop[0] : prop;
+    const val = item && typeof item.valueOf === 'function' ? item.valueOf() : item;
+    return val != null ? String(val) : '';
+}
 
 /**
  * RFC 4180 compliant CSV parser — handles quoted fields with commas and newlines
@@ -69,7 +79,7 @@ exports.downloadTemplate = async (req, res) => {
             { header: 'Şehir', key: 'city', width: 15 },
             { header: 'Ülke', key: 'country', width: 15 },
             { header: 'Web Sitesi', key: 'website', width: 25 },
-            { header: 'Notlar', key: 'notes', width: 30 }
+            { header: 'Notlar', key: 'notes', width: 30 },
         ];
 
         if (type === 'xlsx') {
@@ -86,7 +96,7 @@ exports.downloadTemplate = async (req, res) => {
                 email: 'ali.yilmaz@example.com',
                 phone: '05551112233',
                 city: 'İSTANBUL',
-                country: 'TÜRKİYE'
+                country: 'TÜRKİYE',
             });
 
             worksheet.getRow(1).font = { bold: true };
@@ -97,8 +107,9 @@ exports.downloadTemplate = async (req, res) => {
             res.end();
         } else {
             // CSV
-            let csv = columns.map(col => col.header).join(',') + '\n';
-            csv += 'Veli,Can,Test Ltd,Yazılımcı,veli.can@example.com,05442223344,Adres Sk No:1,ANKARA,TÜRKİYE,www.veli.com,Test notu';
+            let csv = columns.map((col) => col.header).join(',') + '\n';
+            csv +=
+                'Veli,Can,Test Ltd,Yazılımcı,veli.can@example.com,05442223344,Adres Sk No:1,ANKARA,TÜRKİYE,www.veli.com,Test notu';
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader('Content-Disposition', 'attachment; filename=kartvizit_sablon.csv');
@@ -128,9 +139,18 @@ exports.importCards = async (req, res) => {
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.readFile(filePath);
             const worksheet = workbook.getWorksheet(1);
+            if (!worksheet) {
+                return res
+                    .status(400)
+                    .json({
+                        errorCode: 'IMPORT_EMPTY_WORKBOOK',
+                        error: 'Excel dosyasında çalışma sayfası bulunamadı.',
+                    });
+            }
 
             worksheet.eachRow((row, rowNumber) => {
                 if (rowNumber === 1) return; // Skip headers
+                if (cardsToCreate.length >= MAX_IMPORT_ROWS) return;
 
                 const cardData = {
                     firstName: getCellValue(row.getCell(1)).trim(),
@@ -145,7 +165,7 @@ exports.importCards = async (req, res) => {
                     website: getCellValue(row.getCell(10)),
                     notes: getCellValue(row.getCell(11)),
                     ownerId: req.user.id,
-                    visibility: 'private'
+                    visibility: 'private',
                 };
 
                 const validation = validateCard(cardData, rowNumber);
@@ -159,7 +179,7 @@ exports.importCards = async (req, res) => {
             const content = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '');
             const rows = parseCSV(content);
 
-            for (let i = 1; i < rows.length; i++) {
+            for (let i = 1; i < rows.length && cardsToCreate.length < MAX_IMPORT_ROWS; i++) {
                 const values = rows[i];
                 if (!values || values.length === 0 || (values.length === 1 && !values[0].trim())) continue;
                 const cardData = {
@@ -175,7 +195,7 @@ exports.importCards = async (req, res) => {
                     website: (values[9] || '').trim(),
                     notes: (values[10] || '').trim(),
                     ownerId: req.user.id,
-                    visibility: 'private'
+                    visibility: 'private',
                 };
 
                 const validation = validateCard(cardData, i + 1);
@@ -189,19 +209,19 @@ exports.importCards = async (req, res) => {
             const content = fs.readFileSync(filePath, 'utf8');
             const vCards = vCard.parse(content);
 
-            vCards.forEach((card, index) => {
-                const n = card.get('n');
-                const fn = card.get('fn');
+            vCards.slice(0, MAX_IMPORT_ROWS).forEach((card, index) => {
+                const nStr = firstVcfValue(card.get('n'));
+                const fnStr = firstVcfValue(card.get('fn'));
 
                 let firstName = '';
                 let lastName = '';
 
-                if (n) {
-                    const nValue = n.valueOf().split(';');
+                if (nStr) {
+                    const nValue = nStr.split(';');
                     lastName = nValue[0] || '';
                     firstName = nValue[1] || '';
-                } else if (fn) {
-                    const fnValue = fn.valueOf().split(' ');
+                } else if (fnStr) {
+                    const fnValue = fnStr.split(' ');
                     firstName = fnValue[0] || '';
                     lastName = fnValue.slice(1).join(' ') || '';
                 }
@@ -209,23 +229,23 @@ exports.importCards = async (req, res) => {
                 const cardData = {
                     firstName: firstName.trim(),
                     lastName: lastName.trim(),
-                    company: card.get('org') ? card.get('org').valueOf().toString() : '',
-                    title: card.get('title') ? card.get('title').valueOf().toString() : '',
-                    email: card.get('email') ? (Array.isArray(card.get('email')) ? card.get('email')[0].valueOf().toString() : card.get('email').valueOf().toString()) : '',
-                    phone: card.get('tel') ? (Array.isArray(card.get('tel')) ? card.get('tel')[0].valueOf().toString() : card.get('tel').valueOf().toString()) : '',
+                    company: firstVcfValue(card.get('org')),
+                    title: firstVcfValue(card.get('title')),
+                    email: firstVcfValue(card.get('email')),
+                    phone: firstVcfValue(card.get('tel')),
                     address: '',
                     city: '',
                     country: '',
-                    website: card.get('url') ? card.get('url').valueOf().toString() : '',
-                    notes: card.get('note') ? card.get('note').valueOf().toString().replace(/\\n/g, '\n') : '',
+                    website: firstVcfValue(card.get('url')),
+                    notes: firstVcfValue(card.get('note')).replace(/\\n/g, '\n'),
                     ownerId: req.user.id,
-                    visibility: 'private'
+                    visibility: 'private',
                 };
 
                 // Extract address, city and country from ADR
-                if (card.get('adr')) {
-                    const adr = card.get('adr');
-                    const adrValue = (Array.isArray(adr) ? adr[0] : adr).valueOf().split(';');
+                const adrStr = firstVcfValue(card.get('adr'));
+                if (adrStr) {
+                    const adrValue = adrStr.split(';');
                     // ADR format: po-box;extended-address;street;locality;region;postal-code;country
                     cardData.address = adrValue[2] || '';
                     cardData.city = adrValue[3] || '';
@@ -239,14 +259,20 @@ exports.importCards = async (req, res) => {
                     errors.push(validation.error);
                 }
             });
+        } else {
+            return res
+                .status(400)
+                .json({ errorCode: 'UNSUPPORTED_FILE_FORMAT', error: 'Desteklenmeyen dosya formatı.' });
         }
 
         if (cardsToCreate.length > 0) {
-            await BusinessCard.bulkCreate(cardsToCreate);
+            await sequelize.transaction(async (t) => {
+                await BusinessCard.bulkCreate(cardsToCreate, { transaction: t });
+            });
             await logAction({
                 action: 'BULK_IMPORT',
                 details: `${cardsToCreate.length} kart içe aktarıldı. ${errors.length} hata atlandı.`,
-                req
+                req,
             });
         }
 
@@ -254,16 +280,17 @@ exports.importCards = async (req, res) => {
             success: true,
             importedCount: cardsToCreate.length,
             errorCount: errors.length,
-            errors: errors
+            errors: errors,
         });
-
     } catch (error) {
         console.error('Import processing error:', error);
         res.status(500).json({ error: 'Dosya işlenirken teknik bir hata oluştu.' });
     } finally {
         // Always clean up the temp file, even if an exception occurred during parsing
         if (filePath) {
-            try { fs.unlinkSync(filePath); } catch (e) { }
+            try {
+                fs.unlinkSync(filePath);
+            } catch (e) {}
         }
     }
 };
@@ -281,7 +308,7 @@ function getCellValue(cell) {
 
     // Handle Rich Text { richText: [...] }
     if (typeof val === 'object' && val.richText) {
-        return val.richText.map(rt => rt.text).join('');
+        return val.richText.map((rt) => rt.text).join('');
     }
 
     // Handle Formulas { formula: '...', result: '...' }
@@ -315,19 +342,12 @@ exports.parseCSV = parseCSV;
  * Formatting helper (TitleCase etc)
  */
 function formatCard(data) {
-    const toTitleCase = (str) => {
-        if (!str) return '';
-        return str.toString().replace(/\w\S*/g, (txt) => {
-            return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        });
-    };
-
     return {
         ...data,
         firstName: toTitleCase(data.firstName.trim()),
         lastName: data.lastName.trim().toUpperCase(),
         email: data.email ? data.email.toString().trim() : null,
         city: data.city ? data.city.trim().toUpperCase() : null,
-        country: data.country ? data.country.trim().toUpperCase() : null
+        country: data.country ? data.country.trim().toUpperCase() : null,
     };
 }

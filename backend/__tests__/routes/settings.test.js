@@ -298,6 +298,18 @@ describe('PUT /api/settings', () => {
 // ─── POST /api/settings/upload-branding ──────────────────────────────
 
 describe('POST /api/settings/upload-branding', () => {
+    const uploadedPaths = [];
+
+    afterAll(() => {
+        for (const p of uploadedPaths) {
+            try {
+                if (fs.existsSync(p)) fs.unlinkSync(p);
+            } catch {
+                // ignore cleanup errors
+            }
+        }
+    });
+
     test('requires authentication', async () => {
         const res = await supertest(app)
             .post('/api/settings/upload-branding')
@@ -331,6 +343,7 @@ describe('POST /api/settings/upload-branding', () => {
             .expect(200);
 
         expect(res.body.url).toMatch(/^\/uploads\/branding\/branding-.*\.jpg$/);
+        uploadedPaths.push(path.join(__dirname, '../..', res.body.url));
     });
 
     test('uploads valid PNG image', async () => {
@@ -345,6 +358,7 @@ describe('POST /api/settings/upload-branding', () => {
             .expect(200);
 
         expect(res.body.url).toMatch(/^\/uploads\/branding\/branding-.*\.png$/);
+        uploadedPaths.push(path.join(__dirname, '../..', res.body.url));
     });
 
     test('rejects non-image file', async () => {
@@ -373,6 +387,7 @@ describe('POST /api/settings/upload-branding', () => {
             .expect(200);
 
         const filePath = path.join(__dirname, '../..', res.body.url);
+        uploadedPaths.push(filePath);
         expect(fs.existsSync(filePath)).toBe(true);
     });
 });

@@ -7,7 +7,7 @@ const escapeVCard = (text) => {
         .replace(/\\/g, '\\\\')
         .replace(/;/g, '\\;')
         .replace(/,/g, '\\,')
-        .replace(/\n/g, '\\n');
+        .replace(/\r\n|\r|\n/g, '\\n');
 };
 
 /**
@@ -26,12 +26,14 @@ const generateVCard = (card) => {
         card.email ? `EMAIL;TYPE=INTERNET;TYPE=WORK:${escapeVCard(card.email)}` : null,
         card.phone ? `TEL;TYPE=CELL:${escapeVCard(card.phone)}` : null,
         card.website ? `URL:${escapeVCard(card.website)}` : null,
-        card.address || card.city || card.country ? `ADR;TYPE=WORK:;;${escapeVCard(card.address)};${escapeVCard(card.city)};;${escapeVCard(card.country)}` : null,
+        card.address || card.city || card.country
+            ? `ADR;TYPE=WORK:;;${escapeVCard(card.address)};${escapeVCard(card.city)};;;${escapeVCard(card.country)}`
+            : null,
         card.notes ? `NOTE:${escapeVCard(card.notes)}` : null,
-        'END:VCARD'
+        'END:VCARD',
     ];
 
-    return lines.filter(line => line !== null).join('\r\n');
+    return lines.filter((line) => line !== null).join('\r\n');
 };
 
 module.exports = { generateVCard };

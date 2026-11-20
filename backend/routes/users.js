@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { User, BusinessCard } = require('../models');
+const { User, BusinessCard, Tag, Interaction, AuditLog, BusinessCardHistory } = require('../models');
 const sequelize = require('../config/database');
 const { logger, logAction } = require('../utils/logger');
-const { requireAuth, requireAdmin } = require('../middleware/auth');
+const { requireAdmin } = require('../middleware/auth');
 const { sendApprovalEmail } = require('../utils/mailer');
 
 // All user management routes require admin
@@ -26,10 +26,15 @@ router.get('/', async (req, res) => {
 // Kullanıcı Rolünü Güncelle
 router.put('/:id/role', async (req, res) => {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role } = req.body || {};
 
     if (!['user', 'admin'].includes(role)) {
         return res.status(400).json({ errorCode: 'INVALID_ROLE' });
+    }
+
+    // Prevent admin self-demotion (lockout risk)
+    if (parseInt(id, 10) === req.user.id && role !== 'admin') {
+        return res.status(400).json({ errorCode: 'CANNOT_DEMOTE_SELF' });
     }
 
     const t = await sequelize.transaction();
@@ -66,16 +71,17 @@ router.put('/:id/role', async (req, res) => {
 
 // Admin Tarafından Kullanıcı Şifresi Sıfırlama
 router.put('/:id/password', async (req, res) => {
-    // Sadece admin yapabilir (Middleware olmadığı için manuel kontrol - normalde middleware kullanılmalı)
-    if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ errorCode: 'FORBIDDEN' });
-    }
-
     const { id } = req.params;
-    const { newPassword } = req.body;
+    const { newPassword } = req.body || {};
 
-    if (!newPassword) {
+    if (typeof newPassword !== 'string' || !newPassword) {
         return res.status(400).json({ errorCode: 'PASSWORD_REQUIRED' });
+    }
+    if (newPassword.length < 8) {
+        return res.status(400).json({ errorCode: 'PASSWORD_TOO_SHORT' });
+    }
+    if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+        return res.status(400).json({ errorCode: 'PASSWORD_COMPLEXITY_FAILED' });
     }
 
     const t = await sequelize.transaction();
@@ -108,16 +114,16 @@ router.put('/:id/password', async (req, res) => {
 
 // Admin Tarafından Kullanıcı Onaylama
 router.put('/:id/approve', async (req, res) => {
-    // Sadece admin yapabilir
-    if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ errorCode: 'FORBIDDEN' });
-    }
-
     const { id } = req.params;
-    const { isApproved } = req.body;
+    const { isApproved } = req.body || {};
 
     if (typeof isApproved !== 'boolean') {
         return res.status(400).json({ errorCode: 'INVALID_APPROVAL_VALUE' });
+    }
+
+    // Prevent admin from revoking own approval
+    if (parseInt(id, 10) === req.user.id && isApproved === false) {
+        return res.status(400).json({ errorCode: 'CANNOT_UNAPPROVE_SELF' });
     }
 
     const t = await sequelize.transaction();
@@ -161,16 +167,11 @@ router.put('/:id/approve', async (req, res) => {
 
 // Kullanıcıyı Sil (Kartvizitleri Sil veya Aktar)
 router.delete('/:id', async (req, res) => {
-    // Sadece admin yapabilir
-    if (!req.isAuthenticated() || req.user.role !== 'admin') {
-        return res.status(403).json({ errorCode: 'FORBIDDEN' });
-    }
-
     const { id } = req.params;
-    const { transferCards } = req.body; // true: aktar, false: kartları da sil (soft delete)
+    const { transferCards } = req.body || {}; // true: aktar, false: kartları da sil (soft delete)
 
     // Kendini silmeyi engelle
-    if (parseInt(id) === req.user.id) {
+    if (parseInt(id, 10) === req.user.id) {
         return res.status(400).json({ errorCode: 'CANNOT_DELETE_SELF' });
     }
 
@@ -187,11 +188,6 @@ router.delete('/:id', async (req, res) => {
         if (transferCards === true) {
             // Kartları admin'e aktar
             await BusinessCard.update({ ownerId: req.user.id }, { where: { ownerId: id }, transaction: t });
-            await logAction({
-                action: 'USER_DELETE_TRANSFER',
-                details: `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını sildi ve ${cardCount} kartviziti devraldı.`,
-                req,
-            });
         } else {
             // Kartları soft delete yap ve admin'e ata (çöp kutusunda admin görsün diye)
             await BusinessCard.update(
@@ -202,16 +198,27 @@ router.delete('/:id', async (req, res) => {
                 },
                 { where: { ownerId: id }, transaction: t },
             );
-            await logAction({
-                action: 'USER_DELETE_WITH_CARDS',
-                details: `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını ve ${cardCount} kartvizitini sildi.`,
-                req,
-            });
         }
+
+        // Nullify remaining nullable FK references to prevent PostgreSQL 23503 FK violations
+        await BusinessCard.update({ deletedBy: null }, { where: { deletedBy: id }, transaction: t });
+        await Tag.update({ ownerId: null }, { where: { ownerId: id }, transaction: t });
+        await Interaction.update({ authorId: null }, { where: { authorId: id }, transaction: t });
+        await AuditLog.update({ userId: null }, { where: { userId: id }, transaction: t });
+        await BusinessCardHistory.update({ changedBy: null }, { where: { changedBy: id }, transaction: t });
 
         // Kullanıcıyı sil
         await userToDelete.destroy({ transaction: t });
         await t.commit();
+
+        await logAction({
+            action: transferCards === true ? 'USER_DELETE_TRANSFER' : 'USER_DELETE_WITH_CARDS',
+            details:
+                transferCards === true
+                    ? `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını sildi ve ${cardCount} kartviziti devraldı.`
+                    : `Admin ${req.user.username}, ${userToDelete.username} kullanıcısını ve ${cardCount} kartvizitini sildi.`,
+            req,
+        });
 
         res.json({ message: 'Kullanıcı başarıyla silindi.' });
     } catch (error) {

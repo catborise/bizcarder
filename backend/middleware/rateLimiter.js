@@ -10,10 +10,23 @@ if (process.env.REDIS_URL) {
         RedisStore = require('rate-limit-redis').RedisStore;
         const { createClient } = require('redis');
         redisClient = createClient({ url: process.env.REDIS_URL });
-        redisClient.connect().catch(err => console.error('[RATE-LIMIT] Redis connection failed, falling back to in-memory:', err.message));
+        // Prevent uncaught 'error' events from crashing Node.js when Redis restarts/disconnects
+        redisClient.on('error', (err) => {
+            console.error('[RATE-LIMIT] Redis client error:', err.message);
+        });
+        redisClient
+            .connect()
+            .catch((err) =>
+                console.error(
+                    '[RATE-LIMIT] Redis connection failed, falling back to pass-through on store errors:',
+                    err.message,
+                ),
+            );
         console.log('[RATE-LIMIT] Using Redis store for distributed rate limiting.');
     } catch (err) {
-        console.warn('[RATE-LIMIT] Redis packages not installed. Using in-memory store (not suitable for multi-instance).');
+        console.warn(
+            '[RATE-LIMIT] Redis packages not installed. Using in-memory store (not suitable for multi-instance).',
+        );
     }
 }
 
@@ -34,7 +47,7 @@ const violationHandler = (req, res, next, options) => {
     logAction({
         action: 'RATE_LIMIT_EXCEEDED',
         details: `Rate limit exceeded: ${options.message?.error || 'Unknown limiter'}. IP: ${req.ip}, Path: ${req.originalUrl}`,
-        req
+        req,
     }).catch(() => {});
     res.status(options.statusCode).json(options.message);
 };
@@ -42,44 +55,60 @@ const violationHandler = (req, res, next, options) => {
 /**
  * General API limiter — 100 requests per minute
  */
-const apiLimiter = isTest ? passThrough : rateLimit({
-    windowMs: 1 * 60 * 1000,
-    limit: 100,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    store: createStore('api'),
-    message: { error: 'Too many requests. Please try again in a minute.' },
-    handler: violationHandler,
-});
+const apiLimiter = isTest
+    ? passThrough
+    : rateLimit({
+          windowMs: 1 * 60 * 1000,
+          limit: 100,
+          standardHeaders: 'draft-7',
+          legacyHeaders: false,
+          store: createStore('api'),
+          passOnStoreError: true,
+          message: { errorCode: 'RATE_LIMIT_EXCEEDED', error: 'Too many requests. Please try again in a minute.' },
+          handler: violationHandler,
+      });
 
 /**
  * Auth limiter (brute-force protection) — 5 attempts per 15 minutes
  */
-const authLimiter = isTest ? passThrough : rateLimit({
-    windowMs: 15 * 60 * 1000,
-    limit: 5,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    store: createStore('auth'),
-    message: { error: 'Login attempts limited for security. Please try again in 15 minutes.' },
-    handler: violationHandler,
-});
+const authLimiter = isTest
+    ? passThrough
+    : rateLimit({
+          windowMs: 15 * 60 * 1000,
+          limit: 5,
+          standardHeaders: 'draft-7',
+          legacyHeaders: false,
+          store: createStore('auth'),
+          passOnStoreError: true,
+          message: {
+              errorCode: 'AUTH_RATE_LIMIT_EXCEEDED',
+              error: 'Login attempts limited for security. Please try again in 15 minutes.',
+          },
+          handler: violationHandler,
+      });
 
 /**
  * AI OCR limiter (cost/abuse control) — 20 per hour
  */
-const ocrLimiter = isTest ? passThrough : rateLimit({
-    windowMs: 60 * 60 * 1000,
-    limit: 20,
-    standardHeaders: 'draft-7',
-    legacyHeaders: false,
-    store: createStore('ocr'),
-    message: { error: 'Hourly AI analysis limit reached. Please try again later.' },
-    handler: violationHandler,
-});
+const ocrLimiter = isTest
+    ? passThrough
+    : rateLimit({
+          windowMs: 60 * 60 * 1000,
+          limit: 20,
+          standardHeaders: 'draft-7',
+          legacyHeaders: false,
+          store: createStore('ocr'),
+          passOnStoreError: true,
+          message: {
+              errorCode: 'OCR_RATE_LIMIT_EXCEEDED',
+              error: 'Hourly AI analysis limit reached. Please try again later.',
+          },
+          handler: violationHandler,
+      });
 
 module.exports = {
     apiLimiter,
     authLimiter,
-    ocrLimiter
+    ocrLimiter,
+    redisClient,
 };

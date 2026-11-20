@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const router = express.Router();
 const { SystemSetting } = require('../models');
 const multer = require('multer');
@@ -6,21 +7,31 @@ const path = require('path');
 const fs = require('fs');
 const { requireAdmin } = require('../middleware/auth');
 const { logger, logAction } = require('../utils/logger');
+const { getSafeExtension, validateUploadedImages } = require('../utils/fileSecurity');
 
 // Multer Ayarları (Branding Dosyaları)
-const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/x-icon'];
+const ALLOWED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/x-icon',
+    'image/vnd.microsoft.icon',
+];
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB for branding assets
+const BRANDING_UPLOAD_DIR = path.join(__dirname, '../uploads/branding');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const dir = 'uploads/branding/';
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
+        if (!fs.existsSync(BRANDING_UPLOAD_DIR)) {
+            fs.mkdirSync(BRANDING_UPLOAD_DIR, { recursive: true });
         }
-        cb(null, dir);
+        cb(null, BRANDING_UPLOAD_DIR);
     },
     filename: (req, file, cb) => {
-        cb(null, 'branding-' + require('crypto').randomUUID() + path.extname(file.originalname));
+        const ext = getSafeExtension(file.mimetype, true);
+        if (!ext) return cb(new Error('Only image files are allowed for branding assets.'));
+        cb(null, 'branding-' + crypto.randomUUID() + ext);
     },
 });
 
@@ -109,14 +120,20 @@ router.put('/', requireAdmin, async (req, res) => {
             companyIcon,
             appBanner,
             footerText,
-        } = req.body;
+        } = req.body || {};
 
-        // Validasyon
-        if (logRetentionLimit && (isNaN(logRetentionLimit) || logRetentionLimit < 10)) {
-            return res.status(400).json({ errorCode: 'INVALID_LOG_LIMIT' });
+        // Validasyon (0 dahil tüm geçersiz değerleri reddet)
+        if (logRetentionLimit !== undefined) {
+            const parsedLogLimit = Number(logRetentionLimit);
+            if (!Number.isFinite(parsedLogLimit) || parsedLogLimit < 10) {
+                return res.status(400).json({ errorCode: 'INVALID_LOG_LIMIT' });
+            }
         }
-        if (trashRetentionDays && (isNaN(trashRetentionDays) || trashRetentionDays < 1)) {
-            return res.status(400).json({ errorCode: 'INVALID_RETENTION_DAYS' });
+        if (trashRetentionDays !== undefined) {
+            const parsedRetention = Number(trashRetentionDays);
+            if (!Number.isFinite(parsedRetention) || parsedRetention < 1 || parsedRetention > 365) {
+                return res.status(400).json({ errorCode: 'INVALID_RETENTION_DAYS' });
+            }
         }
 
         // Upsert - Varsa güncelle, yoksa oluştur
@@ -235,7 +252,7 @@ router.put('/', requireAdmin, async (req, res) => {
 });
 
 // Branding Dosyası Yükle
-router.post('/upload-branding', requireAdmin, upload.single('file'), async (req, res) => {
+router.post('/upload-branding', requireAdmin, upload.single('file'), validateUploadedImages, async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ errorCode: 'FILE_UPLOAD_EMPTY' });

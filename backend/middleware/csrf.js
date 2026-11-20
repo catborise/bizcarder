@@ -29,20 +29,22 @@ function csrfProtection(req, res, next) {
     // - Local login: first POST before CSRF cookie is set in browser
     // - Register: same as login
     // - Logout: session destruction, no state change risk
-    const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/logout'];
+    const authExempt = ['/auth/login/callback', '/auth/local/login', '/auth/local/register', '/auth/logout'];
     if (authExempt.some((p) => req.originalUrl.startsWith(p))) return next();
 
-    // Validate: compare cookie with header
+    // Validate: compare cookie with header using byte length to avoid timingSafeEqual RangeError
     const cookieToken = req.cookies[CSRF_COOKIE];
     const headerToken = req.headers[CSRF_HEADER];
 
-    if (
-        !cookieToken ||
-        !headerToken ||
-        cookieToken.length !== headerToken.length ||
-        !crypto.timingSafeEqual(Buffer.from(cookieToken), Buffer.from(headerToken))
-    ) {
-        return res.status(403).json({ error: 'CSRF token mismatch.' });
+    if (typeof cookieToken !== 'string' || typeof headerToken !== 'string' || !cookieToken || !headerToken) {
+        return res.status(403).json({ errorCode: 'CSRF_TOKEN_MISMATCH', error: 'CSRF token mismatch.' });
+    }
+
+    const cookieBuf = Buffer.from(cookieToken, 'utf8');
+    const headerBuf = Buffer.from(headerToken, 'utf8');
+
+    if (cookieBuf.length !== headerBuf.length || !crypto.timingSafeEqual(cookieBuf, headerBuf)) {
+        return res.status(403).json({ errorCode: 'CSRF_TOKEN_MISMATCH', error: 'CSRF token mismatch.' });
     }
 
     next();

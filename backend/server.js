@@ -1,4 +1,5 @@
 const path = require('path');
+const crypto = require('crypto');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const express = require('express');
 const cors = require('cors');
@@ -13,9 +14,9 @@ const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const { sequelize, connectDatabase } = require('./models');
 const authRoutes = require('./routes/auth');
 const { requireAuth, requireAdmin } = require('./middleware/auth');
-const { startAutoCleanup } = require('./utils/trashCleanup');
-const { startReminderNotifier } = require('./utils/reminderNotifier');
-const { apiLimiter } = require('./middleware/rateLimiter');
+const { startAutoCleanup, stopAutoCleanup } = require('./utils/trashCleanup');
+const { startReminderNotifier, stopReminderNotifier } = require('./utils/reminderNotifier');
+const { apiLimiter, redisClient } = require('./middleware/rateLimiter');
 const csrfProtection = require('./middleware/csrf');
 
 const app = express();
@@ -45,7 +46,7 @@ app.use(
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
-                scriptSrc: ["'self'", "'unsafe-inline'"],
+                scriptSrc: ["'self'"],
                 styleSrc: ["'self'", "'unsafe-inline'"],
                 imgSrc: ["'self'", 'data:', 'blob:', '*'],
                 connectSrc: connectSrcList,
@@ -55,12 +56,6 @@ app.use(
         crossOriginEmbedderPolicy: false,
     }),
 );
-
-// Debug Middleware: Gelen isteklerin yetki durumunu logla
-app.use((req, res, next) => {
-    // console.log(`[DEBUG] ${req.method} ${req.path} - Authenticated: ${req.isAuthenticated()} - SessionID: ${req.sessionID}`);
-    next();
-});
 
 // Middleware
 // CORS Configuration
@@ -120,17 +115,21 @@ const sessionStore = new SequelizeStore({
     expiration: 24 * 60 * 60 * 1000, // Oturum ömrü (24 saat)
 });
 
-if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+let sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret || sessionSecret.length < 32) {
     if (process.env.NODE_ENV === 'production') {
         logger.error('SESSION_SECRET env var is missing or too short (min 32 chars). Server cannot start securely.');
         process.exit(1);
     }
-    logger.warn('SESSION_SECRET is missing or too short (min 32 chars). Using insecure fallback for development only.');
+    logger.warn(
+        'SESSION_SECRET is missing or too short (min 32 chars). Using ephemeral fallback for development only.',
+    );
+    sessionSecret = sessionSecret || crypto.randomBytes(32).toString('hex');
 }
 
 app.use(
     session({
-        secret: process.env.SESSION_SECRET,
+        secret: sessionSecret,
         store: sessionStore,
         resave: false,
         saveUninitialized: false,
@@ -147,7 +146,9 @@ app.use(
 );
 
 // Session tablosunu oluştur (ilk seferde)
-sessionStore.sync();
+if (require.main !== module) {
+    sessionStore.sync().catch((err) => logger.warn('Session store sync warning:', err.message));
+}
 
 // Flash Messages
 app.use(flash());
@@ -159,9 +160,17 @@ app.use(passport.session());
 // CSRF Protection (double-submit cookie pattern)
 app.use(csrfProtection);
 
+// Hardened static headers for uploaded assets (prevents active HTML/SVG execution)
+const staticUploadOptions = {
+    setHeaders: (res) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
+    },
+};
+
 // Statik Dosyalar — branding public, kart görselleri auth'lu
-app.use('/uploads/branding', express.static('uploads/branding'));
-app.use('/uploads', requireAuth, express.static('uploads'));
+app.use('/uploads/branding', express.static(path.join(__dirname, 'uploads/branding'), staticUploadOptions));
+app.use('/uploads', requireAuth, express.static(path.join(__dirname, 'uploads'), staticUploadOptions));
 
 // Rotalar
 app.use('/auth', authRoutes);
@@ -185,6 +194,16 @@ app.get('/', (req, res) => {
     res.json({ message: 'CRM Backend API Çalışıyor!' });
 });
 
+app.get('/health', async (req, res) => {
+    try {
+        await sequelize.authenticate();
+        res.status(200).json({ status: 'ok', db: 'connected' });
+    } catch (error) {
+        logger.error('Health check failed:', error.message);
+        res.status(503).json({ status: 'error', db: 'disconnected' });
+    }
+});
+
 // Merkezi Hata Yönetimi (Error Handler)
 app.use((err, req, res, next) => {
     logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
@@ -205,11 +224,35 @@ app.use((err, req, res, next) => {
 if (require.main === module) {
     const startServer = async () => {
         await connectDatabase();
-        app.listen(port, () => {
+        await sessionStore.sync();
+        const server = app.listen(port, () => {
             logger.info(`Server running on port ${port}`);
             startAutoCleanup();
             startReminderNotifier();
         });
+
+        const shutdown = async (signal) => {
+            logger.info(`${signal} received. Shutting down gracefully...`);
+            stopAutoCleanup();
+            stopReminderNotifier();
+            server.close(async () => {
+                try {
+                    if (redisClient?.isOpen) await redisClient.quit();
+                } catch (e) {
+                    logger.error('Redis shutdown error:', e.message);
+                }
+                try {
+                    await sequelize.close();
+                } catch (e) {
+                    logger.error('Sequelize shutdown error:', e.message);
+                }
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(1), 10000).unref();
+        };
+
+        process.on('SIGTERM', () => shutdown('SIGTERM'));
+        process.on('SIGINT', () => shutdown('SIGINT'));
     };
     startServer();
 }

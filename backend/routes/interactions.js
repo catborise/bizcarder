@@ -7,12 +7,33 @@ const { logger } = require('../utils/logger');
 // All interaction routes require authentication
 router.use(requireAuth);
 
+// Helper: verify target card exists and is accessible by current user
+async function checkCardAccess(cardId, user) {
+    const parsedId = parseInt(cardId, 10);
+    if (isNaN(parsedId)) {
+        return { errorStatus: 404, errorCode: 'CARD_NOT_FOUND' };
+    }
+    const card = await BusinessCard.findOne({ where: { id: parsedId, deletedAt: null } });
+    if (!card) {
+        return { errorStatus: 404, errorCode: 'CARD_NOT_FOUND' };
+    }
+    if (user.role !== 'admin' && card.ownerId !== user.id && card.visibility !== 'public') {
+        return { errorStatus: 403, errorCode: 'FORBIDDEN' };
+    }
+    return { card };
+}
+
 // Bir karta ait etkileşimleri getir
 router.get('/:cardId', async (req, res) => {
     try {
         const { cardId } = req.params;
+        const access = await checkCardAccess(cardId, req.user);
+        if (access.errorStatus) {
+            return res.status(access.errorStatus).json({ errorCode: access.errorCode });
+        }
+
         const interactions = await Interaction.findAll({
-            where: { cardId },
+            where: { cardId: access.card.id },
             include: [{ model: User, as: 'author', attributes: ['displayName'] }],
             order: [
                 ['isPinned', 'DESC'],
@@ -30,10 +51,15 @@ router.get('/:cardId', async (req, res) => {
 router.post('/:cardId', async (req, res) => {
     try {
         const { cardId } = req.params;
-        const { type, notes, date } = req.body;
+        const access = await checkCardAccess(cardId, req.user);
+        if (access.errorStatus) {
+            return res.status(access.errorStatus).json({ errorCode: access.errorCode });
+        }
+
+        const { type, notes, date } = req.body || {};
 
         const interaction = await Interaction.create({
-            cardId,
+            cardId: access.card.id,
             type,
             notes,
             date: date || new Date(),
@@ -41,7 +67,7 @@ router.post('/:cardId', async (req, res) => {
         });
 
         // Nurturing: Kartın son etkileşim tarihini güncelle
-        await BusinessCard.update({ lastInteractionDate: interaction.date }, { where: { id: cardId } });
+        await BusinessCard.update({ lastInteractionDate: interaction.date }, { where: { id: access.card.id } });
 
         res.status(201).json(interaction);
     } catch (error) {
@@ -63,7 +89,7 @@ router.put('/:id', async (req, res) => {
             return res.status(403).json({ errorCode: 'EDIT_FORBIDDEN' });
         }
 
-        const { type, notes, date } = req.body;
+        const { type, notes, date } = req.body || {};
         await interaction.update({ type, notes, date: date || interaction.date });
         res.json(interaction);
     } catch (error) {
