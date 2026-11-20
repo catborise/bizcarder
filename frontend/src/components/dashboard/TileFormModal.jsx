@@ -139,7 +139,7 @@ const TileFormModal = ({ isOpen, onClose, currentTile, formData, setFormData, on
                                 color: 'var(--text-primary)',
                             }}
                             value={formData.order}
-                            onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value) })}
+                            onChange={(e) => setFormData({ ...formData, order: parseInt(e.target.value, 10) || 0 })}
                         />
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', paddingTop: '25px' }}>

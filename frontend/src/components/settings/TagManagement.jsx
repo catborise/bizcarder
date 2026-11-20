@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import ConfirmModal from '../shared/ConfirmModal';
+import { resolveApiError } from '../../utils/apiError';
 
 const inputStyle = {
     width: '100%',
@@ -16,11 +17,11 @@ const inputStyle = {
 };
 
 const TagManagement = () => {
-    const { t } = useTranslation('settings');
+    const { t } = useTranslation(['settings', 'common']);
     const { showNotification } = useNotification();
 
     const [tags, setTags] = useState([]);
-    const [tagForm, setTagForm] = useState({ name: '', color: 'var(--accent-primary)' });
+    const [tagForm, setTagForm] = useState({ name: '', color: '#3b82f6' });
     const [editingTag, setEditingTag] = useState(null);
     const [deleteTagConfirmId, setDeleteTagConfirmId] = useState(null);
 
@@ -47,11 +48,11 @@ const TagManagement = () => {
                 await api.post('/api/tags', tagForm);
                 showNotification(t('notify.tagAdded'), 'success');
             }
-            setTagForm({ name: '', color: 'var(--accent-primary)' });
+            setTagForm({ name: '', color: '#3b82f6' });
             setEditingTag(null);
             fetchTags();
         } catch (error) {
-            showNotification(t('notify.tagFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(t('notify.tagFailed', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -113,6 +114,26 @@ const TagManagement = () => {
                 >
                     {editingTag ? t('tags.updateBtn') : t('tags.addBtn')}
                 </button>
+                {editingTag && (
+                    <button
+                        type="button"
+                        onClick={() => {
+                            setEditingTag(null);
+                            setTagForm({ name: '', color: '#3b82f6' });
+                        }}
+                        style={{
+                            background: 'transparent',
+                            color: 'var(--text-secondary)',
+                            border: '1px solid var(--glass-border)',
+                            padding: '12px 16px',
+                            borderRadius: '8px',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        {t('common:cancel')}
+                    </button>
+                )}
             </form>
 
             <div style={{ display: 'grid', gap: '10px' }}>

@@ -4,9 +4,11 @@ import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import PasswordChangeForm from './PasswordChangeForm';
+import TwoFactorSection from './TwoFactorSection';
 import AISection from './AISection';
 import SystemSection from './SystemSection';
 import TagManagement from './TagManagement';
+import { resolveApiError } from '../../utils/apiError';
 
 const Settings = () => {
     const { t } = useTranslation(['settings', 'common']);
@@ -38,10 +40,7 @@ const Settings = () => {
             }
         } catch (error) {
             console.error('Profile save error:', error);
-            showNotification(
-                t('settings:notify.profileUpdateFailed', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('settings:notify.profileUpdateFailed', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -206,6 +205,16 @@ const Settings = () => {
                     <PasswordChangeForm />
                 )}
             </div>
+
+            {/* TWO-FACTOR AUTHENTICATION */}
+            {!user?.shibbolethId && (
+                <div style={cardStyle}>
+                    <h3 style={sectionTitleStyle}>
+                        <span style={{ fontSize: '1.5rem' }}>🛡️</span> {t('settings:section.twoFactor')}
+                    </h3>
+                    <TwoFactorSection />
+                </div>
+            )}
 
             {/* AI OCR SETTINGS */}
             <div style={cardStyle}>

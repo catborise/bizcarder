@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Tesseract from 'tesseract.js';
 import api from '../api/axios';
+import { resolveApiError } from '../utils/apiError';
 
 export default function useCardOcr({ user, showNotification, t }) {
     const [ocrLoading, setOcrLoading] = useState(false);
@@ -19,18 +20,13 @@ export default function useCardOcr({ user, showNotification, t }) {
             formDataAi.append('image', file, 'card.jpg');
 
             const response = await api.post('/api/cards/analyze-ai', formDataAi, {
-                headers: { 'Content-Type': 'multipart/form-data' }
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
 
             if (response.data && response.data.corners) {
                 const c = response.data.corners;
                 // Convert {topLeft: {x,y}, ...} to array [tl, tr, br, bl] for PerspectiveCropper
-                const pointsArray = [
-                    c.topLeft,
-                    c.topRight,
-                    c.bottomRight,
-                    c.bottomLeft
-                ];
+                const pointsArray = [c.topLeft, c.topRight, c.bottomRight, c.bottomLeft];
                 setAiDetectedPoints(pointsArray);
                 // Cache so we don't call AI again for OCR
                 setPreFetchedAiData(response.data);
@@ -38,8 +34,8 @@ export default function useCardOcr({ user, showNotification, t }) {
             }
         } catch (err) {
             console.error('AI Detection Error:', err);
-            const errorMsg = err.response?.data?.error || '';
-            showNotification(`${errorMsg} ${t('addCard.ai.manualBoundaryHint')}`, 'warning');
+            const errorMsg = resolveApiError(err, '');
+            showNotification(`${errorMsg} ${t('addCard.ai.manualBoundaryHint')}`.trim(), 'warning');
         } finally {
             setIsDetecting(false);
         }
@@ -65,7 +61,7 @@ export default function useCardOcr({ user, showNotification, t }) {
                     formDataAi.append('image', fileBlob, 'card.jpg');
 
                     const response = await api.post('/api/cards/analyze-ai', formDataAi, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
+                        headers: { 'Content-Type': 'multipart/form-data' },
                     });
 
                     setOcrResults(response.data);
@@ -74,37 +70,46 @@ export default function useCardOcr({ user, showNotification, t }) {
                     setOcrLoading(false);
                     return;
                 } catch (aiErr) {
-                    console.error('AI OCR Hatası, Tesseract\'a dönülüyor:', aiErr);
-                    const msg = aiErr.response?.data?.error || '';
+                    console.error("AI OCR Hatası, Tesseract'a dönülüyor:", aiErr);
+                    const msg = resolveApiError(aiErr, '');
                     showNotification(t('addCard.ai.fallbackToTesseract', { message: msg }), 'warning');
                     // Fall through to Tesseract
                 }
             }
 
-            // Tesseract OCR
+            // Tesseract OCR (always revoke blob URL to prevent memory leak)
             const blobUrl = URL.createObjectURL(fileBlob);
-            const result = await Tesseract.recognize(blobUrl, 'tur');
-            const text = result.data.text;
+            let text = '';
+            try {
+                const result = await Tesseract.recognize(blobUrl, 'tur');
+                text = result.data.text;
+            } finally {
+                URL.revokeObjectURL(blobUrl);
+            }
 
             // Regex and keyword-based extraction
             let emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/gi);
 
             // Handle OCR misread of @ as O or 0
             if (!emailMatch) {
-                const brokenEmailMatch = text.match(/([a-zA-Z0-9._-]+[O0][a-zA-Z0-9._-]+\.(com|net|org|edu|gov|tr|info|biz))/gi);
+                const brokenEmailMatch = text.match(
+                    /([a-zA-Z0-9._-]+[O0][a-zA-Z0-9._-]+\.(com|net|org|edu|gov|tr|info|biz))/gi,
+                );
                 if (brokenEmailMatch) {
-                    emailMatch = brokenEmailMatch.map(e => e.replace(/[O0](?=[^.O0]+\.)/, '@'));
+                    emailMatch = brokenEmailMatch.map((e) => e.replace(/[O0](?=[^.O0]+\.)/, '@'));
                 }
             }
 
             const phoneMatch = text.match(/((\+90|0)?\s*\(?\d{3}\)?\s*\d{3}\s*\d{2}\s*\d{2})/);
 
-            let websiteMatches = text.match(/(https?:\/\/|www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi);
+            let websiteMatches = text.match(
+                /(https?:\/\/|www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/gi,
+            );
             let finalWebsite = '';
 
             if (websiteMatches) {
-                const filteredWebsites = websiteMatches.filter(w => {
-                    const isEmail = w.includes('@') || (emailMatch && emailMatch.some(e => e.includes(w)));
+                const filteredWebsites = websiteMatches.filter((w) => {
+                    const isEmail = w.includes('@') || (emailMatch && emailMatch.some((e) => e.includes(w)));
                     const hasWebPrefix = w.toLowerCase().startsWith('www') || w.toLowerCase().startsWith('http');
                     return !isEmail || hasWebPrefix;
                 });
@@ -113,7 +118,10 @@ export default function useCardOcr({ user, showNotification, t }) {
                 }
             }
 
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+            const lines = text
+                .split('\n')
+                .map((l) => l.trim())
+                .filter((l) => l.length > 2);
 
             let extractedAddress = '';
             let extractedCompany = '';
@@ -121,18 +129,54 @@ export default function useCardOcr({ user, showNotification, t }) {
             let extractedFirstName = '';
             let extractedLastName = '';
 
-            const addressKeywords = ['mah', 'cad', 'sok', 'no:', 'kat:', 'daire:', 'bulvar', 'plaza', 'blok', 'yol', 'meydan'];
-            const companyKeywords = ['ltd', 'şti', 'a.ş', 'anonim', 'holding', 'sanayi', 'ticaret', 'as', 'inc', 'corp'];
-            const titleKeywords = ['müdür', 'manager', 'director', 'başkan', 'ceo', 'cto', 'engineer', 'mühendis', 'uzman', 'analist', 'koordinatör'];
+            const addressKeywords = [
+                'mah',
+                'cad',
+                'sok',
+                'no:',
+                'kat:',
+                'daire:',
+                'bulvar',
+                'plaza',
+                'blok',
+                'yol',
+                'meydan',
+            ];
+            const companyKeywords = [
+                'ltd',
+                'şti',
+                'a.ş',
+                'anonim',
+                'holding',
+                'sanayi',
+                'ticaret',
+                'a.s.',
+                'inc',
+                'corp',
+                'llc',
+            ];
+            const titleKeywords = [
+                'müdür',
+                'manager',
+                'director',
+                'başkan',
+                'ceo',
+                'cto',
+                'engineer',
+                'mühendis',
+                'uzman',
+                'analist',
+                'koordinatör',
+            ];
 
             lines.forEach((line, index) => {
                 const lower = line.toLowerCase();
 
-                if (addressKeywords.some(kw => lower.includes(kw))) {
+                if (addressKeywords.some((kw) => lower.includes(kw))) {
                     extractedAddress += (extractedAddress ? ' ' : '') + line;
-                } else if (companyKeywords.some(kw => lower.includes(kw))) {
+                } else if (companyKeywords.some((kw) => lower.includes(kw))) {
                     extractedCompany = line;
-                } else if (titleKeywords.some(kw => lower.includes(kw))) {
+                } else if (titleKeywords.some((kw) => lower.includes(kw))) {
                     extractedTitle = line;
                 } else if (index < 3 && !extractedFirstName && line.split(' ').length <= 3) {
                     const parts = line.split(' ');
@@ -152,13 +196,12 @@ export default function useCardOcr({ user, showNotification, t }) {
                 address: extractedAddress,
                 ocrText: text,
                 firstName: extractedFirstName,
-                lastName: extractedLastName
+                lastName: extractedLastName,
             });
             setShowOcrConfirm(true);
-
         } catch (err) {
             console.error('OCR Hatası:', err);
-            const errorMsg = err.response?.data?.error || t('addCard.ocr.error');
+            const errorMsg = resolveApiError(err, '') || t('addCard.ocr.error');
             showNotification(errorMsg, 'error');
         } finally {
             setOcrLoading(false);

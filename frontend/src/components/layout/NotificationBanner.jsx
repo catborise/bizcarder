@@ -12,7 +12,7 @@ const NotificationBanner = () => {
         zIndex: 9999,
         padding: '15px 25px',
         borderRadius: '12px',
-        color: 'var(--bg-card)',
+        color: '#ffffff',
         fontWeight: '600',
         boxShadow: 'var(--glass-shadow)',
         backdropFilter: 'blur(10px)',
@@ -27,26 +27,31 @@ const NotificationBanner = () => {
     const typeStyles = {
         success: { backgroundColor: 'var(--accent-success)' },
         error: { backgroundColor: 'var(--accent-error)' },
+        warning: { backgroundColor: 'var(--accent-warning)', color: '#111827' },
         info: { backgroundColor: 'var(--accent-primary)' },
-    }[notification.type] || { backgroundColor: 'var(--bg-card)' };
+    }[notification.type] || { backgroundColor: 'var(--accent-primary)' };
+
+    const closeColor = typeStyles.color || styles.color;
 
     return (
-        <div style={{ ...styles, ...typeStyles }}>
-            <span>
+        <div role="alert" aria-live="polite" style={{ ...styles, ...typeStyles }}>
+            <span aria-hidden="true">
                 {notification.type === 'success' && '✅'}
-                {notification.type === 'error' && '⚠️'}
+                {notification.type === 'error' && '❌'}
+                {notification.type === 'warning' && '⚠️'}
                 {notification.type === 'info' && 'ℹ️'}
             </span>
             <span style={{ flex: 1 }}>{notification.message}</span>
             <button
                 onClick={closeNotification}
+                aria-label="Close notification"
                 style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'var(--bg-card)',
+                    color: closeColor,
                     cursor: 'pointer',
                     fontSize: '18px',
-                    opacity: 0.8,
+                    opacity: 0.85,
                 }}
             >
                 ✕

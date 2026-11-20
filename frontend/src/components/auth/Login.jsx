@@ -15,9 +15,12 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [displayName, setDisplayName] = useState('');
+    const [totpToken, setTotpToken] = useState('');
+    const [requires2FA, setRequires2FA] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [statusType, setStatusType] = useState('error'); // 'error' | 'warning' | 'success'
     const [allowRegistration, setAllowRegistration] = useState(true);
     const [samlEnabled, setSamlEnabled] = useState(true);
     const [branding, setBranding] = useState({
@@ -58,40 +61,52 @@ const Login = () => {
     // URL'den hata mesajı kontrolü (SAML dönüşü için)
     useEffect(() => {
         const params = new URLSearchParams(location.search);
-        const errorMsg = params.get('error');
-        if (errorMsg) {
-            setError(decodeURIComponent(errorMsg));
-            // URL'deki hata parametresini temizle
+        const errorCode = params.get('errorCode');
+        if (errorCode) {
+            const translated = t(`errors.${errorCode}`);
+            setStatusType('error');
+            setError(translated !== `errors.${errorCode}` ? translated : t('login.genericError'));
             window.history.replaceState({}, document.title, location.pathname);
         }
-    }, [location]);
+    }, [location, t]);
 
     const handleLocalSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setStatusType('error');
 
         try {
             let result;
             if (isRegisterMode) {
                 result = await registerLocal(username, email, password, displayName);
 
-                if (result.success && result.pendingApproval) {
+                if (result?.success && result.pendingApproval) {
+                    setStatusType('warning');
                     setError(t('login.registrationPendingApproval'));
                     setIsRegisterMode(false);
                     setLoading(false);
                     return;
                 }
             } else {
-                result = await loginLocal(username, password);
+                result = await loginLocal(username, password, requires2FA ? totpToken : undefined);
+                if (result?.requires2FA) {
+                    setRequires2FA(true);
+                    setStatusType('warning');
+                    setError(result.error || t('errors.REQUIRES_2FA'));
+                    setLoading(false);
+                    return;
+                }
             }
 
-            if (result.success) {
+            if (result?.success) {
                 navigate(from, { replace: true });
             } else {
-                setError(result.error || t('login.operationFailed'));
+                setStatusType('error');
+                setError(result?.error || t('login.operationFailed'));
             }
         } catch (err) {
+            setStatusType('error');
             setError(t('login.genericError'));
         } finally {
             setLoading(false);
@@ -194,21 +209,24 @@ const Login = () => {
                 <div style={{ padding: '40px' }}>
                     {error && (
                         <div
+                            role="alert"
                             style={{
                                 padding: '12px 16px',
                                 marginBottom: '24px',
-                                backgroundColor: error.includes('başarılı')
-                                    ? 'rgba(var(--accent-success-rgb), 0.1)'
-                                    : error.includes('bekliyor')
-                                      ? 'rgba(var(--accent-warning-rgb), 0.1)'
-                                      : 'rgba(var(--accent-error-rgb), 0.1)',
-                                border: `1px solid ${error.includes('başarılı') ? 'var(--accent-success)' : error.includes('bekliyor') ? 'var(--accent-warning)' : 'var(--accent-error)'}`,
+                                backgroundColor:
+                                    statusType === 'success'
+                                        ? 'rgba(var(--accent-success-rgb), 0.1)'
+                                        : statusType === 'warning'
+                                          ? 'rgba(var(--accent-warning-rgb), 0.1)'
+                                          : 'rgba(var(--accent-error-rgb), 0.1)',
+                                border: `1px solid ${statusType === 'success' ? 'var(--accent-success)' : statusType === 'warning' ? 'var(--accent-warning)' : 'var(--accent-error)'}`,
                                 borderRadius: '12px',
-                                color: error.includes('başarılı')
-                                    ? 'var(--accent-success)'
-                                    : error.includes('bekliyor')
-                                      ? 'var(--accent-warning)'
-                                      : 'var(--accent-error)',
+                                color:
+                                    statusType === 'success'
+                                        ? 'var(--accent-success)'
+                                        : statusType === 'warning'
+                                          ? 'var(--accent-warning)'
+                                          : 'var(--accent-error)',
                                 fontSize: '0.875rem',
                                 display: 'flex',
                                 alignItems: 'center',
@@ -232,7 +250,7 @@ const Login = () => {
                                         fontWeight: '500',
                                     }}
                                 >
-                                    {t('login.usernameLabel')} {isRegisterMode && t('login.orEmail')}
+                                    {t('login.usernameLabel')} {!isRegisterMode && t('login.orEmail')}
                                 </label>
                                 <div style={{ position: 'relative' }}>
                                     <FaUser
@@ -406,6 +424,47 @@ const Login = () => {
                                     />
                                 </div>
                             </div>
+
+                            {!isRegisterMode && requires2FA && (
+                                <div style={{ marginBottom: '24px' }}>
+                                    <label
+                                        htmlFor="login-totp"
+                                        style={{
+                                            display: 'block',
+                                            marginBottom: '8px',
+                                            color: 'var(--text-secondary)',
+                                            fontSize: '0.875rem',
+                                            fontWeight: '500',
+                                        }}
+                                    >
+                                        2FA
+                                    </label>
+                                    <input
+                                        id="login-totp"
+                                        type="text"
+                                        inputMode="numeric"
+                                        autoComplete="one-time-code"
+                                        maxLength={6}
+                                        value={totpToken}
+                                        onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, ''))}
+                                        required
+                                        style={{
+                                            width: '100%',
+                                            padding: '12px 16px',
+                                            borderRadius: '12px',
+                                            border: '1px solid var(--glass-border)',
+                                            backgroundColor: 'var(--bg-input)',
+                                            color: 'var(--text-primary)',
+                                            fontSize: '1.1rem',
+                                            letterSpacing: '0.3em',
+                                            textAlign: 'center',
+                                            outline: 'none',
+                                            boxSizing: 'border-box',
+                                        }}
+                                        placeholder="000000"
+                                    />
+                                </div>
+                            )}
 
                             <button
                                 type="submit"

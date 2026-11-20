@@ -256,7 +256,7 @@ const Help = () => {
                 </aside>
 
                 {/* Content Area */}
-                <main
+                <section
                     style={{
                         background: 'var(--glass-bg)',
                         backdropFilter: 'blur(20px)',
@@ -389,7 +389,7 @@ const Help = () => {
                             <p>{t('notFoundHint')}</p>
                         </div>
                     )}
-                </main>
+                </section>
             </div>
 
             {/* Quick Contact Footer */}

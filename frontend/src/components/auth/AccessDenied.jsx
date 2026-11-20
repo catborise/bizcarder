@@ -3,10 +3,15 @@ import { useTranslation, Trans } from 'react-i18next';
 import { FaShieldAlt, FaHome, FaEnvelope } from 'react-icons/fa';
 
 const AccessDenied = () => {
-    const { t } = useTranslation('pages');
+    const { t } = useTranslation(['pages', 'auth']);
     const location = useLocation();
     const params = new URLSearchParams(location.search);
-    const message = params.get('message') || t('accessDenied.defaultMessage');
+    const errorCode = params.get('errorCode');
+    const translatedError = errorCode ? t(`auth:errors.${errorCode}`) : null;
+    const message =
+        translatedError && translatedError !== `errors.${errorCode}` && translatedError !== `auth:errors.${errorCode}`
+            ? translatedError
+            : t('pages:accessDenied.defaultMessage');
 
     return (
         <div

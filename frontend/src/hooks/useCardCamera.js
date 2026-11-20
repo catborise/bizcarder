@@ -21,9 +21,11 @@ export default function useCardCamera({ onCapture }) {
 
     const videoRef = useRef(null);
     const streamRef = useRef(null);
+    const activeSessionRef = useRef(0);
 
     // Kamera Başlatma
     const startCamera = async (_side) => {
+        const sessionId = ++activeSessionRef.current;
         setCameraReady(false);
         setCameraError(null);
 
@@ -57,15 +59,23 @@ export default function useCardCamera({ onCapture }) {
                 });
             }
 
+            // If modal closed or unmounted while getUserMedia was pending, stop tracks immediately
+            if (activeSessionRef.current !== sessionId) {
+                stream.getTracks().forEach((track) => track.stop());
+                return;
+            }
+
             streamRef.current = stream;
 
-            // Video element'inin render edilmesini bekle
+            // Video element'inin render edilmesini bekle (cancellation-safe, max 100 frames)
             const waitForVideo = () => {
                 return new Promise((resolve) => {
+                    let attempts = 0;
                     const check = () => {
-                        if (videoRef.current) {
+                        if (activeSessionRef.current !== sessionId || videoRef.current || attempts >= 100) {
                             resolve();
                         } else {
+                            attempts++;
                             requestAnimationFrame(check);
                         }
                     };
@@ -74,10 +84,19 @@ export default function useCardCamera({ onCapture }) {
             };
             await waitForVideo();
 
+            if (activeSessionRef.current !== sessionId || !videoRef.current) {
+                stream.getTracks().forEach((track) => track.stop());
+                if (streamRef.current === stream) streamRef.current = null;
+                return;
+            }
+
             videoRef.current.srcObject = stream;
             await videoRef.current.play();
-            setCameraReady(true);
+            if (activeSessionRef.current === sessionId) {
+                setCameraReady(true);
+            }
         } catch (err) {
+            if (activeSessionRef.current !== sessionId) return;
             console.error('Kamera erişim hatası:', err);
 
             // Stream alındıysa temizle
@@ -99,6 +118,7 @@ export default function useCardCamera({ onCapture }) {
     };
 
     const stopCameraStream = () => {
+        activeSessionRef.current++;
         if (streamRef.current) {
             streamRef.current.getTracks().forEach((track) => track.stop());
             streamRef.current = null;
@@ -173,11 +193,13 @@ export default function useCardCamera({ onCapture }) {
 
     // Kamera yaşam döngüsü: modal açıldığında kamerayı başlat, kapandığında stream'i temizle
     useEffect(() => {
+        const sessionRef = activeSessionRef;
         if (showCameraModal && cameraSide) {
             startCamera(cameraSide);
         }
         return () => {
-            // Cleanup: sadece stream'i kapat, state değiştirme
+            // Invalidate any pending getUserMedia / waitForVideo and stop active tracks
+            sessionRef.current++;
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach((track) => track.stop());
                 streamRef.current = null;

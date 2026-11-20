@@ -3,6 +3,7 @@ import { FaCalendarCheck, FaTimes, FaExternalLinkAlt, FaTrashAlt } from 'react-i
 import { useNavigate } from 'react-router';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
+import { resolveApiError } from '../../utils/apiError';
 
 const ReminderModal = ({ reminders, onClose, onRefresh }) => {
     const { t, i18n } = useTranslation(['pages', 'common']);
@@ -14,14 +15,11 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
     const handleDismiss = async (id, e) => {
         e.stopPropagation();
         try {
-            await api.put(`/api/cards/${id}`, { reminderDate: null });
+            await api.patch(`/api/cards/${id}/reminder`, { reminderDate: null });
             showNotification(t('pages:reminder.dismissed'), 'success');
             onRefresh();
         } catch (error) {
-            showNotification(
-                t('pages:reminder.error', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('pages:reminder.error', { error: resolveApiError(error, '') }), 'error');
         }
     };
 

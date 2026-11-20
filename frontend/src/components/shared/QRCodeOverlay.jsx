@@ -1,9 +1,30 @@
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { QRCodeSVG } from 'qrcode.react';
 import { FaTimes, FaUserPlus, FaQrcode } from 'react-icons/fa';
 
-const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = null, onDownloadVCard = null }) => {
+const QRCodeOverlay = ({ url, onClose, title, vCardData = null, onDownloadVCard = null }) => {
+    const { t } = useTranslation('common');
+    const resolvedTitle = title || t('qr.defaultTitle');
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [onClose]);
+
+    const safeHttpUrl = typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null;
+
     return (
         <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={resolvedTitle}
+            onClick={(e) => {
+                if (e.target === e.currentTarget) onClose();
+            }}
             style={{
                 position: 'fixed',
                 top: 0,
@@ -35,6 +56,7 @@ const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = 
             >
                 <button
                     onClick={onClose}
+                    aria-label={t('close')}
                     style={{
                         position: 'absolute',
                         top: '20px',
@@ -79,10 +101,10 @@ const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = 
                         fontWeight: '700',
                     }}
                 >
-                    {title}
+                    {resolvedTitle}
                 </h3>
                 <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginBottom: '30px' }}>
-                    Dijital kartvizit bilgileri
+                    {t('qr.subtitle')}
                 </p>
 
                 <div
@@ -120,19 +142,16 @@ const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = 
                                 fontSize: '1rem',
                             }}
                         >
-                            <FaUserPlus /> Rehbere Ekle (vCard)
+                            <FaUserPlus /> {t('qr.addToContacts')}
                         </button>
                     )}
 
                     <button
                         onClick={() => {
-                            if (url.startsWith('http')) {
-                                window.open(url, '_blank');
-                            } else {
-                                // If it's just vCard data, maybe copy to clipboard as fallback or just notify
-                                navigator.clipboard.writeText(vCardData || url);
-                                // Assuming showNotification is available via context or prop, but here it's not.
-                                // Using alert as fallback if needed, but better to just let it be.
+                            if (safeHttpUrl) {
+                                window.open(safeHttpUrl, '_blank', 'noopener,noreferrer');
+                            } else if (navigator.clipboard) {
+                                navigator.clipboard.writeText(vCardData || url || '');
                             }
                         }}
                         style={{
@@ -148,7 +167,7 @@ const QRCodeOverlay = ({ url, onClose, title = 'Dijital Kartvizit', vCardData = 
                             fontSize: '0.9rem',
                         }}
                     >
-                        Profil Bağlantısını Aç
+                        {t('qr.openProfileLink')}
                     </button>
                 </div>
             </div>

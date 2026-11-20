@@ -1,8 +1,22 @@
+import { useEffect } from 'react';
+
 const Modal = ({ isOpen, onClose, title, children }) => {
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
     return (
         <div
+            role="dialog"
+            aria-modal="true"
+            onClick={onClose}
             style={{
                 position: 'fixed',
                 top: 0,
@@ -42,6 +56,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                         {title}
                     </h3>
                     <button
+                        type="button"
                         onClick={onClose}
                         aria-label="Close"
                         style={{
@@ -61,12 +76,12 @@ const Modal = ({ isOpen, onClose, title, children }) => {
                             transition: 'all 0.2s ease',
                         }}
                         onMouseEnter={(e) => {
-                            e.target.style.background = 'var(--glass-bg-hover)';
-                            e.target.style.transform = 'rotate(90deg)';
+                            e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                            e.currentTarget.style.transform = 'rotate(90deg)';
                         }}
                         onMouseLeave={(e) => {
-                            e.target.style.background = 'var(--glass-bg)';
-                            e.target.style.transform = 'rotate(0deg)';
+                            e.currentTarget.style.background = 'var(--glass-bg)';
+                            e.currentTarget.style.transform = 'rotate(0deg)';
                         }}
                     >
                         &times;

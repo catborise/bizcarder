@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api, { API_URL } from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { resolveApiError } from '../../utils/apiError';
 
 const inputStyle = {
     width: '100%',
@@ -64,7 +65,7 @@ const SystemSection = () => {
             showNotification(t('notify.systemUpdated'), 'success');
         } catch (error) {
             console.error('Settings save error:', error);
-            showNotification(t('notify.saveFailed', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(t('notify.saveFailed', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -124,6 +125,48 @@ const SystemSection = () => {
                     }
                     style={inputStyle}
                 />
+            </div>
+
+            <div
+                style={{
+                    marginBottom: '30px',
+                    padding: '15px',
+                    background: 'var(--glass-bg)',
+                    borderRadius: '12px',
+                    border: '1px solid var(--glass-border)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '12px',
+                }}
+            >
+                <div>
+                    <label
+                        htmlFor="allow-public-registration-toggle"
+                        style={{
+                            display: 'block',
+                            color: 'var(--text-primary)',
+                            fontWeight: '600',
+                            marginBottom: '4px',
+                        }}
+                    >
+                        {t('system.allowPublicRegistration')}
+                    </label>
+                    <small style={{ color: 'var(--text-tertiary)', display: 'block' }}>
+                        {t('system.allowPublicRegistrationHint')}
+                    </small>
+                </div>
+                <label className="switch" style={{ flexShrink: 0 }}>
+                    <input
+                        id="allow-public-registration-toggle"
+                        type="checkbox"
+                        checked={systemSettings.allowPublicRegistration !== false}
+                        onChange={(e) =>
+                            setSystemSettings({ ...systemSettings, allowPublicRegistration: e.target.checked })
+                        }
+                    />
+                    <span className="slider"></span>
+                </label>
             </div>
 
             {/* Developer Info */}

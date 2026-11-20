@@ -1,18 +1,13 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import api from '../api/axios';
-import i18n from '../i18n';
+import { resolveApiError } from '../utils/apiError';
+import { clearOfflineStore } from '../utils/offlineStore';
+import { clearDraft } from '../hooks/useCardDraft';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const resolveErrorMessage = (responseData, fallbackKey) => {
-        const code = responseData?.errorCode;
-        if (code) {
-            const translated = i18n.t(`auth:errors.${code}`);
-            if (translated !== `errors.${code}`) return translated;
-        }
-        return responseData?.error || i18n.t(fallbackKey);
-    };
+    const resolveErrorMessage = (responseData, fallbackKey) => resolveApiError(responseData, fallbackKey);
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -42,18 +37,29 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     // Yerel giriş
-    const loginLocal = async (username, password) => {
+    const loginLocal = async (username, password, token) => {
         try {
-            const response = await api.post('/auth/local/login', {
-                username,
-                password,
-            });
+            const payload = token ? { username, password, token } : { username, password };
+            const response = await api.post('/auth/local/login', payload);
 
-            if (response.data.success) {
+            if (response.data?.requires2FA) {
+                return {
+                    success: false,
+                    requires2FA: true,
+                    error: resolveErrorMessage(response.data, 'auth:loginFailed'),
+                };
+            }
+
+            if (response.data?.success) {
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 return { success: true };
             }
+
+            return {
+                success: false,
+                error: resolveErrorMessage(response.data, 'auth:loginFailed'),
+            };
         } catch (error) {
             return {
                 success: false,
@@ -72,7 +78,7 @@ export const AuthProvider = ({ children }) => {
                 displayName,
             });
 
-            if (response.data.success) {
+            if (response.data?.success) {
                 // Eğer onay bekleniyorsa, kullanıcı girişi yapma
                 if (response.data.pendingApproval) {
                     return {
@@ -89,6 +95,11 @@ export const AuthProvider = ({ children }) => {
                 }
                 return { success: true };
             }
+
+            return {
+                success: false,
+                error: resolveErrorMessage(response.data, 'auth:registrationFailed'),
+            };
         } catch (error) {
             return {
                 success: false,
@@ -103,6 +114,9 @@ export const AuthProvider = ({ children }) => {
             const response = await api.post('/auth/logout');
             setUser(null);
             setIsAuthenticated(false);
+            // Clear cached offline cards, pending sync queue, and local drafts on logout (shared device PII safety)
+            await clearOfflineStore();
+            clearDraft();
 
             // Eğer backend bir logoutUrl döndürürse (SAML için), oraya yönlendir
             if (response.data.logoutUrl) {

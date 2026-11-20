@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
+import { downloadFile } from '../../utils/downloadHelper';
 import {
     FaFileUpload,
     FaDownload,
@@ -31,13 +32,11 @@ const ImportCards = () => {
             const response = await api.get(`/api/cards/import/template?format=${format}`, {
                 responseType: 'blob',
             });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', `kartvizit_sablon.${format}`);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
+            const mime =
+                format === 'xlsx'
+                    ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    : 'text/csv;charset=utf-8';
+            downloadFile(response.data, `kartvizit_sablon.${format}`, mime);
         } catch (error) {
             showNotification(t('pages:import.templateDownloadError'), 'error');
         }

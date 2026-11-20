@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
+import { resolveApiError } from '../../utils/apiError';
 
 const inputStyle = {
     width: '100%',
@@ -45,10 +46,7 @@ const AISection = () => {
             }
         } catch (error) {
             console.error('AI Settings save error:', error);
-            showNotification(
-                t('notify.aiSaveFailed', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('notify.aiSaveFailed', { error: resolveApiError(error, '') }), 'error');
         }
     };
 

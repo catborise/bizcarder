@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import api, { API_URL } from '../../api/axios';
+import { resolveApiError } from '../../utils/apiError';
 import { useNotification } from '../../context/NotificationContext';
 import { saveCardsToOffline, getOfflineCards } from '../../utils/offlineStore';
 import { downloadFile } from '../../utils/downloadHelper';
@@ -43,20 +44,42 @@ const Contacts = () => {
     const [cards, setCards] = useState([]);
     const [expandedCardId, setExpandedCardId] = useState(null);
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [sortOption, setSortOption] = useState('newest');
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(location.search).get('search') || '');
+    const [sortOption, setSortOption] = useState(() => new URLSearchParams(location.search).get('sort') || 'newest');
     const [advancedFilters, setAdvancedFilters] = useState(() => {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(location.search);
         return {
             tagId: params.get('tagId') || '',
             city: '',
-            hasReminder: params.get('filter') === 'reminders' ? true : false,
+            hasReminder: params.get('filter') === 'reminders',
             leadStatus: '',
             source: '',
             dateStart: '',
             dateEnd: '',
         };
     });
+
+    // React to URL query param changes (e.g., clicking a tag chip, QuickSearch, or UserMenu reminders)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const urlSearch = params.get('search');
+        const urlSort = params.get('sort');
+        const urlTagId = params.get('tagId');
+        const urlReminders = params.get('filter') === 'reminders';
+
+        if (urlSearch !== null) setSearchTerm(urlSearch);
+        if (urlSort) setSortOption(urlSort);
+        if (urlTagId !== null || params.has('filter')) {
+            setAdvancedFilters((prev) => ({
+                ...prev,
+                ...(urlTagId !== null ? { tagId: urlTagId } : {}),
+                ...(params.has('filter') ? { hasReminder: urlReminders } : {}),
+            }));
+        }
+    }, [location.search]);
 
     const [pagination, setPagination] = useState({
         totalItems: 0,
@@ -81,8 +104,6 @@ const Contacts = () => {
     const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
     const [isVcfExportConfirmOpen, setIsVcfExportConfirmOpen] = useState(false);
     const { showNotification } = useNotification();
-    const location = useLocation();
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (location.state?.openAddCard) {
@@ -94,8 +115,6 @@ const Contacts = () => {
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    // eslint-disable-next-line no-unused-vars
-    const [isCachedData, setIsCachedData] = useState(false);
 
     const fetchAvailableFilters = async () => {
         try {
@@ -130,8 +149,17 @@ const Contacts = () => {
             if (res.data && Array.isArray(res.data.cards)) {
                 setCards(res.data.cards);
                 setPagination(res.data.pagination);
-                setIsCachedData(false);
-                if (page === 1 && !searchTerm) {
+                const hasActiveFilters = Boolean(
+                    searchTerm ||
+                    advancedFilters.tagId ||
+                    advancedFilters.city ||
+                    advancedFilters.hasReminder ||
+                    advancedFilters.leadStatus ||
+                    advancedFilters.source ||
+                    advancedFilters.dateStart ||
+                    advancedFilters.dateEnd,
+                );
+                if (page === 1 && !hasActiveFilters) {
                     await saveCardsToOffline(res.data.cards);
                 }
             } else {
@@ -142,7 +170,6 @@ const Contacts = () => {
             const cachedCards = await getOfflineCards();
             if (cachedCards.length > 0) {
                 setCards(cachedCards);
-                setIsCachedData(true);
                 showNotification(t('cards:contacts.notify.offlineMode'), 'info');
             } else {
                 setError(t('cards:contacts.error.loadFailedNoCache'));
@@ -169,16 +196,6 @@ const Contacts = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchTerm, sortOption, advancedFilters]);
 
-    // Sadece Sayfa Değişimi İçin (Filtreler Değiştiğinde Değil)
-    // Bu Effect, Sayfa Değiştiğinde fetchCards'ı çağırmak için gerekli
-    useEffect(() => {
-        // Eğer sayfa 1 değilse (başlangıçta 1 olduğu için ilk renderda kaçınabiliriz ama sayfa değişimi kritik)
-        if (pagination.currentPage !== 1) {
-            fetchCards(pagination.currentPage);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pagination.currentPage]);
-
     const toggleDetails = (id) => {
         setExpandedCardId(expandedCardId === id ? null : id);
     };
@@ -197,7 +214,7 @@ const Contacts = () => {
             setDeleteConfirmCard(null);
         } catch (error) {
             showNotification(
-                t('cards:contacts.notify.deleteFailed', { error: error.response?.data?.error || error.message }),
+                t('cards:contacts.notify.deleteFailed', { error: resolveApiError(error, '') || error.message }),
                 'error',
             );
         }
@@ -213,7 +230,12 @@ const Contacts = () => {
         setIsModalOpen(true);
     };
 
-    const handleCardAddedOrUpdated = () => {
+    const handleCardAddedOrUpdated = (cardToEdit) => {
+        if (cardToEdit && cardToEdit.id) {
+            setEditingCard(cardToEdit);
+            setIsModalOpen(true);
+            return;
+        }
         fetchCards(1);
         setIsModalOpen(false);
         setEditingCard(null);
@@ -396,7 +418,7 @@ const Contacts = () => {
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={fetchCards}
+                    onClick={() => fetchCards(1)}
                     style={{
                         padding: '12px 24px',
                         backgroundColor: 'var(--bg-card)',
@@ -872,26 +894,6 @@ const Contacts = () => {
                                                 {card.company} {card.title && `- ${card.title}`}
                                             </p>
 
-                                            {card.tags && card.tags.length > 0 && (
-                                                <div
-                                                    style={{
-                                                        display: 'flex',
-                                                        gap: '4px',
-                                                        flexWrap: 'wrap',
-                                                        marginTop: '4px',
-                                                    }}
-                                                >
-                                                    {card.tags.slice(0, 3).map((tag) => (
-                                                        <span key={tag._id || tag} className="tag-chip">
-                                                            {tag.name || tag}
-                                                        </span>
-                                                    ))}
-                                                    {card.tags.length > 3 && (
-                                                        <span className="tag-chip-more">+{card.tags.length - 3}</span>
-                                                    )}
-                                                </div>
-                                            )}
-
                                             {card.lastInteraction && (
                                                 <div
                                                     style={{
@@ -1143,7 +1145,7 @@ const Contacts = () => {
                                                 <button
                                                     onClick={() => handleDeleteClick(card)}
                                                     className="glass-button-small"
-                                                    aria-label={t('cards:contacts.deleteTitle', {
+                                                    aria-label={t('cards:contacts.modal.deleteTitle', {
                                                         firstName: card.firstName,
                                                         lastName: card.lastName,
                                                     })}
@@ -1541,6 +1543,8 @@ const Contacts = () => {
                 onConfirm={handleBulkVcfExport}
                 title={t('cards:contacts.vcfExport.title')}
                 message={t('cards:contacts.vcfExport.message')}
+                confirmLabel={t('cards:contacts.titleAttr.downloadVcf')}
+                variant="primary"
             />
         </div>
     );

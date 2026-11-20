@@ -9,10 +9,41 @@ const SearchBar = ({
     advancedFilters,
     onAdvancedFilterChange,
     allTags = [],
-    allCities = []
+    allCities = [],
 }) => {
     const { t } = useTranslation(['filters', 'common']);
     const [isAdvancedOpen, setIsAdvancedOpen] = React.useState(false);
+    const [savedFilters, setSavedFilters] = React.useState(() => {
+        try {
+            const raw = localStorage.getItem('savedFilters');
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            return [];
+        }
+    });
+
+    const handleSaveFilter = () => {
+        const filterName = prompt(t('filters:filterNamePrompt'));
+        if (!filterName || !filterName.trim()) return;
+        const next = [...savedFilters, { name: filterName.trim(), filters: { ...advancedFilters }, id: Date.now() }];
+        setSavedFilters(next);
+        try {
+            localStorage.setItem('savedFilters', JSON.stringify(next));
+        } catch {
+            // ignore storage quota errors
+        }
+    };
+
+    const handleDeleteFilter = (id) => {
+        const next = savedFilters.filter((f) => f.id !== id);
+        setSavedFilters(next);
+        try {
+            localStorage.setItem('savedFilters', JSON.stringify(next));
+        } catch {
+            // ignore storage errors
+        }
+    };
 
     const hasActiveAdvancedFilters =
         advancedFilters.tagId !== '' ||
@@ -32,25 +63,28 @@ const SearchBar = ({
             leadStatus: '',
             source: '',
             dateStart: '',
-            dateEnd: ''
+            dateEnd: '',
         });
     };
 
     return (
         <div style={{ marginBottom: '25px' }}>
             {/* Main Search Bar */}
-            <div className="search-bar-container" style={{
-                display: 'flex',
-                gap: '15px',
-                padding: '18px',
-                background: 'var(--glass-bg)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '16px',
-                border: '1px solid var(--glass-border)',
-                boxShadow: 'var(--glass-shadow)',
-                flexWrap: 'wrap',
-                alignItems: 'center'
-            }}>
+            <div
+                className="search-bar-container"
+                style={{
+                    display: 'flex',
+                    gap: '15px',
+                    padding: '18px',
+                    background: 'var(--glass-bg)',
+                    backdropFilter: 'blur(10px)',
+                    borderRadius: '16px',
+                    border: '1px solid var(--glass-border)',
+                    boxShadow: 'var(--glass-shadow)',
+                    flexWrap: 'wrap',
+                    alignItems: 'center',
+                }}
+            >
                 <div style={{ flex: 1, position: 'relative', minWidth: '200px' }}>
                     <input
                         type="text"
@@ -69,7 +103,7 @@ const SearchBar = ({
                             fontSize: '14px',
                             outline: 'none',
                             transition: 'all 0.2s ease',
-                            boxSizing: 'border-box'
+                            boxSizing: 'border-box',
                         }}
                     />
                 </div>
@@ -88,16 +122,33 @@ const SearchBar = ({
                         outline: 'none',
                         cursor: 'pointer',
                         fontWeight: '500',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
                     }}
                 >
-                    <option value="newest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.newest')}</option>
-                    <option value="oldest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.oldest')}</option>
-                    <option value="nameAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.nameAsc')}</option>
-                    <option value="nameDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.nameDesc')}</option>
-                    <option value="companyAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.companyAsc')}</option>
-                    <option value="priorityDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.priorityDesc')}</option>
-                    <option value="lastInteraction" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>{t('filters:sort.lastInteraction')}</option>
+                    <option value="newest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.newest')}
+                    </option>
+                    <option value="oldest" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.oldest')}
+                    </option>
+                    <option value="nameAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.nameAsc')}
+                    </option>
+                    <option value="nameDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.nameDesc')}
+                    </option>
+                    <option value="companyAsc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.companyAsc')}
+                    </option>
+                    <option value="priorityDesc" style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
+                        {t('filters:sort.priorityDesc')}
+                    </option>
+                    <option
+                        value="lastInteraction"
+                        style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}
+                    >
+                        {t('filters:sort.lastInteraction')}
+                    </option>
                 </select>
 
                 <button
@@ -114,12 +165,21 @@ const SearchBar = ({
                         transition: 'all 0.2s ease',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px'
+                        gap: '8px',
                     }}
                 >
-                    {t('filters:advancedFilter')} {hasActiveAdvancedFilters && <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: isAdvancedOpen ? 'white' : 'var(--accent-primary)' }}></span>}
+                    {t('filters:advancedFilter')}{' '}
+                    {hasActiveAdvancedFilters && (
+                        <span
+                            style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: isAdvancedOpen ? 'white' : 'var(--accent-primary)',
+                            }}
+                        ></span>
+                    )}
                 </button>
-
 
                 {(searchTerm || hasActiveAdvancedFilters) && (
                     <button
@@ -132,10 +192,10 @@ const SearchBar = ({
                             color: 'var(--text-secondary)',
                             cursor: 'pointer',
                             fontSize: '14px',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
                         }}
-                        onMouseEnter={(e) => e.target.style.color = 'var(--accent-error)'}
-                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                        onMouseEnter={(e) => (e.target.style.color = 'var(--accent-error)')}
+                        onMouseLeave={(e) => (e.target.style.color = 'var(--text-secondary)')}
                     >
                         {t('filters:clear')}
                     </button>
@@ -144,22 +204,27 @@ const SearchBar = ({
 
             {/* Advanced Filters Panel */}
             {isAdvancedOpen && (
-                <div className="advanced-filters-panel" style={{
-                    marginTop: '10px',
-                    padding: '20px',
-                    background: 'var(--glass-bg)',
-                    backdropFilter: 'blur(15px)',
-                    borderRadius: '16px',
-                    border: '1px solid var(--glass-border)',
-                    boxShadow: 'var(--glass-shadow)',
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '20px',
-                    animation: 'fadeInDown 0.3s ease'
-                }}>
+                <div
+                    className="advanced-filters-panel"
+                    style={{
+                        marginTop: '10px',
+                        padding: '20px',
+                        background: 'var(--glass-bg)',
+                        backdropFilter: 'blur(15px)',
+                        borderRadius: '16px',
+                        border: '1px solid var(--glass-border)',
+                        boxShadow: 'var(--glass-shadow)',
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '20px',
+                        animation: 'fadeInDown 0.3s ease',
+                    }}
+                >
                     {/* Tag Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.tag')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.tag')}
+                        </label>
                         <select
                             value={advancedFilters.tagId}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, tagId: e.target.value })}
@@ -169,19 +234,25 @@ const SearchBar = ({
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
-                                outline: 'none'
+                                outline: 'none',
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
-                            {allTags.map(tag => (
-                                <option key={tag.id} value={tag.id} style={{ background: 'var(--bg-card)' }}>{tag.name}</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:all')}
+                            </option>
+                            {allTags.map((tag) => (
+                                <option key={tag.id} value={tag.id} style={{ background: 'var(--bg-card)' }}>
+                                    {tag.name}
+                                </option>
                             ))}
                         </select>
                     </div>
 
                     {/* City Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.city')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.city')}
+                        </label>
                         <select
                             value={advancedFilters.city}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, city: e.target.value })}
@@ -191,19 +262,25 @@ const SearchBar = ({
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
-                                outline: 'none'
+                                outline: 'none',
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
-                            {allCities.map(city => (
-                                <option key={city} value={city} style={{ background: 'var(--bg-card)' }}>{city}</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:all')}
+                            </option>
+                            {allCities.map((city) => (
+                                <option key={city} value={city} style={{ background: 'var(--bg-card)' }}>
+                                    {city}
+                                </option>
                             ))}
                         </select>
                     </div>
 
                     {/* Lead Status Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.leadStatus')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.leadStatus')}
+                        </label>
                         <select
                             value={advancedFilters.leadStatus}
                             onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, leadStatus: e.target.value })}
@@ -213,21 +290,35 @@ const SearchBar = ({
                                 background: 'var(--bg-input)',
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
-                                outline: 'none'
+                                outline: 'none',
                             }}
                         >
-                            <option value="" style={{ background: 'var(--bg-card)' }}>{t('common:all')}</option>
-                            <option value="Cold" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Cold')}</option>
-                            <option value="Warm" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Warm')}</option>
-                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Hot')}</option>
-                            <option value="Following-up" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Following-up')}</option>
-                            <option value="Converted" style={{ background: 'var(--bg-card)' }}>{t('common:leadStatus.Converted')}</option>
+                            <option value="" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:all')}
+                            </option>
+                            <option value="Cold" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:leadStatus.Cold')}
+                            </option>
+                            <option value="Warm" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:leadStatus.Warm')}
+                            </option>
+                            <option value="Hot" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:leadStatus.Hot')}
+                            </option>
+                            <option value="Following-up" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:leadStatus.Following-up')}
+                            </option>
+                            <option value="Converted" style={{ background: 'var(--bg-card)' }}>
+                                {t('common:leadStatus.Converted')}
+                            </option>
                         </select>
                     </div>
 
                     {/* Source Filter */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.source')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.source')}
+                        </label>
                         <input
                             type="text"
                             placeholder={t('filters:sourcePlaceholder')}
@@ -240,14 +331,16 @@ const SearchBar = ({
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
                                 outline: 'none',
-                                fontSize: '13px'
+                                fontSize: '13px',
                             }}
                         />
                     </div>
 
                     {/* Date Range Start */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.dateStart')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.dateStart')}
+                        </label>
                         <input
                             type="date"
                             value={advancedFilters.dateStart}
@@ -259,14 +352,16 @@ const SearchBar = ({
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
                                 outline: 'none',
-                                fontSize: '13px'
+                                fontSize: '13px',
                             }}
                         />
                     </div>
 
                     {/* Date Range End */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.dateEnd')}</label>
+                        <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                            {t('filters:filterLabel.dateEnd')}
+                        </label>
                         <input
                             type="date"
                             value={advancedFilters.dateEnd}
@@ -278,30 +373,34 @@ const SearchBar = ({
                                 border: '1px solid var(--glass-border)',
                                 color: 'var(--text-primary)',
                                 outline: 'none',
-                                fontSize: '13px'
+                                fontSize: '13px',
                             }}
                         />
                     </div>
 
                     {/* Reminder Toggle */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', justifyContent: 'center' }}>
-                        <label style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
-                            cursor: 'pointer',
-                            color: 'var(--text-primary)',
-                            fontSize: '14px'
-                        }}>
+                        <label
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                cursor: 'pointer',
+                                color: 'var(--text-primary)',
+                                fontSize: '14px',
+                            }}
+                        >
                             <input
                                 type="checkbox"
                                 checked={advancedFilters.hasReminder}
-                                onChange={(e) => onAdvancedFilterChange({ ...advancedFilters, hasReminder: e.target.checked })}
+                                onChange={(e) =>
+                                    onAdvancedFilterChange({ ...advancedFilters, hasReminder: e.target.checked })
+                                }
                                 style={{
                                     width: '18px',
                                     height: '18px',
                                     borderRadius: '4px',
-                                    accentColor: 'var(--accent-primary)'
+                                    accentColor: 'var(--accent-primary)',
                                 }}
                             />
                             {t('filters:onlyReminders')}
@@ -309,27 +408,23 @@ const SearchBar = ({
                     </div>
 
                     {/* Saved Filters Section */}
-                    <div style={{ 
-                        gridColumn: '1 / -1', 
-                        paddingTop: '15px', 
-                        marginTop: '5px',
-                        borderTop: '1px solid var(--glass-border)',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '12px'
-                    }}>
+                    <div
+                        style={{
+                            gridColumn: '1 / -1',
+                            paddingTop: '15px',
+                            marginTop: '5px',
+                            borderTop: '1px solid var(--glass-border)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                        }}
+                    >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>{t('filters:filterLabel.savedFilters')}</label>
-                            <button 
-                                onClick={() => {
-                                    const filterName = prompt(t('filters:filterNamePrompt'));
-                                    if (filterName) {
-                                        const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-                                        saved.push({ name: filterName, filters: { ...advancedFilters }, id: Date.now() });
-                                        localStorage.setItem('savedFilters', JSON.stringify(saved));
-                                        // Noter: SearchBar direct access to showNotification? I might need to pass it or use context
-                                    }
-                                }}
+                            <label style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                                {t('filters:filterLabel.savedFilters')}
+                            </label>
+                            <button
+                                onClick={handleSaveFilter}
                                 style={{
                                     padding: '4px 12px',
                                     borderRadius: '8px',
@@ -338,15 +433,15 @@ const SearchBar = ({
                                     color: 'var(--accent-primary)',
                                     fontSize: '12px',
                                     cursor: 'pointer',
-                                    fontWeight: '600'
+                                    fontWeight: '600',
                                 }}
                             >
                                 {t('filters:saveCurrentFilter')}
                             </button>
                         </div>
-                        
+
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                            {JSON.parse(localStorage.getItem('savedFilters') || '[]').map(sf => (
+                            {savedFilters.map((sf) => (
                                 <div key={sf.id} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <button
                                         onClick={() => onAdvancedFilterChange(sf.filters)}
@@ -358,34 +453,37 @@ const SearchBar = ({
                                             color: 'var(--text-primary)',
                                             fontSize: '12px',
                                             cursor: 'pointer',
-                                            transition: 'all 0.2s'
+                                            transition: 'all 0.2s',
                                         }}
                                     >
                                         {sf.name}
                                     </button>
                                     <button
-                                        onClick={() => {
-                                            const saved = JSON.parse(localStorage.getItem('savedFilters') || '[]');
-                                            localStorage.setItem('savedFilters', JSON.stringify(saved.filter(f => f.id !== sf.id)));
-                                        }}
+                                        onClick={() => handleDeleteFilter(sf.id)}
                                         aria-label={`Remove saved filter: ${sf.name}`}
-                                        style={{ background: 'transparent', border: 'none', color: 'var(--accent-error)', cursor: 'pointer', fontSize: '12px' }}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            color: 'var(--accent-error)',
+                                            cursor: 'pointer',
+                                            fontSize: '12px',
+                                        }}
                                     >
                                         ×
                                     </button>
                                 </div>
                             ))}
-                            {JSON.parse(localStorage.getItem('savedFilters') || '[]').length === 0 && (
-                                <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>{t('filters:noSavedFilters')}</span>
+                            {savedFilters.length === 0 && (
+                                <span style={{ fontSize: '12px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                                    {t('filters:noSavedFilters')}
+                                </span>
                             )}
                         </div>
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
-
 
 export default SearchBar;

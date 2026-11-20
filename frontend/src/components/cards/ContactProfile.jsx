@@ -16,6 +16,7 @@ import {
 } from 'react-icons/fa';
 import QRCodeOverlay from '../shared/QRCodeOverlay';
 import { generateVCardString } from '../../utils/vcardHelper';
+import { resolveApiError } from '../../utils/apiError';
 
 const ContactProfile = () => {
     const { t } = useTranslation(['pages', 'common']);
@@ -34,14 +35,13 @@ const ContactProfile = () => {
                 setCard(res.data);
             } catch (err) {
                 console.error('Error fetching public card:', err);
-                setError(err.response?.data?.error || t('pages:contactProfile.loadError'));
+                setError(resolveApiError(err, 'pages:contactProfile.loadError'));
             } finally {
                 setLoading(false);
             }
         };
 
         fetchPublicCard();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const handleDownloadVCard = async () => {

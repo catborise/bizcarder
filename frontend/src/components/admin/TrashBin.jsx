@@ -5,6 +5,7 @@ import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../shared/ConfirmModal';
+import { resolveApiError, resolveApiMessage } from '../../utils/apiError';
 
 const TrashBin = () => {
     const { t, i18n } = useTranslation(['pages', 'common']);
@@ -41,10 +42,7 @@ const TrashBin = () => {
             );
             fetchTrashedCards();
         } catch (error) {
-            showNotification(
-                t('pages:trash.restoreError', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('pages:trash.restoreError', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -57,23 +55,17 @@ const TrashBin = () => {
             );
             fetchTrashedCards();
         } catch (error) {
-            showNotification(
-                t('pages:trash.deleteError', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('pages:trash.deleteError', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
     const handleEmptyTrash = async () => {
         try {
             const res = await api.delete('/api/cards/trash/empty');
-            showNotification(res.data.message, 'success');
+            showNotification(resolveApiMessage(res.data, 'pages:trash.empty'), 'success');
             fetchTrashedCards();
         } catch (error) {
-            showNotification(
-                t('pages:trash.emptyError', { error: error.response?.data?.error || error.message }),
-                'error',
-            );
+            showNotification(t('pages:trash.emptyError', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -212,6 +204,8 @@ const TrashBin = () => {
                           })
                         : ''
                 }
+                confirmLabel={t('pages:trash.restore')}
+                variant="success"
             />
 
             <ConfirmModal

@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router';
 import { NotificationProvider, useNotification } from './context/NotificationContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import NotificationBanner from './components/layout/NotificationBanner';
@@ -50,43 +50,64 @@ const AppContent = () => {
         footerText: '',
     });
 
+    const isSyncingRef = useRef(false);
+
     const syncQueuedCards = async () => {
+        if (!isAuthenticated || isSyncingRef.current) return;
         const pending = await getPendingSync();
         if (pending.length === 0) return;
 
+        isSyncingRef.current = true;
         showNotification(t('app.sync.syncing', { count: pending.length }), 'info');
 
-        for (const item of pending) {
-            if (item.type === 'CREATE_CARD') {
-                const { data } = item;
-                const formDataToSync = new FormData();
+        let syncedCount = 0;
+        try {
+            for (const item of pending) {
+                if (item.type === 'CREATE_CARD') {
+                    const { data } = item;
+                    const formDataToSync = new FormData();
 
-                // Reconstruction of FormData
-                Object.keys(data).forEach((key) => {
-                    if (!['frontBlob', 'backBlob', 'logoBlob'].includes(key)) {
-                        formDataToSync.append(key, data[key]);
-                    }
-                });
-
-                if (data.frontBlob) formDataToSync.append('frontImage', data.frontBlob, 'front.jpg');
-                if (data.backBlob) formDataToSync.append('backImage', data.backBlob, 'back.jpg');
-                if (data.logoBlob) formDataToSync.append('logoImage', data.logoBlob, 'logo.jpg');
-
-                // Additional CRM Fields
-                if (data.tags) formDataToSync.append('tags', JSON.stringify(data.tags));
-                if (data.reminderDate) formDataToSync.append('reminderDate', data.reminderDate);
-
-                try {
-                    await api.post('/api/cards', formDataToSync, {
-                        headers: { 'Content-Type': 'multipart/form-data' },
+                    // Reconstruct FormData — exclude binary blobs and explicitly formatted fields to prevent duplicates
+                    const excludedKeys = new Set([
+                        'frontBlob',
+                        'backBlob',
+                        'logoBlob',
+                        'tags',
+                        'reminderDate',
+                        'newTagName',
+                        'showNewTagInput',
+                    ]);
+                    Object.keys(data).forEach((key) => {
+                        if (!excludedKeys.has(key) && data[key] !== undefined && data[key] !== null) {
+                            formDataToSync.append(key, data[key]);
+                        }
                     });
-                    await clearSyncItem(item.id);
-                } catch (err) {
-                    console.error('Sync Error for item', item.id, err);
+
+                    if (data.frontBlob) formDataToSync.append('frontImage', data.frontBlob, 'front.jpg');
+                    if (data.backBlob) formDataToSync.append('backImage', data.backBlob, 'back.jpg');
+                    if (data.logoBlob) formDataToSync.append('logoImage', data.logoBlob, 'logo.jpg');
+
+                    // Additional CRM Fields (appended once)
+                    if (data.tags) formDataToSync.append('tags', JSON.stringify(data.tags));
+                    if (data.reminderDate) formDataToSync.append('reminderDate', data.reminderDate);
+
+                    try {
+                        await api.post('/api/cards', formDataToSync, {
+                            headers: { 'Content-Type': 'multipart/form-data' },
+                        });
+                        await clearSyncItem(item.id);
+                        syncedCount++;
+                    } catch (err) {
+                        console.error('Sync Error for item', item.id, err);
+                    }
                 }
             }
+            if (syncedCount > 0) {
+                showNotification(t('app.sync.complete'), 'success');
+            }
+        } finally {
+            isSyncingRef.current = false;
         }
-        showNotification(t('app.sync.complete'), 'success');
     };
 
     useEffect(() => {
@@ -105,8 +126,8 @@ const AppContent = () => {
         window.addEventListener('offline', handleOffline);
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-        // Initial check if we are online and have pending items
-        if (navigator.onLine) {
+        // Only sync once authenticated and online
+        if (isAuthenticated && navigator.onLine) {
             syncQueuedCards();
         }
 
@@ -116,7 +137,7 @@ const AppContent = () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [isAuthenticated]);
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -327,31 +348,33 @@ const AppContent = () => {
                         </div>
                     </div>
                     <div className="nav-actions">
-                        <Link
-                            to="/trash"
-                            className="trash-link-nav hide-on-mobile-nav"
-                            style={{
-                                color: 'var(--text-secondary)',
-                                padding: '0.5rem',
-                                borderRadius: '8px',
-                                transition: 'all 0.2s ease',
-                                fontSize: '1.2rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'var(--glass-bg-hover)';
-                                e.currentTarget.style.color = 'var(--text-primary)';
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'transparent';
-                                e.currentTarget.style.color = 'var(--text-secondary)';
-                            }}
-                            title={t('app.nav.trashBin')}
-                            aria-label={t('app.nav.trashBin')}
-                        >
-                            <FaTrash />
-                        </Link>
+                        {isAuthenticated && (
+                            <Link
+                                to="/trash"
+                                className="trash-link-nav hide-on-mobile-nav"
+                                style={{
+                                    color: 'var(--text-secondary)',
+                                    padding: '0.5rem',
+                                    borderRadius: '8px',
+                                    transition: 'all 0.2s ease',
+                                    fontSize: '1.2rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.background = 'var(--glass-bg-hover)';
+                                    e.currentTarget.style.color = 'var(--text-primary)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.background = 'transparent';
+                                    e.currentTarget.style.color = 'var(--text-secondary)';
+                                }}
+                                title={t('app.nav.trashBin')}
+                                aria-label={t('app.nav.trashBin')}
+                            >
+                                <FaTrash />
+                            </Link>
+                        )}
                         {isAuthenticated ? (
                             <UserMenu />
                         ) : (
@@ -442,7 +465,7 @@ const AppContent = () => {
                             <Route
                                 path="/users"
                                 element={
-                                    <ProtectedRoute>
+                                    <ProtectedRoute requireAdmin>
                                         <PageTransition>
                                             <UserManagement />
                                         </PageTransition>
@@ -512,6 +535,8 @@ const AppContent = () => {
                                     </PageTransition>
                                 }
                             />
+                            {/* Catch-all fallback for unknown routes */}
+                            <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </AnimatePresence>
                 </Suspense>

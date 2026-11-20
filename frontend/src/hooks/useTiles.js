@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../api/axios';
 import { useNotification } from '../context/NotificationContext';
+import { resolveApiError } from '../utils/apiError';
 
 export default function useTiles() {
     const { t } = useTranslation('dashboard');
@@ -71,7 +72,7 @@ export default function useTiles() {
             setShowModal(false);
             showNotification(t('tile.saved'), 'success');
         } catch (error) {
-            showNotification(t('tile.saveError', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(t('tile.saveError', { error: resolveApiError(error, '') }), 'error');
         }
     };
 
@@ -83,7 +84,7 @@ export default function useTiles() {
             await fetchTiles();
             showNotification(t('tile.deleted'), 'success');
         } catch (error) {
-            showNotification(t('tile.deleteError', { error: error.response?.data?.error || error.message }), 'error');
+            showNotification(t('tile.deleteError', { error: resolveApiError(error, '') }), 'error');
         }
     };
 

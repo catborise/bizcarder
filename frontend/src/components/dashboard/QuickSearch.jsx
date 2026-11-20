@@ -1,32 +1,46 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import * as Icons from 'react-icons/fa';
+import { FaSearch, FaAddressBook, FaUser, FaChevronRight } from 'react-icons/fa';
 import api, { API_URL as BASE_API_URL } from '../../api/axios';
 
 const QuickSearch = ({ isAuthenticated }) => {
-    const { t } = useTranslation('dashboard');
+    const { t } = useTranslation(['dashboard', 'common']);
     const [query, setQuery] = useState('');
     const [results, setResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const debounceRef = useRef(null);
+    const abortRef = useRef(null);
     const containerRef = useRef(null);
     const navigate = useNavigate();
 
     const search = useCallback(async (term) => {
+        if (abortRef.current) {
+            abortRef.current.abort();
+            abortRef.current = null;
+        }
         if (!term || term.length < 2) {
             setResults([]);
+            setIsSearching(false);
             return;
         }
+        const controller = new AbortController();
+        abortRef.current = controller;
         setIsSearching(true);
         try {
-            const res = await api.get('/api/cards', { params: { search: term, limit: 6 } });
+            const res = await api.get('/api/cards', {
+                params: { search: term, limit: 6 },
+                signal: controller.signal,
+            });
             setResults(res.data?.cards || res.data || []);
-        } catch {
+        } catch (err) {
+            if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
             setResults([]);
         } finally {
-            setIsSearching(false);
+            if (abortRef.current === controller) {
+                setIsSearching(false);
+            }
         }
     }, []);
 
@@ -47,6 +61,7 @@ const QuickSearch = ({ isAuthenticated }) => {
     useEffect(() => {
         return () => {
             if (debounceRef.current) clearTimeout(debounceRef.current);
+            if (abortRef.current) abortRef.current.abort();
         };
     }, []);
 
@@ -82,7 +97,7 @@ const QuickSearch = ({ isAuthenticated }) => {
                         alignItems: 'center',
                     }}
                 >
-                    <Icons.FaSearch
+                    <FaSearch
                         style={{
                             position: 'absolute',
                             left: '16px',
@@ -157,7 +172,7 @@ const QuickSearch = ({ isAuthenticated }) => {
                         e.currentTarget.style.borderColor = 'var(--glass-border)';
                     }}
                 >
-                    <Icons.FaAddressBook size={18} />
+                    <FaAddressBook size={18} />
                 </button>
             </div>
 
@@ -248,7 +263,7 @@ const QuickSearch = ({ isAuthenticated }) => {
                                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             />
                                         ) : (
-                                            <Icons.FaUser size={16} style={{ color: 'var(--text-tertiary)' }} />
+                                            <FaUser size={16} style={{ color: 'var(--text-tertiary)' }} />
                                         )}
                                     </div>
                                     {/* Info */}
@@ -307,10 +322,12 @@ const QuickSearch = ({ isAuthenticated }) => {
                                                             : 'var(--accent-primary)',
                                             }}
                                         >
-                                            {card.leadStatus}
+                                            {t(`common:leadStatusShort.${card.leadStatus}`, {
+                                                defaultValue: card.leadStatus,
+                                            })}
                                         </span>
                                     )}
-                                    <Icons.FaChevronRight
+                                    <FaChevronRight
                                         size={12}
                                         style={{ color: 'var(--text-tertiary)', flexShrink: 0 }}
                                     />

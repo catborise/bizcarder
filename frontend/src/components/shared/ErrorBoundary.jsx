@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from 'i18next';
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -16,30 +17,57 @@ class ErrorBoundary extends React.Component {
 
     render() {
         if (this.state.hasError) {
+            const title = i18n.isInitialized ? i18n.t('common:errorBoundary.title') : 'Something went wrong';
+            const description = i18n.isInitialized
+                ? i18n.t('common:errorBoundary.description')
+                : 'An unexpected error occurred. Please refresh the page.';
+            const refreshLabel = i18n.isInitialized ? i18n.t('common:errorBoundary.refresh') : 'Refresh Page';
+
             return (
-                <div style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    justifyContent: 'center', minHeight: '60vh', padding: 'var(--space-6)',
-                    textAlign: 'center',
-                }}>
-                    <div style={{
-                        width: '64px', height: '64px', borderRadius: '16px',
-                        background: 'var(--gradient-error)', border: '1px solid var(--gradient-error-border)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        marginBottom: 'var(--space-4)', fontSize: '28px',
-                    }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '60vh',
+                        padding: 'var(--space-6)',
+                        textAlign: 'center',
+                    }}
+                >
+                    <div
+                        style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '16px',
+                            background: 'var(--gradient-error)',
+                            border: '1px solid var(--gradient-error-border)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: 'var(--space-4)',
+                            fontSize: '28px',
+                        }}
+                    >
                         ⚠️
                     </div>
-                    <h3 style={{ marginBottom: 'var(--space-2)' }}>Something went wrong</h3>
-                    <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', maxWidth: '400px', marginBottom: 'var(--space-6)' }}>
-                        An unexpected error occurred. Please refresh the page.
+                    <h3 style={{ marginBottom: 'var(--space-2)' }}>{title}</h3>
+                    <p
+                        style={{
+                            color: 'var(--text-tertiary)',
+                            fontSize: '0.9rem',
+                            maxWidth: '400px',
+                            marginBottom: 'var(--space-6)',
+                        }}
+                    >
+                        {description}
                     </p>
                     <button
                         onClick={() => window.location.reload()}
                         className="glass-button"
                         style={{ fontWeight: 600, padding: '10px 24px' }}
                     >
-                        Refresh Page
+                        {refreshLabel}
                     </button>
                 </div>
             );

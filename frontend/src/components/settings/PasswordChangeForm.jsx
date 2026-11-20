@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
 import { useNotification } from '../../context/NotificationContext';
+import { resolveApiError, resolveApiMessage } from '../../utils/apiError';
 
 const inputStyle = {
     width: '100%',
@@ -34,8 +35,16 @@ const PasswordChangeForm = () => {
             showNotification(t('password.mismatch'), 'error');
             return;
         }
-        if (formData.newPassword.length < 6) {
+        if (formData.newPassword.length < 8) {
             showNotification(t('password.tooShort'), 'error');
+            return;
+        }
+        if (
+            !/[A-Z]/.test(formData.newPassword) ||
+            !/[a-z]/.test(formData.newPassword) ||
+            !/[0-9]/.test(formData.newPassword)
+        ) {
+            showNotification(t('password.complexity'), 'error');
             return;
         }
 
@@ -45,11 +54,11 @@ const PasswordChangeForm = () => {
                 newPassword: formData.newPassword,
             });
             if (res.data.success) {
-                showNotification(res.data.message, 'success');
+                showNotification(resolveApiMessage(res.data, 'settings:password.updated'), 'success');
                 setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
             }
         } catch (error) {
-            showNotification(error.response?.data?.error || t('password.changeFailed'), 'error');
+            showNotification(resolveApiError(error, 'settings:password.changeFailed'), 'error');
         }
     };
 

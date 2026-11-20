@@ -27,11 +27,17 @@ const HistoryTimeline = ({ cardId }) => {
     }, [cardId]);
 
     if (loading)
-        return <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>{t('common:loading')}</div>;
-    if (error) return <div style={{ textAlign: 'center', color: '#ff6b6b', padding: '20px' }}>{error}</div>;
+        return (
+            <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: '20px' }}>
+                {t('common:loading')}
+            </div>
+        );
+    if (error) return <div style={{ textAlign: 'center', color: 'var(--accent-error)', padding: '20px' }}>{error}</div>;
     if (history.length === 0)
         return (
-            <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>{t('pages:history.noRecords')}</div>
+            <div style={{ textAlign: 'center', color: 'var(--text-tertiary)', padding: '20px' }}>
+                {t('pages:history.noRecords')}
+            </div>
         );
 
     const getIcon = (type) => {
@@ -79,20 +85,37 @@ const HistoryTimeline = ({ cardId }) => {
         }
     };
 
+    const formatSnapshotValue = (val) => {
+        if (val === null || val === undefined || val === '') return t('pages:history.emptyValue');
+        if (typeof val === 'object') {
+            try {
+                return JSON.stringify(val);
+            } catch {
+                return String(val);
+            }
+        }
+        return String(val);
+    };
+
     // Değişiklikleri tespit etmek için helper
     const getChanges = (currentSnapshot, prevSnapshot) => {
-        if (!prevSnapshot) return null;
+        if (!currentSnapshot || !prevSnapshot) return null;
         const changes = [];
         const ignoreFields = ['updatedAt', 'createdAt', 'version', 'deletedAt', 'deletedBy'];
 
         Object.keys(currentSnapshot).forEach((key) => {
             if (ignoreFields.includes(key)) return;
-            // Basit karşılaştırma (Object/Array derin karşılaştırma yok ama bu proje için yeterli)
-            if (currentSnapshot[key] !== prevSnapshot[key]) {
+            const curVal = currentSnapshot[key];
+            const prevVal = prevSnapshot[key];
+            const isDifferent =
+                typeof curVal === 'object' || typeof prevVal === 'object'
+                    ? JSON.stringify(curVal) !== JSON.stringify(prevVal)
+                    : curVal !== prevVal;
+            if (isDifferent) {
                 changes.push({
                     field: key,
-                    from: prevSnapshot[key],
-                    to: currentSnapshot[key],
+                    from: prevVal,
+                    to: curVal,
                 });
             }
         });
@@ -125,7 +148,7 @@ const HistoryTimeline = ({ cardId }) => {
                                     top: '40px',
                                     bottom: '-30px',
                                     width: '2px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    background: 'var(--glass-border)',
                                 }}
                             />
                         )}
@@ -136,7 +159,7 @@ const HistoryTimeline = ({ cardId }) => {
                                 width: '40px',
                                 height: '40px',
                                 borderRadius: '50%',
-                                background: `rgba(255, 255, 255, 0.05)`,
+                                background: 'var(--glass-bg)',
                                 border: `2px solid ${getColor(record.changeType)}`,
                                 display: 'flex',
                                 alignItems: 'center',
@@ -154,10 +177,10 @@ const HistoryTimeline = ({ cardId }) => {
                         <div
                             style={{
                                 flex: 1,
-                                background: 'rgba(255, 255, 255, 0.05)',
+                                background: 'var(--glass-bg)',
                                 padding: '15px',
                                 borderRadius: '12px',
-                                border: '1px solid rgba(255, 255, 255, 0.1)',
+                                border: '1px solid var(--glass-border)',
                             }}
                         >
                             <div
@@ -169,7 +192,7 @@ const HistoryTimeline = ({ cardId }) => {
                                 }}
                             >
                                 <div>
-                                    <h4 style={{ margin: 0, color: 'white', fontWeight: 'bold' }}>
+                                    <h4 style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 'bold' }}>
                                         {getLabel(record.changeType)}{' '}
                                         <span style={{ fontSize: '0.8em', opacity: 0.6, fontWeight: 'normal' }}>
                                             (v{record.version})
@@ -181,7 +204,7 @@ const HistoryTimeline = ({ cardId }) => {
                                             alignItems: 'center',
                                             gap: '8px',
                                             fontSize: '13px',
-                                            color: '#ccc',
+                                            color: 'var(--text-secondary)',
                                             marginTop: '4px',
                                         }}
                                     >
@@ -200,20 +223,31 @@ const HistoryTimeline = ({ cardId }) => {
                                 <div
                                     style={{
                                         marginTop: '10px',
-                                        background: 'rgba(0,0,0,0.2)',
+                                        background: 'var(--bg-input)',
                                         padding: '10px',
                                         borderRadius: '8px',
+                                        border: '1px solid var(--glass-border)',
                                     }}
                                 >
                                     {changes.map((change, i) => (
-                                        <div key={i} style={{ fontSize: '13px', marginBottom: '4px', color: '#ccc' }}>
-                                            <strong style={{ color: '#aaa' }}>{change.field}:</strong>{' '}
-                                            <span style={{ color: '#ff6b6b', textDecoration: 'line-through' }}>
-                                                {change.from || t('pages:history.emptyValue')}
+                                        <div
+                                            key={i}
+                                            style={{
+                                                fontSize: '13px',
+                                                marginBottom: '4px',
+                                                color: 'var(--text-secondary)',
+                                                wordBreak: 'break-word',
+                                            }}
+                                        >
+                                            <strong style={{ color: 'var(--text-primary)' }}>{change.field}:</strong>{' '}
+                                            <span
+                                                style={{ color: 'var(--accent-error)', textDecoration: 'line-through' }}
+                                            >
+                                                {formatSnapshotValue(change.from)}
                                             </span>
                                             {' -> '}
-                                            <span style={{ color: '#28a745' }}>
-                                                {change.to || t('pages:history.emptyValue')}
+                                            <span style={{ color: 'var(--accent-success)' }}>
+                                                {formatSnapshotValue(change.to)}
                                             </span>
                                         </div>
                                     ))}
@@ -221,14 +255,19 @@ const HistoryTimeline = ({ cardId }) => {
                             )}
 
                             {/* Create Snapshot Özeti (Opsiyonel) */}
-                            {record.changeType === 'CREATE' && (
+                            {record.changeType === 'CREATE' && record.snapshot && (
                                 <div
-                                    style={{ marginTop: '10px', fontSize: '13px', color: '#888', fontStyle: 'italic' }}
+                                    style={{
+                                        marginTop: '10px',
+                                        fontSize: '13px',
+                                        color: 'var(--text-tertiary)',
+                                        fontStyle: 'italic',
+                                    }}
                                 >
                                     {t('pages:history.initialCreation', {
-                                        firstName: record.snapshot.firstName,
-                                        lastName: record.snapshot.lastName,
-                                        company: record.snapshot.company,
+                                        firstName: record.snapshot.firstName || '',
+                                        lastName: record.snapshot.lastName || '',
+                                        company: record.snapshot.company || '',
                                     })}
                                 </div>
                             )}

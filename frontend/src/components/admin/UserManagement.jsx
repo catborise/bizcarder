@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { useTranslation } from 'react-i18next';
 import Modal from '../shared/Modal';
+import { resolveApiError } from '../../utils/apiError';
 import {
     FaSearch,
     FaUsers,
@@ -78,7 +79,7 @@ const UserManagement = () => {
 
     const handlePasswordSave = async (e) => {
         e.preventDefault();
-        if (!newPassword || newPassword.length < 6) {
+        if (!newPassword || newPassword.length < 8) {
             showNotification(t('users:passwordMinLength'), 'warning');
             return;
         }
@@ -92,10 +93,7 @@ const UserManagement = () => {
             setNewPassword('');
         } catch (err) {
             console.error('Password reset failed:', err);
-            showNotification(
-                t('users:passwordResetError', { error: err.response?.data?.error || err.message }),
-                'error',
-            );
+            showNotification(t('users:passwordResetError', { error: resolveApiError(err, '') }), 'error');
         } finally {
             setPasswordLoading(false);
         }
@@ -111,7 +109,7 @@ const UserManagement = () => {
         } catch (err) {
             console.error('Approval failed:', err);
             setUsers(originalUsers); // Revert
-            showNotification(t('users:approvalError', { error: err.response?.data?.error || err.message }), 'error');
+            showNotification(t('users:approvalError', { error: resolveApiError(err, '') }), 'error');
         }
     };
 
@@ -136,7 +134,7 @@ const UserManagement = () => {
             setUserToDelete(null);
         } catch (err) {
             console.error('User deletion failed:', err);
-            showNotification(t('users:userDeleteError', { error: err.response?.data?.error || err.message }), 'error');
+            showNotification(t('users:userDeleteError', { error: resolveApiError(err, '') }), 'error');
         } finally {
             setDeleteLoading(false);
         }
@@ -566,7 +564,8 @@ const UserManagement = () => {
                                 }}
                             />
                             <input
-                                type="text"
+                                type="password"
+                                autoComplete="new-password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 placeholder={t('users:newPasswordPlaceholder')}

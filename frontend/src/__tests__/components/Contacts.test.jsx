@@ -5,7 +5,11 @@ const mockNavigate = vi.fn();
 vi.mock('react-router', () => ({
     useLocation: () => ({ state: null, pathname: '/contacts', search: '' }),
     useNavigate: () => mockNavigate,
-    Link: ({ children, to, ...props }) => <a href={to} {...props}>{children}</a>,
+    Link: ({ children, to, ...props }) => (
+        <a href={to} {...props}>
+            {children}
+        </a>
+    ),
     useSearchParams: () => [new URLSearchParams(), vi.fn()],
 }));
 
@@ -17,11 +21,22 @@ vi.mock('react-i18next', () => ({
     }),
 }));
 
-// Mock framer-motion
+// Mock framer-motion (strip animation-only props so React does not warn on DOM elements)
+const stripMotionProps = ({
+    initial: _i,
+    animate: _a,
+    exit: _e,
+    transition: _tr,
+    whileHover: _wh,
+    whileTap: _wt,
+    layout: _l,
+    ...rest
+}) => rest;
+
 vi.mock('framer-motion', () => ({
     motion: {
-        div: ({ children, ...props }) => <div {...props}>{children}</div>,
-        button: ({ children, ...props }) => <button {...props}>{children}</button>,
+        div: ({ children, ...props }) => <div {...stripMotionProps(props)}>{children}</div>,
+        button: ({ children, ...props }) => <button {...stripMotionProps(props)}>{children}</button>,
     },
     AnimatePresence: ({ children }) => <>{children}</>,
 }));
@@ -34,7 +49,7 @@ vi.mock('../../api/axios', () => ({
             if (url === '/api/cards/cities') return Promise.resolve({ data: [] });
             // Default: cards endpoint
             return Promise.resolve({
-                data: { cards: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } }
+                data: { cards: [], pagination: { currentPage: 1, totalPages: 1, totalItems: 0 } },
             });
         }),
         post: vi.fn(() => Promise.resolve({ data: {} })),
@@ -91,7 +106,7 @@ vi.mock('../../components/shared/Modal', () => ({
     default: ({ children }) => <div data-testid="modal">{children}</div>,
 }));
 vi.mock('../../components/shared/ConfirmModal', () => ({
-    default: ({ isOpen, title }) => isOpen ? <div data-testid="confirm-modal">{title}</div> : null,
+    default: ({ isOpen, title }) => (isOpen ? <div data-testid="confirm-modal">{title}</div> : null),
 }));
 vi.mock('../../components/shared/QRCodeOverlay', () => ({
     default: () => null,
@@ -134,12 +149,14 @@ describe('Contacts', () => {
         });
     });
 
-    it('uses react-router useLocation return shape', () => {
+    it('uses react-router useLocation return shape', async () => {
         // If react-router v7 changes useLocation return type, this mock
         // (and the component depending on it) will need updating
         render(<Contacts />);
-        // The component accesses location.state and location.pathname
-        // If our mock shape is wrong, the component would crash
+        // Wait for mount async fetches to settle cleanly within act
+        await waitFor(() => {
+            expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+        });
         expect(screen.getByText('cards:contacts.title')).toBeInTheDocument();
     });
 

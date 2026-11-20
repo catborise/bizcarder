@@ -5,7 +5,9 @@
  * @returns {string} rgba(...) formatında renk
  */
 export const hexToRgba = (hex, alpha = 0.3) => {
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+        g = 0,
+        b = 0;
     if (hex.length === 4) {
         r = parseInt(hex[1] + hex[1], 16);
         g = parseInt(hex[2] + hex[2], 16);
@@ -24,39 +26,13 @@ export const hexToRgba = (hex, alpha = 0.3) => {
  * @returns {string} #RRGGBB formatında renk kodu
  */
 export const rgbaToHex = (rgba) => {
-    if (!rgba || !rgba.startsWith('rgba')) return 'var(--accent-primary)';
+    if (!rgba) return '#3b82f6';
+    if (/^#[0-9a-fA-F]{6}$/.test(rgba)) return rgba;
+    if (!rgba.startsWith('rgba') && !rgba.startsWith('rgb')) return '#3b82f6';
     const parts = rgba.match(/(\d+)/g);
-    if (!parts || parts.length < 3) return 'var(--accent-primary)';
-    const r = parseInt(parts[0]).toString(16).padStart(2, '0');
-    const g = parseInt(parts[1]).toString(16).padStart(2, '0');
-    const b = parseInt(parts[2]).toString(16).padStart(2, '0');
+    if (!parts || parts.length < 3) return '#3b82f6';
+    const r = parseInt(parts[0], 10).toString(16).padStart(2, '0');
+    const g = parseInt(parts[1], 10).toString(16).padStart(2, '0');
+    const b = parseInt(parts[2], 10).toString(16).padStart(2, '0');
     return `#${r}${g}${b}`;
-};
-
-/**
- * Metni Title Case formatına dönüştürür (Her kelimenin ilk harfi büyük).
- * @param {string} str
- * @returns {string}
- */
-export const toTitleCase = (str) => {
-    if (!str) return '';
-    return str.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-    ).join(' ');
-};
-
-/**
- * Dosya indirme işlemini tetikler.
- * @param {Blob} blob 
- * @param {string} fileName 
- * @param {string} mimeType 
- */
-export const downloadFile = (blob, fileName, mimeType) => {
-    const url = window.URL.createObjectURL(new Blob([blob], { type: mimeType }));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    link.parentNode.removeChild(link);
 };

@@ -1,85 +1,108 @@
 {
-  "title": "Ayarlar",
-  "password": {
-    "mismatch": "Yeni şifreler uyuşmuyor.",
-    "tooShort": "Yeni şifre en az 6 karakter olmalıdır.",
-    "changeFailed": "Şifre değiştirilemedi.",
-    "currentLabel": "Mevcut Şifre",
-    "newLabel": "Yeni Şifre",
-    "confirmLabel": "Yeni Şifre (Tekrar)",
-    "updateBtn": "Şifreyi Güncelle"
-  },
-  "notify": {
-    "systemLoadFailed": "Sistem ayarları yüklenemedi.",
-    "profileUpdated": "Profil bilgileri başarıyla güncellendi.",
-    "profileUpdateFailed": "Profil güncellenemedi: {{error}}",
-    "systemUpdated": "Sistem ayarları başarıyla güncellendi.",
-    "saveFailed": "Kaydetme başarısız: {{error}}",
-    "aiUpdated": "AI ayarları başarıyla güncellendi.",
-    "aiSaveFailed": "AI ayarları kaydedilemedi: {{error}}",
-    "tagUpdated": "Etiket güncellendi.",
-    "tagAdded": "Yeni etiket eklendi.",
-    "tagFailed": "Etiket işlemi başarısız: {{error}}",
-    "uploading": "Dosya yükleniyor...",
-    "uploaded": "Dosya başarıyla yüklendi.",
-    "uploadFailed": "Yükleme başarısız.",
-    "tagDeleted": "Etiket silindi.",
-    "deleteFailed": "Silme başarısız."
-  },
-  "section": {
-    "profile": "Profil Bilgileri",
-    "account": "Hesap Ayarları",
-    "ai": "Kişisel AI Ayarları",
-    "system": "Sistem Ayarları",
-    "tags": "Etiket Yönetimi",
-    "aboutDeveloper": "Hakkında Sayfası Geliştirici Bilgileri",
-    "branding": "Kurumsal Markalama"
-  },
-  "profile": {
-    "username": "Kullanıcı Adı",
-    "usernameHint": "Kullanıcı adı değiştirilemez.",
-    "displayName": "Ad Soyad / Görünen İsim",
-    "displayNamePlaceholder": "İsim giriniz...",
-    "email": "E-Posta Adresi",
-    "trashRetention": "Kişisel Çöp Kutusu Saklama Süresi (Gün)",
-    "trashRetentionHint": "Sizin tarafınızdan silinen kartların ne kadar süre çöp kutusunda tutulacağını belirler.",
-    "updateBtn": "Profili Güncelle"
-  },
-  "account": {
-    "ssoMessage": "Kurumsal (SSO) hesap ile giriş yaptığınız için şifrenizi organizasyonunuzun portalından değiştirmelisiniz."
-  },
-  "ai": {
-    "ocrLabel": "AI Destekli OCR",
-    "ocrDescription": "Kartvizit tarama işleminde AI modellerini kullanın.",
-    "providerLabel": "AI Sağlayıcı",
-    "apiKeyLabel": "API Anahtarı",
-    "apiKeyPlaceholder": "API Anahtarınızı girin...",
-    "saveBtn": "AI Ayarlarını Kaydet"
-  },
-  "system": {
-    "logLimit": "Log Limiti",
-    "trashRetention": "Çöp Kutusu (Gün)",
-    "developerName": "Geliştirici Adı",
-    "devNamePlaceholder": "Örn: Muhammet Sağ",
-    "developerEmail": "Geliştirici E-Posta",
-    "devEmailPlaceholder": "Örn: m.sag@catborise.com",
-    "githubUrl": "GitHub URL",
-    "linkedinUrl": "LinkedIn URL",
-    "companyName": "Şirket / Uygulama Adı",
-    "companyLogo": "Kurumsal Logo (Navbar)",
-    "companyIcon": "Uygulama İkonu (Favicon)",
-    "appBanner": "Dashboard Banner Görseli",
-    "footerText": "Footer / Alt Bilgi Metni",
-    "footerPlaceholder": "© 2026 BizCarder. Tüm Hakları Saklıdır.",
-    "footerHint": "Tüm sayfalarda en altta gösterilecek olan telif/üretici bilgisidir.",
-    "saveBtn": "Sistem Ayarlarını Kaydet"
-  },
-  "tags": {
-    "nameLabel": "Etiket Adı",
-    "colorLabel": "Renk",
-    "updateBtn": "Güncelle",
-    "addBtn": "Ekle",
-    "deleteTitle": "Etiketi Sil",
-    "deleteMessage": "Bu etiketi silmek istediğinize emin misiniz? Bu etikete sahip kartvizitlerdeki etiket ilişkisi kaldırılacaktır."
-  }
+    "title": "Ayarlar",
+    "password": {
+        "mismatch": "Yeni şifreler uyuşmuyor.",
+        "tooShort": "Yeni şifre en az 8 karakter olmalıdır.",
+        "complexity": "Şifre en az bir büyük harf, bir küçük harf ve bir rakam içermelidir.",
+        "updated": "Şifreniz başarıyla değiştirildi.",
+        "changeFailed": "Şifre değiştirilemedi.",
+        "currentLabel": "Mevcut Şifre",
+        "newLabel": "Yeni Şifre",
+        "confirmLabel": "Yeni Şifre (Tekrar)",
+        "updateBtn": "Şifreyi Güncelle"
+    },
+    "twoFactor": {
+        "statusEnabled": "İki faktörlü doğrulama etkin",
+        "statusDisabled": "İki faktörlü doğrulama devre dışı",
+        "description": "Hesabınızı bir doğrulayıcı uygulamasından (Google Authenticator, Authy vb.) alınan 6 haneli kod ile koruyun.",
+        "enableBtn": "2FA Etkinleştir",
+        "disableBtn": "2FA Devre Dışı Bırak",
+        "scanQrHint": "Bu QR kodu doğrulayıcı uygulamanızla tarayın veya aşağıdaki kurulum anahtarını manuel girin.",
+        "manualKeyLabel": "Manuel kurulum anahtarı",
+        "codeLabel": "6 haneli doğrulama kodunu girin",
+        "verifyBtn": "Doğrula ve Etkinleştir",
+        "disableCodeLabel": "Devre dışı bırakmak için mevcut 6 haneli 2FA kodunuzu girin",
+        "confirmDisableBtn": "2FA'yı Kapat",
+        "enabled": "İki faktörlü doğrulama başarıyla etkinleştirildi.",
+        "disabled": "İki faktörlü doğrulama devre dışı bırakıldı.",
+        "setupFailed": "İki faktörlü doğrulama kurulumu başlatılamadı.",
+        "verifyFailed": "2FA kodu doğrulanamadı.",
+        "disableFailed": "İki faktörlü doğrulama devre dışı bırakılamadı."
+    },
+    "notify": {
+        "systemLoadFailed": "Sistem ayarları yüklenemedi.",
+        "profileUpdated": "Profil bilgileri başarıyla güncellendi.",
+        "profileUpdateFailed": "Profil güncellenemedi: {{error}}",
+        "systemUpdated": "Sistem ayarları başarıyla güncellendi.",
+        "saveFailed": "Kaydetme başarısız: {{error}}",
+        "aiUpdated": "AI ayarları başarıyla güncellendi.",
+        "aiSaveFailed": "AI ayarları kaydedilemedi: {{error}}",
+        "tagUpdated": "Etiket güncellendi.",
+        "tagAdded": "Yeni etiket eklendi.",
+        "tagFailed": "Etiket işlemi başarısız: {{error}}",
+        "uploading": "Dosya yükleniyor...",
+        "uploaded": "Dosya başarıyla yüklendi.",
+        "uploadFailed": "Yükleme başarısız.",
+        "tagDeleted": "Etiket silindi.",
+        "deleteFailed": "Silme başarısız."
+    },
+    "section": {
+        "profile": "Profil Bilgileri",
+        "account": "Hesap Ayarları",
+        "twoFactor": "İki Faktörlü Doğrulama (2FA)",
+        "ai": "Kişisel AI Ayarları",
+        "system": "Sistem Ayarları",
+        "tags": "Etiket Yönetimi",
+        "aboutDeveloper": "Hakkında Sayfası Geliştirici Bilgileri",
+        "branding": "Kurumsal Markalama"
+    },
+    "profile": {
+        "username": "Kullanıcı Adı",
+        "usernameHint": "Kullanıcı adı değiştirilemez.",
+        "displayName": "Ad Soyad / Görünen İsim",
+        "displayNamePlaceholder": "İsim giriniz...",
+        "email": "E-Posta Adresi",
+        "trashRetention": "Kişisel Çöp Kutusu Saklama Süresi (Gün)",
+        "trashRetentionHint": "Sizin tarafınızdan silinen kartların ne kadar süre çöp kutusunda tutulacağını belirler.",
+        "updateBtn": "Profili Güncelle"
+    },
+    "account": {
+        "ssoMessage": "Kurumsal (SSO) hesap ile giriş yaptığınız için şifrenizi organizasyonunuzun portalından değiştirmelisiniz."
+    },
+    "ai": {
+        "ocrLabel": "AI Destekli OCR",
+        "ocrDescription": "Kartvizit tarama işleminde AI modellerini kullanın.",
+        "providerLabel": "AI Sağlayıcı",
+        "apiKeyLabel": "API Anahtarı",
+        "apiKeyPlaceholder": "API Anahtarınızı girin...",
+        "saveBtn": "AI Ayarlarını Kaydet"
+    },
+    "system": {
+        "logLimit": "Log Limiti",
+        "trashRetention": "Çöp Kutusu (Gün)",
+        "allowPublicRegistration": "Genel Kayda İzin Ver",
+        "allowPublicRegistrationHint": "Yeni kullanıcıların yerel kayıt formu ile başvurmasına izin verir (yine de yönetici onayı gerekir).",
+        "developerName": "Geliştirici Adı",
+        "devNamePlaceholder": "Örn: Muhammet Sağ",
+        "developerEmail": "Geliştirici E-Posta",
+        "devEmailPlaceholder": "Örn: m.sag@catborise.com",
+        "githubUrl": "GitHub URL",
+        "linkedinUrl": "LinkedIn URL",
+        "companyName": "Şirket / Uygulama Adı",
+        "companyLogo": "Kurumsal Logo (Navbar)",
+        "companyIcon": "Uygulama İkonu (Favicon)",
+        "appBanner": "Dashboard Banner Görseli",
+        "footerText": "Footer / Alt Bilgi Metni",
+        "footerPlaceholder": "© 2026 BizCarder. Tüm Hakları Saklıdır.",
+        "footerHint": "Tüm sayfalarda en altta gösterilecek olan telif/üretici bilgisidir.",
+        "saveBtn": "Sistem Ayarlarını Kaydet"
+    },
+    "tags": {
+        "nameLabel": "Etiket Adı",
+        "colorLabel": "Renk",
+        "updateBtn": "Güncelle",
+        "addBtn": "Ekle",
+        "deleteTitle": "Etiketi Sil",
+        "deleteMessage": "Bu etiketi silmek istediğinize emin misiniz? Bu etikete sahip kartvizitlerdeki etiket ilişkisi kaldırılacaktır."
+    }
 }

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FaStar } from 'react-icons/fa';
 import { useTranslation } from 'react-i18next';
 import PerspectiveCropper from './PerspectiveCropper';
 import { warpPerspective } from '../../utils/perspectiveHelper';
 import api, { API_URL } from '../../api/axios';
+import { resolveApiError } from '../../utils/apiError';
 import { useNotification } from '../../context/NotificationContext';
 import { queueForSync } from '../../utils/offlineStore';
 import { useAuth } from '../../context/AuthContext';
@@ -36,14 +37,16 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
     };
 
-    // Cleanup blob URLs on unmount
+    // Track current blob URLs via ref so unmount cleanup never reads stale initial null state
+    const blobUrlsRef = useRef({ src: null, frontPreview: null, backPreview: null, logoPreview: null });
+    blobUrlsRef.current = { src, frontPreview, backPreview, logoPreview };
+
     useEffect(() => {
         return () => {
-            [frontPreview, backPreview, logoPreview].forEach((url) => {
+            Object.values(blobUrlsRef.current).forEach((url) => {
                 if (url && url.startsWith('blob:')) URL.revokeObjectURL(url);
             });
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const [logoBlob, setLogoBlob] = useState(null);
@@ -124,7 +127,11 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 source: activeCard.source || '',
             });
             // Var olan resimleri göster
-            if (activeCard.frontImageUrl) setFrontPreview(`${API_URL}${activeCard.frontImageUrl}`);
+            if (activeCard.frontImageUrl) {
+                const fullFrontUrl = `${API_URL}${activeCard.frontImageUrl}`;
+                setFrontPreview(fullFrontUrl);
+                setLogoTempSrc(fullFrontUrl);
+            }
             if (activeCard.backImageUrl) setBackPreview(`${API_URL}${activeCard.backImageUrl}`);
             if (activeCard.logoUrl) setLogoPreview(`${API_URL}${activeCard.logoUrl}`);
         } else {
@@ -316,7 +323,9 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         }
 
         const data = new FormData();
+        const uiOnlyKeys = new Set(['newTagName', 'showNewTagInput']);
         Object.keys(formData).forEach((key) => {
+            if (uiOnlyKeys.has(key)) return;
             if (key === 'tags') {
                 data.append(key, JSON.stringify(formData[key]));
             } else {
@@ -375,7 +384,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
         } catch (error) {
             console.error('Kaydetme hatası:', error);
             showNotification(
-                t('addCard.notify.saveFailed', { error: error.response?.data?.error || error.message }),
+                t('addCard.notify.saveFailed', { error: resolveApiError(error, '') || error.message }),
                 'error',
             );
         }
@@ -1803,9 +1812,7 @@ const AddCard = ({ onCardAdded, activeCard, isPersonal = false }) => {
                 onCreateAnyway={() => {
                     setIgnoreDuplicate(true);
                     setShowDuplicateAlert(false);
-                    if (currentStep === 1) {
-                        setCurrentStep(2);
-                    }
+                    handleSubmit(null, true, currentStep === 1);
                 }}
                 t={t}
             />

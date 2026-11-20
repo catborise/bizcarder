@@ -4,15 +4,29 @@ export const db = new Dexie('BizCardOfflineDB');
 
 db.version(1).stores({
     cards: 'id, firstName, lastName, company, email, phone, city',
-    pendingSync: '++id, type, data, timestamp'
+    pendingSync: '++id, type, data, timestamp',
 });
 
 export const saveCardsToOffline = async (cards) => {
     try {
-        await db.cards.clear();
-        await db.cards.bulkAdd(cards);
+        await db.transaction('rw', db.cards, async () => {
+            await db.cards.clear();
+            await db.cards.bulkAdd(cards);
+        });
     } catch (err) {
         console.error('Dexie Error (Save):', err);
+    }
+};
+
+export const clearOfflineStore = async () => {
+    if (typeof indexedDB === 'undefined') return;
+    try {
+        await db.transaction('rw', db.cards, db.pendingSync, async () => {
+            await db.cards.clear();
+            await db.pendingSync.clear();
+        });
+    } catch (err) {
+        console.error('Dexie Error (Clear):', err);
     }
 };
 
@@ -30,7 +44,7 @@ export const queueForSync = async (type, data) => {
         await db.pendingSync.add({
             type,
             data,
-            timestamp: Date.now()
+            timestamp: Date.now(),
         });
     } catch (err) {
         console.error('Dexie Error (Queue):', err);
