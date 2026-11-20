@@ -29,22 +29,40 @@ if [ ! -f .env ]; then
     fi
 fi
 
+# Safely read specific env vars from .env without executing arbitrary shell code
+get_env() {
+    local key="$1"
+    local default="$2"
+    local val
+    val=$(grep -E "^${key}=" .env | tail -n 1 | cut -d'=' -f2- | tr -d '\r' | sed 's/^["'\'']//;s/["'\'']$//')
+    echo "${val:-$default}"
+}
+
+POSTGRES_USER=$(get_env POSTGRES_USER crm_user)
+POSTGRES_DB=$(get_env POSTGRES_DB crm_db)
+PORT=$(get_env PORT 5000)
+DOMAIN=$(get_env DOMAIN localhost)
+
 # Parse flags
 FRESH=false
 if [ "${1:-}" = "--fresh" ]; then
     FRESH=true
     echo "[WARNING] --fresh mode: ALL DATA WILL BE DELETED!"
-    read -p "Are you sure? (y/N) " confirm
+    read -r -p "Are you sure? (y/N) " confirm
     if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
         echo "Aborted."
         exit 0
     fi
 fi
 
-# Step 1: Stop existing containers
+# Step 1: Stop existing containers (only pass -v when FRESH is explicitly true!)
 echo ""
 echo "[1/7] Stopping existing containers..."
-docker compose down ${FRESH:+"-v"} 2>/dev/null || true
+if [ "$FRESH" = true ]; then
+    docker compose --profile prod down -v 2>/dev/null || true
+else
+    docker compose --profile prod down 2>/dev/null || true
+fi
 
 # Step 2: Pull latest code (if git repo)
 if [ -d .git ]; then
@@ -54,14 +72,14 @@ else
     echo "[2/7] Not a git repo — using local code."
 fi
 
-# Step 3: Build and start containers
+# Step 3: Build and start production containers (including Caddy)
 echo "[3/7] Building and starting containers..."
-docker compose up --build -d
+docker compose --profile prod up --build -d
 
 # Step 4: Wait for database to be healthy
 echo "[4/7] Waiting for database..."
 RETRIES=30
-until docker compose exec -T db pg_isready -U "${POSTGRES_USER:-crm_user}" -d "${POSTGRES_DB:-crm_db}" >/dev/null 2>&1; do
+until docker compose exec -T db pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1; do
     RETRIES=$((RETRIES - 1))
     if [ $RETRIES -le 0 ]; then
         echo "[ERROR] Database did not become ready in time."
@@ -86,13 +104,9 @@ until docker compose exec -T backend node -e "require('./models').sequelize.auth
 done
 echo "  Backend is connected."
 
-# Step 6: Sync database schema + seed
-echo "[6/7] Syncing database schema..."
-docker compose exec -T backend node -e "
-    require('./models').sequelize.sync({ alter: true })
-        .then(() => { console.log('  Schema synced.'); process.exit(0); })
-        .catch(err => { console.error('  Schema sync failed:', err.message); process.exit(1); });
-"
+# Step 6: Run database migrations + seed
+echo "[6/7] Running database migrations..."
+docker compose exec -T backend npx sequelize-cli db:migrate
 
 echo "  Seeding default data..."
 docker compose exec -T backend node scripts/seed.js
@@ -101,10 +115,9 @@ docker compose exec -T backend node scripts/seed.js
 echo "[7/7] Running health checks..."
 echo ""
 
-# Check all containers
 HEALTHY=true
-for SERVICE in db redis backend frontend; do
-    STATUS=$(docker compose ps --format json "$SERVICE" 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['State'])" 2>/dev/null || echo "unknown")
+for SERVICE in db redis backend caddy; do
+    STATUS=$(docker compose --profile prod ps --format json "$SERVICE" 2>/dev/null | python3 -c "import sys,json; data=sys.stdin.read().strip(); print(json.loads(data.splitlines()[0])['State'] if data else 'unknown')" 2>/dev/null || echo "unknown")
     if [ "$STATUS" = "running" ]; then
         echo "  ✓ $SERVICE — running"
     else
@@ -116,7 +129,7 @@ done
 echo ""
 
 # Test backend API
-BACKEND_URL="http://localhost:${PORT:-5000}"
+BACKEND_URL="http://localhost:${PORT}"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/api/cards/stats" 2>/dev/null || echo "000")
 if [ "$HTTP_CODE" = "200" ]; then
     echo "  ✓ Backend API — responding (HTTP $HTTP_CODE)"
@@ -125,13 +138,13 @@ else
     HEALTHY=false
 fi
 
-# Test frontend
-FRONTEND_URL="http://localhost:5173"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL" 2>/dev/null || echo "000")
-if [ "$HTTP_CODE" = "200" ]; then
-    echo "  ✓ Frontend — responding (HTTP $HTTP_CODE)"
+# Test Caddy frontend
+APP_URL="http://${DOMAIN}"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost" 2>/dev/null || echo "000")
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "308" ] || [ "$HTTP_CODE" = "301" ]; then
+    echo "  ✓ Caddy / Frontend — responding (HTTP $HTTP_CODE)"
 else
-    echo "  ✗ Frontend — HTTP $HTTP_CODE"
+    echo "  ✗ Caddy / Frontend — HTTP $HTTP_CODE"
     HEALTHY=false
 fi
 
@@ -140,18 +153,18 @@ echo "============================================"
 if [ "$HEALTHY" = true ]; then
     echo "  ✓ Deployment successful!"
     echo ""
-    echo "  Frontend: ${FRONTEND_URL:-http://localhost:5173}"
+    echo "  App URL:  ${APP_URL}"
     echo "  Backend:  ${BACKEND_URL}"
-    echo "  Login:    admin / admin (change immediately!)"
+    echo "  Login:    admin / (see ADMIN_DEFAULT_PASSWORD in .env or seed output)"
     echo ""
     echo "  Next steps:"
-    echo "  - Change admin password"
+    echo "  - Change admin password immediately"
     echo "  - Configure SAML in .env (if using SSO)"
     echo "  - Set up daily backup cron:"
     echo "    crontab -e"
     echo "    0 3 * * * cd $SCRIPT_DIR && /usr/bin/docker compose exec -T backend bash scripts/backup.sh >> /var/log/crm_backup.log 2>&1"
 else
     echo "  ✗ Some services are not healthy."
-    echo "  Check logs: docker compose logs --tail 50"
+    echo "  Check logs: docker compose --profile prod logs --tail 50"
 fi
 echo "============================================"

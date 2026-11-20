@@ -1,0 +1,6 @@
+# Development override (loaded automatically by `docker compose up`, bypassed by `make prod` which uses `-f docker-compose.yml`)
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+      - /app/node_modules

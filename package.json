@@ -10,8 +10,13 @@
     },
     "lint-staged": {
         "frontend/src/**/*.{js,jsx}": [
-            "prettier --write",
-            "eslint --fix --max-warnings 0"
+            "prettier --write"
+        ],
+        "frontend/src/*.{js,jsx}": [
+            "./frontend/node_modules/.bin/eslint --config frontend/.eslintrc.cjs --fix --max-warnings 0"
+        ],
+        "frontend/src/!(__tests__)/**/*.{js,jsx}": [
+            "./frontend/node_modules/.bin/eslint --config frontend/.eslintrc.cjs --fix --max-warnings 0"
         ],
         "backend/**/*.js": [
             "prettier --write"

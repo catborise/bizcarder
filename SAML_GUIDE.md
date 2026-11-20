@@ -7,6 +7,7 @@ Bu belge, uygulamanın üretim ortamında (Production) docker-compose ile nasıl
 Uygulama tüm ayarlarını proje kök dizininde bulunan `.env` dosyasından okur. Üretim ortamında bu dosyayı güvenli bir şekilde oluşturmanız gerekmektedir.
 
 ### Örnek .env İçeriği
+
 ```bash
 # --- DATABASE ---
 POSTGRES_USER=crm_user
@@ -64,74 +65,26 @@ Kurumsal IdP yöneticinize aşağıdaki bilgileri iletmeniz gerekmektedir:
 
 ---
 
-## 4. Üretim Dağıtımı (docker-compose.yml)
+## 4. Üretim Dağıtımı (Docker Compose + Caddy)
 
-Üretim ortamında stabilite ve performans için **dosya bağlama (host volume mount)** kullanılmaması önerilir. Bu, "EIO: i/o error" gibi senkronizasyon hatalarını önler.
-
-### docker-compose.prod.yml (Önerilen)
-```yaml
-version: '3.8'
-
-services:
-  db:
-    image: postgres:15-alpine
-    restart: always
-    env_file: .env
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  backend:
-    build: ./backend
-    restart: always
-    env_file: .env
-    environment:
-      - DB_HOST=db
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - crm_uploads:/app/uploads # Sadece yüklenen dosyalar için volume kullanılır
-
-  frontend:
-    build: ./frontend
-    restart: always
-    env_file: .env
-    depends_on:
-      - backend
-
-  caddy:
-    image: caddy:latest
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  pgdata:
-  crm_uploads:
-  caddy_data:
-  caddy_config:
-```
+Üretim ortamında frontend statik dosyaları `Dockerfile.caddy` ile derlenip Caddy tarafından sunulur; geliştirme bind-mount'u (`docker-compose.override.yml`) `make prod` tarafından devre dışı bırakılır.
 
 ### Kurulum Komutları
+
 ```bash
 # 1. Kodu sunucuya çekin
 git pull origin main
 
-# 2. .env dosyasını düzenleyin
+# 2. .env dosyasını oluşturup düzenleyin (DOMAIN, SESSION_SECRET, CRM_API_ENCRYPTION_KEY, SAML_*)
+cp .env.example .env
 nano .env
 
-# 3. Uygulamayı ayağa kaldırın
-docker-compose -f docker-compose.prod.yml up --build -d
+# 3. Üretim yığınını (Caddy + Backend + PostgreSQL 16 + Redis 7) ayağa kaldırın
+make prod
+# veya manuel:
+docker compose -f docker-compose.yml --profile prod up --build -d
+docker compose exec -T backend npx sequelize-cli db:migrate
+docker compose exec -T backend node scripts/seed.js
 ```
 
 ---

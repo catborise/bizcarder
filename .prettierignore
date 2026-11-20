@@ -11,3 +11,6 @@ backend/logs/
 pgdata/
 .pg-upgrade-backups/
 .bg-shell/
+.claude/
+.superpowers/
+docs/superpowers/

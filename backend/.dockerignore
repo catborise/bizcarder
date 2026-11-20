@@ -3,7 +3,15 @@ npm-debug.log
 .git
 .gitignore
 .dockerignore
+.env
+.env.*
 Dockerfile
 docker-compose.yml
 uploads
+logs
+backups
 dist
+coverage
+__tests__
+jest.config.js
+*.log

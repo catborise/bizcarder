@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/logo-placeholder.png" alt="Bizcarder" width="80" />
-</p>
-
 <h1 align="center">Bizcarder</h1>
 
 <p align="center">
@@ -47,7 +43,7 @@ That's it — `make install` copies `.env.example`, builds containers, runs migr
 make dev-frontend
 ```
 
-Open [localhost:5173](http://localhost:5173) and log in with `admin` / `admin`.
+Open [localhost:5173](http://localhost:5173) and log in with `admin` and the `ADMIN_DEFAULT_PASSWORD` configured in `.env`.
 
 > Change the default password immediately.
 
@@ -100,8 +96,8 @@ Frontend                          Backend                         Infra
 ────────────────────────          ──────────────────────          ──────────────
 React 19 + Vite 8                 Express 5 (Node 22)             Docker Compose
 React Router 7                    Sequelize ORM                    PostgreSQL 16
-MUI v7 + Framer Motion            Passport.js (Local + SAML)       Redis 7
-i18next (TR/EN)                   Multer 2 + Helmet 8              Nginx (prod)
+Framer Motion                     Passport.js (Local + SAML)       Redis 7
+i18next (TR/EN)                   Multer 2 + Helmet 8              Caddy 2 (prod, Auto HTTPS)
 Dexie 4 (IndexedDB)               Winston logger                   Alpine Linux
 Tesseract.js 7 (OCR)              bcryptjs 3 + speakeasy (2FA)
 ```
@@ -111,7 +107,7 @@ Tesseract.js 7 (OCR)              bcryptjs 3 + speakeasy (2FA)
 ## Architecture
 
 ```
-browser ──→ nginx:80 (static SPA)
+browser ──→ caddy:80/443 (Auto HTTPS + static SPA)
               │
               └──→ express:5000 (API)
                        │
@@ -255,8 +251,8 @@ Key variables in `.env` (see `.env.example` for the full list):
 
 ```bash
 make test            # run all tests
-make test-backend    # 227 tests — Jest + Supertest
-make test-frontend   # 53 tests — Vitest + React Testing Library
+make test-backend    # Jest + Supertest
+make test-frontend   # Vitest + React Testing Library
 ```
 
 Tests never touch production data — the backend test suite uses an isolated `crm_db_test` database.
@@ -265,4 +261,4 @@ Tests never touch production data — the backend test suite uses an isolated `c
 
 ## License
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT License.

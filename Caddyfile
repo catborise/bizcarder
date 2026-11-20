@@ -1,5 +1,16 @@
 {$DOMAIN:localhost} {
-    # API, auth, uploads → backend
+    encode zstd gzip
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+        -Server
+    }
+
+    # API, auth, uploads, health → backend
     handle /auth/* {
         reverse_proxy backend:5000
     }
@@ -9,14 +20,21 @@
     handle /uploads/* {
         reverse_proxy backend:5000
     }
+    handle /health {
+        reverse_proxy backend:5000
+    }
 
     # Everything else → static SPA from /srv
     handle {
         root * /srv
 
-        # Vite hashed assets — long cache
+        # Vite hashed assets — long immutable cache
         @static path /assets/*
         header @static Cache-Control "public, max-age=2592000, immutable"
+
+        # Entry HTML & service worker — always revalidate
+        @nocache path /index.html /sw.js /manifest.json
+        header @nocache Cache-Control "no-cache, no-store, must-revalidate"
 
         try_files {path} /index.html
         file_server

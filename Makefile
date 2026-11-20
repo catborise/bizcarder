@@ -5,8 +5,9 @@
 # Prod: make prod → backend + db + redis + caddy (auto HTTPS, static serve)
 
 COMPOSE      = docker compose
-COMPOSE_PROD = $(COMPOSE) --profile prod
-BACKEND      = $(COMPOSE) exec backend
+COMPOSE_PROD = $(COMPOSE) -f docker-compose.yml --profile prod
+COMPOSE_ALL  = $(COMPOSE) --profile prod
+BACKEND      = $(COMPOSE) exec -T backend
 
 .PHONY: help install upgrade prod-upgrade _upgrade \
         up down restart build dev-frontend deps \
@@ -26,7 +27,11 @@ help: ## Show this help
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 install: ## First-time setup: copy .env, build, start, migrate, seed
-	@test -f .env || (cp .env.example .env && echo "Created .env from .env.example — edit it before proceeding")
+	@if [ ! -f .env ]; then \
+		cp .env.example .env; \
+		echo "Created .env from .env.example — edit secrets (SESSION_SECRET, CRM_API_ENCRYPTION_KEY, ADMIN_DEFAULT_PASSWORD) and re-run 'make install'."; \
+		exit 1; \
+	fi
 	$(COMPOSE) up --build -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 5
@@ -35,7 +40,7 @@ install: ## First-time setup: copy .env, build, start, migrate, seed
 	@echo ""
 	@echo "✓ Backend running on http://localhost:5000"
 	@echo "  Run 'make dev-frontend' in another terminal for the UI"
-	@echo "  Default login: admin / admin"
+	@echo "  Default login: admin / (ADMIN_DEFAULT_PASSWORD from .env)"
 
 upgrade: _COMPOSE_UP = $(COMPOSE)
 upgrade: _upgrade ## Pull latest code, rebuild dev, migrate, seed
@@ -45,10 +50,11 @@ prod-upgrade: _upgrade ## Pull latest code, rebuild prod (Caddy), migrate, seed
 
 _upgrade:
 	@set -e; \
-	$(COMPOSE) down; \
+	$(COMPOSE_ALL) down; \
 	git pull; \
 	TARGET_PG=$$(grep -oP 'image:\s+postgres:\K\d+' docker-compose.yml | head -1); \
-	VOL_NAME=$$(docker volume ls --format '{{.Name}}' | grep pgdata | head -1 || echo ""); \
+	PROJECT_NAME=$$(basename "$$PWD" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]//g'); \
+	VOL_NAME=$$(docker volume ls --format '{{.Name}}' | grep -E "^$${PROJECT_NAME}_pgdata$$" | head -1 || echo ""); \
 	CURRENT_PG=""; \
 	if [ -n "$$VOL_NAME" ]; then \
 		CURRENT_PG=$$(docker run --rm -v "$$VOL_NAME:/pgdata" alpine cat /pgdata/PG_VERSION 2>/dev/null || echo ""); \
@@ -77,11 +83,11 @@ deps: ## Install dependencies (frontend + backend)
 up: ## Start backend + db + redis
 	$(COMPOSE) up -d
 
-down: ## Stop all containers
-	$(COMPOSE) down
+down: ## Stop all containers (including prod Caddy if running)
+	$(COMPOSE_ALL) down
 
-restart: ## Restart all containers
-	$(COMPOSE) restart
+restart: ## Restart all running containers
+	$(COMPOSE_ALL) restart
 
 build: ## Rebuild backend image and start
 	$(COMPOSE) up --build -d
@@ -92,7 +98,7 @@ dev-frontend: ## Start frontend dev server (Vite, HMR, port 5173)
 # ── Logs & monitoring ───────────────────────────────────
 
 logs: ## Tail logs from all services
-	$(COMPOSE) logs -f --tail=100
+	$(COMPOSE_ALL) logs -f --tail=100
 
 logs-backend: ## Tail backend logs only
 	$(COMPOSE) logs -f --tail=100 backend
@@ -101,16 +107,16 @@ logs-db: ## Tail database logs only
 	$(COMPOSE) logs -f --tail=100 db
 
 status: ## Show container status
-	$(COMPOSE) ps -a
+	$(COMPOSE_ALL) ps -a
 
 health: ## Check health of all running services
 	@echo "── Containers ──"
-	@$(COMPOSE) ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null || $(COMPOSE) ps
+	@$(COMPOSE_ALL) ps --format "table {{.Name}}\t{{.Status}}" 2>/dev/null || $(COMPOSE_ALL) ps
 	@echo ""
 	@echo "── Backend API ──"
-	@curl -sf http://localhost:5000/ > /dev/null \
-		&& echo "  ✓ Backend responding on :5000" \
-		|| echo "  ✗ Backend not responding on :5000"
+	@curl -sf http://localhost:5000/health > /dev/null \
+		&& echo "  ✓ Backend healthy on :5000/health" \
+		|| echo "  ✗ Backend not healthy on :5000/health"
 	@echo ""
 	@echo "── Database ──"
 	@$(COMPOSE) exec -T db pg_isready -U $${POSTGRES_USER:-crm_user} -d $${POSTGRES_DB:-crm_db} > /dev/null 2>&1 \
@@ -124,7 +130,7 @@ health: ## Check health of all running services
 
 # ── Production (Caddy) ──────────────────────────────────
 
-prod: ## Build and start production stack (Caddy + backend)
+prod: ## Build and start production stack (Caddy + backend, no dev bind-mount)
 	$(COMPOSE_PROD) up --build -d
 	@echo "Waiting for backend to be ready..."
 	@sleep 5
@@ -176,7 +182,7 @@ test-frontend: ## Run frontend tests (Vitest)
 check: lint format-check test ## Run lint + format check + tests (CI locally)
 
 lint: ## Run ESLint on frontend
-	cd frontend && npx eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0
+	cd frontend && npm run lint
 
 format: ## Format all code with Prettier
 	npx prettier --write .
@@ -187,7 +193,7 @@ format-check: ## Check formatting without writing (CI mode)
 # ── Shell access ─────────────────────────────────────────
 
 shell: ## Open shell in backend container
-	$(BACKEND) sh
+	$(COMPOSE) exec backend sh
 
 shell-db: ## Open psql shell
 	$(COMPOSE) exec db psql -U $${POSTGRES_USER:-crm_user} -d $${POSTGRES_DB:-crm_db}
@@ -198,12 +204,12 @@ shell-redis: ## Open redis-cli shell
 # ── Cleanup ──────────────────────────────────────────────
 
 clean: ## Stop containers and remove images (keeps volumes)
-	$(COMPOSE) down --rmi local
+	$(COMPOSE_ALL) down --rmi local
 
 fresh: ## DESTRUCTIVE: wipe everything (volumes + images) and rebuild
 	@echo "⚠  This will delete ALL data (database, uploads, backups)."
 	@read -p "Are you sure? [y/N] " confirm && [ "$$confirm" = "y" ] || exit 1
-	$(COMPOSE) down -v --rmi local
+	$(COMPOSE_ALL) down -v --rmi local
 	$(COMPOSE) up --build -d
 	@sleep 5
 	$(BACKEND) npx sequelize-cli db:migrate

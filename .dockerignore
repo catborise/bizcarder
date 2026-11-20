@@ -1,0 +1,34 @@
+# Git & IDE & AI tool metadata
+.git
+.gitignore
+.husky
+.vscode
+.agent
+.claude
+.superpowers
+.bg-shell
+docs/superpowers
+
+# Secrets & backups (NEVER leak into Docker build context)
+.env
+.env.*
+!.env.example
+.pg-upgrade-backups
+backups
+backend/backups
+
+# Dependencies & build artifacts
+node_modules
+**/node_modules
+**/dist
+**/build
+**/coverage
+
+# Runtime & test files
+backend/uploads
+backend/logs
+backend/__tests__
+backend/jest.config.js
+*.log
+npm-debug.log*
+.DS_Store

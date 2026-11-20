@@ -14,3 +14,4 @@ backups/
 .bg-shell/
 .pg-upgrade-backups/
 docs/superpowers/
+.claude/

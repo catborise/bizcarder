@@ -23,7 +23,7 @@ cd frontend && npm install && npm run dev   # port 5173
 
 ## Architecture
 
-Monorepo: `backend/` (Express + PostgreSQL) and `frontend/` (React 18 + Vite).
+Monorepo: `backend/` (Express 5 + PostgreSQL 16) and `frontend/` (React 19 + Vite 8).
 
 ```
 backend/
@@ -56,7 +56,7 @@ frontend/
 - Namespaces: `common`, `cards`, `pages`, `dashboard`, `auth`, `filters`, `help`, `settings`, `users`, `about`
 - Locale files (source of truth): `frontend/src/i18n/locales/{en,tr}/<namespace>.json`
 - **Lazy loading**: `common`, `cards`, `dashboard`, `auth`, `pages` are bundled eagerly. `help`, `about`, `users`, `settings`, `filters` are fetched at runtime via `i18next-http-backend` from `/locales/{lng}/{ns}.json`.
-- **Public copies**: `frontend/public/locales/` contains HTTP-served copies of ALL locale files. When you edit a namespace JSON in `src/i18n/locales/`, also update the matching file in `public/locales/` (or re-run `cp frontend/src/i18n/locales/**/*.json` to the public counterpart).
+- **Public copies**: `frontend/public/locales/` contains HTTP-served copies of ALL locale files. Run `cd frontend && npm run sync:locales` after editing any locale JSON (also runs automatically during `npm run build` and verified in CI via `--check`).
 - Always use `t('namespace:key')` with explicit namespace prefix
 - Never hardcode Turkish fallbacks in `t()` second argument — add keys to both locale files instead
 - Dates: use `i18n.language === 'tr' ? 'tr-TR' : 'en-US'` for `toLocaleDateString()`
@@ -101,6 +101,8 @@ Sessions are stored in PostgreSQL (SequelizeStore) — no instance affinity need
 File uploads use a shared Docker volume (`crm_uploads`).
 
 - **Rate limiting**: Set `REDIS_URL` env var to enable distributed rate limiting. Without Redis, each instance has its own in-memory counters (limits are bypassable).
-- **Trash cleanup**: Uses `pg_advisory_lock` — only one instance runs cleanup at a time.
+- **Trash cleanup**: Uses transaction-scoped `pg_try_advisory_xact_lock` — only one instance runs cleanup at a time.
+- **Healthcheck**: `GET /health` verifies PostgreSQL connectivity (`200` connected, `503` disconnected).
+- **Docker dev vs prod**: `docker-compose.override.yml` adds the `./backend:/app` bind-mount for local dev (`make up`); production (`make prod`) runs `-f docker-compose.yml --profile prod` without the dev bind-mount.
 - **DB pool**: Configurable via `DB_POOL_MIN` (default 2) and `DB_POOL_MAX` (default 10). With N instances, total connections = N × max.
 - **All write routes** use Sequelize transactions with `LOCK.UPDATE` to prevent race conditions.
