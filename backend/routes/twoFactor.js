@@ -6,7 +6,7 @@ const { User } = require('../models');
 const { requireAuth } = require('../middleware/auth');
 const { authLimiter } = require('../middleware/rateLimiter');
 const { encrypt, decrypt } = require('../utils/encryption');
-const { logger } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 
 router.use(requireAuth);
 
@@ -54,6 +54,11 @@ router.post('/verify', authLimiter, async (req, res) => {
         if (!isValid) return res.status(400).json({ errorCode: 'INVALID_TOKEN' });
 
         await user.update({ twoFactorEnabled: true });
+        await logAction({
+            action: 'TWO_FACTOR_ENABLE',
+            details: `2FA etkinleştirildi: ${user.username || user.email}`,
+            req,
+        });
         res.json({ messageCode: 'TWO_FACTOR_ENABLED', message: '2FA enabled successfully.' });
     } catch (error) {
         logger.error('2FA verify error:', error);
@@ -81,6 +86,11 @@ router.post('/disable', authLimiter, async (req, res) => {
         if (!isValid) return res.status(400).json({ errorCode: 'INVALID_TOKEN' });
 
         await user.update({ twoFactorEnabled: false, twoFactorSecret: null });
+        await logAction({
+            action: 'TWO_FACTOR_DISABLE',
+            details: `2FA devre dışı bırakıldı: ${user.username || user.email}`,
+            req,
+        });
         res.json({ messageCode: 'TWO_FACTOR_DISABLED', message: '2FA disabled.' });
     } catch (error) {
         logger.error('2FA disable error:', error);

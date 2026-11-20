@@ -261,4 +261,4 @@ Tests never touch production data — the backend test suite uses an isolated `c
 
 ## License
 
-MIT License.
+[MIT License](LICENSE).

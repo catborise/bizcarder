@@ -7,6 +7,7 @@ const { body } = require('express-validator');
 const { validate } = require('../middleware/validator');
 const { sendWelcomeEmail } = require('../utils/mailer');
 const { encrypt, decrypt } = require('../utils/encryption');
+const { logAction } = require('../utils/logger');
 const router = express.Router();
 
 // ============== SHIBBOLETH (SAML) AUTHENTICATION ==============
@@ -45,6 +46,11 @@ router.post(
                 if (err) console.error('SAML re-login error:', err);
                 req.session.save((err) => {
                     if (err) console.error('SAML callback session save error:', err);
+                    logAction({
+                        action: 'USER_LOGIN_SAML',
+                        details: `SAML ile giriş yapıldı: ${user?.username || user?.email || user?.id}`,
+                        req,
+                    });
                     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
                     res.redirect(`${frontendUrl}/`);
                 });
@@ -156,6 +162,11 @@ router.post('/local/login', authLimiter, (req, res, next) => {
                 }
                 req.session.save((saveErr) => {
                     if (saveErr) console.error('Session save error:', saveErr);
+                    logAction({
+                        action: 'USER_LOGIN_LOCAL',
+                        details: `Yerel giriş yapıldı: ${user.username}`,
+                        req,
+                    });
                     res.json({
                         success: true,
                         messageCode: 'LOGIN_SUCCESS',
@@ -239,6 +250,12 @@ router.post(
             // Send welcome email (non-blocking)
             sendWelcomeEmail(user).catch(() => {});
 
+            await logAction({
+                action: 'USER_REGISTER',
+                details: `Yeni kullanıcı kayıt talebi: ${user.username} (${user.email})`,
+                req,
+            });
+
             // Kullanıcıya onay beklediğini bildir (otomatik giriş yapma)
             res.status(201).json({
                 success: true,
@@ -257,6 +274,13 @@ router.post(
 // Çıkış Yap
 router.post('/logout', (req, res) => {
     const isSamlUser = !!req.user?.shibbolethId;
+    if (req.user) {
+        logAction({
+            action: 'USER_LOGOUT',
+            details: `Çıkış yapıldı: ${req.user.username || req.user.email || req.user.id}`,
+            req,
+        });
+    }
     req.logout((err) => {
         if (err) {
             return res.status(500).json({ errorCode: 'LOGOUT_FAILED' });
@@ -322,6 +346,12 @@ router.put('/change-password', authLimiter, async (req, res) => {
         // Yeni şifreyi kaydet (Model hook'u hashleyecek)
         user.password = newPassword;
         await user.save();
+
+        await logAction({
+            action: 'PASSWORD_CHANGE',
+            details: `Kullanıcı şifresini değiştirdi: ${user.username}`,
+            req,
+        });
 
         res.json({ success: true, messageCode: 'PASSWORD_CHANGED' });
     } catch (error) {

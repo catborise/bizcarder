@@ -73,6 +73,11 @@ exports.exportExcel = async (req, res) => {
         res.setHeader('Content-Length', buffer.length);
 
         res.send(buffer);
+        await logAction({
+            action: 'CARD_EXCEL_EXPORT',
+            details: `Excel dışa aktarma: ${cards.length} kart`,
+            req,
+        });
     } catch (error) {
         console.error('[EXPORT ERROR] Excel Export Failed:', error);
         logger.error('Excel export error:', error);
@@ -144,6 +149,11 @@ exports.exportPdf = async (req, res) => {
         });
 
         doc.end();
+        await logAction({
+            action: 'CARD_PDF_EXPORT',
+            details: `PDF dışa aktarma: ${cards.length} kart`,
+            req,
+        });
     } catch (error) {
         console.error('[EXPORT ERROR] PDF Export Error:', error);
         logger.error('PDF export error:', error);

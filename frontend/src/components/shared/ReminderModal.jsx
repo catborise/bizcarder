@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaCalendarCheck, FaTimes, FaExternalLinkAlt, FaTrashAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router';
@@ -9,8 +10,18 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
     const { t, i18n } = useTranslation(['pages', 'common']);
     const navigate = useNavigate();
     const { showNotification } = useNotification();
+    const hasReminders = Boolean(reminders && reminders.length > 0);
 
-    if (!reminders || reminders.length === 0) return null;
+    useEffect(() => {
+        if (!hasReminders) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [hasReminders, onClose]);
+
+    if (!hasReminders) return null;
 
     const handleDismiss = async (id, e) => {
         e.stopPropagation();
@@ -32,6 +43,10 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
 
     return (
         <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="reminder-modal-title"
+            onClick={onClose}
             style={{
                 position: 'fixed',
                 top: 0,
@@ -48,6 +63,7 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
             }}
         >
             <div
+                onClick={(e) => e.stopPropagation()}
                 style={{
                     background: 'var(--bg-card)',
                     backdropFilter: 'blur(16px)',
@@ -85,12 +101,14 @@ const ReminderModal = ({ reminders, onClose, onRefresh }) => {
                         >
                             <FaCalendarCheck size={24} />
                         </div>
-                        <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>
+                        <h2 id="reminder-modal-title" style={{ margin: 0, fontSize: '1.5rem', fontWeight: '700' }}>
                             {t('pages:reminder.title')}
                         </h2>
                     </div>
                     <button
+                        type="button"
                         onClick={onClose}
+                        aria-label={t('common:close')}
                         style={{
                             background: 'var(--glass-bg)',
                             border: 'none',

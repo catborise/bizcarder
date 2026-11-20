@@ -639,9 +639,9 @@ button:focus-visible {
         font-size: 1.25rem;
     }
 
-    .glass-container {
+    .glass-container.glass-container {
         border-radius: var(--border-radius-md);
-        padding: 1rem !important;
+        padding: 1rem;
     }
 
     /* Dashboard Responsive Grids */
@@ -652,8 +652,8 @@ button:focus-visible {
         gap: 16px;
     }
 
-    .dashboard-core-tiles {
-        grid-template-columns: 1fr !important;
+    .dashboard-core-tiles.dashboard-core-tiles {
+        grid-template-columns: 1fr;
     }
 
     /* Contacts Header Responsive */
@@ -710,14 +710,14 @@ button:focus-visible {
         padding-top: 12px;
         justify-content: flex-start;
         gap: 8px;
-        opacity: 1 !important;
+        opacity: 1;
     }
 
     /* Nav Responsive */
-    .navbar-logo-text,
-    .user-name-text,
-    .hide-on-mobile {
-        display: none !important;
+    .navbar-logo-text.navbar-logo-text,
+    .user-name-text.user-name-text,
+    .hide-on-mobile.hide-on-mobile {
+        display: none;
     }
 
     .nav-brand-group.nav-brand-group {
@@ -727,7 +727,7 @@ button:focus-visible {
     }
 
     .nav-links.nav-links {
-        display: none !important;
+        display: none;
     }
 
     .nav-actions.nav-actions {
@@ -740,8 +740,8 @@ button:focus-visible {
         gap: 8px;
     }
 
-    main {
-        padding: 1rem !important;
+    body main {
+        padding: 1rem;
     }
 
     .dashboard-banner.dashboard-banner {
@@ -756,8 +756,8 @@ button:focus-visible {
     height: 250px;
 }
 
-.dashboard-banner-content {
-    padding: 40px !important;
+.dashboard-banner-content.dashboard-banner-content {
+    padding: 40px;
 }
 
 .dashboard-stats-grid {
@@ -1162,11 +1162,11 @@ button:focus-visible {
         margin-top: -36px;
     }
 
-    .mycard-avatar {
+    .mycard-avatar.mycard-avatar {
         width: 64px;
         height: 64px;
-        font-size: 1.4rem !important;
-        border-radius: 14px !important;
+        font-size: 1.4rem;
+        border-radius: 14px;
     }
 
     .mycard-header h2 {
@@ -1495,8 +1495,8 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
-    .hide-on-mobile-nav {
-        display: none !important;
+    .hide-on-mobile-nav.hide-on-mobile-nav {
+        display: none;
     }
 }
 
@@ -1544,8 +1544,8 @@ input:checked + .slider:before {
         color: var(--accent-secondary);
     }
 
-    main {
-        padding-bottom: 80px !important;
+    body main {
+        padding-bottom: 80px;
     }
 
     .fab {

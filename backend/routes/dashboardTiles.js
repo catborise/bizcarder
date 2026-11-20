@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { DashboardTile } = require('../models');
 const { requireAdmin } = require('../middleware/auth');
-const { logger } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 
 // Tüm tile'ları getir (Herkes görebilir)
 router.get('/', async (req, res) => {
@@ -22,6 +22,11 @@ router.post('/', requireAdmin, async (req, res) => {
     try {
         const { title, subtitle, url, icon, backgroundColor, order, isInternal } = req.body;
         const tile = await DashboardTile.create({ title, subtitle, url, icon, backgroundColor, order, isInternal });
+        await logAction({
+            action: 'TILE_CREATE',
+            details: `Dashboard kutucuğu eklendi: ${tile.title}`,
+            req,
+        });
         res.status(201).json(tile);
     } catch (error) {
         logger.error('Dashboard tile create error:', error);
@@ -37,6 +42,11 @@ router.put('/:id', requireAdmin, async (req, res) => {
         if (!tile) return res.status(404).json({ errorCode: 'TILE_UPDATE_FAILED' });
 
         await tile.update({ title, subtitle, url, icon, backgroundColor, order, isInternal });
+        await logAction({
+            action: 'TILE_UPDATE',
+            details: `Dashboard kutucuğu güncellendi: ${tile.title}`,
+            req,
+        });
         res.json(tile);
     } catch (error) {
         logger.error('Dashboard tile update error:', error);
@@ -50,7 +60,13 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         const tile = await DashboardTile.findByPk(req.params.id);
         if (!tile) return res.status(404).json({ errorCode: 'TILE_DELETE_FAILED' });
 
+        const tileTitle = tile.title;
         await tile.destroy();
+        await logAction({
+            action: 'TILE_DELETE',
+            details: `Dashboard kutucuğu silindi: ${tileTitle}`,
+            req,
+        });
         res.json({ message: 'Tile silindi' });
     } catch (error) {
         logger.error('Dashboard tile delete error:', error);

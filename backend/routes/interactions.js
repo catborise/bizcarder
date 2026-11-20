@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Interaction, User, BusinessCard } = require('../models');
 const { requireAuth } = require('../middleware/auth');
-const { logger } = require('../utils/logger');
+const { logger, logAction } = require('../utils/logger');
 
 // All interaction routes require authentication
 router.use(requireAuth);
@@ -69,6 +69,12 @@ router.post('/:cardId', async (req, res) => {
         // Nurturing: Kartın son etkileşim tarihini güncelle
         await BusinessCard.update({ lastInteractionDate: interaction.date }, { where: { id: access.card.id } });
 
+        await logAction({
+            action: 'INTERACTION_CREATE',
+            details: `Etkileşim eklendi (Kart #${access.card.id}): ${type || 'Not'}`,
+            req,
+        });
+
         res.status(201).json(interaction);
     } catch (error) {
         logger.error('Interaction create error:', error);
@@ -91,6 +97,11 @@ router.put('/:id', async (req, res) => {
 
         const { type, notes, date } = req.body || {};
         await interaction.update({ type, notes, date: date || interaction.date });
+        await logAction({
+            action: 'INTERACTION_UPDATE',
+            details: `Etkileşim güncellendi (#${interaction.id})`,
+            req,
+        });
         res.json(interaction);
     } catch (error) {
         logger.error('Interaction update error:', error);
@@ -111,6 +122,11 @@ router.delete('/:id', async (req, res) => {
         }
 
         await interaction.destroy();
+        await logAction({
+            action: 'INTERACTION_DELETE',
+            details: `Etkileşim silindi (#${req.params.id})`,
+            req,
+        });
         res.json({ message: 'Kayıt silindi.' });
     } catch (error) {
         logger.error('Interaction delete error:', error);
