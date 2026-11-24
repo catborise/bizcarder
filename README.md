@@ -96,7 +96,7 @@ Frontend                          Backend                         Infra
 ────────────────────────          ──────────────────────          ──────────────
 React 19 + Vite 8                 Express 5 (Node 22)             Docker Compose
 React Router 7                    Sequelize ORM                    PostgreSQL 18
-Framer Motion                     Passport.js (Local + SAML)       Redis 7
+Framer Motion                     Passport.js (Local + SAML)       Redis 8
 i18next (TR/EN)                   Multer 2 + Helmet 8              Caddy 2 (prod, Auto HTTPS)
 Dexie 4 (IndexedDB)               Winston logger                   Alpine Linux
 Tesseract.js 7 (OCR)              bcryptjs 3 + speakeasy (2FA)
