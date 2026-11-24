@@ -76,7 +76,7 @@ get_volume_pg_version() {
     local vol_name
     vol_name=$(find_project_pg_volume)
     [ -z "$vol_name" ] && echo "" && return
-    docker run --rm -v "${vol_name}:/pgdata:ro" alpine cat /pgdata/PG_VERSION 2>/dev/null || echo ""
+    docker run --rm -v "${vol_name}:/pgdata:ro" alpine sh -c 'cat /pgdata/PG_VERSION /pgdata/*/docker/PG_VERSION 2>/dev/null | head -1' || echo ""
 }
 
 wait_for_db() {
@@ -102,6 +102,9 @@ start_db_with_image() {
     cp "$PROJECT_DIR/docker-compose.yml" "$COMPOSE_BACKUP"
 
     sed -i "s|image: ${orig_image}|image: ${pg_image}|" docker-compose.yml
+    if [ "${CURRENT_VERSION:-0}" -lt 18 ]; then
+        sed -i 's|pgdata:/var/lib/postgresql$|pgdata:/var/lib/postgresql/data|' docker-compose.yml
+    fi
     docker compose up -d db
     wait_for_db
 

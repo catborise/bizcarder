@@ -57,7 +57,7 @@ _upgrade:
 	VOL_NAME=$$(docker volume ls --format '{{.Name}}' | grep -E "^$${PROJECT_NAME}_pgdata$$" | head -1 || echo ""); \
 	CURRENT_PG=""; \
 	if [ -n "$$VOL_NAME" ]; then \
-		CURRENT_PG=$$(docker run --rm -v "$$VOL_NAME:/pgdata" alpine cat /pgdata/PG_VERSION 2>/dev/null || echo ""); \
+		CURRENT_PG=$$(docker run --rm -v "$$VOL_NAME:/pgdata:ro" alpine sh -c 'cat /pgdata/PG_VERSION /pgdata/*/docker/PG_VERSION 2>/dev/null | head -1' || echo ""); \
 	fi; \
 	if [ -n "$$CURRENT_PG" ] && [ "$$CURRENT_PG" != "$$TARGET_PG" ]; then \
 		echo ""; \

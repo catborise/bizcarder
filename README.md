@@ -7,7 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/react-19-blue?logo=react" alt="React 19" />
   <img src="https://img.shields.io/badge/node-22-green?logo=node.js" alt="Node 22" />
-  <img src="https://img.shields.io/badge/postgres-16-336791?logo=postgresql&logoColor=white" alt="PostgreSQL 16" />
+  <img src="https://img.shields.io/badge/postgres-18-336791?logo=postgresql&logoColor=white" alt="PostgreSQL 18" />
   <img src="https://img.shields.io/badge/vite-8-646CFF?logo=vite&logoColor=white" alt="Vite 8" />
   <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License" />
   <img src="https://img.shields.io/badge/i18n-TR%20%7C%20EN-orange" alt="Multilingual" />
@@ -95,7 +95,7 @@ cd frontend && npm install && npm run dev
 Frontend                          Backend                         Infra
 ────────────────────────          ──────────────────────          ──────────────
 React 19 + Vite 8                 Express 5 (Node 22)             Docker Compose
-React Router 7                    Sequelize ORM                    PostgreSQL 16
+React Router 7                    Sequelize ORM                    PostgreSQL 18
 Framer Motion                     Passport.js (Local + SAML)       Redis 7
 i18next (TR/EN)                   Multer 2 + Helmet 8              Caddy 2 (prod, Auto HTTPS)
 Dexie 4 (IndexedDB)               Winston logger                   Alpine Linux
