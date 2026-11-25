@@ -20,6 +20,7 @@ import {
     FaCalendarDay,
     FaBell,
     FaCheck,
+    FaPlus,
 } from 'react-icons/fa';
 
 function getTodayLocal() {
@@ -57,6 +58,14 @@ const AgendaWorkspace = () => {
     const [showDelegationModal, setShowDelegationModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
     const [showPrintModal, setShowPrintModal] = useState(false);
+    const [isMobile, setIsMobile] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 768 : false));
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+        const handleResize = () => setIsMobile(window.innerWidth <= 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -825,8 +834,13 @@ const AgendaWorkspace = () => {
                 </div>
             )}
 
-            {/* 12-Month Binder Tabs & Day Strip */}
-            <MonthIndexTabs selectedDate={selectedDate} yearOverview={yearOverview} onSelectDate={setSelectedDate} />
+            {/* 12-Month Binder Tabs & Day Strip (Compact 7-day strip on mobile) */}
+            <MonthIndexTabs
+                selectedDate={selectedDate}
+                yearOverview={yearOverview}
+                onSelectDate={setSelectedDate}
+                isMobile={isMobile}
+            />
 
             {/* P0-1: Due & Overdue Reminders Inbox Strip */}
             {dueReminders.length > 0 && (
@@ -1021,23 +1035,25 @@ const AgendaWorkspace = () => {
                 </div>
             )}
 
-            {/* Single-Line Keyboard-First Entry Bar */}
+            {/* Single-Line Keyboard-First & Mobile 1-Tap Entry Bar */}
             <QuickEntryBar
                 contacts={contacts}
                 tags={tags}
                 isOwner={isOwner}
                 canWrite={canWrite}
                 ownerId={effectiveOwnerId}
+                selectedDate={selectedDate}
                 onCreateEntry={handleCreateEntry}
                 inputRef={quickInputRef}
             />
 
-            {/* Two-Page Physical Desk Agenda Spread */}
+            {/* Two-Page Physical Desk Agenda Spread (Segmented Tabs on Mobile) */}
             <DailyPageSpread
                 selectedDate={selectedDate}
                 page={activePage}
                 entries={activeEntries}
                 isLoading={isDayLoading}
+                isMobile={isMobile}
                 versionConflict={versionConflict}
                 onResolveVersionConflict={() => {
                     setVersionConflict(null);
@@ -1120,8 +1136,28 @@ const AgendaWorkspace = () => {
                                     🏢 <strong>{contactDrawer.card.company}</strong> ({contactDrawer.card.title || '-'})
                                 </div>
                             )}
-                            {contactDrawer.card.phone && <div>📞 {contactDrawer.card.phone}</div>}
-                            {contactDrawer.card.email && <div>✉️ {contactDrawer.card.email}</div>}
+                            {contactDrawer.card.phone && (
+                                <div>
+                                    📞{' '}
+                                    <a
+                                        href={`tel:${contactDrawer.card.phone}`}
+                                        style={{ color: 'var(--accent-primary)', fontWeight: 700 }}
+                                    >
+                                        {contactDrawer.card.phone}
+                                    </a>
+                                </div>
+                            )}
+                            {contactDrawer.card.email && (
+                                <div>
+                                    ✉️{' '}
+                                    <a
+                                        href={`mailto:${contactDrawer.card.email}`}
+                                        style={{ color: 'var(--accent-primary)', fontWeight: 700 }}
+                                    >
+                                        {contactDrawer.card.email}
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -1156,6 +1192,42 @@ const AgendaWorkspace = () => {
                         ))}
                     </div>
                 </div>
+            )}
+
+            {/* Mobile Thumb-Zone Sticky Quick Note Button */}
+            {isMobile && canWrite && !contactDrawer && (
+                <button
+                    type="button"
+                    onClick={() => {
+                        if (quickInputRef.current) {
+                            quickInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            quickInputRef.current.focus();
+                        }
+                    }}
+                    aria-label={t('agenda.mobileQuickNoteFab', 'Hızlı Ajanda Notu Ekle')}
+                    style={{
+                        position: 'fixed',
+                        bottom: '76px',
+                        right: '16px',
+                        zIndex: 900,
+                        minHeight: '48px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        padding: '10px 16px',
+                        borderRadius: '999px',
+                        border: 'none',
+                        background: 'var(--accent-primary)',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        fontSize: '0.84rem',
+                        boxShadow: 'var(--glass-shadow-hover)',
+                        cursor: 'pointer',
+                    }}
+                >
+                    <FaPlus size={13} />
+                    <span>{t('agenda.mobileQuickNoteFabLabel', 'Hızlı Not')}</span>
+                </button>
             )}
 
             {/* Modals */}

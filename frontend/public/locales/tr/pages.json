@@ -379,6 +379,20 @@
         "shareHiddenPrivatePad": "Özel Karalama gizlendi",
         "sharePiiStripped": "Kişi telefon/e-posta bilgileri gizlenir",
         "shareRangePreviewNote": "Yukarıdaki sayaçlar aktif günün özetidir; seçili tarih aralığındaki tüm görünür sayfalar paylaşıma dahil edilir.",
-        "moreEntries": "kayıt daha"
+        "moreEntries": "kayıt daha",
+        "remPresetPlus1h": "+1 Saat",
+        "remPresetToday16": "Bugün 16:00",
+        "remPresetTomorrow09": "Yarın 09:00",
+        "voiceInputBtnAria": "Sesle ajanda notu yazdır",
+        "searchContactInPicker": "Fihristte ad, şirket veya tel ara...",
+        "noMatchingContacts": "Eşleşen kartvizit bulunamadı.",
+        "pickContactChipBtn": "@Kişi Seç",
+        "customQuickTimeAria": "Özel saat seç",
+        "liveParsedPreviewLabel": "Algılanan Kayıt",
+        "mobilePageSwitcherAria": "Ajanda Sayfa Görünümü Seçimi",
+        "mobileTabSchedule": "Günlük Program",
+        "mobileTabNotepad": "Not Defteri",
+        "mobileQuickNoteFab": "Hızlı Ajanda Notu Ekle",
+        "mobileQuickNoteFabLabel": "Hızlı Not"
     }
 }

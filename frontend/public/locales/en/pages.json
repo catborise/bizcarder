@@ -379,6 +379,20 @@
         "shareHiddenPrivatePad": "Private Scratchpad hidden",
         "sharePiiStripped": "Contact phone/email details are stripped",
         "shareRangePreviewNote": "Counts above summarize the active day; all visible pages in the selected date range will be shared.",
-        "moreEntries": "more entries"
+        "moreEntries": "more entries",
+        "remPresetPlus1h": "+1 Hour",
+        "remPresetToday16": "Today 16:00",
+        "remPresetTomorrow09": "Tomorrow 09:00",
+        "voiceInputBtnAria": "Dictate agenda note by voice",
+        "searchContactInPicker": "Search name, company, or phone in directory...",
+        "noMatchingContacts": "No matching business cards found.",
+        "pickContactChipBtn": "Pick @Contact",
+        "customQuickTimeAria": "Pick custom time",
+        "liveParsedPreviewLabel": "Detected Entry",
+        "mobilePageSwitcherAria": "Agenda Page View Switcher",
+        "mobileTabSchedule": "Daily Schedule",
+        "mobileTabNotepad": "Notepad",
+        "mobileQuickNoteFab": "Add Quick Agenda Note",
+        "mobileQuickNoteFabLabel": "Quick Note"
     }
 }

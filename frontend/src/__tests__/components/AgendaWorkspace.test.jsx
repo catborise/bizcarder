@@ -300,5 +300,12 @@ describe('AgendaWorkspace Component', () => {
         const selectiveBtn = screen.getByText(/Seçerek Devret/i);
         fireEvent.click(selectiveBtn);
         expect(screen.getByText(/Günü Kapat & Açık İşleri Seçerek Devret/i)).toBeInTheDocument();
+
+        // Mobile-friendly 1-tap time chip & reminder preset + live parsed preview
+        const timeChip = screen.getByText(/🕒 14:00/i);
+        fireEvent.click(timeChip);
+        const remChips = screen.getAllByText(/Yarın 09:00/i);
+        fireEvent.click(remChips[remChips.length - 1]);
+        expect(screen.getByText(/Algılanan Kayıt/i)).toBeInTheDocument();
     });
 });
