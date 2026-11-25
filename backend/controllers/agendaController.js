@@ -306,7 +306,7 @@ exports.updateDailyPageNotes = async (req, res) => {
                 { transaction: t },
             );
         } else {
-            if (version !== undefined && Number(version) !== page.version) {
+            if (version === undefined || Number(version) !== page.version) {
                 await t.rollback();
                 return res.status(409).json({
                     errorCode: 'AGENDA_VERSION_CONFLICT',
@@ -653,17 +653,24 @@ exports.updateEntry = async (req, res) => {
             entry.isPrivate = Boolean(isPrivate);
         }
         if (reminderAt !== undefined) {
+            const prevRemMs = entry.reminderAt ? new Date(entry.reminderAt).getTime() : null;
             if (reminderAt === null || reminderAt === '') {
                 entry.reminderAt = null;
+                if (prevRemMs !== null) {
+                    entry.reminderSent = false;
+                }
             } else {
                 const parsedRem = new Date(reminderAt);
                 if (Number.isNaN(parsedRem.getTime())) {
                     await t.rollback();
                     return res.status(400).json({ errorCode: 'INVALID_REMINDER_DATE' });
                 }
+                const nextRemMs = parsedRem.getTime();
                 entry.reminderAt = parsedRem;
+                if (prevRemMs !== nextRemMs) {
+                    entry.reminderSent = false;
+                }
             }
-            entry.reminderSent = false;
         }
 
         entry.updatedByUserId = actorUserId;
@@ -779,9 +786,23 @@ exports.migrateUnfinishedEntries = async (req, res) => {
             return res.status(400).json({ errorCode: 'MIGRATE_TARGET_PAST_DATE' });
         }
 
-        const selectedIds = Array.isArray(entryIds)
-            ? [...new Set(entryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))]
-            : null;
+        let selectedIds = null;
+        if (entryIds !== undefined) {
+            if (!Array.isArray(entryIds)) {
+                await t.rollback();
+                return res.status(400).json({ errorCode: 'INVALID_ENTRY_IDS' });
+            }
+            selectedIds = [...new Set(entryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))].slice(
+                0,
+                200,
+            );
+            if (selectedIds.length === 0) {
+                await t.rollback();
+                return res.status(400).json({ errorCode: 'MIGRATE_NO_ENTRIES_SELECTED' });
+            }
+        }
+
+        const dateDeltaMs = new Date(`${toDate}T00:00:00Z`).getTime() - new Date(`${fromDate}T00:00:00Z`).getTime();
 
         // Lock source rows first (without outer join includes)
         const lockedSources = await AgendaEntry.findAll({
@@ -791,7 +812,7 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 status: 'open',
                 deletedAt: null,
                 ...(isOwner ? {} : { isPrivate: false }),
-                ...(selectedIds && selectedIds.length > 0 ? { id: { [Op.in]: selectedIds } } : {}),
+                ...(selectedIds ? { id: { [Op.in]: selectedIds } } : {}),
             },
             order: [
                 ['timeSlot', 'ASC'],
@@ -819,14 +840,13 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 transaction: t,
             });
 
-            const shouldClearTime = Boolean(clearScheduleTimes) && source.entryType === 'schedule';
+            const shouldClearTime =
+                Boolean(clearScheduleTimes) && (source.entryType === 'schedule' || Boolean(source.timeSlot));
             let migratedReminderAt = null;
             if (source.reminderAt) {
                 const origRem = new Date(source.reminderAt);
                 if (!Number.isNaN(origRem.getTime())) {
-                    const hh = String(origRem.getHours()).padStart(2, '0');
-                    const mm = String(origRem.getMinutes()).padStart(2, '0');
-                    migratedReminderAt = new Date(`${toDate}T${hh}:${mm}:00`);
+                    migratedReminderAt = new Date(origRem.getTime() + dateDeltaMs);
                 }
             }
 

@@ -85,12 +85,15 @@ const AgendaWorkspace = () => {
         [effectiveOwnerId, user?.id],
     );
 
+    useEffect(() => {
+        setVersionConflict(null);
+    }, [selectedDate, effectiveOwnerId]);
+
     const fetchDailyPage = useCallback(async () => {
         const seq = ++dayRequestSeqRef.current;
         const requestedDate = selectedDate;
         const requestedOwnerId = effectiveOwnerId;
         setIsDayLoading(true);
-        setVersionConflict(null);
         try {
             const res = await api.get(`/api/agenda/day/${requestedDate}`, {
                 headers: buildHeadersForOwner(requestedOwnerId),
@@ -228,8 +231,10 @@ const AgendaWorkspace = () => {
                 headers: buildHeadersForOwner(effectiveOwnerId),
             });
             await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            return true;
         } catch {
             showNotification(t('agenda.entryUpdateError', 'Kayıt güncellenemedi.'), 'error');
+            return false;
         }
     };
 
@@ -239,8 +244,10 @@ const AgendaWorkspace = () => {
                 headers: buildHeadersForOwner(effectiveOwnerId),
             });
             await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            return true;
         } catch {
             showNotification(t('agenda.entryDeleteError', 'Bu kaydı silme yetkiniz yok.'), 'error');
+            return false;
         }
     };
 
@@ -266,8 +273,10 @@ const AgendaWorkspace = () => {
                 'success',
             );
             await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            return true;
         } catch {
             showNotification(t('agenda.migrateError', 'Yarına devretme işlemi başarısız.'), 'error');
+            return false;
         }
     };
 
@@ -404,11 +413,10 @@ const AgendaWorkspace = () => {
     const activePage = isContextMatched ? dayData?.page : null;
     const activeEntries = isContextMatched ? dayData?.entries || [] : [];
     const dueReminders = isContextMatched ? dayData?.dueReminders || [] : [];
+    const activeAccess = isContextMatched ? dayData?.access : null;
 
-    const isOwner = dayData?.access
-        ? dayData.access.isOwner
-        : !activeOwnerId || Number(activeOwnerId) === Number(user?.id);
-    const canWrite = dayData?.access ? isOwner || dayData.access.permission === 'write' : true;
+    const isOwner = activeAccess ? activeAccess.isOwner : !activeOwnerId || Number(activeOwnerId) === Number(user?.id);
+    const canWrite = activeAccess ? isOwner || activeAccess.permission === 'write' : false;
 
     const handleSnoozeReminder10Min = async (entryId) => {
         const snoozeDate = new Date(Date.now() + 10 * 60 * 1000).toISOString();
@@ -914,10 +922,13 @@ const AgendaWorkspace = () => {
                                                 ? t('agenda.reminderOverdueBadge', 'Gecikti')
                                                 : t('agenda.reminderTodayBadge', 'Bugün')}{' '}
                                             •{' '}
-                                            {remTime.toLocaleTimeString('tr-TR', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            })}
+                                            {remTime.toLocaleTimeString(
+                                                (i18n.language || 'tr').startsWith('tr') ? 'tr-TR' : 'en-US',
+                                                {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                },
+                                            )}
                                         </span>
 
                                         <button
@@ -1033,7 +1044,7 @@ const AgendaWorkspace = () => {
                     fetchDailyPage();
                 }}
                 access={
-                    dayData?.access || {
+                    activeAccess || {
                         isOwner,
                         permission: canWrite ? 'write' : 'read',
                         ownerId: effectiveOwnerId,

@@ -29,6 +29,14 @@ function timeToMinutes(timeStr) {
     return h * 60 + m;
 }
 
+function addOneDay(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(`${dateStr}T00:00:00Z`);
+    if (Number.isNaN(d.getTime())) return '';
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+}
+
 function getNextBusinessDay(dateStr) {
     if (!dateStr) return '';
     const d = new Date(`${dateStr}T00:00:00Z`);
@@ -65,11 +73,12 @@ const DailyPageSpread = ({
     onSavePageNotes,
     onOpenContactHistory,
 }) => {
-    const { t } = useTranslation('pages');
+    const { t, i18n } = useTranslation('pages');
     const isOwner = Boolean(access?.isOwner);
-    const canWrite = isOwner || access?.permission === 'write';
+    const canWrite = Boolean(page) && (isOwner || access?.permission === 'write');
     const actorUserId = Number(access?.actorUserId);
     const ownerId = Number(access?.ownerId);
+    const localeCode = (i18n.language || 'tr').startsWith('tr') ? 'tr-TR' : 'en-US';
 
     const [filterTab, setFilterTab] = useState('all');
     const [rightTab, setRightTab] = useState('shared'); // 'shared' | 'private'
@@ -80,6 +89,7 @@ const DailyPageSpread = ({
 
     // P0-2: Inline entry editing / rescheduling state
     const [editingEntryId, setEditingEntryId] = useState(null);
+    const [submittingEdit, setSubmittingEdit] = useState(false);
     const [editDraft, setEditDraft] = useState({
         date: '',
         timeSlot: '',
@@ -87,15 +97,17 @@ const DailyPageSpread = ({
         entryType: 'schedule',
         content: '',
         reminderAt: '',
+        initialReminderAt: '',
     });
 
     // P0-3: Selective end-of-day rollover panel state
     const [showSelectiveRollover, setShowSelectiveRollover] = useState(false);
+    const [submittingRollover, setSubmittingRollover] = useState(false);
     const [rolloverSelectedIds, setRolloverSelectedIds] = useState([]);
     const [rolloverTargetDate, setRolloverTargetDate] = useState('');
     const [clearScheduleTimes, setClearScheduleTimes] = useState(true);
 
-    // P0-4: Per-context (ownerId:date) unsaved draft preservation
+    // P0-4: Per-context (ownerId:date) unsaved draft preservation with baseVersion tracking
     const draftsByContextRef = useRef({});
     const savingMutexRef = useRef(false);
     const lastSyncedKeyRef = useRef('');
@@ -159,9 +171,9 @@ const DailyPageSpread = ({
 
     const handleOpenSelectiveRollover = () => {
         if (!showSelectiveRollover) {
-            // Default: select tasks, follow_ups, calls, notes; leave timed appointments unchecked by default
+            // Default: select only tasks, follow_ups, calls, notes without timeSlot; leave timed appointments unchecked
             const defaultIds = openEntries.filter((e) => e.entryType !== 'schedule' && !e.timeSlot).map((e) => e.id);
-            setRolloverSelectedIds(defaultIds.length > 0 ? defaultIds : openEntries.map((e) => e.id));
+            setRolloverSelectedIds(defaultIds);
             setRolloverTargetDate(getNextBusinessDay(selectedDate));
             setClearScheduleTimes(true);
         }
@@ -169,16 +181,24 @@ const DailyPageSpread = ({
     };
 
     const handleConfirmSelectiveRollover = async () => {
-        if (rolloverSelectedIds.length === 0) return;
-        await onMigrateUnfinished({
-            toDate: rolloverTargetDate || undefined,
-            entryIds: rolloverSelectedIds,
-            clearScheduleTimes,
-        });
-        setShowSelectiveRollover(false);
+        if (rolloverSelectedIds.length === 0 || submittingRollover) return;
+        setSubmittingRollover(true);
+        try {
+            const ok = await onMigrateUnfinished({
+                toDate: rolloverTargetDate || undefined,
+                entryIds: rolloverSelectedIds,
+                clearScheduleTimes,
+            });
+            if (ok !== false) {
+                setShowSelectiveRollover(false);
+            }
+        } finally {
+            setSubmittingRollover(false);
+        }
     };
 
     const handleStartEditEntry = (entry) => {
+        const initialRem = toDatetimeLocalValue(entry.reminderAt);
         setEditingEntryId(entry.id);
         setEditDraft({
             date: entry.date || selectedDate,
@@ -186,21 +206,35 @@ const DailyPageSpread = ({
             endTime: entry.endTime || '',
             entryType: entry.entryType || (entry.timeSlot ? 'schedule' : 'note'),
             content: entry.content || '',
-            reminderAt: toDatetimeLocalValue(entry.reminderAt),
+            reminderAt: initialRem,
+            initialReminderAt: initialRem,
         });
     };
 
     const handleSaveEditEntry = async (entryId) => {
-        if (!editDraft.content.trim()) return;
-        await onUpdateEntry(entryId, {
-            date: editDraft.date || selectedDate,
-            timeSlot: editDraft.timeSlot || null,
-            endTime: editDraft.endTime || null,
-            entryType: editDraft.entryType,
-            content: editDraft.content.trim(),
-            reminderAt: editDraft.reminderAt ? new Date(editDraft.reminderAt).toISOString() : null,
-        });
-        setEditingEntryId(null);
+        if (!editDraft.content.trim() || submittingEdit) return;
+        if (editDraft.timeSlot && editDraft.endTime && editDraft.endTime < editDraft.timeSlot) {
+            return;
+        }
+        setSubmittingEdit(true);
+        try {
+            const updates = {
+                date: editDraft.date || selectedDate,
+                timeSlot: editDraft.timeSlot || null,
+                endTime: editDraft.endTime || null,
+                entryType: editDraft.entryType,
+                content: editDraft.content.trim(),
+            };
+            if (editDraft.reminderAt !== editDraft.initialReminderAt) {
+                updates.reminderAt = editDraft.reminderAt ? new Date(editDraft.reminderAt).toISOString() : null;
+            }
+            const ok = await onUpdateEntry(entryId, updates);
+            if (ok !== false) {
+                setEditingEntryId(null);
+            }
+        } finally {
+            setSubmittingEdit(false);
+        }
     };
 
     const filteredEntries = entries.filter((entry) => {
@@ -211,14 +245,22 @@ const DailyPageSpread = ({
     });
 
     const handleSaveNotes = async (overrideVersion) => {
-        if (!canWrite || (!notesDirty && overrideVersion === undefined) || savingMutexRef.current) return;
+        if (isLoading || !page || !canWrite || (!notesDirty && overrideVersion === undefined) || savingMutexRef.current)
+            return;
         savingMutexRef.current = true;
         setSavingNotes(true);
         const targetDate = selectedDate;
         const targetOwnerId = ownerId;
         const targetKey = `${targetOwnerId}:${targetDate}`;
         try {
-            const versionToSend = overrideVersion !== undefined ? overrideVersion : page?.id ? page.version : undefined;
+            const savedDraft = draftsByContextRef.current[targetKey];
+            const baseVersion =
+                savedDraft && savedDraft.baseVersion !== undefined
+                    ? savedDraft.baseVersion
+                    : page?.id
+                      ? page.version
+                      : undefined;
+            const versionToSend = overrideVersion !== undefined ? overrideVersion : baseVersion;
             const ok = await onSavePageNotes(
                 {
                     freeformNotes,
@@ -431,7 +473,7 @@ const DailyPageSpread = ({
                                 <input
                                     type="date"
                                     value={rolloverTargetDate}
-                                    min={getNextBusinessDay(selectedDate).slice(0, 4) + '-01-01'}
+                                    min={addOneDay(selectedDate)}
                                     onChange={(e) => setRolloverTargetDate(e.target.value)}
                                     style={{
                                         padding: '4px 8px',
@@ -787,7 +829,7 @@ const DailyPageSpread = ({
                                                             }}
                                                         >
                                                             <FaBell size={9} />
-                                                            {new Date(entry.reminderAt).toLocaleString('tr-TR', {
+                                                            {new Date(entry.reminderAt).toLocaleString(localeCode, {
                                                                 month: '2-digit',
                                                                 day: '2-digit',
                                                                 hour: '2-digit',
@@ -1111,6 +1153,9 @@ const DailyPageSpread = ({
                                                         <option value="task">
                                                             {t('agenda.typeTask', 'Yapılacak Görev')}
                                                         </option>
+                                                        <option value="follow_up">
+                                                            {t('agenda.typeFollowUp', 'Takip')}
+                                                        </option>
                                                         <option value="note">{t('agenda.typeNote', 'Not')}</option>
                                                     </select>
                                                 </div>
@@ -1336,6 +1381,24 @@ const DailyPageSpread = ({
                                 'Bu not sayfası başka bir sekmede veya kullanıcı tarafından güncellendi.',
                             )}
                         </div>
+                        {versionConflict.currentPage?.freeformNotes && (
+                            <div
+                                style={{
+                                    padding: '6px 8px',
+                                    borderRadius: '6px',
+                                    background: 'var(--bg-card)',
+                                    border: '1px dashed var(--glass-border)',
+                                    fontSize: '0.76rem',
+                                    color: 'var(--text-secondary)',
+                                    maxHeight: '64px',
+                                    overflowY: 'auto',
+                                    whiteSpace: 'pre-wrap',
+                                }}
+                            >
+                                <strong>{t('agenda.serverLatestPreview', 'Sunucudaki Son Metin')}:</strong>{' '}
+                                {versionConflict.currentPage.freeformNotes}
+                            </div>
+                        )}
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                             <button
                                 type="button"
@@ -1387,13 +1450,21 @@ const DailyPageSpread = ({
                     <textarea
                         aria-label={t('agenda.privateNotepadTab', 'Özel Karalama (Gizli)')}
                         value={privateNotes}
+                        readOnly={!canWrite}
                         onChange={(e) => {
                             const nextVal = e.target.value;
+                            const existing = draftsByContextRef.current[contextKey];
                             setPrivateNotes(nextVal);
                             setNotesDirty(true);
                             draftsByContextRef.current[contextKey] = {
                                 freeformNotes,
                                 privateNotes: nextVal,
+                                baseVersion:
+                                    existing && existing.baseVersion !== undefined
+                                        ? existing.baseVersion
+                                        : page?.id
+                                          ? page.version
+                                          : undefined,
                                 dirty: true,
                             };
                         }}
@@ -1424,11 +1495,18 @@ const DailyPageSpread = ({
                         readOnly={!canWrite}
                         onChange={(e) => {
                             const nextVal = e.target.value;
+                            const existing = draftsByContextRef.current[contextKey];
                             setFreeformNotes(nextVal);
                             setNotesDirty(true);
                             draftsByContextRef.current[contextKey] = {
                                 freeformNotes: nextVal,
                                 privateNotes,
+                                baseVersion:
+                                    existing && existing.baseVersion !== undefined
+                                        ? existing.baseVersion
+                                        : page?.id
+                                          ? page.version
+                                          : undefined,
                                 dirty: true,
                             };
                         }}

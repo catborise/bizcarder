@@ -53,6 +53,7 @@ services:
         env_file:
             - .env
         environment:
+            - TZ=${TZ:-Europe/Istanbul}
             - DB_HOST=${DB_HOST:-db}
             - DB_PORT=${DB_PORT:-5432}
             - DB_USER=${POSTGRES_USER:-crm_user}

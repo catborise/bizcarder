@@ -311,7 +311,8 @@ const AgendaShareModal = ({
                             <span>
                                 ✅{' '}
                                 <strong>
-                                    {visiblePreviewEntries.length} {t('agenda.shareVisibleEntriesCount', 'açık kayıt')}
+                                    {visiblePreviewEntries.length}{' '}
+                                    {t('agenda.shareVisibleEntriesCount', 'görünür kayıt')}
                                 </strong>{' '}
                                 {hasSharedFreeformNotes
                                     ? `+ ${t('agenda.shareIncludesFreeform', 'sağ sayfa serbest notu')}`
@@ -329,6 +330,16 @@ const AgendaShareModal = ({
                             </span>
                             <span>•📵 {t('agenda.sharePiiStripped', 'Kişi telefon/e-posta bilgileri gizlenir')}</span>
                         </div>
+
+                        {(startDate !== selectedDate || endDate !== selectedDate) && (
+                            <div style={{ fontSize: '0.73rem', color: 'var(--text-tertiary)' }}>
+                                ℹ️{' '}
+                                {t(
+                                    'agenda.shareRangePreviewNote',
+                                    'Yukarıdaki sayaçlar aktif günün özetidir; seçili tarih aralığındaki tüm görünür sayfalar paylaşıma dahil edilir.',
+                                )}
+                            </div>
+                        )}
 
                         {startDate === selectedDate && endDate === selectedDate && visiblePreviewEntries.length > 0 && (
                             <div

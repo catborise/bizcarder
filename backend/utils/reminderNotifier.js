@@ -8,39 +8,48 @@ const BATCH_SIZE = 100;
 
 let intervalTimer = null;
 let lastSentDate = null;
+let isAgendaRunning = false;
 
 function getTodayKey() {
     return new Date().toISOString().slice(0, 10);
 }
 
-async function processAgendaRemindersInTransaction(t, dueAgendaEntries) {
+function isSmtpConfigured() {
+    return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
+async function claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries) {
     if (!AgendaEntry || typeof AgendaEntry.findAll !== 'function') return;
 
     const now = new Date();
-    let offset = 0;
-    while (true) {
-        const agendaBatch = await AgendaEntry.findAll({
-            where: {
-                reminderAt: { [Op.lte]: now },
-                reminderSent: false,
-                status: 'open',
-                deletedAt: null,
-            },
-            include: [{ model: User, as: 'owner', attributes: ['id', 'email', 'displayName'] }],
-            order: [['id', 'ASC']],
-            limit: BATCH_SIZE,
-            offset,
-            transaction: t,
-        });
-        dueAgendaEntries.push(...agendaBatch);
-        if (agendaBatch.length < BATCH_SIZE) break;
-        offset += BATCH_SIZE;
+    const lookback24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+    const agendaBatch = await AgendaEntry.findAll({
+        where: {
+            reminderAt: { [Op.gte]: lookback24h, [Op.lte]: now },
+            reminderSent: false,
+            status: 'open',
+            deletedAt: null,
+        },
+        include: [{ model: User, as: 'owner', attributes: ['id', 'email', 'displayName'] }],
+        order: [['id', 'ASC']],
+        limit: BATCH_SIZE,
+        transaction: t,
+    });
+
+    for (const entry of agendaBatch) {
+        const claimedReminderAt = entry.reminderAt;
+        entry.reminderSent = true;
+        await entry.save({ transaction: t });
+        if (entry.owner?.email) {
+            claimedAgendaEntries.push({ entry, claimedReminderAt });
+        }
     }
 }
 
-async function sendDueAgendaEmails(dueAgendaEntries) {
+async function sendClaimedAgendaEmails(claimedAgendaEntries) {
     let sentCount = 0;
-    for (const entry of dueAgendaEntries) {
+    for (const { entry, claimedReminderAt } of claimedAgendaEntries) {
         if (entry.owner?.email) {
             const safeNoteText = entry.isPrivate
                 ? '🔒 Özel ajanda hatırlatması (içeriği görüntülemek için ajandanızı açın).'
@@ -53,9 +62,18 @@ async function sendDueAgendaEmails(dueAgendaEntries) {
                 notes: safeNoteText,
             });
             if (mailResult !== null) {
-                entry.reminderSent = true;
-                await entry.save();
                 sentCount++;
+            } else if (isSmtpConfigured()) {
+                // Revert claim only if SMTP was configured (transient failure) AND user did not snooze/change reminderAt
+                await AgendaEntry.update(
+                    { reminderSent: false },
+                    {
+                        where: {
+                            id: entry.id,
+                            reminderAt: claimedReminderAt,
+                        },
+                    },
+                );
             }
         }
     }
@@ -63,8 +81,10 @@ async function sendDueAgendaEmails(dueAgendaEntries) {
 }
 
 async function checkAndSendAgendaReminders() {
+    if (isAgendaRunning) return;
+    isAgendaRunning = true;
     try {
-        const dueAgendaEntries = [];
+        const claimedAgendaEntries = [];
         await sequelize.transaction(async (t) => {
             const [lockResult] = await sequelize.query('SELECT pg_try_advisory_xact_lock(:lockId) AS acquired', {
                 replacements: { lockId: REMINDER_LOCK_ID },
@@ -73,15 +93,17 @@ async function checkAndSendAgendaReminders() {
             });
             if (!lockResult?.acquired) return;
 
-            await processAgendaRemindersInTransaction(t, dueAgendaEntries);
+            await claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries);
         });
 
-        const sentCount = await sendDueAgendaEmails(dueAgendaEntries);
+        const sentCount = await sendClaimedAgendaEmails(claimedAgendaEntries);
         if (sentCount > 0) {
             console.log(`[REMINDERS] Sent ${sentCount} agenda reminder emails.`);
         }
     } catch (error) {
         console.error('[REMINDERS] Agenda reminder error:', error.message);
+    } finally {
+        isAgendaRunning = false;
     }
 }
 
@@ -93,7 +115,7 @@ async function checkAndSendReminders() {
 
     try {
         const dueCards = [];
-        const dueAgendaEntries = [];
+        const claimedAgendaEntries = [];
 
         // Transaction-scoped advisory lock guarantees release on the exact same pooled connection
         await sequelize.transaction(async (t) => {
@@ -127,7 +149,7 @@ async function checkAndSendReminders() {
                 offset += BATCH_SIZE;
             }
 
-            await processAgendaRemindersInTransaction(t, dueAgendaEntries);
+            await claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries);
         });
 
         let sentCount = 0;
@@ -140,7 +162,7 @@ async function checkAndSendReminders() {
             }
         }
 
-        sentCount += await sendDueAgendaEmails(dueAgendaEntries);
+        sentCount += await sendClaimedAgendaEmails(claimedAgendaEntries);
 
         lastSentDate = todayKey;
 
@@ -153,14 +175,13 @@ async function checkAndSendReminders() {
 }
 
 function startReminderNotifier() {
-    // Check every minute: process exact-time agenda reminders continuously, and daily card reminders at 08:00
-    intervalTimer = setInterval(() => {
+    // Check every minute: always process exact-time agenda reminders, and run daily card reminders at 08:00
+    intervalTimer = setInterval(async () => {
         const now = new Date();
         if (now.getHours() === 8) {
-            checkAndSendReminders();
-        } else {
-            checkAndSendAgendaReminders();
+            await checkAndSendReminders();
         }
+        await checkAndSendAgendaReminders();
     }, 60 * 1000);
     if (intervalTimer.unref) intervalTimer.unref();
 }
