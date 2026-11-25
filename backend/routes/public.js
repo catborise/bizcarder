@@ -3,6 +3,7 @@ const router = express.Router();
 const { Op } = require('sequelize');
 const { BusinessCard, Tag, User } = require('../models');
 const { generateVCard } = require('../utils/vcard');
+const { getPublicSharedAgenda } = require('../controllers/agendaShareController');
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -118,5 +119,8 @@ router.get('/api/cards/public/:token/vcf', async (req, res) => {
         res.status(500).json({ errorCode: 'VCARD_GENERATE_FAILED' });
     }
 });
+
+// Public Shared Agenda Page View (no auth required, rate-limited by /api/ apiLimiter)
+router.get('/api/public/agenda/:token', getPublicSharedAgenda);
 
 module.exports = router;

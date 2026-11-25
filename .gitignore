@@ -7,6 +7,8 @@ coverage/
 pgdata/
 .agent/
 .env
+*.swp
+*.swo
 backend/logs/
 backend/uploads/
 .superpowers/

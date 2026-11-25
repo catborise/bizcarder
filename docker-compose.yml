@@ -49,7 +49,7 @@ services:
                 limits:
                     memory: ${BACKEND_MEMORY_LIMIT:-1024M}
         ports:
-            - '127.0.0.1:5000:5000'
+            - '5000:5000'
         env_file:
             - .env
         environment:
@@ -95,6 +95,27 @@ services:
         volumes:
             - crm_uploads:/app/uploads
             - crm_backups:/app/backups
+
+    frontend:
+        build:
+            context: ./frontend
+            args:
+                - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
+        container_name: crm_frontend
+        restart: unless-stopped
+        deploy:
+            resources:
+                limits:
+                    memory: ${FRONTEND_MEMORY_LIMIT:-512M}
+        ports:
+            - '5173:80'
+        env_file:
+            - .env
+        environment:
+            - VITE_API_URL=${VITE_API_URL:-http://localhost:5000}
+        depends_on:
+            backend:
+                condition: service_healthy
 
     caddy:
         profiles: ['prod']

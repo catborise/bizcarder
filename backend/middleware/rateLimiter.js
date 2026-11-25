@@ -44,9 +44,10 @@ const passThrough = (_req, _res, next) => next();
  */
 const violationHandler = (req, res, next, options) => {
     const { logAction } = require('../utils/logger');
+    const safeUrl = String(req.originalUrl || '').replace(/(\/api\/public\/agenda\/)[0-9a-fA-F]{16,}/g, '$1[REDACTED]');
     logAction({
         action: 'RATE_LIMIT_EXCEEDED',
-        details: `Rate limit exceeded: ${options.message?.error || 'Unknown limiter'}. IP: ${req.ip}, Path: ${req.originalUrl}`,
+        details: `Rate limit exceeded: ${options.message?.error || 'Unknown limiter'}. IP: ${req.ip}, Path: ${safeUrl}`,
         req,
     }).catch(() => {});
     res.status(options.statusCode).json(options.message);

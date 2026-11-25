@@ -19,9 +19,11 @@ import FAB from './components/layout/FAB';
 // Eager imports (critical path)
 import Dashboard from './components/dashboard/Dashboard';
 import Contacts from './components/cards/Contacts';
-import { FaTrash, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard } from 'react-icons/fa';
+import { FaTrash, FaPlane, FaTimes, FaChartPie, FaUsers, FaAddressCard, FaBookOpen } from 'react-icons/fa';
 
 // Lazy imports (infrequently visited pages)
+const AgendaWorkspace = lazy(() => import('./components/agenda/AgendaWorkspace'));
+const SharedAgendaView = lazy(() => import('./components/agenda/SharedAgendaView'));
 const Settings = lazy(() => import('./components/settings/Settings'));
 const Help = lazy(() => import('./components/pages/Help'));
 const About = lazy(() => import('./components/pages/About'));
@@ -337,6 +339,10 @@ const AppContent = () => {
                                 <FaChartPie size={18} />
                                 <span className="hide-on-mobile">{t('app.nav.dashboard')}</span>
                             </Link>
+                            <Link to="/agenda" style={navLinkStyle(location.pathname.startsWith('/agenda'))}>
+                                <FaBookOpen size={18} />
+                                <span>{t('app.nav.agenda', 'Ajanda')}</span>
+                            </Link>
                             <Link to="/contacts" style={navLinkStyle(location.pathname === '/contacts')}>
                                 <FaUsers size={18} />
                                 <span>{t('app.nav.contacts')}</span>
@@ -440,6 +446,24 @@ const AppContent = () => {
                                             <Contacts />
                                         </PageTransition>
                                     </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/agenda"
+                                element={
+                                    <ProtectedRoute>
+                                        <PageTransition>
+                                            <AgendaWorkspace />
+                                        </PageTransition>
+                                    </ProtectedRoute>
+                                }
+                            />
+                            <Route
+                                path="/agenda/share/:token"
+                                element={
+                                    <PageTransition>
+                                        <SharedAgendaView />
+                                    </PageTransition>
                                 }
                             />
                             <Route

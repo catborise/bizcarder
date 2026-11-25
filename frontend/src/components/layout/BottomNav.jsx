@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from 'react-router';
 import { useTranslation } from 'react-i18next';
-import { FaHome, FaAddressBook, FaIdCard } from 'react-icons/fa';
+import { FaHome, FaBookOpen, FaAddressBook, FaIdCard } from 'react-icons/fa';
 
 const tabs = [
     { path: '/', icon: FaHome, labelKey: 'common:dashboard' },
+    { path: '/agenda', icon: FaBookOpen, labelKey: 'common:agenda' },
     { path: '/contacts', icon: FaAddressBook, labelKey: 'common:contacts' },
     { path: '/my-card', icon: FaIdCard, labelKey: 'common:myCard' },
 ];

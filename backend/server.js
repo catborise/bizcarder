@@ -25,8 +25,20 @@ const port = process.env.PORT || 5000;
 // Caddy veya çoklu Reverse proxy (Nginx, LB vb.) arkasında IP limitlerini ve Secure cookie'yi doğru alabilmesi için
 app.set('trust proxy', 1);
 
-// HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte
-app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
+// HTTP Request Logging (Morgan) - Tüm istekleri yakalaması için en üstte (paylaşım token'larını maskele)
+app.use(
+    morgan('combined', {
+        stream: {
+            write: (message) =>
+                logger.info(
+                    message
+                        .replace(/(\/api\/public\/agenda\/)[0-9a-fA-F]{16,}/g, '$1[REDACTED]')
+                        .replace(/(\/agenda\/share\/)[0-9a-fA-F]{16,}/g, '$1[REDACTED]')
+                        .trim(),
+                ),
+        },
+    }),
+);
 
 // Determine IdP Domain for CSP dynamically
 let idpDomain = '';
@@ -183,6 +195,7 @@ app.use('/api/db-tiles', require('./routes/dashboardTiles'));
 
 // Korumalı rotalar - Oturum açmış kullanıcılar gereklidir
 app.use('/api/cards', requireAuth, require('./routes/cards'));
+app.use('/api/agenda', requireAuth, require('./routes/agenda'));
 app.use('/api/interactions', requireAuth, require('./routes/interactions'));
 app.use('/api/logs', requireAuth, require('./routes/logs'));
 app.use('/api/tags', requireAuth, require('./routes/tags'));
