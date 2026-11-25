@@ -459,16 +459,25 @@ describe('Executive Assistant Agenda, Delegation & Share Security Matrix', () =>
             expect(searchRes.body.entries.length).toBeGreaterThanOrEqual(1);
         });
 
-        test('fetches date range and exports corporate A4 PDF sheet (/api/agenda/export/pdf)', async () => {
+        test('fetches date range (defaulting to non-private unless includePrivate=true) and exports corporate A4 PDF sheet (/api/agenda/export/pdf)', async () => {
             const rangeRes = await agentA.get('/api/agenda/range?startDate=2026-11-23&endDate=2026-11-29').expect(200);
 
+            expect(rangeRes.headers['cache-control']).toBe('no-store');
             expect(rangeRes.body.startDate).toBe('2026-11-23');
             expect(rangeRes.body.endDate).toBe('2026-11-29');
             expect(rangeRes.body.entries.length).toBeGreaterThanOrEqual(1);
+            expect(rangeRes.body.entries.some((e) => e.isPrivate)).toBe(false);
+            expect(rangeRes.body.pages[0].privateNotes).toBeUndefined();
+
+            const rangeWithPrivateRes = await agentA
+                .get('/api/agenda/range?startDate=2026-11-23&endDate=2026-11-29&includePrivate=true')
+                .expect(200);
+            expect(rangeWithPrivateRes.body.entries.some((e) => e.isPrivate)).toBe(true);
+            expect(rangeWithPrivateRes.body.pages[0].privateNotes).toBeDefined();
 
             const pdfRes = await agentA
                 .get(
-                    '/api/agenda/export/pdf?startDate=2026-11-24&endDate=2026-11-24&includePrivate=false&includeContactPhones=true&includeBlankLines=true',
+                    '/api/agenda/export/pdf?startDate=2026-11-24&endDate=2026-11-24&includePrivate=false&includeContactPhones=true&includeBlankLines=true&lang=tr',
                 )
                 .buffer(true)
                 .parse((res, cb) => {

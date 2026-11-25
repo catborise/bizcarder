@@ -99,10 +99,13 @@ const AgendaWorkspace = () => {
         } catch (err) {
             if (seq === dayRequestSeqRef.current) {
                 console.error('Agenda day fetch error:', err);
+                if (err.response?.status === 403 && activeOwnerId !== null) {
+                    setActiveOwnerId(null);
+                }
                 showNotification(t('agenda.loadDayError', 'Ajanda sayfası yüklenemedi.'), 'error');
             }
         }
-    }, [selectedDate, effectiveOwnerId, buildHeadersForOwner, showNotification, t]);
+    }, [selectedDate, effectiveOwnerId, activeOwnerId, buildHeadersForOwner, showNotification, t]);
 
     const fetchYearOverview = useCallback(async () => {
         try {
@@ -198,8 +201,10 @@ const AgendaWorkspace = () => {
                 { headers: buildHeadersForOwner(effectiveOwnerId) },
             );
             await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            return true;
         } catch {
             showNotification(t('agenda.entryCreateError', 'Kayıt eklenemedi.'), 'error');
+            return false;
         }
     };
 
@@ -259,18 +264,20 @@ const AgendaWorkspace = () => {
                 setDayData((prev) => (prev ? { ...prev, page: res.data.page } : prev));
             }
             fetchYearOverview();
+            return true;
         } catch (err) {
             if (err.response?.status === 409) {
                 showNotification(
-                    t('agenda.versionConflictError', 'Bu sayfa başka bir sekmede güncellendi. Sayfa yenileniyor...'),
+                    t(
+                        'agenda.versionConflictError',
+                        'Bu sayfa başka bir sekmede güncellendi. Metninizi kopyalayıp sayfayı yenileyin.',
+                    ),
                     'warning',
                 );
-                if (targetDate === selectedDateRef.current) {
-                    fetchDailyPage();
-                }
             } else {
                 showNotification(t('agenda.notesSaveError', 'Not sayfası kaydedilemedi.'), 'error');
             }
+            return false;
         }
     };
 
@@ -769,6 +776,7 @@ const AgendaWorkspace = () => {
                 tags={tags}
                 isOwner={isOwner}
                 canWrite={canWrite}
+                ownerId={effectiveOwnerId}
                 onCreateEntry={handleCreateEntry}
                 inputRef={quickInputRef}
             />
@@ -916,7 +924,8 @@ const AgendaWorkspace = () => {
                 onClose={() => setShowPrintModal(false)}
                 selectedDate={selectedDate}
                 isOwner={isOwner}
-                requestHeaders={buildHeadersForOwner(effectiveOwnerId)}
+                ownerId={effectiveOwnerId}
+                currentUserId={user?.id}
                 onError={(msg) => showNotification(msg, 'error')}
             />
         </div>

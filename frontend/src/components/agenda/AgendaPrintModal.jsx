@@ -18,21 +18,32 @@ function getMondayOfWeek(dateStr) {
     return d.toISOString().slice(0, 10);
 }
 
-function getDayAndWeekOfYear(dateStr) {
+function getDayAndIsoWeekOfYear(dateStr) {
     const d = new Date(`${dateStr}T00:00:00Z`);
     const start = new Date(Date.UTC(d.getUTCFullYear(), 0, 0));
-    const diff = d - start;
-    const oneDay = 1000 * 60 * 60 * 24;
-    const dayOfYear = Math.floor(diff / oneDay);
-    const weekOfYear = Math.ceil(dayOfYear / 7);
+    const dayOfYear = Math.floor((d - start) / (1000 * 60 * 60 * 24));
+
+    // ISO-8601 week number calculation
+    const target = new Date(d.valueOf());
+    const dayNr = (d.getUTCDay() + 6) % 7;
+    target.setUTCDate(target.getUTCDate() - dayNr + 3);
+    const firstThursday = target.valueOf();
+    target.setUTCMonth(0, 1);
+    if (target.getUTCDay() !== 4) {
+        target.setUTCMonth(0, 1 + ((4 - target.getUTCDay() + 7) % 7));
+    }
+    const weekOfYear = 1 + Math.ceil((firstThursday - target) / 604800000);
     return { dayOfYear, weekOfYear };
 }
 
-const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, requestHeaders = {}, onError }) => {
+const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, ownerId, currentUserId, onError }) => {
     const { t, i18n } = useTranslation('pages');
     const isTr = (i18n.language || 'tr').startsWith('tr');
     const locale = isTr ? 'tr-TR' : 'en-US';
     const previewRef = useRef(null);
+    const requestSeqRef = useRef(0);
+    const onErrorRef = useRef(onError);
+    onErrorRef.current = onError;
 
     const [mode, setMode] = useState('daily'); // 'daily' | 'weekly' | 'range'
     const [startDate, setStartDate] = useState(selectedDate);
@@ -43,7 +54,14 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
 
     const [rangeData, setRangeData] = useState({ owner: null, pages: [], entries: [] });
     const [loadingPreview, setLoadingPreview] = useState(false);
+    const [previewError, setPreviewError] = useState(false);
     const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            setIncludePrivate(false);
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -63,25 +81,48 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
         }
     }, [isOwner]);
 
+    const buildHeaders = useCallback(() => {
+        if (ownerId && currentUserId && Number(ownerId) !== Number(currentUserId)) {
+            return { 'X-Agenda-Owner-Id': String(ownerId) };
+        }
+        return {};
+    }, [ownerId, currentUserId]);
+
     const fetchRangeData = useCallback(async () => {
         if (!isOpen || !startDate || !endDate || endDate < startDate) return;
+        const seq = ++requestSeqRef.current;
         setLoadingPreview(true);
+        setPreviewError(false);
         try {
-            const res = await api.get(
-                `/api/agenda/range?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
-                { headers: requestHeaders },
-            );
-            setRangeData({
-                owner: res.data.owner || null,
-                pages: res.data.pages || [],
-                entries: res.data.entries || [],
+            const params = new URLSearchParams({
+                startDate,
+                endDate,
+                includePrivate: String(Boolean(isOwner && includePrivate)),
             });
+            const res = await api.get(`/api/agenda/range?${params.toString()}`, {
+                headers: buildHeaders(),
+            });
+            if (seq === requestSeqRef.current) {
+                setRangeData({
+                    owner: res.data.owner || null,
+                    pages: res.data.pages || [],
+                    entries: res.data.entries || [],
+                });
+            }
         } catch {
-            if (onError) onError(t('agenda.printLoadError', 'Yazdırma önizlemesi yüklenemedi.'));
+            if (seq === requestSeqRef.current) {
+                setPreviewError(true);
+                setRangeData({ owner: null, pages: [], entries: [] });
+                if (onErrorRef.current) {
+                    onErrorRef.current(t('agenda.printLoadError', 'Yazdırma önizlemesi yüklenemedi.'));
+                }
+            }
         } finally {
-            setLoadingPreview(false);
+            if (seq === requestSeqRef.current) {
+                setLoadingPreview(false);
+            }
         }
-    }, [isOpen, startDate, endDate, requestHeaders, onError, t]);
+    }, [isOpen, startDate, endDate, isOwner, includePrivate, buildHeaders, t]);
 
     useEffect(() => {
         fetchRangeData();
@@ -90,18 +131,19 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
     if (!isOpen) return null;
 
     const handleDownloadPdf = async () => {
-        if (downloadingPdf) return;
+        if (downloadingPdf || previewError) return;
         setDownloadingPdf(true);
         try {
             const params = new URLSearchParams({
                 startDate,
                 endDate,
-                includePrivate: String(isOwner && includePrivate),
+                includePrivate: String(Boolean(isOwner && includePrivate)),
                 includeContactPhones: String(includeContactPhones),
                 includeBlankLines: String(includeBlankLines),
+                lang: isTr ? 'tr' : 'en',
             });
             const res = await api.get(`/api/agenda/export/pdf?${params.toString()}`, {
-                headers: requestHeaders,
+                headers: buildHeaders(),
                 responseType: 'blob',
             });
             const blobUrl = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
@@ -116,14 +158,16 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
             link.remove();
             window.URL.revokeObjectURL(blobUrl);
         } catch {
-            if (onError) onError(t('agenda.pdfDownloadError', 'PDF dosyası oluşturulamadı.'));
+            if (onErrorRef.current) {
+                onErrorRef.current(t('agenda.pdfDownloadError', 'PDF dosyası oluşturulamadı.'));
+            }
         } finally {
             setDownloadingPdf(false);
         }
     };
 
     const handleBrowserPrint = () => {
-        if (!previewRef.current) return;
+        if (!previewRef.current || loadingPreview || previewError) return;
         const sheetHtml = previewRef.current.innerHTML;
 
         const iframe = document.createElement('iframe');
@@ -183,7 +227,6 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
         }, 150);
     };
 
-    // Build date list for preview
     const dateList = [];
     if (startDate && endDate && startDate <= endDate) {
         let cur = startDate;
@@ -197,7 +240,8 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
 
     const pagesByDate = Object.fromEntries((rangeData.pages || []).map((p) => [p.date, p]));
     const visibleEntries = (rangeData.entries || []).filter((e) => (isOwner && includePrivate ? true : !e.isPrivate));
-    const { dayOfYear, weekOfYear } = getDayAndWeekOfYear(startDate);
+    const { dayOfYear, weekOfYear } = getDayAndIsoWeekOfYear(startDate);
+    const maxEndDate = addDays(startDate, 31);
 
     const statusBadge = (status) => {
         if (status === 'done') return '✓';
@@ -279,8 +323,11 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => {
-                                        setStartDate(e.target.value);
-                                        if (endDate < e.target.value) setEndDate(e.target.value);
+                                        const nextStart = e.target.value;
+                                        setStartDate(nextStart);
+                                        const nextMax = addDays(nextStart, 31);
+                                        if (endDate < nextStart) setEndDate(nextStart);
+                                        else if (endDate > nextMax) setEndDate(nextMax);
                                     }}
                                     style={{
                                         padding: '6px 10px',
@@ -295,6 +342,7 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                                     type="date"
                                     value={endDate}
                                     min={startDate}
+                                    max={maxEndDate}
                                     onChange={(e) => setEndDate(e.target.value)}
                                     style={{
                                         padding: '6px 10px',
@@ -696,7 +744,7 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                     <button
                         type="button"
                         onClick={handleDownloadPdf}
-                        disabled={downloadingPdf}
+                        disabled={downloadingPdf || loadingPreview || previewError}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -707,7 +755,8 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                             background: 'var(--accent-primary-transparent)',
                             color: 'var(--accent-primary)',
                             fontWeight: 700,
-                            cursor: 'pointer',
+                            cursor: downloadingPdf || loadingPreview || previewError ? 'not-allowed' : 'pointer',
+                            opacity: downloadingPdf || loadingPreview || previewError ? 0.6 : 1,
                         }}
                     >
                         <FaFilePdf size={14} />
@@ -721,6 +770,7 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                     <button
                         type="button"
                         onClick={handleBrowserPrint}
+                        disabled={loadingPreview || previewError}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -731,7 +781,8 @@ const AgendaPrintModal = ({ isOpen, onClose, selectedDate, isOwner = true, reque
                             background: 'var(--accent-primary)',
                             color: '#ffffff',
                             fontWeight: 700,
-                            cursor: 'pointer',
+                            cursor: loadingPreview || previewError ? 'not-allowed' : 'pointer',
+                            opacity: loadingPreview || previewError ? 0.6 : 1,
                         }}
                     >
                         <FaPrint size={14} />

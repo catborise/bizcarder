@@ -219,7 +219,10 @@ app.get('/health', async (req, res) => {
 
 // Merkezi Hata Yönetimi (Error Handler)
 app.use((err, req, res, _next) => {
-    logger.error(`${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
+    const safeOriginalUrl = String(req.originalUrl || '')
+        .replace(/(\/api\/public\/agenda\/)[0-9a-fA-F]{16,}/g, '$1[REDACTED]')
+        .replace(/(\/agenda\/share\/)[0-9a-fA-F]{16,}/g, '$1[REDACTED]');
+    logger.error(`${err.status || 500} - ${err.message} - ${safeOriginalUrl} - ${req.method} - ${req.ip}`);
 
     // Üretim ortamında detaylı stack trace gönderme
     const response = {

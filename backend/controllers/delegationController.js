@@ -99,7 +99,11 @@ exports.createDelegation = async (req, res) => {
         }
 
         const allowedPermissions = ['read', 'write'];
-        const finalPermission = allowedPermissions.includes(permission) ? permission : 'write';
+        if (!allowedPermissions.includes(permission)) {
+            await t.rollback();
+            return res.status(400).json({ errorCode: 'INVALID_DELEGATION_PERMISSION' });
+        }
+        const finalPermission = permission;
 
         // Deactivate any previous active delegation for the same pair inside transaction
         await AgendaDelegation.update(
@@ -145,6 +149,9 @@ exports.createDelegation = async (req, res) => {
         return res.status(201).json(fullDelegation);
     } catch (error) {
         if (t && !t.finished) await t.rollback();
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({ errorCode: 'AGENDA_DELEGATION_CONFLICT' });
+        }
         console.error('[AGENDA CREATE DELEGATION ERROR]', error);
         return res.status(500).json({ errorCode: 'AGENDA_DELEGATION_CREATE_FAILED' });
     }

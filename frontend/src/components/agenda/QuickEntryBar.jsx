@@ -16,6 +16,7 @@ const QuickEntryBar = ({
     tags = [],
     isOwner = true,
     canWrite = true,
+    ownerId,
     onCreateEntry,
     inputRef: externalRef,
 }) => {
@@ -37,6 +38,16 @@ const QuickEntryBar = ({
             setIsPrivate(false);
         }
     }, [isOwner]);
+
+    // Clear draft when switching between own agenda and delegated agenda (prevents private draft leaking to another owner)
+    useEffect(() => {
+        setContent('');
+        setSelectedContacts([]);
+        setSelectedTags([]);
+        setIsPrivate(false);
+        setEntryType('auto');
+        setMentionQuery(null);
+    }, [ownerId]);
 
     if (!canWrite) return null;
 
@@ -111,19 +122,21 @@ const QuickEntryBar = ({
 
         setSubmitting(true);
         try {
-            await onCreateEntry({
+            const ok = await onCreateEntry({
                 content: content.trim(),
                 entryType: entryType === 'auto' ? undefined : entryType,
                 isPrivate: isOwner ? isPrivate : false,
                 contactIds: selectedContacts.map((c) => c.id),
                 tagIds: selectedTags.map((tItem) => tItem.id),
             });
-            setContent('');
-            setSelectedContacts([]);
-            setSelectedTags([]);
-            setIsPrivate(false);
-            setEntryType('auto');
-            setMentionQuery(null);
+            if (ok !== false) {
+                setContent('');
+                setSelectedContacts([]);
+                setSelectedTags([]);
+                setIsPrivate(false);
+                setEntryType('auto');
+                setMentionQuery(null);
+            }
         } finally {
             setSubmitting(false);
         }

@@ -51,13 +51,22 @@ const DailyPageSpread = ({
 
     useEffect(() => {
         const syncKey = `${selectedDate}:${ownerId}:${page?.id || 'new'}:${page?.version || 1}`;
-        if (lastSyncedKeyRef.current !== syncKey) {
+        if (lastSyncedKeyRef.current !== syncKey && !notesDirty) {
             setFreeformNotes(page?.freeformNotes || '');
             setPrivateNotes(page?.privateNotes || '');
             setNotesDirty(false);
             lastSyncedKeyRef.current = syncKey;
         }
-    }, [selectedDate, ownerId, page?.id, page?.version, page?.freeformNotes, page?.privateNotes]);
+    }, [selectedDate, ownerId, page?.id, page?.version, page?.freeformNotes, page?.privateNotes, notesDirty]);
+
+    // Always force sync when date or agenda owner changes
+    useEffect(() => {
+        setFreeformNotes(page?.freeformNotes || '');
+        setPrivateNotes(page?.privateNotes || '');
+        setNotesDirty(false);
+        lastSyncedKeyRef.current = `${selectedDate}:${ownerId}:${page?.id || 'new'}:${page?.version || 1}`;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedDate, ownerId]);
 
     const filteredEntries = entries.filter((entry) => {
         if (filterTab === 'schedule') return Boolean(entry.timeSlot) || entry.entryType === 'schedule';
@@ -75,7 +84,7 @@ const DailyPageSpread = ({
         const targetDate = selectedDate;
         const targetOwnerId = ownerId;
         try {
-            await onSavePageNotes(
+            const ok = await onSavePageNotes(
                 {
                     freeformNotes,
                     ...(isOwner ? { privateNotes } : {}),
@@ -84,7 +93,9 @@ const DailyPageSpread = ({
                 targetDate,
                 targetOwnerId,
             );
-            setNotesDirty(false);
+            if (ok !== false) {
+                setNotesDirty(false);
+            }
         } finally {
             savingMutexRef.current = false;
             setSavingNotes(false);

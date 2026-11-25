@@ -1,4 +1,4 @@
-const { BusinessCard, User } = require('../models');
+const { BusinessCard, AgendaEntry, User } = require('../models');
 const { Op } = require('sequelize');
 const { sendReminderEmail } = require('./mailer');
 const sequelize = require('../config/database');
@@ -21,6 +21,7 @@ async function checkAndSendReminders() {
 
     try {
         const dueCards = [];
+        const dueAgendaEntries = [];
 
         // Transaction-scoped advisory lock guarantees release on the exact same pooled connection
         await sequelize.transaction(async (t) => {
@@ -53,12 +54,43 @@ async function checkAndSendReminders() {
                 if (batch.length < BATCH_SIZE) break;
                 offset += BATCH_SIZE;
             }
+
+            if (AgendaEntry && typeof AgendaEntry.findAll === 'function') {
+                const agendaBatch = await AgendaEntry.findAll({
+                    where: {
+                        reminderAt: { [Op.gte]: today, [Op.lt]: tomorrow },
+                        reminderSent: false,
+                        status: 'open',
+                        deletedAt: null,
+                    },
+                    include: [{ model: User, as: 'owner', attributes: ['id', 'email', 'displayName'] }],
+                    order: [['id', 'ASC']],
+                    limit: BATCH_SIZE,
+                    transaction: t,
+                });
+                dueAgendaEntries.push(...agendaBatch);
+            }
         });
 
         let sentCount = 0;
         for (const card of dueCards) {
             if (card.owner?.email) {
                 await sendReminderEmail(card.owner, card);
+                sentCount++;
+            }
+        }
+
+        for (const entry of dueAgendaEntries) {
+            if (entry.owner?.email) {
+                await sendReminderEmail(entry.owner, {
+                    id: entry.id,
+                    firstName: 'Ajanda',
+                    lastName: entry.date,
+                    company: entry.timeSlot || '',
+                    notes: entry.content,
+                });
+                entry.reminderSent = true;
+                await entry.save();
                 sentCount++;
             }
         }

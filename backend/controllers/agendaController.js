@@ -15,6 +15,8 @@ const { logAction } = require('../utils/logger');
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+const MAX_CONTENT_LENGTH = 5000;
+const MAX_NOTES_LENGTH = 50000;
 
 function isValidDateString(dateStr) {
     if (!DATE_REGEX.test(String(dateStr || ''))) return false;
@@ -246,6 +248,13 @@ exports.updateDailyPageNotes = async (req, res) => {
             await t.rollback();
             return res.status(403).json({ errorCode: 'PRIVATE_NOTES_OWNER_ONLY' });
         }
+        if (
+            (typeof freeformNotes === 'string' && freeformNotes.length > MAX_NOTES_LENGTH) ||
+            (typeof privateNotes === 'string' && privateNotes.length > MAX_NOTES_LENGTH)
+        ) {
+            await t.rollback();
+            return res.status(400).json({ errorCode: 'AGENDA_NOTES_TOO_LONG' });
+        }
 
         const safeMood =
             moodOrPriority === null
@@ -346,6 +355,10 @@ exports.createEntry = async (req, res) => {
         if (!content || !String(content).trim()) {
             await t.rollback();
             return res.status(400).json({ errorCode: 'AGENDA_CONTENT_REQUIRED' });
+        }
+        if (String(content).length > MAX_CONTENT_LENGTH) {
+            await t.rollback();
+            return res.status(400).json({ errorCode: 'AGENDA_CONTENT_TOO_LONG' });
         }
 
         if (!isOwner && rawIsPrivate === true) {
@@ -581,6 +594,10 @@ exports.updateEntry = async (req, res) => {
                 await t.rollback();
                 return res.status(400).json({ errorCode: 'AGENDA_CONTENT_REQUIRED' });
             }
+            if (String(content).length > MAX_CONTENT_LENGTH) {
+                await t.rollback();
+                return res.status(400).json({ errorCode: 'AGENDA_CONTENT_TOO_LONG' });
+            }
             entry.content = String(content).trim();
         }
         if (entryType !== undefined) {
@@ -638,6 +655,9 @@ exports.updateEntry = async (req, res) => {
         return res.json(sanitizeEntryForAccess(fullEntry, req.agendaAccess));
     } catch (error) {
         if (t && !t.finished) await t.rollback();
+        if (error.name === 'SequelizeUniqueConstraintError') {
+            return res.status(409).json({ errorCode: 'AGENDA_DUPLICATE_MIGRATED_ENTRY' });
+        }
         console.error('[AGENDA UPDATE ENTRY ERROR]', error);
         return res.status(500).json({ errorCode: 'AGENDA_ENTRY_UPDATE_FAILED' });
     }
@@ -756,6 +776,7 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                     migratedFromEntryId: source.id,
                     date: toDate,
                 },
+                lock: t.LOCK.UPDATE,
                 transaction: t,
             });
 
@@ -800,12 +821,16 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 }
 
                 migratedIds.push(clone.id);
-            } else if (existingClone.deletedAt !== null) {
-                existingClone.deletedAt = null;
-                existingClone.status = 'open';
-                existingClone.updatedByUserId = actorUserId;
+            } else {
+                // Always keep privacy synchronized with source entry
+                existingClone.isPrivate = source.isPrivate;
+                if (existingClone.deletedAt !== null && isOwner) {
+                    existingClone.deletedAt = null;
+                    existingClone.status = 'open';
+                    existingClone.updatedByUserId = actorUserId;
+                    migratedIds.push(existingClone.id);
+                }
                 await existingClone.save({ transaction: t });
-                migratedIds.push(existingClone.id);
             }
 
             source.status = 'migrated';
@@ -1032,8 +1057,9 @@ exports.getContactAgendaHistory = async (req, res) => {
 
 exports.getRangePages = async (req, res) => {
     try {
+        res.setHeader('Cache-Control', 'no-store');
         const { ownerId, isOwner } = req.agendaAccess;
-        const { startDate, endDate: rawEndDate } = req.query;
+        const { startDate, endDate: rawEndDate, includePrivate: rawIncludePrivate } = req.query;
 
         if (!isValidDateString(startDate)) {
             return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE' });
@@ -1050,10 +1076,18 @@ exports.getRangePages = async (req, res) => {
             return res.status(400).json({ errorCode: 'AGENDA_RANGE_TOO_LARGE' });
         }
 
+        const includePrivate = isOwner && rawIncludePrivate === 'true';
+
         const [owner, pages, entries] = await Promise.all([
             User.findByPk(ownerId, { attributes: ['id', 'username', 'displayName'] }),
             AgendaPage.findAll({
-                attributes: ['id', 'date', 'freeformNotes', ...(isOwner ? ['privateNotes'] : []), 'moodOrPriority'],
+                attributes: [
+                    'id',
+                    'date',
+                    'freeformNotes',
+                    ...(includePrivate ? ['privateNotes'] : []),
+                    'moodOrPriority',
+                ],
                 where: {
                     ownerId,
                     date: { [Op.between]: [startDate, endDate] },
@@ -1065,7 +1099,7 @@ exports.getRangePages = async (req, res) => {
                     ownerId,
                     date: { [Op.between]: [startDate, endDate] },
                     deletedAt: null,
-                    ...(isOwner ? {} : { isPrivate: false }),
+                    ...(includePrivate ? {} : { isPrivate: false }),
                 },
                 include: buildEntryIncludes(),
                 order: [
@@ -1174,30 +1208,38 @@ exports.exportAgendaPdf = async (req, res) => {
             res.send(pdfData);
         });
 
+        const isEn = String(req.query.lang || 'tr')
+            .toLowerCase()
+            .startsWith('en');
+        const locale = isEn ? 'en-US' : 'tr-TR';
+
+        // Use Roboto-Regular compatible status labels (Roboto TTF does not contain ✓/→/✗ glyphs)
         const statusSymbol = (st) => {
-            if (st === 'done') return '[✓]';
-            if (st === 'migrated') return '[→]';
-            if (st === 'cancelled') return '[✗]';
-            return '[ ]';
+            if (st === 'done') return isEn ? '[DONE]' : '[TAMAM]';
+            if (st === 'migrated') return isEn ? '[ROLLED]' : '[DEVİR]';
+            if (st === 'cancelled') return isEn ? '[CANCEL]' : '[İPTAL]';
+            return isEn ? '[OPEN]' : '[AÇIK]';
         };
 
         // Header Banner
-        const ownerTitle = owner?.displayName || owner?.username || 'Ajanda';
+        const ownerTitle = owner?.displayName || owner?.username || (isEn ? 'Agenda' : 'Ajanda');
         const headerRangeText =
             startDate === endDate
-                ? new Date(`${startDate}T00:00:00`).toLocaleDateString('tr-TR', {
+                ? new Date(`${startDate}T00:00:00`).toLocaleDateString(locale, {
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric',
                   })
-                : `${startDate} — ${endDate} Programı`;
+                : `${startDate} — ${endDate} ${isEn ? 'Schedule' : 'Programı'}`;
 
         doc.font('Roboto-Bold').fontSize(16).fillColor('#0f172a').text(headerRangeText, { align: 'left' });
         doc.font('Roboto-Regular')
             .fontSize(10)
             .fillColor('#475569')
-            .text(`Ajanda: ${ownerTitle} • Oluşturulma: ${new Date().toLocaleString('tr-TR')}`);
+            .text(
+                `${isEn ? 'Agenda' : 'Ajanda'}: ${ownerTitle} • ${isEn ? 'Generated' : 'Oluşturulma'}: ${new Date().toLocaleString(locale)}`,
+            );
         doc.moveDown(0.6);
         doc.moveTo(36, doc.y).lineTo(559, doc.y).strokeColor('#cbd5e1').lineWidth(1).stroke();
         doc.moveDown(0.8);
@@ -1223,7 +1265,7 @@ exports.exportAgendaPdf = async (req, res) => {
             }
 
             if (dateList.length > 1) {
-                const dayLabel = new Date(`${dStr}T00:00:00`).toLocaleDateString('tr-TR', {
+                const dayLabel = new Date(`${dStr}T00:00:00`).toLocaleDateString(locale, {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -1250,7 +1292,7 @@ exports.exportAgendaPdf = async (req, res) => {
                     const tagText = (entry.tags || []).map((tItem) => `#${tItem.name}`).join(' ');
                     const delegateText =
                         entry.createdBy && Number(entry.createdBy.id) !== Number(ownerId)
-                            ? ` [Vekâleten: ${entry.createdBy.displayName || entry.createdBy.username}]`
+                            ? ` [${isEn ? 'Substitute' : 'Vekâleten'}: ${entry.createdBy.displayName || entry.createdBy.username}]`
                             : '';
 
                     const fullDetails = [entry.content, contactText, tagText, delegateText].filter(Boolean).join(' — ');
@@ -1260,33 +1302,45 @@ exports.exportAgendaPdf = async (req, res) => {
 
                 await doc.table(
                     {
-                        headers: ['Saat', 'Durum', 'Program / Telefon Notu / Görev'],
+                        headers: isEn
+                            ? ['Time', 'Status', 'Appointment / Phone Note / Task']
+                            : ['Saat', 'Durum', 'Program / Telefon Notu / Görev'],
                         rows,
                     },
                     {
                         prepareHeader: () => doc.font('Roboto-Bold').fontSize(9).fillColor('#0f172a'),
                         prepareRow: () => doc.font('Roboto-Regular').fontSize(9).fillColor('#1e293b'),
-                        columnsSize: [50, 48, 425],
+                        columnsSize: [50, 58, 415],
                     },
                 );
             } else {
                 doc.font('Roboto-Regular')
                     .fontSize(9.5)
                     .fillColor('#64748b')
-                    .text('Bu güne ait saatli program veya madde kaydı bulunmuyor.');
+                    .text(
+                        isEn
+                            ? 'No scheduled items or entries for this date.'
+                            : 'Bu güne ait saatli program veya madde kaydı bulunmuyor.',
+                    );
                 doc.moveDown(0.5);
             }
 
             if (hasFreeform) {
                 doc.moveDown(0.3);
-                doc.font('Roboto-Bold').fontSize(10).fillColor('#0f172a').text('Günlük Serbest Notlar:');
+                doc.font('Roboto-Bold')
+                    .fontSize(10)
+                    .fillColor('#0f172a')
+                    .text(isEn ? 'Daily Lined Notes:' : 'Günlük Serbest Notlar:');
                 doc.font('Roboto-Regular').fontSize(9.5).fillColor('#1e293b').text(dayPage.freeformNotes.trim());
                 doc.moveDown(0.5);
             }
 
             if (hasPrivate) {
                 doc.moveDown(0.3);
-                doc.font('Roboto-Bold').fontSize(10).fillColor('#b45309').text('Özel Karalama (Gizli):');
+                doc.font('Roboto-Bold')
+                    .fontSize(10)
+                    .fillColor('#b45309')
+                    .text(isEn ? 'Private Scratchpad:' : 'Özel Karalama (Gizli):');
                 doc.font('Roboto-Regular').fontSize(9.5).fillColor('#1e293b').text(dayPage.privateNotes.trim());
                 doc.moveDown(0.5);
             }
@@ -1296,7 +1350,10 @@ exports.exportAgendaPdf = async (req, res) => {
 
         if (includeBlankLines) {
             doc.moveDown(0.6);
-            doc.font('Roboto-Bold').fontSize(10).fillColor('#334155').text('Toplantı / El Yazısı Not Alanı:');
+            doc.font('Roboto-Bold')
+                .fontSize(10)
+                .fillColor('#334155')
+                .text(isEn ? 'Meeting / Handwritten Notes Area:' : 'Toplantı / El Yazısı Not Alanı:');
             doc.moveDown(0.3);
             for (let i = 0; i < 7; i++) {
                 const lineY = doc.y + 18;

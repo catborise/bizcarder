@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { AgendaDelegation } = require('../models');
+const { AgendaDelegation, User } = require('../models');
 
 /**
  * Resolves effective agenda owner and enforces the Principal vs Substitute permission matrix.
@@ -39,18 +39,24 @@ function resolveAgendaAccess(requiredPermission = 'read', { requireOwner = false
             }
 
             const now = new Date();
-            const delegation = await AgendaDelegation.findOne({
-                where: {
-                    principalUserId: targetOwnerId,
-                    delegateUserId: req.user.id,
-                    isActive: true,
-                    startsAt: { [Op.lte]: now },
-                    endsAt: { [Op.gte]: now },
-                },
-                order: [['createdAt', 'DESC']],
-            });
+            const [principalUser, delegation] = await Promise.all([
+                User.findOne({
+                    where: { id: targetOwnerId, isApproved: true },
+                    attributes: ['id'],
+                }),
+                AgendaDelegation.findOne({
+                    where: {
+                        principalUserId: targetOwnerId,
+                        delegateUserId: req.user.id,
+                        isActive: true,
+                        startsAt: { [Op.lte]: now },
+                        endsAt: { [Op.gte]: now },
+                    },
+                    order: [['createdAt', 'DESC']],
+                }),
+            ]);
 
-            if (!delegation) {
+            if (!principalUser || !delegation) {
                 return res.status(403).json({ errorCode: 'AGENDA_ACCESS_DENIED' });
             }
 

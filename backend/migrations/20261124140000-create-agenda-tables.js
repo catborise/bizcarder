@@ -338,6 +338,10 @@ module.exports = {
                 name: 'idx_agenda_delegations_delegate_active_ends',
                 transaction,
             });
+            await queryInterface.sequelize.query(
+                'CREATE UNIQUE INDEX IF NOT EXISTS "idx_agenda_delegations_active_pair_unique" ON "AgendaDelegations" ("principalUserId", "delegateUserId") WHERE "isActive" = true;',
+                { transaction },
+            );
 
             // 6. AgendaShares
             await queryInterface.createTable(
@@ -376,7 +380,7 @@ module.exports = {
                         allowNull: true,
                         references: { model: 'Users', key: 'id' },
                         onUpdate: 'CASCADE',
-                        onDelete: 'SET NULL',
+                        onDelete: 'CASCADE',
                     },
                     expiresAt: {
                         type: Sequelize.DATE,

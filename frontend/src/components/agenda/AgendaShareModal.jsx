@@ -48,10 +48,28 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
 
     const handleCopy = async () => {
         if (!lastGeneratedLink) return;
-        await navigator.clipboard.writeText(lastGeneratedLink);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(lastGeneratedLink);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = lastGeneratedLink;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                document.execCommand('copy');
+                ta.remove();
+            }
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch {
+            setCopied(false);
+        }
     };
+
+    const validActiveShares = shares.filter((s) => s.isActive && (!s.expiresAt || new Date(s.expiresAt) > new Date()));
 
     return (
         <Modal
@@ -274,61 +292,57 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
                     <h4 style={{ margin: '0 0 8px', fontSize: '0.88rem' }}>
                         {t('agenda.activeSharesListTitle', 'Aktif Paylaşımlar')}
                     </h4>
-                    {shares.filter((s) => s.isActive).length === 0 ? (
+                    {validActiveShares.length === 0 ? (
                         <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-tertiary)' }}>
                             {t('agenda.noActiveShares', 'Henüz paylaşılmış bir ajanda sayfası yok.')}
                         </p>
                     ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {shares
-                                .filter((s) => s.isActive)
-                                .map((s) => (
-                                    <div
-                                        key={s.id}
+                            {validActiveShares.map((s) => (
+                                <div
+                                    key={s.id}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '10px 12px',
+                                        borderRadius: '10px',
+                                        border: '1px solid var(--glass-border)',
+                                        background: 'var(--glass-bg)',
+                                    }}
+                                >
+                                    <div>
+                                        <div style={{ fontWeight: 700, fontSize: '0.86rem' }}>
+                                            {s.title || `${s.startDate}..${s.endDate}`}
+                                        </div>
+                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                                            {s.startDate === s.endDate ? s.startDate : `${s.startDate} → ${s.endDate}`}{' '}
+                                            • {t('agenda.viewCount', 'Görüntülenme')}: {s.viewCount || 0}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => onRevokeShare(s.id)}
                                         style={{
                                             display: 'flex',
-                                            justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            padding: '10px 12px',
-                                            borderRadius: '10px',
-                                            border: '1px solid var(--glass-border)',
-                                            background: 'var(--glass-bg)',
+                                            gap: '5px',
+                                            padding: '6px 10px',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--accent-error)',
+                                            background: 'var(--accent-error-transparent)',
+                                            color: 'var(--accent-error)',
+                                            fontSize: '0.75rem',
+                                            fontWeight: 700,
+                                            cursor: 'pointer',
                                         }}
                                     >
-                                        <div>
-                                            <div style={{ fontWeight: 700, fontSize: '0.86rem' }}>
-                                                {s.title || `${s.startDate}..${s.endDate}`}
-                                            </div>
-                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
-                                                {s.startDate === s.endDate
-                                                    ? s.startDate
-                                                    : `${s.startDate} → ${s.endDate}`}{' '}
-                                                • {t('agenda.viewCount', 'Görüntülenme')}: {s.viewCount || 0}
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => onRevokeShare(s.id)}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '5px',
-                                                padding: '6px 10px',
-                                                borderRadius: '8px',
-                                                border: '1px solid var(--accent-error)',
-                                                background: 'var(--accent-error-transparent)',
-                                                color: 'var(--accent-error)',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 700,
-                                                cursor: 'pointer',
-                                            }}
-                                        >
-                                            <FaTrash size={11} />
-                                            <span>{t('agenda.revokeShareBtn', 'İptal Et')}</span>
-                                        </button>
-                                    </div>
-                                ))}
+                                        <FaTrash size={11} />
+                                        <span>{t('agenda.revokeShareBtn', 'İptal Et')}</span>
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
