@@ -18,6 +18,8 @@ import {
     FaSearch,
     FaTimes,
     FaCalendarDay,
+    FaBell,
+    FaCheck,
 } from 'react-icons/fa';
 
 function getTodayLocal() {
@@ -44,6 +46,8 @@ const AgendaWorkspace = () => {
     const [selectedDate, setSelectedDate] = useState(getTodayLocal);
     const [activeOwnerId, setActiveOwnerId] = useState(null); // null => own agenda (user.id)
     const [dayData, setDayData] = useState(null);
+    const [isDayLoading, setIsDayLoading] = useState(false);
+    const [versionConflict, setVersionConflict] = useState(null);
     const [yearOverview, setYearOverview] = useState(null);
     const [contacts, setContacts] = useState([]);
     const [tags, setTags] = useState([]);
@@ -85,6 +89,8 @@ const AgendaWorkspace = () => {
         const seq = ++dayRequestSeqRef.current;
         const requestedDate = selectedDate;
         const requestedOwnerId = effectiveOwnerId;
+        setIsDayLoading(true);
+        setVersionConflict(null);
         try {
             const res = await api.get(`/api/agenda/day/${requestedDate}`, {
                 headers: buildHeadersForOwner(requestedOwnerId),
@@ -94,7 +100,11 @@ const AgendaWorkspace = () => {
                 requestedDate === selectedDateRef.current &&
                 Number(requestedOwnerId) === Number(effectiveOwnerIdRef.current)
             ) {
-                setDayData(res.data);
+                setDayData({
+                    ...res.data,
+                    requestedDate,
+                    requestedOwnerId,
+                });
             }
         } catch (err) {
             if (seq === dayRequestSeqRef.current) {
@@ -103,6 +113,10 @@ const AgendaWorkspace = () => {
                     setActiveOwnerId(null);
                 }
                 showNotification(t('agenda.loadDayError', 'Ajanda sayfası yüklenemedi.'), 'error');
+            }
+        } finally {
+            if (seq === dayRequestSeqRef.current) {
+                setIsDayLoading(false);
             }
         }
     }, [selectedDate, effectiveOwnerId, activeOwnerId, buildHeadersForOwner, showNotification, t]);
@@ -230,13 +244,19 @@ const AgendaWorkspace = () => {
         }
     };
 
-    const handleMigrateUnfinished = async () => {
+    const handleMigrateUnfinished = async (options = {}) => {
         try {
-            const res = await api.post(
-                '/api/agenda/entries/migrate-unfinished',
-                { fromDate: selectedDate },
-                { headers: buildHeadersForOwner(effectiveOwnerId) },
-            );
+            const payload = {
+                fromDate: selectedDate,
+                ...(options?.toDate ? { toDate: options.toDate } : {}),
+                ...(Array.isArray(options?.entryIds) ? { entryIds: options.entryIds } : {}),
+                ...(options?.clearScheduleTimes !== undefined
+                    ? { clearScheduleTimes: options.clearScheduleTimes }
+                    : {}),
+            };
+            const res = await api.post('/api/agenda/entries/migrate-unfinished', payload, {
+                headers: buildHeadersForOwner(effectiveOwnerId),
+            });
             showNotification(
                 t('agenda.migratedSuccess', {
                     defaultValue: `${res.data.migratedCount} açık kayıt ${res.data.toDate} sayfasına devredildi.`,
@@ -262,15 +282,25 @@ const AgendaWorkspace = () => {
                 Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
             ) {
                 setDayData((prev) => (prev ? { ...prev, page: res.data.page } : prev));
+                setVersionConflict(null);
             }
             fetchYearOverview();
             return true;
         } catch (err) {
             if (err.response?.status === 409) {
+                if (
+                    targetDate === selectedDateRef.current &&
+                    Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
+                ) {
+                    setVersionConflict({
+                        currentVersion: err.response.data?.currentVersion,
+                        currentPage: err.response.data?.currentPage || null,
+                    });
+                }
                 showNotification(
                     t(
                         'agenda.versionConflictError',
-                        'Bu sayfa başka bir sekmede güncellendi. Metninizi kopyalayıp sayfayı yenileyin.',
+                        'Bu sayfa başka bir sekmede güncellendi. Sağ sayfadaki kurtarma seçeneklerinden birini seçin.',
                     ),
                     'warning',
                 );
@@ -366,10 +396,30 @@ const AgendaWorkspace = () => {
         }
     };
 
+    const isContextMatched = Boolean(
+        dayData &&
+        dayData.requestedDate === selectedDate &&
+        Number(dayData.requestedOwnerId) === Number(effectiveOwnerId),
+    );
+    const activePage = isContextMatched ? dayData?.page : null;
+    const activeEntries = isContextMatched ? dayData?.entries || [] : [];
+    const dueReminders = isContextMatched ? dayData?.dueReminders || [] : [];
+
     const isOwner = dayData?.access
         ? dayData.access.isOwner
         : !activeOwnerId || Number(activeOwnerId) === Number(user?.id);
     const canWrite = dayData?.access ? isOwner || dayData.access.permission === 'write' : true;
+
+    const handleSnoozeReminder10Min = async (entryId) => {
+        const snoozeDate = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+        await handleUpdateEntry(entryId, { reminderAt: snoozeDate });
+    };
+
+    const handlePostponeReminderTomorrow = async (entryId) => {
+        const tomorrowStr = shiftDateString(getTodayLocal(), 1);
+        const tomorrowNineAm = new Date(`${tomorrowStr}T09:00:00`).toISOString();
+        await handleUpdateEntry(entryId, { reminderAt: tomorrowNineAm });
+    };
 
     const formattedHumanDate = new Date(`${selectedDate}T00:00:00`).toLocaleDateString(
         (i18n.language || 'tr').startsWith('tr') ? 'tr-TR' : 'en-US',
@@ -770,6 +820,196 @@ const AgendaWorkspace = () => {
             {/* 12-Month Binder Tabs & Day Strip */}
             <MonthIndexTabs selectedDate={selectedDate} yearOverview={yearOverview} onSelectDate={setSelectedDate} />
 
+            {/* P0-1: Due & Overdue Reminders Inbox Strip */}
+            {dueReminders.length > 0 && (
+                <div
+                    role="region"
+                    aria-label={t('agenda.dueRemindersTitle', 'Bugün & Geciken Hatırlatmalar')}
+                    style={{
+                        padding: '12px 16px',
+                        marginBottom: '14px',
+                        borderRadius: '14px',
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--accent-warning)',
+                        boxShadow: 'var(--glass-shadow)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px',
+                    }}
+                >
+                    <div
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '8px',
+                        }}
+                    >
+                        <strong
+                            style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '7px',
+                                fontSize: '0.86rem',
+                                color: 'var(--text-primary)',
+                            }}
+                        >
+                            <FaBell size={13} color="var(--accent-warning)" />
+                            <span>
+                                {t('agenda.dueRemindersTitle', 'Bugün & Geciken Hatırlatmalar')} ({dueReminders.length})
+                            </span>
+                        </strong>
+                    </div>
+
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px',
+                            maxHeight: '190px',
+                            overflowY: 'auto',
+                        }}
+                    >
+                        {dueReminders.map((rem) => {
+                            const remTime = new Date(rem.reminderAt);
+                            const isOverdue = remTime.getTime() <= Date.now();
+                            const canModifyRem =
+                                canWrite &&
+                                (isOwner || Number(rem.createdBy?.id || rem.createdByUserId) === Number(user?.id));
+                            return (
+                                <div
+                                    key={rem.id}
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        padding: '8px 10px',
+                                        borderRadius: '10px',
+                                        border: isOverdue
+                                            ? '1px solid var(--accent-error)'
+                                            : '1px solid var(--glass-border)',
+                                        background: isOverdue ? 'var(--accent-error-transparent)' : 'var(--glass-bg)',
+                                        fontSize: '0.83rem',
+                                    }}
+                                >
+                                    <div
+                                        style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}
+                                    >
+                                        <span
+                                            style={{
+                                                padding: '2px 7px',
+                                                borderRadius: '6px',
+                                                fontWeight: 700,
+                                                fontSize: '0.73rem',
+                                                background: isOverdue
+                                                    ? 'var(--accent-error)'
+                                                    : 'rgba(245, 158, 11, 0.2)',
+                                                color: isOverdue ? '#ffffff' : 'var(--accent-warning)',
+                                            }}
+                                        >
+                                            {isOverdue
+                                                ? t('agenda.reminderOverdueBadge', 'Gecikti')
+                                                : t('agenda.reminderTodayBadge', 'Bugün')}{' '}
+                                            •{' '}
+                                            {remTime.toLocaleTimeString('tr-TR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            })}
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedDate(rem.date)}
+                                            style={{
+                                                border: 'none',
+                                                background: 'transparent',
+                                                color: 'var(--accent-primary)',
+                                                fontWeight: 700,
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
+                                            [{rem.date}]
+                                        </button>
+
+                                        <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                                            {rem.content}
+                                        </span>
+                                    </div>
+
+                                    {canWrite && (
+                                        <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                                            {canModifyRem && (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSnoozeReminder10Min(rem.id)}
+                                                        style={{
+                                                            padding: '4px 8px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid var(--glass-border)',
+                                                            background: 'var(--bg-card)',
+                                                            color: 'var(--text-primary)',
+                                                            fontSize: '0.74rem',
+                                                            fontWeight: 600,
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        ⏰ {t('agenda.snooze10MinBtn', '+10 dk Ertele')}
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePostponeReminderTomorrow(rem.id)}
+                                                        style={{
+                                                            padding: '4px 8px',
+                                                            borderRadius: '6px',
+                                                            border: '1px solid var(--glass-border)',
+                                                            background: 'var(--bg-card)',
+                                                            color: 'var(--text-primary)',
+                                                            fontSize: '0.74rem',
+                                                            fontWeight: 600,
+                                                            cursor: 'pointer',
+                                                        }}
+                                                    >
+                                                        📅 {t('agenda.postponeTomorrowBtn', 'Yarın 09:00')}
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleUpdateEntry(rem.id, { status: 'done' })}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px',
+                                                    padding: '4px 9px',
+                                                    borderRadius: '6px',
+                                                    border: 'none',
+                                                    background: 'var(--accent-success)',
+                                                    color: '#ffffff',
+                                                    fontSize: '0.74rem',
+                                                    fontWeight: 700,
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                <FaCheck size={10} />
+                                                <span>{t('agenda.completeReminderBtn', 'Tamamla')}</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Single-Line Keyboard-First Entry Bar */}
             <QuickEntryBar
                 contacts={contacts}
@@ -784,8 +1024,14 @@ const AgendaWorkspace = () => {
             {/* Two-Page Physical Desk Agenda Spread */}
             <DailyPageSpread
                 selectedDate={selectedDate}
-                page={dayData?.page}
-                entries={dayData?.entries || []}
+                page={activePage}
+                entries={activeEntries}
+                isLoading={isDayLoading}
+                versionConflict={versionConflict}
+                onResolveVersionConflict={() => {
+                    setVersionConflict(null);
+                    fetchDailyPage();
+                }}
                 access={
                     dayData?.access || {
                         isOwner,
@@ -915,6 +1161,9 @@ const AgendaWorkspace = () => {
                 onClose={() => setShowShareModal(false)}
                 selectedDate={selectedDate}
                 shares={shares}
+                colleagues={delegationsData.colleagues || []}
+                currentDayEntries={activeEntries}
+                currentPage={activePage}
                 onCreateShare={handleCreateShare}
                 onRevokeShare={handleRevokeShare}
             />

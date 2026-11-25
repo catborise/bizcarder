@@ -222,4 +222,83 @@ describe('AgendaWorkspace Component', () => {
         expect(screen.queryByText(/Sayfayı Paylaş/i)).not.toBeInTheDocument();
         expect(screen.queryByText(/Vekâlet \/ İzin/i)).not.toBeInTheDocument();
     });
+
+    it('renders P0 due reminders inbox, time conflict warning badge, inline edit form, and selective rollover panel', async () => {
+        api.get.mockImplementation((url) => {
+            if (url.startsWith('/api/agenda/day/')) {
+                return Promise.resolve({
+                    data: {
+                        owner: { id: 1, username: 'ayse', displayName: 'Ayşe Sekreter' },
+                        access: { ownerId: 1, actorUserId: 1, isOwner: true, isDelegate: false, permission: 'owner' },
+                        page: { id: 10, ownerId: 1, date: '2026-11-25', freeformNotes: '', version: 1 },
+                        dueReminders: [
+                            {
+                                id: 301,
+                                ownerId: 1,
+                                createdByUserId: 1,
+                                date: '2026-11-25',
+                                content: 'Bakanlık geri araması',
+                                status: 'open',
+                                reminderAt: new Date(Date.now() - 60000).toISOString(),
+                            },
+                        ],
+                        entries: [
+                            {
+                                id: 301,
+                                ownerId: 1,
+                                createdByUserId: 1,
+                                date: '2026-11-25',
+                                timeSlot: '10:00',
+                                endTime: '10:30',
+                                entryType: 'schedule',
+                                content: 'Bakanlık geri araması',
+                                status: 'open',
+                                migratedFromEntryId: 99,
+                                contactLinks: [],
+                                tags: [],
+                            },
+                            {
+                                id: 302,
+                                ownerId: 1,
+                                createdByUserId: 1,
+                                date: '2026-11-25',
+                                timeSlot: '10:15',
+                                endTime: '10:45',
+                                entryType: 'schedule',
+                                content: 'Finans komitesi toplantısı',
+                                status: 'open',
+                                contactLinks: [],
+                                tags: [],
+                            },
+                        ],
+                    },
+                });
+            }
+            return Promise.resolve({ data: { months: [], days: {}, outgoing: [], incoming: [], colleagues: [] } });
+        });
+
+        api.patch.mockResolvedValue({ data: { id: 301, status: 'open' } });
+
+        render(<AgendaWorkspace />);
+
+        // P0-1: Due & Overdue Reminders Inbox
+        await waitFor(() => {
+            expect(screen.getByText(/Bugün & Geciken Hatırlatmalar/i)).toBeInTheDocument();
+        });
+        expect(screen.getByText(/\+10 dk Ertele/i)).toBeInTheDocument();
+
+        // P0-2: Time Conflict detection & Rolled over badge
+        expect(screen.getAllByText(/Saat Çakışması/i).length).toBeGreaterThanOrEqual(2);
+        expect(screen.getByText(/Önceki Günden Devir/i)).toBeInTheDocument();
+
+        // P0-2: Open inline edit form
+        const editButtons = screen.getAllByLabelText(/Düzenle \/ Yeniden Planla/i);
+        fireEvent.click(editButtons[0]);
+        expect(screen.getByText(/Değişiklikleri Kaydet/i)).toBeInTheDocument();
+
+        // P0-3: Open selective rollover panel
+        const selectiveBtn = screen.getByText(/Seçerek Devret/i);
+        fireEvent.click(selectiveBtn);
+        expect(screen.getByText(/Günü Kapat & Açık İşleri Seçerek Devret/i)).toBeInTheDocument();
+    });
 });

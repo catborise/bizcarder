@@ -1,14 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../shared/Modal';
-import { FaShareAlt, FaCopy, FaTrash, FaCheck } from 'react-icons/fa';
+import { FaShareAlt, FaCopy, FaTrash, FaCheck, FaEye, FaLock, FaUserCheck } from 'react-icons/fa';
 
-const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreateShare, onRevokeShare }) => {
+function getDefaultExpiryLocal() {
+    const d = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+}
+
+const AgendaShareModal = ({
+    isOpen,
+    onClose,
+    selectedDate,
+    shares = [],
+    colleagues = [],
+    currentDayEntries = [],
+    currentPage = null,
+    onCreateShare,
+    onRevokeShare,
+}) => {
     const { t } = useTranslation('pages');
     const [startDate, setStartDate] = useState(selectedDate);
     const [endDate, setEndDate] = useState(selectedDate);
     const [title, setTitle] = useState('');
     const [expiresAt, setExpiresAt] = useState('');
+    const [sharedWithUserId, setSharedWithUserId] = useState('');
     const [lastGeneratedLink, setLastGeneratedLink] = useState('');
     const [copied, setCopied] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -18,7 +39,8 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
             setStartDate(selectedDate);
             setEndDate(selectedDate);
             setTitle('');
-            setExpiresAt('');
+            setExpiresAt(getDefaultExpiryLocal());
+            setSharedWithUserId('');
             setLastGeneratedLink('');
             setCopied(false);
         }
@@ -36,6 +58,7 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
                 endDate: endDate || startDate,
                 title: title.trim() || `${startDate} ${t('agenda.sharedDefaultTitle', 'Paylaşılan Ajanda Sayfası')}`,
                 expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+                sharedWithUserId: sharedWithUserId ? Number(sharedWithUserId) : undefined,
             });
             if (result?.rawToken) {
                 const url = `${window.location.origin}/agenda/share/${result.rawToken}`;
@@ -45,6 +68,11 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
             setSubmitting(false);
         }
     };
+
+    const visiblePreviewEntries = currentDayEntries.filter((e) => !e.isPrivate);
+    const hiddenPrivateEntriesCount = currentDayEntries.filter((e) => e.isPrivate).length;
+    const hasHiddenPrivateNotes = Boolean(currentPage?.privateNotes && currentPage.privateNotes.trim());
+    const hasSharedFreeformNotes = Boolean(currentPage?.freeformNotes && currentPage.freeformNotes.trim());
 
     const handleCopy = async () => {
         if (!lastGeneratedLink) return;
@@ -210,6 +238,126 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
                         </div>
                     </div>
 
+                    <div>
+                        <label
+                            htmlFor="share-recipient-select"
+                            style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, marginBottom: '4px' }}
+                        >
+                            {t('agenda.shareRecipientLabel', 'Alıcı Erişim Kısıtlaması')}
+                        </label>
+                        <select
+                            id="share-recipient-select"
+                            value={sharedWithUserId}
+                            onChange={(e) => setSharedWithUserId(e.target.value)}
+                            style={{
+                                width: '100%',
+                                padding: '8px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid var(--glass-border)',
+                                background: 'var(--bg-input)',
+                                color: 'var(--text-primary)',
+                                fontSize: '0.84rem',
+                            }}
+                        >
+                            <option value="">
+                                🌐 {t('agenda.shareAnyoneWithLink', 'Bağlantıya Sahip Herkes (Salt-Okunur)')}
+                            </option>
+                            {colleagues.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    🔒 {t('agenda.shareOnlyUserPrefix', 'Sadece')}: {c.displayName || c.username} (
+                                    {c.username})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* P0-5: Recipient Content Preview Box */}
+                    <div
+                        style={{
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--glass-border)',
+                            fontSize: '0.79rem',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '6px',
+                        }}
+                    >
+                        <div
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexWrap: 'wrap',
+                                gap: '6px',
+                                fontWeight: 700,
+                                color: 'var(--text-primary)',
+                            }}
+                        >
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <FaEye size={12} color="var(--accent-primary)" />
+                                {t('agenda.sharePreviewHeader', 'Alıcının Göreceği İçerik Önizlemesi')} ({selectedDate})
+                            </span>
+                            <span style={{ fontSize: '0.73rem', color: 'var(--accent-warning)' }}>
+                                {t(
+                                    'agenda.shareLiveNotice',
+                                    'Canlı Sayfa: Tarih aralığındaki güncellemeler alıcıya yansır',
+                                )}
+                            </span>
+                        </div>
+
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', color: 'var(--text-secondary)' }}>
+                            <span>
+                                ✅{' '}
+                                <strong>
+                                    {visiblePreviewEntries.length} {t('agenda.shareVisibleEntriesCount', 'açık kayıt')}
+                                </strong>{' '}
+                                {hasSharedFreeformNotes
+                                    ? `+ ${t('agenda.shareIncludesFreeform', 'sağ sayfa serbest notu')}`
+                                    : ''}
+                            </span>
+                            <span>
+                                • <FaLock size={10} color="var(--accent-warning)" />{' '}
+                                <strong>
+                                    {hiddenPrivateEntriesCount}{' '}
+                                    {t('agenda.shareHiddenEntriesCount', 'özel kayıt gizlendi')}
+                                </strong>
+                                {hasHiddenPrivateNotes
+                                    ? ` (${t('agenda.shareHiddenPrivatePad', 'Özel Karalama gizlendi')})`
+                                    : ''}
+                            </span>
+                            <span>•📵 {t('agenda.sharePiiStripped', 'Kişi telefon/e-posta bilgileri gizlenir')}</span>
+                        </div>
+
+                        {startDate === selectedDate && endDate === selectedDate && visiblePreviewEntries.length > 0 && (
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '3px',
+                                    maxHeight: '90px',
+                                    overflowY: 'auto',
+                                    paddingTop: '4px',
+                                    borderTop: '1px dashed var(--glass-border)',
+                                    fontSize: '0.76rem',
+                                    color: 'var(--text-secondary)',
+                                }}
+                            >
+                                {visiblePreviewEntries.slice(0, 6).map((item) => (
+                                    <div key={item.id}>
+                                        <strong>{item.timeSlot || '--:--'}</strong> — {item.content}
+                                    </div>
+                                ))}
+                                {visiblePreviewEntries.length > 6 && (
+                                    <div style={{ color: 'var(--text-tertiary)' }}>
+                                        +{visiblePreviewEntries.length - 6} {t('agenda.moreEntries', 'kayıt daha')}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
                     <button
                         type="submit"
                         disabled={submitting}
@@ -312,8 +460,36 @@ const AgendaShareModal = ({ isOpen, onClose, selectedDate, shares = [], onCreate
                                     }}
                                 >
                                     <div>
-                                        <div style={{ fontWeight: 700, fontSize: '0.86rem' }}>
-                                            {s.title || `${s.startDate}..${s.endDate}`}
+                                        <div
+                                            style={{
+                                                fontWeight: 700,
+                                                fontSize: '0.86rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                flexWrap: 'wrap',
+                                            }}
+                                        >
+                                            <span>{s.title || `${s.startDate}..${s.endDate}`}</span>
+                                            {(s.sharedWith || s.sharedWithUserId) && (
+                                                <span
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        gap: '4px',
+                                                        padding: '2px 7px',
+                                                        borderRadius: '999px',
+                                                        background: 'var(--accent-primary-transparent)',
+                                                        color: 'var(--accent-primary)',
+                                                        fontSize: '0.7rem',
+                                                    }}
+                                                >
+                                                    <FaUserCheck size={10} />
+                                                    {s.sharedWith?.displayName ||
+                                                        s.sharedWith?.username ||
+                                                        `#${s.sharedWithUserId}`}
+                                                </span>
+                                            )}
                                         </div>
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
                                             {s.startDate === s.endDate ? s.startDate : `${s.startDate} → ${s.endDate}`}{' '}

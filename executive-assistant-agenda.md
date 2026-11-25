@@ -153,3 +153,44 @@
 - Security: ✅ Full Role × Action Permission Matrix & SHA-256 Share Token Hashing verified (18/18 tests)
 - Build: ✅ Success (Vite 8.3.8 in 305ms)
 - Date: 2026-11-24
+
+---
+
+## 6. Codex Product & UX Review Roadmap (2026-11-25)
+
+### 6.1. Hemen Eklenmesi Gereken Kritik İşlevler (`P0`)
+
+1. **P0-1 · Gerçek Saatli Hatırlatma, Güvenli E-posta Gönderim Onayı & Geciken İşler Kutusu:**
+    - `!yarın 10:00` gibi saatli hatırlatmaları (`reminderAt`) yalnızca sabah 08:00 taramasına bırakmayıp vadesi gelen kayıtları düzenli tarama; e-posta gönderimi gerçekten başarılı olduğunda `reminderSent = true` işaretleme; özel not (`isPrivate`) içeriğini e-posta önizlemesine sızdırmama.
+    - Ajanda üst şeridinde **Bugün / Geciken Hatırlatmalar** kutusu ve her kayıt için **10 dk Ertele / Yarına Al / Tamamla** hızlı aksiyonları.
+2. **P0-2 · Satır İçi Randevu Düzenleme, Yeniden Planlama ve Saat Çakışması Uyarıları:**
+    - Günlük ajanda satırlarında (`DailyPageSpread.jsx`) yalnızca Tamamla/İptal/Sil değil; tarih, başlangıç/bitiş saati, kategori, metin ve hatırlatma saatini satır içinden düzenleme (`✏️ Düzenle / Yeniden Planla`).
+    - Aynı saat diliminde veya kesişen başlangıç-bitiş aralığında birden fazla açık randevu olduğunda **`⚠️ Saat Çakışması`** rozeti ve uyarısı.
+3. **P0-3 · Akıllı Gün Kapatma & Seçmeli Yarına Devretme:**
+    - `"Açıkları Yarına Devret"` işleminde **Görevler & Geri Aramalar** ile **Saatli Randevuları** ayırarak sekreterin hangi kayıtları hangi tarihe devredeceğini seçebilmesi ve isteğe bağlı olarak devredilen randevuların saatini sıfırlayabilmesi.
+    - Önceki günden devreden kayıtlarda **`↩ Devreden Kayıt`** rozetinin gösterilmesi.
+4. **P0-4 · Gün ve Ajanda Değiştirirken Bağlam Koruması & `409` Sürüm Çakışması Kurtarma:**
+    - Tarih veya vekâlet ajandası değiştirildiğinde yükleme sırasında eski günün kayıtlarının yeni günmüş gibi görünmesini engelleme, kaydedilmemiş not taslaklarını `ownerId:date` anahtarıyla koruma ve `409` sürüm çakışmasında **"Benim Taslağımı Kaydet / Sunucudaki Son Hali Yükle"** kurtarma seçeneği sunma.
+5. **P0-5 · Paylaşım Penceresinde (`AgendaShareModal`) Alıcı Kullanıcı Seçimi & İçerik Önizlemesi:**
+    - Backend'deki `sharedWithUserId` (belirli bir kullanıcıya özel paylaşım) özelliğini paylaşım penceresine taşıma ve bağlantı üretmeden önce alıcının göreceği açık kayıt sayısını / gizlenen özel kayıtları önizleme olarak gösterme.
+
+### 6.2. Günlük Kullanışlılığı ve Hızı Artıracak UX İyileştirmeleri (`P1`)
+
+- **Bugün Ekranı & Sabah Özeti:** Üstte sıradaki randevu, geri aranacaklar ve geciken işler özeti.
+- **Hızlı Giriş (`QuickEntryBar`) Canlı Ayrıştırma Önizlemesi:** `14:30 @Ayşe sunum !yarın 10:00` yazılırken algılanan saat, kategori, kişi ve mutlak hatırlatma tarihinin canlı rozet olarak gösterilmesi ve telefon notu şablonu.
+- **`Ctrl/Cmd + K` Hızlı Arama & Filtreleme:** Klavye kısayoluyla arama kutusuna odaklanma, durum/tarih filtreleri ve sağ sayfa notlarında (`freeformNotes`) arama.
+- **Yanlışlıkla Silmeye Karşı Geri Al (Undo) & Klavye Erişilebilirliği:** Silinen ajanda kaydını tek tıkla geri alma.
+
+### 6.3. Kartvizit / Fihrist ile Ajanda Arasındaki Entegrasyonu Güçlendirecek Özellikler (`P1 / P2`)
+
+- **Fihristten Ajandaya Tek Adım:** Kartvizit detayından doğrudan o kişiye bağlı randevu, geri arama veya görüşme notu oluşturma; ajanda kişi çekmecesinde tıklanabilir `tel:`, `mailto:` ve profil bağlantıları.
+- **`@Kişi` Aramasını Tüm Fihriste Açma:** İlk 100 kart sınırı yerine sunucu destekli ad-soyad (boşluklu), şirket ve telefon araması.
+- **Temas Sonucu & CRM Etkileşim Günlüğü (`InteractionLog`) Birleşimi:** Geri arama tamamlandığında sonucu (`Ulaşıldı / Ulaşılamadı / Tekrar Aranacak`) tek işlemle hem ajandaya hem kartvizit etkileşim geçmişine işleme.
+- **OCR Sonrası Takip & Mükerrer Kart Birleştirme (`P2`):** Yeni taranan kartvizit için anında takip planlama.
+
+### 6.4. Yönetici-Sekreter İşbirliği & Raporlama Özellikleri (`P1 / P2`)
+
+- **Düzenli Çalışma Yetkisi & Yönetici Karar Kutusu (`P1`):** Saat önerme, yeniden planlama ve yönetici onay akışı.
+- **Somut İzin Devri & Toplantı Sonrası Takip (`P1`):** Vekâlet süresince yapılan değişikliklerin ve bekleyen işlerin devir-teslim özeti.
+- **Kurumsal Takvim (`.ics` / Outlook / Google Calendar) Entegrasyonu (`P2`):** Randevuları `.ics` olarak dışa aktarma ve müsait/meşgul görünümü.
+- **Karar Verdiren Sabah Brifingi & Haftalık Özet Raporları (`P2`):** Geciken işler, teyitsiz randevular ve devreden görevlerin analizi.

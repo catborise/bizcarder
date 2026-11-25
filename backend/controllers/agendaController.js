@@ -163,7 +163,10 @@ exports.getDailyPage = async (req, res) => {
 
         const { ownerId, isOwner } = req.agendaAccess;
 
-        const [owner, page, entries] = await Promise.all([
+        const endOfReminderWindow = new Date();
+        endOfReminderWindow.setHours(23, 59, 59, 999);
+
+        const [owner, page, entries, dueReminders] = await Promise.all([
             User.findByPk(ownerId, { attributes: ['id', 'username', 'displayName'] }),
             AgendaPage.findOne({
                 where: { ownerId, date },
@@ -182,6 +185,24 @@ exports.getDailyPage = async (req, res) => {
                     ['sortOrder', 'ASC'],
                     ['id', 'ASC'],
                 ],
+            }),
+            AgendaEntry.findAll({
+                where: {
+                    ownerId,
+                    status: 'open',
+                    deletedAt: null,
+                    reminderAt: {
+                        [Op.ne]: null,
+                        [Op.lte]: endOfReminderWindow,
+                    },
+                    ...(isOwner ? {} : { isPrivate: false }),
+                },
+                include: buildEntryIncludes(),
+                order: [
+                    ['reminderAt', 'ASC'],
+                    ['id', 'ASC'],
+                ],
+                limit: 30,
             }),
         ]);
 
@@ -214,6 +235,7 @@ exports.getDailyPage = async (req, res) => {
               };
 
         return res.json({
+            date,
             owner,
             access: {
                 ownerId,
@@ -225,6 +247,7 @@ exports.getDailyPage = async (req, res) => {
             },
             page: pageData,
             entries: entries.map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
+            dueReminders: dueReminders.map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
         });
     } catch (error) {
         console.error('[AGENDA GET DAY ERROR]', error);
@@ -288,6 +311,17 @@ exports.updateDailyPageNotes = async (req, res) => {
                 return res.status(409).json({
                     errorCode: 'AGENDA_VERSION_CONFLICT',
                     currentVersion: page.version,
+                    currentPage: {
+                        id: page.id,
+                        ownerId: page.ownerId,
+                        date: page.date,
+                        freeformNotes: page.freeformNotes,
+                        ...(isOwner ? { privateNotes: page.privateNotes } : {}),
+                        moodOrPriority: page.moodOrPriority,
+                        version: page.version,
+                        updatedByUserId: page.updatedByUserId,
+                        updatedAt: page.updatedAt,
+                    },
                 });
             }
 
@@ -728,7 +762,7 @@ exports.migrateUnfinishedEntries = async (req, res) => {
     const t = await sequelize.transaction();
     try {
         const { ownerId, actorUserId, isOwner } = req.agendaAccess;
-        const { fromDate, toDate: rawToDate } = req.body;
+        const { fromDate, toDate: rawToDate, entryIds, clearScheduleTimes } = req.body;
 
         if (!isValidDateString(fromDate)) {
             await t.rollback();
@@ -745,6 +779,10 @@ exports.migrateUnfinishedEntries = async (req, res) => {
             return res.status(400).json({ errorCode: 'MIGRATE_TARGET_PAST_DATE' });
         }
 
+        const selectedIds = Array.isArray(entryIds)
+            ? [...new Set(entryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))]
+            : null;
+
         // Lock source rows first (without outer join includes)
         const lockedSources = await AgendaEntry.findAll({
             where: {
@@ -753,6 +791,7 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 status: 'open',
                 deletedAt: null,
                 ...(isOwner ? {} : { isPrivate: false }),
+                ...(selectedIds && selectedIds.length > 0 ? { id: { [Op.in]: selectedIds } } : {}),
             },
             order: [
                 ['timeSlot', 'ASC'],
@@ -780,6 +819,17 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 transaction: t,
             });
 
+            const shouldClearTime = Boolean(clearScheduleTimes) && source.entryType === 'schedule';
+            let migratedReminderAt = null;
+            if (source.reminderAt) {
+                const origRem = new Date(source.reminderAt);
+                if (!Number.isNaN(origRem.getTime())) {
+                    const hh = String(origRem.getHours()).padStart(2, '0');
+                    const mm = String(origRem.getMinutes()).padStart(2, '0');
+                    migratedReminderAt = new Date(`${toDate}T${hh}:${mm}:00`);
+                }
+            }
+
             if (!existingClone) {
                 // CRITICAL SECURITY FIX (K3): Preserve original createdByUserId so a substitute rolling over
                 // the principal's entry cannot gain authorship to edit/delete the principal's text on the next day!
@@ -789,12 +839,14 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                         createdByUserId: source.createdByUserId,
                         updatedByUserId: actorUserId,
                         date: toDate,
-                        timeSlot: source.timeSlot,
-                        endTime: source.endTime,
+                        timeSlot: shouldClearTime ? null : source.timeSlot,
+                        endTime: shouldClearTime ? null : source.endTime,
                         entryType: source.entryType,
                         content: source.content,
                         status: 'open',
                         priority: source.priority,
+                        reminderAt: migratedReminderAt,
+                        reminderSent: false,
                         migratedFromEntryId: source.id,
                         isPrivate: source.isPrivate,
                         sortOrder: source.sortOrder,
