@@ -109,8 +109,9 @@ const DailyPageSpread = ({
     const [rolloverTargetDate, setRolloverTargetDate] = useState('');
     const [clearScheduleTimes, setClearScheduleTimes] = useState(true);
 
-    // P0-4: Per-context (ownerId:date) unsaved draft preservation with baseVersion tracking
+    // P0-4: Per-context (ownerId:date) unsaved draft preservation with baseVersion & revision tracking
     const draftsByContextRef = useRef({});
+    const draftRevisionRef = useRef(0);
     const savingMutexRef = useRef(false);
     const lastSyncedKeyRef = useRef('');
     const contextKey = `${ownerId}:${selectedDate}`;
@@ -256,6 +257,7 @@ const DailyPageSpread = ({
         const targetKey = `${targetOwnerId}:${targetDate}`;
         try {
             const savedDraft = draftsByContextRef.current[targetKey];
+            const sentRev = savedDraft?.rev ?? draftRevisionRef.current;
             const baseVersion =
                 savedDraft && savedDraft.baseVersion !== undefined
                     ? savedDraft.baseVersion
@@ -273,8 +275,19 @@ const DailyPageSpread = ({
                 targetOwnerId,
             );
             if (ok !== false) {
-                delete draftsByContextRef.current[targetKey];
-                setNotesDirty(false);
+                const currentDraft = draftsByContextRef.current[targetKey];
+                const newServerVersion =
+                    typeof ok === 'object' && ok?.version ? ok.version : (versionToSend || page?.version || 1) + 1;
+                if (!currentDraft || currentDraft.rev === sentRev) {
+                    delete draftsByContextRef.current[targetKey];
+                    setNotesDirty(false);
+                } else {
+                    // User kept typing while save was in-flight: preserve new characters and update baseVersion!
+                    draftsByContextRef.current[targetKey] = {
+                        ...currentDraft,
+                        baseVersion: newServerVersion,
+                    };
+                }
             }
         } finally {
             savingMutexRef.current = false;
@@ -1537,6 +1550,7 @@ const DailyPageSpread = ({
                             onChange={(e) => {
                                 const nextVal = e.target.value;
                                 const existing = draftsByContextRef.current[contextKey];
+                                const nextRev = ++draftRevisionRef.current;
                                 setPrivateNotes(nextVal);
                                 setNotesDirty(true);
                                 draftsByContextRef.current[contextKey] = {
@@ -1548,6 +1562,7 @@ const DailyPageSpread = ({
                                             : page?.id
                                               ? page.version
                                               : undefined,
+                                    rev: nextRev,
                                     dirty: true,
                                 };
                             }}
@@ -1579,6 +1594,7 @@ const DailyPageSpread = ({
                             onChange={(e) => {
                                 const nextVal = e.target.value;
                                 const existing = draftsByContextRef.current[contextKey];
+                                const nextRev = ++draftRevisionRef.current;
                                 setFreeformNotes(nextVal);
                                 setNotesDirty(true);
                                 draftsByContextRef.current[contextKey] = {
@@ -1590,6 +1606,7 @@ const DailyPageSpread = ({
                                             : page?.id
                                               ? page.version
                                               : undefined,
+                                    rev: nextRev,
                                     dirty: true,
                                 };
                             }}

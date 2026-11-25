@@ -199,10 +199,10 @@ exports.getDailyPage = async (req, res) => {
                 },
                 include: buildEntryIncludes(),
                 order: [
-                    ['reminderAt', 'ASC'],
-                    ['id', 'ASC'],
+                    ['reminderAt', 'DESC'],
+                    ['id', 'DESC'],
                 ],
-                limit: 30,
+                limit: 50,
             }),
         ]);
 
@@ -247,7 +247,7 @@ exports.getDailyPage = async (req, res) => {
             },
             page: pageData,
             entries: entries.map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
-            dueReminders: dueReminders.map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
+            dueReminders: [...dueReminders].reverse().map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
         });
     } catch (error) {
         console.error('[AGENDA GET DAY ERROR]', error);
@@ -776,7 +776,11 @@ exports.migrateUnfinishedEntries = async (req, res) => {
             return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE' });
         }
 
-        const toDate = rawToDate && isValidDateString(rawToDate) ? rawToDate : addDays(fromDate, 1);
+        if (rawToDate !== undefined && rawToDate !== null && rawToDate !== '' && !isValidDateString(rawToDate)) {
+            await t.rollback();
+            return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE' });
+        }
+        const toDate = rawToDate ? rawToDate : addDays(fromDate, 1);
         if (toDate === fromDate) {
             await t.rollback();
             return res.status(400).json({ errorCode: 'MIGRATE_TARGET_SAME_DATE' });
@@ -792,10 +796,11 @@ exports.migrateUnfinishedEntries = async (req, res) => {
                 await t.rollback();
                 return res.status(400).json({ errorCode: 'INVALID_ENTRY_IDS' });
             }
-            selectedIds = [...new Set(entryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))].slice(
-                0,
-                200,
-            );
+            if (entryIds.length > 200) {
+                await t.rollback();
+                return res.status(400).json({ errorCode: 'TOO_MANY_ENTRIES_SELECTED' });
+            }
+            selectedIds = [...new Set(entryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0))];
             if (selectedIds.length === 0) {
                 await t.rollback();
                 return res.status(400).json({ errorCode: 'MIGRATE_NO_ENTRIES_SELECTED' });
@@ -894,8 +899,8 @@ exports.migrateUnfinishedEntries = async (req, res) => {
 
                 migratedIds.push(clone.id);
             } else {
-                // Always keep privacy synchronized with source entry
-                existingClone.isPrivate = source.isPrivate;
+                // Never downgrade privacy on an existing target clone (Kritik-3)
+                existingClone.isPrivate = Boolean(existingClone.isPrivate || source.isPrivate);
                 if (existingClone.deletedAt !== null && isOwner) {
                     existingClone.deletedAt = null;
                     existingClone.status = 'open';

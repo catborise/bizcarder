@@ -72,14 +72,30 @@ const QuickEntryBar = ({
     const [quickReminderPreset, setQuickReminderPreset] = useState(''); // '' | 'plus1h' | 'today16' | 'tomorrow09'
     const [isListening, setIsListening] = useState(false);
 
+    const ownerIdRef = useRef(ownerId);
+    ownerIdRef.current = ownerId;
+
     useEffect(() => {
         if (!isOwner) {
             setIsPrivate(false);
         }
     }, [isOwner]);
 
-    // Clear draft when switching between own agenda and delegated agenda (prevents private draft leaking to another owner)
+    // Clear draft and stop any active voice recognition session when switching between agendas
     useEffect(() => {
+        if (recognitionRef.current) {
+            try {
+                if (typeof recognitionRef.current.abort === 'function') {
+                    recognitionRef.current.abort();
+                } else {
+                    recognitionRef.current.stop();
+                }
+            } catch {
+                // ignore
+            }
+            recognitionRef.current = null;
+        }
+        setIsListening(false);
         setContent('');
         setSelectedContacts([]);
         setSelectedTags([]);
@@ -104,33 +120,41 @@ const QuickEntryBar = ({
         };
     }, []);
 
-    // Live parsed preview from inline text + 1-tap chips
+    // Live parsed preview from inline text + 1-tap chips (identical precedence to backend parseInlineSyntax)
     const livePreview = useMemo(() => {
         const raw = content.trim();
-        const timeMatch = raw.match(/^([01]?\d|2[0-3])[:.]([0-5]\d)\s+/);
+        let textAfterTime = raw;
+        const timeMatch = raw.match(/^([01]?\d|2[0-3])[:.]([0-5]\d)\s+([\s\S]+)$/);
         const inlineTime = timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : null;
+        if (timeMatch) {
+            textAfterTime = timeMatch[3].trim();
+        }
         const effectiveTime = quickTimeSlot || inlineTime;
 
+        const baseDate = selectedDate || new Date().toISOString().slice(0, 10);
         const remMatch = raw.match(
             /(?:^|\s)!(yarın|yarin|tomorrow|bugün|bugun|today|\d{4}-\d{2}-\d{2})(?:\s+([01]?\d|2[0-3])[:.]([0-5]\d))?(?=\s|$)/i,
         );
         let reminderLabel = null;
         if (quickReminderPreset === 'plus1h') {
-            reminderLabel = t('agenda.remPresetPlus1h', '+1 Saat Sonra');
+            reminderLabel = t('agenda.remPresetPlus1h', '+1 Saat');
         } else if (quickReminderPreset === 'today16') {
-            reminderLabel = t('agenda.remPresetToday16', 'Bugün 16:00');
+            reminderLabel = `${t('agenda.remPresetToday16', 'Bugün 16:00')} (${baseDate})`;
         } else if (quickReminderPreset === 'tomorrow09') {
-            reminderLabel = t('agenda.remPresetTomorrow09', 'Yarın 09:00');
+            reminderLabel = `${t('agenda.remPresetTomorrow09', 'Yarın 09:00')} (${shiftDateStr(baseDate, 1)})`;
         } else if (remMatch) {
-            reminderLabel = `!${remMatch[1]}${remMatch[2] ? ` ${remMatch[2]}:${remMatch[3]}` : ' 09:00'}`;
+            reminderLabel = `!${remMatch[1]}${remMatch[2] ? ` ${remMatch[2].padStart(2, '0')}:${remMatch[3]}` : ' 09:00'}`;
         }
+
+        const isTaskPrefix = textAfterTime.startsWith('[] ') || textAfterTime.startsWith('[ ] ');
+        const isCallPrefix = textAfterTime.startsWith('☎ ') || textAfterTime.toLowerCase().startsWith('[arama] ');
 
         const effectiveType =
             entryType !== 'auto'
                 ? entryType
-                : raw.startsWith('[] ') || raw.startsWith('[ ] ')
+                : isTaskPrefix
                   ? 'task'
-                  : raw.startsWith('☎ ')
+                  : isCallPrefix
                     ? 'call'
                     : effectiveTime
                       ? 'schedule'
@@ -147,7 +171,16 @@ const QuickEntryBar = ({
                 selectedContacts.length > 0 ||
                 selectedTags.length > 0,
         };
-    }, [content, quickTimeSlot, quickReminderPreset, entryType, selectedContacts.length, selectedTags.length, t]);
+    }, [
+        content,
+        quickTimeSlot,
+        quickReminderPreset,
+        entryType,
+        selectedDate,
+        selectedContacts.length,
+        selectedTags.length,
+        t,
+    ]);
 
     if (!canWrite) return null;
 
@@ -167,12 +200,14 @@ const QuickEntryBar = ({
         }
 
         try {
+            const sessionOwnerId = ownerId;
             const recognition = new SpeechRecognition();
             recognition.lang = (i18n.language || 'tr').startsWith('tr') ? 'tr-TR' : 'en-US';
             recognition.interimResults = false;
             recognition.maxAlternatives = 1;
 
             recognition.onresult = (event) => {
+                if (Number(sessionOwnerId) !== Number(ownerIdRef.current)) return;
                 const transcript = event.results?.[0]?.[0]?.transcript?.trim();
                 if (transcript) {
                     setContent((prev) => (prev.trim() ? `${prev.trim()} ${transcript}` : transcript));

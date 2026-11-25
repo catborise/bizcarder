@@ -93,6 +93,9 @@ const MonthIndexTabs = ({ selectedDate, yearOverview, onSelectDate, isMobile = f
                                 <button
                                     key={item.dateKey}
                                     type="button"
+                                    aria-label={item.dateKey}
+                                    aria-pressed={item.isSelected}
+                                    title={item.dateKey}
                                     onClick={() => onSelectDate(item.dateKey)}
                                     style={{
                                         minWidth: '42px',
@@ -258,6 +261,8 @@ const MonthIndexTabs = ({ selectedDate, yearOverview, onSelectDate, isMobile = f
                                 <button
                                     key={dayNum}
                                     type="button"
+                                    aria-label={dateKey}
+                                    aria-pressed={isSelected}
                                     onClick={() => handleDayClick(dayNum)}
                                     title={dateKey}
                                     style={{

@@ -52,6 +52,8 @@ const AgendaShareModal = ({
         e.preventDefault();
         if (submitting) return;
         setSubmitting(true);
+        setLastGeneratedLink('');
+        setCopied(false);
         try {
             const result = await onCreateShare({
                 startDate,
@@ -248,7 +250,11 @@ const AgendaShareModal = ({
                         <select
                             id="share-recipient-select"
                             value={sharedWithUserId}
-                            onChange={(e) => setSharedWithUserId(e.target.value)}
+                            onChange={(e) => {
+                                setSharedWithUserId(e.target.value);
+                                setLastGeneratedLink('');
+                                setCopied(false);
+                            }}
                             style={{
                                 width: '100%',
                                 padding: '8px 10px',

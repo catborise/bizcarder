@@ -9,72 +9,100 @@ const BATCH_SIZE = 100;
 let intervalTimer = null;
 let lastSentDate = null;
 let isAgendaRunning = false;
+const agendaRetryBackoffUntil = new Map();
 
 function getTodayKey() {
     return new Date().toISOString().slice(0, 10);
 }
 
-function isSmtpConfigured() {
-    return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
-}
-
-async function claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries) {
+async function queryDueAgendaCandidatesInTransaction(t, candidateIds) {
     if (!AgendaEntry || typeof AgendaEntry.findAll !== 'function') return;
 
     const now = new Date();
-    const lookback24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const lookback7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const agendaBatch = await AgendaEntry.findAll({
+        attributes: ['id'],
         where: {
-            reminderAt: { [Op.gte]: lookback24h, [Op.lte]: now },
+            reminderAt: { [Op.gte]: lookback7d, [Op.lte]: now },
             reminderSent: false,
             status: 'open',
             deletedAt: null,
         },
-        include: [{ model: User, as: 'owner', attributes: ['id', 'email', 'displayName'] }],
-        order: [['id', 'ASC']],
+        include: [
+            {
+                model: User,
+                as: 'owner',
+                attributes: ['id', 'email'],
+                where: { email: { [Op.ne]: null } },
+                required: true,
+            },
+        ],
+        order: [
+            ['reminderAt', 'ASC'],
+            ['id', 'ASC'],
+        ],
         limit: BATCH_SIZE,
         transaction: t,
     });
 
-    for (const entry of agendaBatch) {
-        const claimedReminderAt = entry.reminderAt;
-        entry.reminderSent = true;
-        await entry.save({ transaction: t });
-        if (entry.owner?.email) {
-            claimedAgendaEntries.push({ entry, claimedReminderAt });
+    const nowMs = Date.now();
+    for (const row of agendaBatch) {
+        const backoffUntil = agendaRetryBackoffUntil.get(row.id) || 0;
+        if (backoffUntil <= nowMs) {
+            candidateIds.push(row.id);
         }
     }
 }
 
-async function sendClaimedAgendaEmails(claimedAgendaEntries) {
+async function sendDueAgendaEmailsByIds(candidateIds) {
+    if (!AgendaEntry || typeof AgendaEntry.findOne !== 'function') return 0;
+
     let sentCount = 0;
-    for (const { entry, claimedReminderAt } of claimedAgendaEntries) {
-        if (entry.owner?.email) {
-            const safeNoteText = entry.isPrivate
-                ? '🔒 Özel ajanda hatırlatması (içeriği görüntülemek için ajandanızı açın).'
-                : entry.content;
-            const mailResult = await sendReminderEmail(entry.owner, {
-                id: entry.id,
-                firstName: 'Ajanda',
-                lastName: entry.date,
-                company: entry.timeSlot || '',
-                notes: safeNoteText,
-            });
-            if (mailResult !== null) {
-                sentCount++;
-            } else if (isSmtpConfigured()) {
-                // Revert claim only if SMTP was configured (transient failure) AND user did not snooze/change reminderAt
-                await AgendaEntry.update(
-                    { reminderSent: false },
-                    {
-                        where: {
-                            id: entry.id,
-                            reminderAt: claimedReminderAt,
-                        },
+    for (const entryId of candidateIds) {
+        const freshEntry = await AgendaEntry.findOne({
+            where: {
+                id: entryId,
+                reminderSent: false,
+                status: 'open',
+                deletedAt: null,
+                reminderAt: { [Op.lte]: new Date() },
+            },
+            include: [{ model: User, as: 'owner', attributes: ['id', 'email', 'displayName'] }],
+        });
+
+        if (!freshEntry || !freshEntry.owner?.email) {
+            continue;
+        }
+
+        const targetReminderAt = freshEntry.reminderAt;
+        const safeNoteText = freshEntry.isPrivate
+            ? '🔒 Özel ajanda hatırlatması (içeriği görüntülemek için ajandanızı açın).'
+            : freshEntry.content;
+
+        const mailResult = await sendReminderEmail(freshEntry.owner, {
+            id: freshEntry.id,
+            firstName: 'Ajanda',
+            lastName: freshEntry.isPrivate ? '' : freshEntry.date,
+            company: freshEntry.isPrivate ? '' : freshEntry.timeSlot || '',
+            notes: safeNoteText,
+        });
+
+        if (mailResult !== null) {
+            agendaRetryBackoffUntil.delete(freshEntry.id);
+            await AgendaEntry.update(
+                { reminderSent: true },
+                {
+                    where: {
+                        id: freshEntry.id,
+                        reminderAt: targetReminderAt,
                     },
-                );
-            }
+                },
+            );
+            sentCount++;
+        } else {
+            // Back off for 10 minutes on failed/unconfigured SMTP without losing reminderSent=false
+            agendaRetryBackoffUntil.set(freshEntry.id, Date.now() + 10 * 60 * 1000);
         }
     }
     return sentCount;
@@ -84,7 +112,7 @@ async function checkAndSendAgendaReminders() {
     if (isAgendaRunning) return;
     isAgendaRunning = true;
     try {
-        const claimedAgendaEntries = [];
+        const candidateIds = [];
         await sequelize.transaction(async (t) => {
             const [lockResult] = await sequelize.query('SELECT pg_try_advisory_xact_lock(:lockId) AS acquired', {
                 replacements: { lockId: REMINDER_LOCK_ID },
@@ -93,10 +121,10 @@ async function checkAndSendAgendaReminders() {
             });
             if (!lockResult?.acquired) return;
 
-            await claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries);
+            await queryDueAgendaCandidatesInTransaction(t, candidateIds);
         });
 
-        const sentCount = await sendClaimedAgendaEmails(claimedAgendaEntries);
+        const sentCount = await sendDueAgendaEmailsByIds(candidateIds);
         if (sentCount > 0) {
             console.log(`[REMINDERS] Sent ${sentCount} agenda reminder emails.`);
         }
@@ -115,7 +143,7 @@ async function checkAndSendReminders() {
 
     try {
         const dueCards = [];
-        const claimedAgendaEntries = [];
+        const candidateIds = [];
 
         // Transaction-scoped advisory lock guarantees release on the exact same pooled connection
         await sequelize.transaction(async (t) => {
@@ -149,7 +177,7 @@ async function checkAndSendReminders() {
                 offset += BATCH_SIZE;
             }
 
-            await claimDueAgendaEntriesInTransaction(t, claimedAgendaEntries);
+            await queryDueAgendaCandidatesInTransaction(t, candidateIds);
         });
 
         let sentCount = 0;
@@ -162,7 +190,7 @@ async function checkAndSendReminders() {
             }
         }
 
-        sentCount += await sendClaimedAgendaEmails(claimedAgendaEntries);
+        sentCount += await sendDueAgendaEmailsByIds(candidateIds);
 
         lastSentDate = todayKey;
 

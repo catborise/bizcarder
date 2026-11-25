@@ -133,12 +133,23 @@ const AgendaWorkspace = () => {
         }
     }, [selectedDate, effectiveOwnerId, activeOwnerId, buildHeadersForOwner, showNotification, t]);
 
+    const yearRequestSeqRef = useRef(0);
+
     const fetchYearOverview = useCallback(async () => {
+        const seq = ++yearRequestSeqRef.current;
+        const requestedYear = currentYear;
+        const requestedOwnerId = effectiveOwnerId;
         try {
-            const res = await api.get(`/api/agenda/year-overview/${currentYear}`, {
-                headers: buildHeadersForOwner(effectiveOwnerId),
+            const res = await api.get(`/api/agenda/year-overview/${requestedYear}`, {
+                headers: buildHeadersForOwner(requestedOwnerId),
             });
-            setYearOverview(res.data);
+            if (
+                seq === yearRequestSeqRef.current &&
+                requestedYear === selectedDateRef.current.slice(0, 4) &&
+                Number(requestedOwnerId) === Number(effectiveOwnerIdRef.current)
+            ) {
+                setYearOverview(res.data);
+            }
         } catch (err) {
             console.error('Agenda year overview fetch error:', err);
         }
@@ -195,8 +206,14 @@ const AgendaWorkspace = () => {
             if (e.ctrlKey || e.metaKey || e.altKey) return;
 
             const tag = document.activeElement?.tagName?.toLowerCase();
+            const role = document.activeElement?.getAttribute?.('role');
             const isEditable =
-                tag === 'input' || tag === 'textarea' || tag === 'select' || document.activeElement?.isContentEditable;
+                tag === 'input' ||
+                tag === 'textarea' ||
+                tag === 'select' ||
+                tag === 'button' ||
+                role === 'tab' ||
+                document.activeElement?.isContentEditable;
 
             if (isEditable) return;
 
@@ -217,16 +234,25 @@ const AgendaWorkspace = () => {
     }, [showDelegationModal, showShareModal, showPrintModal, contactDrawer]);
 
     const handleCreateEntry = async (payload) => {
+        const targetDate = selectedDate;
+        const targetOwnerId = effectiveOwnerId;
         try {
             await api.post(
                 '/api/agenda/entries',
                 {
                     ...payload,
-                    date: selectedDate,
+                    date: targetDate,
                 },
-                { headers: buildHeadersForOwner(effectiveOwnerId) },
+                { headers: buildHeadersForOwner(targetOwnerId) },
             );
-            await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            if (
+                targetDate === selectedDateRef.current &&
+                Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
+            ) {
+                await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            } else {
+                fetchYearOverview();
+            }
             return true;
         } catch {
             showNotification(t('agenda.entryCreateError', 'Kayıt eklenemedi.'), 'error');
@@ -235,11 +261,20 @@ const AgendaWorkspace = () => {
     };
 
     const handleUpdateEntry = async (entryId, updates) => {
+        const targetDate = selectedDate;
+        const targetOwnerId = effectiveOwnerId;
         try {
             await api.patch(`/api/agenda/entries/${entryId}`, updates, {
-                headers: buildHeadersForOwner(effectiveOwnerId),
+                headers: buildHeadersForOwner(targetOwnerId),
             });
-            await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            if (
+                targetDate === selectedDateRef.current &&
+                Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
+            ) {
+                await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            } else {
+                fetchYearOverview();
+            }
             return true;
         } catch {
             showNotification(t('agenda.entryUpdateError', 'Kayıt güncellenemedi.'), 'error');
@@ -248,11 +283,20 @@ const AgendaWorkspace = () => {
     };
 
     const handleDeleteEntry = async (entryId) => {
+        const targetDate = selectedDate;
+        const targetOwnerId = effectiveOwnerId;
         try {
             await api.delete(`/api/agenda/entries/${entryId}`, {
-                headers: buildHeadersForOwner(effectiveOwnerId),
+                headers: buildHeadersForOwner(targetOwnerId),
             });
-            await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            if (
+                targetDate === selectedDateRef.current &&
+                Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
+            ) {
+                await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            } else {
+                fetchYearOverview();
+            }
             return true;
         } catch {
             showNotification(t('agenda.entryDeleteError', 'Bu kaydı silme yetkiniz yok.'), 'error');
@@ -261,9 +305,11 @@ const AgendaWorkspace = () => {
     };
 
     const handleMigrateUnfinished = async (options = {}) => {
+        const targetDate = selectedDate;
+        const targetOwnerId = effectiveOwnerId;
         try {
             const payload = {
-                fromDate: selectedDate,
+                fromDate: targetDate,
                 ...(options?.toDate ? { toDate: options.toDate } : {}),
                 ...(Array.isArray(options?.entryIds) ? { entryIds: options.entryIds } : {}),
                 ...(options?.clearScheduleTimes !== undefined
@@ -271,7 +317,7 @@ const AgendaWorkspace = () => {
                     : {}),
             };
             const res = await api.post('/api/agenda/entries/migrate-unfinished', payload, {
-                headers: buildHeadersForOwner(effectiveOwnerId),
+                headers: buildHeadersForOwner(targetOwnerId),
             });
             showNotification(
                 t('agenda.migratedSuccess', {
@@ -281,7 +327,14 @@ const AgendaWorkspace = () => {
                 }),
                 'success',
             );
-            await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            if (
+                targetDate === selectedDateRef.current &&
+                Number(targetOwnerId) === Number(effectiveOwnerIdRef.current)
+            ) {
+                await Promise.all([fetchDailyPage(), fetchYearOverview()]);
+            } else {
+                fetchYearOverview();
+            }
             return true;
         } catch {
             showNotification(t('agenda.migrateError', 'Yarına devretme işlemi başarısız.'), 'error');
@@ -303,7 +356,7 @@ const AgendaWorkspace = () => {
                 setVersionConflict(null);
             }
             fetchYearOverview();
-            return true;
+            return res.data.page || true;
         } catch (err) {
             if (err.response?.status === 409) {
                 if (
@@ -394,9 +447,13 @@ const AgendaWorkspace = () => {
     const handleCreateShare = async (payload) => {
         try {
             const res = await api.post('/api/agenda/shares', payload);
-            const listRes = await api.get('/api/agenda/shares');
-            setShares(listRes.data.outgoing || []);
             showNotification(t('agenda.shareCreated', 'Paylaşım bağlantısı oluşturuldu.'), 'success');
+            try {
+                const listRes = await api.get('/api/agenda/shares');
+                setShares(listRes.data.outgoing || []);
+            } catch {
+                // Keep one-time share token even if list refresh fails
+            }
             return res.data;
         } catch {
             showNotification(t('agenda.shareCreateError', 'Paylaşım bağlantısı oluşturulamadı.'), 'error');
