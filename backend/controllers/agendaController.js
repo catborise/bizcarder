@@ -1,3 +1,5 @@
+const path = require('path');
+const PDFDocument = require('pdfkit-table');
 const { Op } = require('sequelize');
 const {
     sequelize,
@@ -1025,5 +1027,296 @@ exports.getContactAgendaHistory = async (req, res) => {
     } catch (error) {
         console.error('[AGENDA CONTACT HISTORY ERROR]', error);
         return res.status(500).json({ errorCode: 'AGENDA_CONTACT_HISTORY_FAILED' });
+    }
+};
+
+exports.getRangePages = async (req, res) => {
+    try {
+        const { ownerId, isOwner } = req.agendaAccess;
+        const { startDate, endDate: rawEndDate } = req.query;
+
+        if (!isValidDateString(startDate)) {
+            return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE' });
+        }
+        const endDate = rawEndDate ? String(rawEndDate) : startDate;
+        if (!isValidDateString(endDate) || endDate < startDate) {
+            return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE_RANGE' });
+        }
+
+        const diffDays =
+            (new Date(`${endDate}T00:00:00Z`).getTime() - new Date(`${startDate}T00:00:00Z`).getTime()) /
+            (1000 * 60 * 60 * 24);
+        if (diffDays > 31) {
+            return res.status(400).json({ errorCode: 'AGENDA_RANGE_TOO_LARGE' });
+        }
+
+        const [owner, pages, entries] = await Promise.all([
+            User.findByPk(ownerId, { attributes: ['id', 'username', 'displayName'] }),
+            AgendaPage.findAll({
+                attributes: ['id', 'date', 'freeformNotes', ...(isOwner ? ['privateNotes'] : []), 'moodOrPriority'],
+                where: {
+                    ownerId,
+                    date: { [Op.between]: [startDate, endDate] },
+                },
+                order: [['date', 'ASC']],
+            }),
+            AgendaEntry.findAll({
+                where: {
+                    ownerId,
+                    date: { [Op.between]: [startDate, endDate] },
+                    deletedAt: null,
+                    ...(isOwner ? {} : { isPrivate: false }),
+                },
+                include: buildEntryIncludes(),
+                order: [
+                    ['date', 'ASC'],
+                    ['timeSlot', 'ASC'],
+                    ['sortOrder', 'ASC'],
+                    ['id', 'ASC'],
+                ],
+            }),
+        ]);
+
+        return res.json({
+            owner,
+            startDate,
+            endDate,
+            pages,
+            entries: entries.map((e) => sanitizeEntryForAccess(e, req.agendaAccess)),
+        });
+    } catch (error) {
+        console.error('[AGENDA GET RANGE ERROR]', error);
+        return res.status(500).json({ errorCode: 'AGENDA_RANGE_LOAD_FAILED' });
+    }
+};
+
+exports.exportAgendaPdf = async (req, res) => {
+    try {
+        const { ownerId, isOwner } = req.agendaAccess;
+        const {
+            startDate,
+            endDate: rawEndDate,
+            includePrivate: rawIncludePrivate,
+            includeContactPhones: rawIncludePhones,
+            includeBlankLines: rawIncludeBlankLines,
+        } = req.query;
+
+        if (!isValidDateString(startDate)) {
+            return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE' });
+        }
+        const endDate = rawEndDate ? String(rawEndDate) : startDate;
+        if (!isValidDateString(endDate) || endDate < startDate) {
+            return res.status(400).json({ errorCode: 'INVALID_AGENDA_DATE_RANGE' });
+        }
+
+        const diffDays =
+            (new Date(`${endDate}T00:00:00Z`).getTime() - new Date(`${startDate}T00:00:00Z`).getTime()) /
+            (1000 * 60 * 60 * 24);
+        if (diffDays > 31) {
+            return res.status(400).json({ errorCode: 'AGENDA_RANGE_TOO_LARGE' });
+        }
+
+        // Only the actual agenda owner can opt into including private notes in the PDF
+        const includePrivate = isOwner && rawIncludePrivate === 'true';
+        const includeContactPhones = rawIncludePhones !== 'false';
+        const includeBlankLines = rawIncludeBlankLines !== 'false';
+
+        const [owner, pages, rawEntries] = await Promise.all([
+            User.findByPk(ownerId, { attributes: ['id', 'username', 'displayName'] }),
+            AgendaPage.findAll({
+                attributes: ['date', 'freeformNotes', ...(includePrivate ? ['privateNotes'] : []), 'moodOrPriority'],
+                where: {
+                    ownerId,
+                    date: { [Op.between]: [startDate, endDate] },
+                },
+                order: [['date', 'ASC']],
+            }),
+            AgendaEntry.findAll({
+                where: {
+                    ownerId,
+                    date: { [Op.between]: [startDate, endDate] },
+                    deletedAt: null,
+                    ...(includePrivate ? {} : { isPrivate: false }),
+                },
+                include: buildEntryIncludes(),
+                order: [
+                    ['date', 'ASC'],
+                    ['timeSlot', 'ASC'],
+                    ['sortOrder', 'ASC'],
+                    ['id', 'ASC'],
+                ],
+            }),
+        ]);
+
+        const entries = rawEntries.map((e) => sanitizeEntryForAccess(e, req.agendaAccess));
+
+        const doc = new PDFDocument({ margin: 36, size: 'A4', layout: 'portrait' });
+        const buffers = [];
+
+        const fontPathRegular = path.join(__dirname, '../fonts/Roboto-Regular.ttf');
+        const fontPathBold = path.join(__dirname, '../fonts/Roboto-Bold.ttf');
+
+        try {
+            doc.registerFont('Roboto-Regular', fontPathRegular);
+            doc.registerFont('Roboto-Bold', fontPathBold);
+        } catch (fontErr) {
+            console.error('[AGENDA PDF FONT ERROR]', fontErr.message);
+        }
+
+        doc.on('data', buffers.push.bind(buffers));
+        doc.on('end', () => {
+            const pdfData = Buffer.concat(buffers);
+            const filename = startDate === endDate ? `ajanda_${startDate}.pdf` : `ajanda_${startDate}_${endDate}.pdf`;
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            res.setHeader('Content-Length', pdfData.length);
+            res.setHeader('Cache-Control', 'no-store');
+            res.send(pdfData);
+        });
+
+        const statusSymbol = (st) => {
+            if (st === 'done') return '[✓]';
+            if (st === 'migrated') return '[→]';
+            if (st === 'cancelled') return '[✗]';
+            return '[ ]';
+        };
+
+        // Header Banner
+        const ownerTitle = owner?.displayName || owner?.username || 'Ajanda';
+        const headerRangeText =
+            startDate === endDate
+                ? new Date(`${startDate}T00:00:00`).toLocaleDateString('tr-TR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                  })
+                : `${startDate} — ${endDate} Programı`;
+
+        doc.font('Roboto-Bold').fontSize(16).fillColor('#0f172a').text(headerRangeText, { align: 'left' });
+        doc.font('Roboto-Regular')
+            .fontSize(10)
+            .fillColor('#475569')
+            .text(`Ajanda: ${ownerTitle} • Oluşturulma: ${new Date().toLocaleString('tr-TR')}`);
+        doc.moveDown(0.6);
+        doc.moveTo(36, doc.y).lineTo(559, doc.y).strokeColor('#cbd5e1').lineWidth(1).stroke();
+        doc.moveDown(0.8);
+
+        // Build dates list in range
+        const dateList = [];
+        let cursor = startDate;
+        while (cursor <= endDate) {
+            dateList.push(cursor);
+            cursor = addDays(cursor, 1);
+        }
+
+        const pagesByDate = Object.fromEntries(pages.map((p) => [p.date, p]));
+
+        for (const dStr of dateList) {
+            const dayEntries = entries.filter((e) => e.date === dStr);
+            const dayPage = pagesByDate[dStr];
+            const hasFreeform = Boolean(dayPage?.freeformNotes && dayPage.freeformNotes.trim());
+            const hasPrivate = Boolean(includePrivate && dayPage?.privateNotes && dayPage.privateNotes.trim());
+
+            if (dateList.length > 1 && dayEntries.length === 0 && !hasFreeform && !hasPrivate) {
+                continue;
+            }
+
+            if (dateList.length > 1) {
+                const dayLabel = new Date(`${dStr}T00:00:00`).toLocaleDateString('tr-TR', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                });
+                doc.font('Roboto-Bold').fontSize(12).fillColor('#1e3a8a').text(dayLabel);
+                doc.moveDown(0.3);
+            }
+
+            if (dayEntries.length > 0) {
+                const rows = dayEntries.map((entry) => {
+                    const contactText = (entry.contactLinks || [])
+                        .map((link) => {
+                            if (includeContactPhones && link.card) {
+                                const extras = [link.card.company, link.card.phone].filter(Boolean).join(' • ');
+                                return extras
+                                    ? `@${link.displayNameSnapshot} (${extras})`
+                                    : `@${link.displayNameSnapshot}`;
+                            }
+                            return `@${link.displayNameSnapshot}`;
+                        })
+                        .join(', ');
+
+                    const tagText = (entry.tags || []).map((tItem) => `#${tItem.name}`).join(' ');
+                    const delegateText =
+                        entry.createdBy && Number(entry.createdBy.id) !== Number(ownerId)
+                            ? ` [Vekâleten: ${entry.createdBy.displayName || entry.createdBy.username}]`
+                            : '';
+
+                    const fullDetails = [entry.content, contactText, tagText, delegateText].filter(Boolean).join(' — ');
+
+                    return [entry.timeSlot || '—', statusSymbol(entry.status), fullDetails];
+                });
+
+                await doc.table(
+                    {
+                        headers: ['Saat', 'Durum', 'Program / Telefon Notu / Görev'],
+                        rows,
+                    },
+                    {
+                        prepareHeader: () => doc.font('Roboto-Bold').fontSize(9).fillColor('#0f172a'),
+                        prepareRow: () => doc.font('Roboto-Regular').fontSize(9).fillColor('#1e293b'),
+                        columnsSize: [50, 48, 425],
+                    },
+                );
+            } else {
+                doc.font('Roboto-Regular')
+                    .fontSize(9.5)
+                    .fillColor('#64748b')
+                    .text('Bu güne ait saatli program veya madde kaydı bulunmuyor.');
+                doc.moveDown(0.5);
+            }
+
+            if (hasFreeform) {
+                doc.moveDown(0.3);
+                doc.font('Roboto-Bold').fontSize(10).fillColor('#0f172a').text('Günlük Serbest Notlar:');
+                doc.font('Roboto-Regular').fontSize(9.5).fillColor('#1e293b').text(dayPage.freeformNotes.trim());
+                doc.moveDown(0.5);
+            }
+
+            if (hasPrivate) {
+                doc.moveDown(0.3);
+                doc.font('Roboto-Bold').fontSize(10).fillColor('#b45309').text('Özel Karalama (Gizli):');
+                doc.font('Roboto-Regular').fontSize(9.5).fillColor('#1e293b').text(dayPage.privateNotes.trim());
+                doc.moveDown(0.5);
+            }
+
+            doc.moveDown(0.4);
+        }
+
+        if (includeBlankLines) {
+            doc.moveDown(0.6);
+            doc.font('Roboto-Bold').fontSize(10).fillColor('#334155').text('Toplantı / El Yazısı Not Alanı:');
+            doc.moveDown(0.3);
+            for (let i = 0; i < 7; i++) {
+                const lineY = doc.y + 18;
+                if (lineY > 780) break;
+                doc.moveTo(36, lineY).lineTo(559, lineY).strokeColor('#cbd5e1').lineWidth(0.6).stroke();
+                doc.y = lineY + 4;
+            }
+        }
+
+        doc.end();
+
+        await logAction({
+            action: 'AGENDA_PDF_EXPORT',
+            details: `Ajanda PDF çıktısı alındı (${startDate}..${endDate}, ownerId=${ownerId})`,
+            req,
+        });
+    } catch (error) {
+        console.error('[AGENDA PDF EXPORT ERROR]', error);
+        if (!res.headersSent) {
+            return res.status(500).json({ errorCode: 'AGENDA_PDF_EXPORT_FAILED' });
+        }
     }
 };

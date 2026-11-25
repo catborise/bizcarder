@@ -5,9 +5,11 @@ const agendaController = require('../controllers/agendaController');
 const delegationController = require('../controllers/delegationController');
 const agendaShareController = require('../controllers/agendaShareController');
 
-// Daily page & notes
+// Daily page, range & PDF export
 router.get('/day/:date', resolveAgendaAccess('read'), agendaController.getDailyPage);
 router.put('/day/:date/notes', resolveAgendaAccess('write'), agendaController.updateDailyPageNotes);
+router.get('/range', resolveAgendaAccess('read'), agendaController.getRangePages);
+router.get('/export/pdf', resolveAgendaAccess('read'), agendaController.exportAgendaPdf);
 
 // Entries CRUD & roll-over migration
 router.post('/entries', resolveAgendaAccess('write'), agendaController.createEntry);

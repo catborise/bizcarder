@@ -8,6 +8,7 @@ import QuickEntryBar from './QuickEntryBar';
 import DailyPageSpread from './DailyPageSpread';
 import DelegationModal from './DelegationModal';
 import AgendaShareModal from './AgendaShareModal';
+import AgendaPrintModal from './AgendaPrintModal';
 import {
     FaChevronLeft,
     FaChevronRight,
@@ -51,6 +52,7 @@ const AgendaWorkspace = () => {
 
     const [showDelegationModal, setShowDelegationModal] = useState(false);
     const [showShareModal, setShowShareModal] = useState(false);
+    const [showPrintModal, setShowPrintModal] = useState(false);
 
     // Search state
     const [searchQuery, setSearchQuery] = useState('');
@@ -160,7 +162,7 @@ const AgendaWorkspace = () => {
                 return;
             }
 
-            if (showDelegationModal || showShareModal || contactDrawer) return;
+            if (showDelegationModal || showShareModal || showPrintModal || contactDrawer) return;
             if (e.ctrlKey || e.metaKey || e.altKey) return;
 
             const tag = document.activeElement?.tagName?.toLowerCase();
@@ -183,7 +185,7 @@ const AgendaWorkspace = () => {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [showDelegationModal, showShareModal, contactDrawer]);
+    }, [showDelegationModal, showShareModal, showPrintModal, contactDrawer]);
 
     const handleCreateEntry = async (payload) => {
         try {
@@ -645,22 +647,24 @@ const AgendaWorkspace = () => {
 
                     <button
                         type="button"
-                        onClick={() => window.print()}
+                        onClick={() => setShowPrintModal(true)}
                         title={t('agenda.printSheetBtn', 'Yazdır / PDF')}
                         style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '5px',
-                            padding: '8px 11px',
+                            gap: '6px',
+                            padding: '8px 12px',
                             borderRadius: '9px',
                             border: '1px solid var(--glass-border)',
                             background: 'var(--glass-bg)',
-                            color: 'var(--text-secondary)',
+                            color: 'var(--text-primary)',
                             fontSize: '0.82rem',
+                            fontWeight: 600,
                             cursor: 'pointer',
                         }}
                     >
-                        <FaPrint size={13} />
+                        <FaPrint size={13} color="var(--accent-primary)" />
+                        <span>{t('agenda.printSheetBtn', 'Yazdır / PDF')}</span>
                     </button>
                 </div>
             </header>
@@ -905,6 +909,15 @@ const AgendaWorkspace = () => {
                 shares={shares}
                 onCreateShare={handleCreateShare}
                 onRevokeShare={handleRevokeShare}
+            />
+
+            <AgendaPrintModal
+                isOpen={showPrintModal}
+                onClose={() => setShowPrintModal(false)}
+                selectedDate={selectedDate}
+                isOwner={isOwner}
+                requestHeaders={buildHeadersForOwner(effectiveOwnerId)}
+                onError={(msg) => showNotification(msg, 'error')}
             />
         </div>
     );

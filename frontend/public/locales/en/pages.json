@@ -313,6 +313,26 @@
         "noSearchResults": "No matching agenda entries found.",
         "goToPage": "Open Page →",
         "contactDrawerSubtitle": "Directory & Agenda History",
-        "contactMentionedDays": "Agenda Pages Mentioning This Contact"
+        "contactMentionedDays": "Agenda Pages Mentioning This Contact",
+        "printModalTitle": "Print Agenda Sheet & Corporate PDF Export",
+        "printModeDaily": "Daily Agenda Sheet (1 Day)",
+        "printModeWeekly": "Weekly Schedule (7 Days)",
+        "printModeRange": "Custom Date Range",
+        "printIncludePhones": "Include company and phone numbers of linked contacts",
+        "printIncludeBlankLines": "Add blank ruled lines for handwritten notes at bottom",
+        "printIncludePrivate": "🔒 Include private notes and private scratchpad",
+        "printPreviewLoading": "Preparing A4 agenda sheet...",
+        "printHeaderSubtitle": "EXECUTIVE ASSISTANT DAILY / WEEKLY AGENDA SHEET",
+        "dayOfYearLabel": "Day of Year",
+        "weekOfYearLabel": "Week",
+        "printColTime": "Time",
+        "printColStatus": "Status",
+        "printColContent": "Appointment / Phone Note / Task",
+        "printBlankLinesTitle": "Meeting / Handwritten Notes Area",
+        "preparingPdf": "Preparing PDF...",
+        "downloadPdfBtn": "Download Corporate PDF",
+        "printNowBtn": "Print A4 Agenda Sheet",
+        "printLoadError": "Failed to load print preview.",
+        "pdfDownloadError": "Failed to generate PDF file."
     }
 }

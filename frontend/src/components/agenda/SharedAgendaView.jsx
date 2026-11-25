@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/axios';
@@ -6,10 +6,12 @@ import { FaPrint, FaCalendarAlt, FaUserTag } from 'react-icons/fa';
 
 const SharedAgendaView = () => {
     const { token } = useParams();
-    const { t } = useTranslation('pages');
+    const { t, i18n } = useTranslation('pages');
+    const isTr = (i18n.language || 'tr').startsWith('tr');
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
+    const printAreaRef = useRef(null);
 
     useEffect(() => {
         const loadShared = async () => {
@@ -26,6 +28,85 @@ const SharedAgendaView = () => {
         };
         loadShared();
     }, [token]);
+
+    const handleCleanPrint = () => {
+        if (!printAreaRef.current || !data) return;
+        const { share, pages = [], entries = [] } = data;
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const escapeHtml = (str) =>
+            String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+        const statusMark = (st) => (st === 'done' ? '✓' : st === 'migrated' ? '→' : st === 'cancelled' ? '✗' : '☐');
+
+        const rowsHtml = entries
+            .map((e) => {
+                const contacts = (e.contactLinks || []).map((c) => `@${escapeHtml(c.displayNameSnapshot)}`).join(', ');
+                return `<tr>
+                    <td style="font-family:monospace;font-weight:700">${escapeHtml(e.timeSlot || '—')}</td>
+                    <td style="text-align:center;font-weight:700">${statusMark(e.status)}</td>
+                    <td>${escapeHtml(e.date)} — ${escapeHtml(e.content)} ${contacts ? `<strong>(${contacts})</strong>` : ''}</td>
+                </tr>`;
+            })
+            .join('');
+
+        const notesHtml = pages
+            .filter((p) => p.freeformNotes && p.freeformNotes.trim())
+            .map(
+                (p) =>
+                    `<div style="margin-bottom:10px"><strong>${escapeHtml(p.date)}:</strong><div style="border:1px solid #cbd5e1;border-radius:6px;padding:10px;white-space:pre-wrap;margin-top:4px">${escapeHtml(p.freeformNotes)}</div></div>`,
+            )
+            .join('');
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(`<!DOCTYPE html>
+<html lang="${isTr ? 'tr' : 'en'}">
+<head>
+<meta charset="utf-8" />
+<title>${escapeHtml(share.title || 'Ajanda')}</title>
+<style>
+  @page { size: A4 portrait; margin: 14mm; }
+  body { font-family: 'Inter', -apple-system, sans-serif; color: #0f172a; background: #fff; margin: 0; font-size: 10.5pt; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; }
+  th { background: #f1f5f9; }
+</style>
+</head>
+<body>
+  <div style="border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:flex-end">
+    <div>
+      <div style="font-size:9pt;color:#475569;font-weight:700">${escapeHtml(share.startDate === share.endDate ? share.startDate : `${share.startDate} → ${share.endDate}`)}</div>
+      <h2 style="margin:4px 0 0">${escapeHtml(share.title || 'Ajanda Sayfası')}</h2>
+    </div>
+    <div style="font-size:9.5pt;color:#334155">${escapeHtml(share.ownerName || '')}</div>
+  </div>
+  ${
+      entries.length > 0
+          ? `<table><thead><tr><th style="width:65px">Saat</th><th style="width:55px;text-align:center">Durum</th><th>Program / Not</th></tr></thead><tbody>${rowsHtml}</tbody></table>`
+          : ''
+  }
+  ${notesHtml}
+</body>
+</html>`);
+        doc.close();
+        iframe.contentWindow.focus();
+        setTimeout(() => {
+            iframe.contentWindow.print();
+            setTimeout(() => iframe.remove(), 1000);
+        }, 150);
+    };
 
     if (loading) {
         return (
@@ -62,7 +143,7 @@ const SharedAgendaView = () => {
     const { share, pages = [], entries = [] } = data;
 
     return (
-        <div style={{ maxWidth: '1080px', margin: '28px auto', padding: '0 20px' }}>
+        <div ref={printAreaRef} style={{ maxWidth: '1080px', margin: '28px auto', padding: '0 20px' }}>
             <div
                 style={{
                     display: 'flex',
@@ -107,7 +188,7 @@ const SharedAgendaView = () => {
 
                 <button
                     type="button"
-                    onClick={() => window.print()}
+                    onClick={handleCleanPrint}
                     style={{
                         display: 'flex',
                         alignItems: 'center',

@@ -448,7 +448,7 @@ describe('Executive Assistant Agenda, Delegation & Share Security Matrix', () =>
         });
     });
 
-    describe('4. Yearly Overview & Search', () => {
+    describe('4. Yearly Overview, Range & Corporate PDF Export', () => {
         test('returns 12-month SQL-aggregated summary and searches entries without leaking private items to non-owners', async () => {
             const yearRes = await agentA.get('/api/agenda/year-overview/2026').expect(200);
             expect(yearRes.body.months).toHaveLength(12);
@@ -457,6 +457,30 @@ describe('Executive Assistant Agenda, Delegation & Share Security Matrix', () =>
 
             const searchRes = await agentA.get('/api/agenda/search?q=bütçe').expect(200);
             expect(searchRes.body.entries.length).toBeGreaterThanOrEqual(1);
+        });
+
+        test('fetches date range and exports corporate A4 PDF sheet (/api/agenda/export/pdf)', async () => {
+            const rangeRes = await agentA.get('/api/agenda/range?startDate=2026-11-23&endDate=2026-11-29').expect(200);
+
+            expect(rangeRes.body.startDate).toBe('2026-11-23');
+            expect(rangeRes.body.endDate).toBe('2026-11-29');
+            expect(rangeRes.body.entries.length).toBeGreaterThanOrEqual(1);
+
+            const pdfRes = await agentA
+                .get(
+                    '/api/agenda/export/pdf?startDate=2026-11-24&endDate=2026-11-24&includePrivate=false&includeContactPhones=true&includeBlankLines=true',
+                )
+                .buffer(true)
+                .parse((res, cb) => {
+                    const chunks = [];
+                    res.on('data', (chunk) => chunks.push(chunk));
+                    res.on('end', () => cb(null, Buffer.concat(chunks)));
+                })
+                .expect(200);
+
+            expect(pdfRes.headers['content-type']).toMatch(/application\/pdf/);
+            expect(pdfRes.headers['content-disposition']).toContain('ajanda_2026-11-24.pdf');
+            expect(pdfRes.body.slice(0, 5).toString('utf8')).toBe('%PDF-');
         });
     });
 });

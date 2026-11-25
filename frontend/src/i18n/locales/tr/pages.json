@@ -313,6 +313,26 @@
         "noSearchResults": "Eşleşen ajanda kaydı bulunamadı.",
         "goToPage": "Sayfayı Aç →",
         "contactDrawerSubtitle": "Fihrist & Ajanda Geçmişi",
-        "contactMentionedDays": "Bu Kişinin Geçtiği Ajanda Yaprakları"
+        "contactMentionedDays": "Bu Kişinin Geçtiği Ajanda Yaprakları",
+        "printModalTitle": "Ajanda Yaprağı Yazdır & Kurumsal PDF Çıktısı",
+        "printModeDaily": "Günlük Ajanda Yaprağı (1 Gün)",
+        "printModeWeekly": "Haftalık Program (7 Gün)",
+        "printModeRange": "Özel Tarih Aralığı",
+        "printIncludePhones": "Bağlı kişilerin şirket ve telefon numarasını yazdır",
+        "printIncludeBlankLines": "Sayfa altına elle not alma çizgileri ekle",
+        "printIncludePrivate": "🔒 Özel notları ve özel karalamayı dahil et",
+        "printPreviewLoading": "A4 ajanda yaprağı hazırlanıyor...",
+        "printHeaderSubtitle": "YÖNETİCİ ASİSTANI GÜNLÜK / HAFTALIK AJANDA FÖYÜ",
+        "dayOfYearLabel": "Yılın Günü",
+        "weekOfYearLabel": "Hafta",
+        "printColTime": "Saat",
+        "printColStatus": "Durum",
+        "printColContent": "Randevu / Telefon Notu / Görev",
+        "printBlankLinesTitle": "Toplantı / El Yazısı Not Alanı",
+        "preparingPdf": "PDF Hazırlanıyor...",
+        "downloadPdfBtn": "Kurumsal PDF İndir",
+        "printNowBtn": "A4 Ajanda Yaprağını Yazdır",
+        "printLoadError": "Yazdırma önizlemesi yüklenemedi.",
+        "pdfDownloadError": "PDF dosyası oluşturulamadı."
     }
 }

@@ -152,6 +152,17 @@ describe('AgendaWorkspace Component', () => {
                 expect.any(Object),
             );
         });
+
+        // Click "Yazdır / PDF" to open AgendaPrintModal
+        const printBtn = screen.getByText(/Yazdır \/ PDF/i);
+        fireEvent.click(printBtn);
+
+        await waitFor(() => {
+            expect(screen.getByText(/Ajanda Yaprağı Yazdır & Kurumsal PDF Çıktısı/i)).toBeInTheDocument();
+            expect(screen.getByText(/Günlük Ajanda Yaprağı \(1 Gün\)/i)).toBeInTheDocument();
+            expect(screen.getByText(/Haftalık Program \(7 Gün\)/i)).toBeInTheDocument();
+            expect(screen.getByText(/Kurumsal PDF İndir/i)).toBeInTheDocument();
+        });
     });
 
     it('enforces Substitute (Vekâlet) UI restrictions: shows banner and hides private scratchpad, share, and delegation buttons', async () => {
